@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patchwork — Build in the open</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#6C5CE7;--purple-light:#8B7CF8;--purple-dark:#4A3DB8;
+  --purple-50:#F0EEFF;--purple-100:#DDD8FF;--purple-200:#BEB5FF;
+  --ink:#0D0B14;--ink-80:#1A1726;--ink-60:#2D2A3E;
+  --smoke:#F5F4FA;--smoke-2:#EAE8F5;
+  --text-primary:#0D0B14;--text-secondary:#5C5879;--text-muted:#9896AD;
+  --surface:#FFFFFF;--surface-2:#F5F4FA;--surface-3:#EAE8F5;
+  --border:#E2E0EE;--border-strong:#C8C5DF;
+  --green:#00B37E;--amber:#F59E0B;--red:#EF4444;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:24px;--r-pill:999px;
+  --shadow-sm:0 1px 3px rgba(108,92,231,.08);
+  --shadow-md:0 4px 16px rgba(108,92,231,.12);
+  --shadow-lg:0 12px 40px rgba(108,92,231,.18);
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Syne',sans-serif;background:var(--smoke);color:var(--text-primary);line-height:1.5;min-height:100vh;overflow-x:hidden}
+
+/* ── SCREENS ─────────────────────────────────────── */
+.screen{display:none;min-height:100vh;animation:fadeIn .35s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── NAV ─────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(245,244,250,.88);backdrop-filter:blur(16px);border-bottom:0.5px solid var(--border);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.nav-logo{font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.5px}
+.nav-logo span{color:var(--purple)}
+.nav-links{display:flex;align-items:center;gap:24px}
+.nav-link{font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:color .2s;text-decoration:none}
+.nav-link:hover{color:var(--text-primary)}
+.nav-cta{background:var(--purple);color:#fff;border:none;padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;transition:all .2s}
+.nav-cta:hover{background:var(--purple-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+
+/* ═══════════════════════════════════════════════════
+   LANDING PAGE
+═══════════════════════════════════════════════════ */
+#landing{background:var(--ink)}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:120px 40px 80px;position:relative;overflow:hidden}
+
+/* grid texture */
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(108,92,231,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(108,92,231,.08) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+.hero::after{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(108,92,231,.25) 0%,transparent 65%);pointer-events:none}
+
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(108,92,231,.15);border:0.5px solid rgba(108,92,231,.3);border-radius:var(--r-pill);padding:5px 14px 5px 8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--purple-light);margin-bottom:32px;position:relative;z-index:1}
+.hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--purple-light);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+.hero-headline{font-size:clamp(52px,8vw,96px);font-weight:800;color:#fff;text-align:center;line-height:1;letter-spacing:-3px;position:relative;z-index:1;max-width:900px}
+.hero-headline em{font-style:italic;font-family:'Fraunces',serif;font-weight:300;color:var(--purple-light)}
+
+.hero-sub{font-size:18px;font-weight:400;color:rgba(255,255,255,.5);text-align:center;max-width:520px;margin:24px auto 0;line-height:1.6;position:relative;z-index:1}
+
+.hero-actions{display:flex;align-items:center;gap:16px;margin-top:48px;position:relative;z-index:1}
+.btn-primary{background:var(--purple);color:#fff;border:none;padding:14px 32px;border-radius:var(--r-pill);font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:all .25s;box-shadow:0 0 40px rgba(108,92,231,.4)}
+.btn-primary:hover{background:var(--purple-light);transform:translateY(-2px);box-shadow:0 0 60px rgba(108,92,231,.5)}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.6);border:0.5px solid rgba(255,255,255,.2);padding:14px 28px;border-radius:var(--r-pill);font-size:14px;font-weight:500;font-family:'Syne',sans-serif;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:rgba(255,255,255,.4);color:#fff}
+
+/* live feed preview */
+.hero-preview{max-width:880px;margin:72px auto 0;position:relative;z-index:1}
+.preview-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:12px;opacity:.6}
+.preview-window{background:var(--ink-80);border:0.5px solid rgba(255,255,255,.08);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.preview-bar{background:rgba(255,255,255,.04);border-bottom:0.5px solid rgba(255,255,255,.06);padding:14px 20px;display:flex;align-items:center;gap:8px}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-rooms{display:grid;grid-template-columns:240px 1fr;min-height:380px}
+.preview-sidebar{border-right:0.5px solid rgba(255,255,255,.06);padding:16px 0}
+.preview-sidebar-label{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);padding:0 16px 8px;letter-spacing:.08em}
+.preview-room-item{padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s}
+.preview-room-item:hover,.preview-room-item.active{background:rgba(108,92,231,.12)}
+.preview-room-avatar{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.preview-room-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
+.preview-room-domain{font-size:10px;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace}
+.preview-live-dot{width:6px;height:6px;border-radius:50%;background:#00B37E;margin-left:auto;flex-shrink:0;animation:pulse 1.5s ease infinite}
+.preview-main{padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+.preview-room-header{margin-bottom:4px}
+.preview-room-title{font-size:15px;font-weight:700;color:#fff}
+.preview-room-meta{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
+.preview-update{background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.07);border-radius:var(--r-lg);padding:14px 16px}
+.preview-update-time{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);margin-bottom:6px}
+.preview-update-text{font-size:13px;color:rgba(255,255,255,.7);line-height:1.55}
+.preview-reactions{display:flex;gap:8px;margin-top:10px}
+.preview-reaction{background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.1);border-radius:var(--r-pill);padding:3px 10px;font-size:11px;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:5px}
+.preview-reaction.active{background:rgba(108,92,231,.2);border-color:rgba(108,92,231,.4);color:var(--purple-light)}
+
+/* features */
+.features{background:var(--smoke);padding:120px 40px}
+.features-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
+.feature-card{background:var(--surface);padding:40px 36px;transition:transform .2s}
+.feature-card:hover{transform:translateY(-4px)}
+.feature-card:first-child{border-radius:var(--r-xl) 0 0 0}
+.feature-card:nth-child(3){border-radius:0 var(--r-xl) 0 0}
+.feature-card:nth-child(4){border-radius:0 0 0 var(--r-xl)}
+.feature-card:last-child{border-radius:0 0 var(--r-xl) 0}
+.feature-icon{width:44px;height:44px;border-radius:var(--r-md);background:var(--purple-50);display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:20px}
+.feature-title{font-size:17px;font-weight:700;margin-bottom:8px;letter-spacing:-.3px}
+.feature-desc{font-size:14px;color:var(--text-secondary);line-height:1.6}
+.section-eyebrow{font-family:'DM Mono',monospace;font-size:11px;color:var(--purple);letter-spacing:.1em;margin-bottom:12px;text-transform:uppercase}
+.section-title{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-1.5px;margin-bottom:16px;line-height:1.1}
+.section-title em{font-style:italic;font-family:'Fraunces',serif;font-weight:300;color:var(--purple)}
+.section-header{text-align:center;margin-bottom:60px}
+
+/* social proof */
+.social{background:var(--ink);padding:80px 40px;text-align:center}
+.stat-row{display:flex;justify-content:center;gap:80px;margin-top:48px}
+.stat-num{font-size:56px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1}
+.stat-num span{color:var(--purple-light)}
+.stat-label{font-size:13px;color:rgba(255,255,255,.4);margin-top:4px;font-family:'DM Mono',monospace}
+.stat-item{text-align:center}
+
+/* cta section */
+.cta-section{background:var(--smoke);padding:120px 40px;text-align:center}
+.cta-card{background:var(--purple);border-radius:var(--r-xl);padding:80px 60px;max-width:700px;margin:0 auto;position:relative;overflow:hidden}
+.cta-card::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:rgba(255,255,255,.05);border-radius:50%}
+.cta-card-title{font-size:40px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:12px}
+.cta-card-title em{font-style:italic;font-family:'Fraunces',serif;font-weight:300}
+.cta-card-sub{font-size:16px;color:rgba(255,255,255,.65);margin-bottom:36px}
+.btn-white{background:#fff;color:var(--purple);border:none;padding:14px 36px;border-radius:var(--r-pill);font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+
+/* landing nav override */
+#landing nav{background:rgba(13,11,20,.8)}
+#landing nav .nav-logo{color:#fff}
+
+/* ═══════════════════════════════════════════════════
+   ONBOARDING
+═══════════════════════════════════════════════════ */
+#onboarding{background:var(--smoke)}
+.onb-shell{min-height:100vh;padding-top:60px;display:flex}
+
+.onb-left{width:380px;flex-shrink:0;background:var(--ink);padding:48px 40px;display:flex;flex-direction:column;position:sticky;top:60px;height:calc(100vh - 60px)}
+.onb-step-track{flex:1;display:flex;flex-direction:column;gap:0}
+.onb-step-row{display:flex;gap:16px;position:relative;padding-bottom:32px}
+.onb-step-row:last-child{padding-bottom:0}
+.onb-step-row::after{content:'';position:absolute;left:15px;top:32px;bottom:0;width:1px;background:rgba(255,255,255,.08)}
+.onb-step-row:last-child::after{display:none}
+.onb-step-num{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.3);flex-shrink:0;position:relative;z-index:1;background:var(--ink);transition:all .3s}
+.onb-step-num.active{border-color:var(--purple);color:var(--purple-light);background:rgba(108,92,231,.15)}
+.onb-step-num.done{border-color:var(--green);background:rgba(0,179,126,.15);color:var(--green)}
+.onb-step-info{padding-top:4px}
+.onb-step-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.4);transition:color .3s}
+.onb-step-title.active{color:#fff}
+.onb-step-title.done{color:rgba(255,255,255,.6)}
+.onb-step-desc{font-size:11px;color:rgba(255,255,255,.25);margin-top:2px;font-family:'DM Mono',monospace}
+
+.onb-quote{margin-top:auto;padding-top:40px;border-top:0.5px solid rgba(255,255,255,.08)}
+.onb-quote-text{font-family:'Fraunces',serif;font-size:16px;color:rgba(255,255,255,.5);font-style:italic;line-height:1.5}
+.onb-quote-attr{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);margin-top:8px}
+
+.onb-right{flex:1;padding:48px 60px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:calc(100vh - 60px)}
+
+.onb-panel{display:none;width:100%;max-width:520px;animation:fadeIn .3s ease}
+.onb-panel.active{display:block}
+
+.onb-panel-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--purple);letter-spacing:.08em;margin-bottom:8px}
+.onb-panel-title{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:8px}
+.onb-panel-sub{font-size:15px;color:var(--text-secondary);margin-bottom:36px;line-height:1.6}
+
+label{font-size:13px;font-weight:600;color:var(--text-primary);display:block;margin-bottom:6px}
+input[type=text],input[type=email],input[type=password],textarea,select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 14px;font-size:14px;font-family:'Syne',sans-serif;color:var(--text-primary);transition:border-color .2s;outline:none}
+input[type=text]:focus,input[type=email]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,.1)}
+.form-group{margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.domain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.domain-chip{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;color:var(--text-secondary)}
+.domain-chip:hover{border-color:var(--purple-light);color:var(--purple)}
+.domain-chip.selected{background:var(--purple-50);border-color:var(--purple);color:var(--purple-dark)}
+
+.room-preview-card{background:var(--ink-80);border-radius:var(--r-lg);padding:20px;margin:20px 0}
+.room-preview-title-display{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.room-preview-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;color:var(--purple-light);background:rgba(108,92,231,.2);padding:2px 8px;border-radius:var(--r-pill);margin-bottom:12px}
+.room-preview-textarea{background:transparent;border:none;width:100%;font-size:13px;color:rgba(255,255,255,.6);font-family:'Fraunces',serif;font-style:italic;resize:none;outline:none;line-height:1.6;min-height:72px}
+
+.onb-btn-row{display:flex;align-items:center;gap:12px;margin-top:32px}
+.onb-btn-primary{background:var(--purple);color:#fff;border:none;padding:12px 28px;border-radius:var(--r-pill);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:all .2s}
+.onb-btn-primary:hover{background:var(--purple-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.onb-btn-secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border);padding:12px 24px;border-radius:var(--r-pill);font-size:14px;font-weight:500;font-family:'Syne',sans-serif;cursor:pointer;transition:all .2s}
+.onb-btn-secondary:hover{border-color:var(--border-strong);color:var(--text-primary)}
+
+/* confetti step */
+.congrats-icon{width:72px;height:72px;background:var(--purple-50);border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:24px}
+.congrats-stat-row{display:flex;gap:16px;margin:24px 0}
+.congrats-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;flex:1}
+.congrats-stat-num{font-size:24px;font-weight:800;color:var(--purple)}
+.congrats-stat-label{font-size:12px;color:var(--text-secondary);margin-top:2px}
+
+/* ═══════════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════════ */
+#dashboard{background:var(--smoke)}
+.dash-shell{min-height:100vh;padding-top:60px;display:flex}
+
+/* sidebar */
+.dash-sidebar{width:240px;flex-shrink:0;background:var(--surface);border-right:0.5px solid var(--border);padding:24px 0;position:sticky;top:60px;height:calc(100vh - 60px);display:flex;flex-direction:column}
+.sidebar-section{padding:0 16px;margin-bottom:24px}
+.sidebar-section-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:.08em;padding:0 8px;margin-bottom:6px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-md);cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text-secondary);font-size:13px;font-weight:500}
+.sidebar-item:hover{background:var(--surface-2);color:var(--text-primary)}
+.sidebar-item.active{background:var(--purple-50);color:var(--purple-dark)}
+.sidebar-item-icon{width:18px;height:18px;opacity:.6;flex-shrink:0}
+.sidebar-item.active .sidebar-item-icon{opacity:1}
+.sidebar-badge{margin-left:auto;background:var(--purple);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--r-pill);font-family:'DM Mono',monospace}
+
+.sidebar-new-btn{margin:0 16px 0;background:var(--purple);color:#fff;border:none;width:calc(100% - 32px);padding:10px;border-radius:var(--r-md);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.sidebar-new-btn:hover{background:var(--purple-dark)}
+
+.sidebar-profile{margin-top:auto;padding:16px;border-top:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-avatar{width:32px;height:32px;border-radius:8px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.sidebar-profile-name{font-size:13px;font-weight:600}
+.sidebar-profile-domain{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace}
+
+/* main area */
+.dash-main{flex:1;padding:32px 40px;max-width:900px}
+.dash-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px}
+.dash-greeting{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.dash-greeting span{color:var(--purple)}
+.dash-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-top:4px}
+.dash-add-btn{background:var(--purple);color:#fff;border:none;padding:10px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s}
+.dash-add-btn:hover{background:var(--purple-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+
+/* stat strip */
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.stat-card-num{font-size:28px;font-weight:800;letter-spacing:-.5px}
+.stat-card-label{font-size:12px;color:var(--text-muted);margin-top:2px;font-family:'DM Mono',monospace}
+.stat-card-delta{font-size:11px;color:var(--green);margin-top:4px;font-weight:600}
+
+/* sections */
+.dash-section{margin-bottom:32px}
+.dash-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.dash-section-title{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.dash-section-link{font-size:12px;color:var(--purple);cursor:pointer;font-weight:600}
+
+/* my rooms */
+.rooms-list{display:flex;flex-direction:column;gap:10px}
+.room-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px}
+.room-card:hover{border-color:var(--purple-light);box-shadow:var(--shadow-sm);transform:translateX(2px)}
+.room-card-color{width:4px;align-self:stretch;border-radius:4px;flex-shrink:0}
+.room-card-body{flex:1}
+.room-card-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.room-card-meta{font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:12px}
+.room-card-status{display:flex;align-items:center;gap:5px}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.room-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.room-card-reactions{font-size:12px;color:var(--text-secondary);font-family:'DM Mono',monospace}
+.room-card-domain{font-size:10px;font-weight:700;padding:3px 8px;border-radius:var(--r-pill);letter-spacing:.04em}
+.domain-product{background:var(--purple-50);color:var(--purple-dark)}
+.domain-design{background:#FFF0F3;color:#C2185B}
+.domain-engineering{background:#E8F5E9;color:#2E7D32}
+.domain-writing{background:#FFF8E1;color:#F57F17}
+.domain-growth{background:#E1F5FE;color:#0277BD}
+
+/* feed */
+.feed-list{display:flex;flex-direction:column;gap:10px}
+.feed-item{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;cursor:pointer;transition:all .2s}
+.feed-item:hover{border-color:var(--border-strong)}
+.feed-item-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.feed-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.feed-builder{font-size:13px;font-weight:700}
+.feed-room{font-size:12px;color:var(--text-muted)}
+.feed-time{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)}
+.feed-text{font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px}
+.feed-reactions{display:flex;gap:8px}
+.feed-reaction{background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--r-pill);padding:4px 12px;font-size:12px;color:var(--text-secondary);cursor:pointer;transition:all .15s;font-weight:500}
+.feed-reaction:hover{background:var(--purple-50);border-color:var(--purple-light);color:var(--purple)}
+.feed-reaction.reacted{background:var(--purple-50);border-color:var(--purple);color:var(--purple-dark)}
+
+/* right panel */
+.dash-right{width:280px;flex-shrink:0;padding:32px 24px 32px 0}
+.right-panel{position:sticky;top:92px;display:flex;flex-direction:column;gap:20px}
+.rpanel-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:18px}
+.rpanel-title{font-size:13px;font-weight:700;margin-bottom:14px;letter-spacing:-.2px}
+
+/* activity feed */
+.activity-list{display:flex;flex-direction:column;gap:12px}
+.activity-item{display:flex;gap:10px}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.activity-text{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.activity-text strong{color:var(--text-primary);font-weight:600}
+.activity-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:2px}
+
+/* observer row */
+.observer-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.observer-row:last-child{border-bottom:none}
+.observer-avatar{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.observer-name{font-size:12px;font-weight:600;flex:1}
+.observer-action{font-size:11px;color:var(--text-muted)}
+
+/* nav override for light screens */
+#onboarding nav,#dashboard nav{background:rgba(245,244,250,.92)}
+#dashboard nav .nav-logo,#onboarding nav .nav-logo{color:var(--ink)}
+
+/* tab strip */
+.tab-strip{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{padding:10px 20px;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+.tab:hover:not(.active){color:var(--text-secondary)}
+
+/* modal overlay for room detail */
+.room-detail{display:none;position:fixed;inset:0;z-index:200;background:rgba(13,11,20,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:40px}
+.room-detail.open{display:flex}
+.room-detail-card{background:var(--surface);border-radius:var(--r-xl);padding:36px;width:100%;max-width:600px;max-height:80vh;overflow-y:auto;position:relative}
+.room-detail-close{position:absolute;top:20px;right:20px;background:var(--surface-2);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center}
+.room-detail-domain-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--purple);background:var(--purple-50);padding:3px 10px;border-radius:var(--r-pill);display:inline-block;margin-bottom:10px}
+.room-detail-title{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.room-detail-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:24px}
+.update-thread{display:flex;flex-direction:column;gap:0}
+.update-item{display:grid;grid-template-columns:20px 1fr;gap:16px;padding-bottom:24px;position:relative}
+.update-item::before{content:'';position:absolute;left:9px;top:24px;bottom:0;width:1px;background:var(--border)}
+.update-item:last-child::before{display:none}
+.update-item-dot{width:18px;height:18px;border-radius:50%;background:var(--purple-50);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;position:relative;z-index:1;margin-top:3px;flex-shrink:0}
+.update-item-dot-inner{width:6px;height:6px;border-radius:50%;background:var(--purple)}
+.update-item-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-bottom:4px}
+.update-item-text{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px}
+.update-new-input{background:var(--surface-2);border:1px dashed var(--border-strong);border-radius:var(--r-md);padding:12px;margin-top:8px}
+.update-new-textarea{background:transparent;border:none;width:100%;font-size:13px;font-family:'Syne',sans-serif;color:var(--text-primary);resize:none;outline:none;min-height:64px}
+.update-post-btn{background:var(--purple);color:#fff;border:none;padding:8px 20px;border-radius:var(--r-pill);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;float:right;margin-top:8px;transition:all .2s}
+.update-post-btn:hover{background:var(--purple-dark)}
+</style>
+</head>
+<body>
+
+<!-- ════════ GLOBAL NAV ════════ -->
+<nav id="main-nav">
+  <div class="nav-logo">patch<span>·</span>work</div>
+  <div class="nav-links">
+    <span class="nav-link" id="nav-features" onclick="showLanding()">Features</span>
+    <span class="nav-link" onclick="showLanding()">Builders</span>
+    <button class="nav-cta" onclick="showOnboarding()">Join as a builder →</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1 — LANDING
+════════════════════════════════════════════ -->
+<div id="landing" class="screen active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      47 builders building live right now
+    </div>
+    <h1 class="hero-headline">Build in the open.<br><em>Ship with proof.</em></h1>
+    <p class="hero-sub">The platform where builders share their work-in-progress — not polished posts. Live rooms. Structured feedback. A Build Log when you ship.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="showOnboarding()">Start building for free</button>
+      <button class="btn-ghost" onclick="showDashboard()">See the dashboard →</button>
+    </div>
+
+    <!-- preview window -->
+    <div class="hero-preview">
+      <p class="preview-label">// live right now</p>
+      <div class="preview-window">
+        <div class="preview-bar">
+          <div class="preview-dot" style="background:#FF5F57"></div>
+          <div class="preview-dot" style="background:#FEBC2E"></div>
+          <div class="preview-dot" style="background:#28C840"></div>
+        </div>
+        <div class="preview-rooms">
+          <div class="preview-sidebar">
+            <p class="preview-sidebar-label">LIVE ROOMS</p>
+            <div class="preview-room-item active">
+              <div class="preview-room-avatar" style="background:rgba(108,92,231,.25);color:#8B7CF8">AK</div>
+              <div>
+                <div class="preview-room-name">MoniFlow v2</div>
+                <div class="preview-room-domain">product</div>
+              </div>
+              <div class="preview-live-dot"></div>
+            </div>
+            <div class="preview-room-item">
+              <div class="preview-room-avatar" style="background:rgba(0,179,126,.2);color:#00B37E">TN</div>
+              <div>
+                <div class="preview-room-name">Sahel Design System</div>
+                <div class="preview-room-domain">design</div>
+              </div>
+            </div>
+            <div class="preview-room-item">
+              <div class="preview-room-avatar" style="background:rgba(245,158,11,.2);color:#F59E0B">JO</div>
+              <div>
+                <div class="preview-room-name">FastAPI wrapper</div>
+                <div class="preview-room-domain">engineering</div>
+              </div>
+            </div>
+            <div class="preview-room-item">
+              <div class="preview-room-avatar" style="background:rgba(239,68,68,.2);color:#EF4444">PM</div>
+              <div>
+                <div class="preview-room-name">Startup essay #4</div>
+                <div class="preview-room-domain">writing</div>
+              </div>
+            </div>
+          </div>
+          <div class="preview-main">
+            <div class="preview-room-header">
+              <div class="preview-room-title">MoniFlow v2 — BNPL merchant dashboard</div>
+              <div class="preview-room-meta">Day 12 of build · product · Lagos, NG</div>
+            </div>
+            <div class="preview-update">
+              <div class="preview-update-time">2 hours ago</div>
+              <div class="preview-update-text">Scrapped the full merchant onboarding flow — it was 9 steps. Realised the real problem is that merchants don't know their eligibility upfront. Moving KYC check to step 1 and cutting everything else to 4 steps. Drop-off should fall significantly.</div>
+              <div class="preview-reactions">
+                <div class="preview-reaction active">✦ This is sharp · 14</div>
+                <div class="preview-reaction">↩ I'd push back · 3</div>
+                <div class="preview-reaction">? Tell me more · 7</div>
+              </div>
+            </div>
+            <div class="preview-update">
+              <div class="preview-update-time">Yesterday</div>
+              <div class="preview-update-text">First version of the repayment calculator is live internally. The weekly vs monthly toggle was confusing promoters — simplified to a single slider. Will test with field team on Friday.</div>
+              <div class="preview-reactions">
+                <div class="preview-reaction">✦ This is sharp · 8</div>
+                <div class="preview-reaction">? Tell me more · 12</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features-section">
+    <div style="max-width:1100px;margin:0 auto">
+      <div class="section-header">
+        <p class="section-eyebrow">why patchwork</p>
+        <h2 class="section-title">Built for how builders<br><em>actually work</em></h2>
+        <p style="font-size:16px;color:var(--text-secondary);max-width:480px;margin:0 auto;line-height:1.6">Every other platform captures the wrong moment. LinkedIn has your past. X has your opinions. Patchwork has your process.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🏗️</div>
+          <h3 class="feature-title">Build Rooms</h3>
+          <p class="feature-desc">Live workspaces tied to a project. Post updates — text, images, links — as you build. Observers follow in real time.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3 class="feature-title">Structured feedback</h3>
+          <p class="feature-desc">Three reaction types only: Sharp · Push back · Tell me more. Forces quality signal. Eliminates noise.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📋</div>
+          <h3 class="feature-title">Build Log</h3>
+          <p class="feature-desc">When you ship, your room becomes a beautiful, shareable record of exactly how you built it. Your best portfolio artifact.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌍</div>
+          <h3 class="feature-title">Global-native</h3>
+          <p class="feature-desc">Built for builders in Lagos, Nairobi, Bangalore, São Paulo, London. Not Silicon Valley. Not LinkedIn.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h3 class="feature-title">Domain reputation</h3>
+          <p class="feature-desc">Earn reputation through the quality of what you build and the feedback you give. Not job titles. Not follower counts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3 class="feature-title">Talent signal</h3>
+          <p class="feature-desc">Companies watch builders work for weeks — then hire with more signal than any interview gives. Coming soon.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="social">
+    <p class="section-eyebrow" style="color:var(--purple-light)">traction</p>
+    <h2 class="section-title" style="color:#fff;margin-bottom:0">Numbers that matter</h2>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-num">47<span>+</span></div>
+        <div class="stat-label">builders active</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">312</div>
+        <div class="stat-label">updates posted</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">68<span>%</span></div>
+        <div class="stat-label">week-2 retention</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">5</div>
+        <div class="stat-label">cities represented</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-card">
+      <h2 class="cta-card-title">Ready to build<br><em>in the open?</em></h2>
+      <p class="cta-card-sub">Join 47 builders sharing their process live. Your Build Log is waiting.</p>
+      <button class="btn-white" onclick="showOnboarding()">Get your first room →</button>
+    </div>
+  </section>
+
+</div><!-- /landing -->
+
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 2 — ONBOARDING
+════════════════════════════════════════════════ -->
+<div id="onboarding" class="screen">
+<div class="onb-shell">
+
+  <!-- left track -->
+  <div class="onb-left">
+    <div style="margin-bottom:32px">
+      <div class="nav-logo" style="color:#fff;font-size:20px">patch<span style="color:var(--purple-light)">·</span>work</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:4px;font-family:'DM Mono',monospace">founding builder setup</p>
+    </div>
+    <div class="onb-step-track">
+      <div class="onb-step-row">
+        <div class="onb-step-num active" id="step-num-1">1</div>
+        <div class="onb-step-info">
+          <div class="onb-step-title active" id="step-title-1">Create account</div>
+          <div class="onb-step-desc">name · email · password</div>
+        </div>
+      </div>
+      <div class="onb-step-row">
+        <div class="onb-step-num" id="step-num-2">2</div>
+        <div class="onb-step-info">
+          <div class="onb-step-title" id="step-title-2">Your domain</div>
+          <div class="onb-step-desc">what do you build?</div>
+        </div>
+      </div>
+      <div class="onb-step-row">
+        <div class="onb-step-num" id="step-num-3">3</div>
+        <div class="onb-step-info">
+          <div class="onb-step-title" id="step-title-3">Open your first room</div>
+          <div class="onb-step-desc">name it · frame the build</div>
+        </div>
+      </div>
+      <div class="onb-step-row">
+        <div class="onb-step-num" id="step-num-4">4</div>
+        <div class="onb-step-info">
+          <div class="onb-step-title" id="step-title-4">Post first update</div>
+          <div class="onb-step-desc">write · publish · begin</div>
+        </div>
+      </div>
+    </div>
+    <div class="onb-quote">
+      <p class="onb-quote-text">"The feed rewards in-progress updates and honest pivots — not launch announcements."</p>
+      <p class="onb-quote-attr">// patchwork design principle #3</p>
+    </div>
+  </div>
+
+  <!-- right panels -->
+  <div class="onb-right">
+
+    <!-- Panel 1: Account -->
+    <div class="onb-panel active" id="panel-1">
+      <p class="onb-panel-label">Step 1 of 4</p>
+      <h2 class="onb-panel-title">Create your builder account</h2>
+      <p class="onb-panel-sub">You're joining as a founding builder. No automated emails — a real person will DM you within 24 hours.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>First name</label>
+          <input type="text" placeholder="Akin" id="fname">
+        </div>
+        <div class="form-group">
+          <label>Last name</label>
+          <input type="text" placeholder="Rodolu" id="lname">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="you@builder.com" id="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••••">
+      </div>
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" placeholder="Lagos, Nigeria" id="city">
+      </div>
+      <div class="onb-btn-row">
+        <button class="onb-btn-primary" onclick="nextStep(2)">Continue →</button>
+        <button class="onb-btn-secondary" onclick="showLanding()">← Back</button>
+      </div>
+    </div>
+
+    <!-- Panel 2: Domain -->
+    <div class="onb-panel" id="panel-2">
+      <p class="onb-panel-label">Step 2 of 4</p>
+      <h2 class="onb-panel-title">What do you build?</h2>
+      <p class="onb-panel-sub">Pick your primary domain. Your reputation lives here. You can post across domains, but this is your home base.</p>
+      <div>
+        <label style="margin-bottom:4px">Primary domain</label>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-family:'DM Mono',monospace">choose one — this sets your feed and reputation layer</p>
+        <div class="domain-grid">
+          <div class="domain-chip selected" onclick="selectDomain(this)">🧩 Product</div>
+          <div class="domain-chip" onclick="selectDomain(this)">🎨 Design</div>
+          <div class="domain-chip" onclick="selectDomain(this)">⚙️ Engineering</div>
+          <div class="domain-chip" onclick="selectDomain(this)">✍️ Writing</div>
+          <div class="domain-chip" onclick="selectDomain(this)">📈 Growth</div>
+          <div class="domain-chip" onclick="selectDomain(this)">🔬 Research</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:24px">
+        <label>What are you currently building?</label>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-family:'DM Mono',monospace">one sentence — this helps us seed your first room</p>
+        <textarea rows="3" placeholder="e.g. A BNPL product for informal market merchants in Lagos using PalmPay's distribution network" style="font-family:'Syne',sans-serif;font-size:14px;resize:none;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 14px;color:var(--text-primary);outline:none" id="building-desc"></textarea>
+      </div>
+      <div class="onb-btn-row">
+        <button class="onb-btn-primary" onclick="nextStep(3)">Continue →</button>
+        <button class="onb-btn-secondary" onclick="nextStep(1)">← Back</button>
+      </div>
+    </div>
+
+    <!-- Panel 3: Room -->
+    <div class="onb-panel" id="panel-3">
+      <p class="onb-panel-label">Step 3 of 4</p>
+      <h2 class="onb-panel-title">Open your first build room</h2>
+      <p class="onb-panel-sub">Name the thing you're building. Think of this as the headline someone would see while watching you work.</p>
+      <div class="form-group">
+        <label>Room name</label>
+        <input type="text" placeholder="e.g. MoniFlow BNPL merchant dashboard" id="room-name" oninput="updateRoomPreview()">
+      </div>
+      <div class="form-group">
+        <label>Domain tag</label>
+        <select id="room-domain" oninput="updateRoomPreview()" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 14px;font-size:14px;font-family:'Syne',sans-serif;color:var(--text-primary);width:100%;outline:none">
+          <option value="product">🧩 Product</option>
+          <option value="design">🎨 Design</option>
+          <option value="engineering">⚙️ Engineering</option>
+          <option value="writing">✍️ Writing</option>
+          <option value="growth">📈 Growth</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px">
+        <label>Live preview</label>
+        <p style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">this is how your room appears in the feed</p>
+      </div>
+      <div class="room-preview-card">
+        <div class="room-preview-badge" id="preview-badge">product</div>
+        <div class="room-preview-title-display" id="preview-title">Your room name will appear here</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);margin-bottom:12px" id="preview-meta">Day 1 · 0 updates · 0 observers</div>
+        <textarea class="room-preview-textarea" readonly placeholder="Your first update will go here in the next step..."></textarea>
+      </div>
+      <div class="onb-btn-row">
+        <button class="onb-btn-primary" onclick="nextStep(4)">Open this room →</button>
+        <button class="onb-btn-secondary" onclick="nextStep(2)">← Back</button>
+      </div>
+    </div>
+
+    <!-- Panel 4: First update -->
+    <div class="onb-panel" id="panel-4">
+      <p class="onb-panel-label">Step 4 of 4 — the most important step</p>
+      <h2 class="onb-panel-title">Post your first update</h2>
+      <p class="onb-panel-sub">This is the real onboarding. Everything else was setup. <strong>Write what's actually happening with your build right now</strong> — a decision you just made, something you scrapped, a question you're stuck on.</p>
+      <div style="background:var(--purple-50);border:1px solid var(--purple-100);border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px">
+        <p style="font-size:13px;color:var(--purple-dark);line-height:1.5">💡 <strong>Good first updates:</strong> a decision you just made and why · something you thought would work but didn't · the hardest open question in your build right now</p>
+      </div>
+      <div class="form-group">
+        <label>Your first update</label>
+        <textarea id="first-update" rows="6" placeholder="e.g. Just scrapped the full merchant onboarding flow — it was 9 steps and promoters were dropping off at step 4. The real problem is merchants don't know their eligibility upfront. Moving KYC check to step 1 and cutting everything else down to 4 steps. Expect drop-off to fall by at least 30%." style="font-family:'Fraunces',serif;font-style:italic;font-size:15px;resize:none;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;color:var(--text-primary);outline:none;line-height:1.65"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:12px 14px;background:var(--surface-2);border-radius:var(--r-md)">
+        <span style="font-size:20px">👁️</span>
+        <span style="font-size:13px;color:var(--text-secondary)">Your room is <strong style="color:var(--text-primary)">public</strong> — anyone can read this update and react to it.</span>
+      </div>
+      <div class="onb-btn-row">
+        <button class="onb-btn-primary" onclick="completeOnboarding()">Publish and enter Patchwork 🚀</button>
+        <button class="onb-btn-secondary" onclick="nextStep(3)">← Back</button>
+      </div>
+    </div>
+
+  </div><!-- /onb-right -->
+</div>
+</div><!-- /onboarding -->
+
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 3 — DASHBOARD
+════════════════════════════════════════════════ -->
+<div id="dashboard" class="screen">
+<div class="dash-shell">
+
+  <!-- sidebar -->
+  <div class="dash-sidebar">
+    <button class="sidebar-new-btn" onclick="alert('New room modal would open here')">
+      <span style="font-size:16px;margin-top:-1px">+</span> New room
+    </button>
+    <div style="height:16px"></div>
+
+    <div class="sidebar-section">
+      <p class="sidebar-section-label">workspace</p>
+      <div class="sidebar-item active">
+        <svg class="sidebar-item-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="sidebar-item" onclick="switchTab('rooms')">
+        <svg class="sidebar-item-icon" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 7h16" stroke="currentColor" stroke-width="1.5"/></svg>
+        My rooms
+        <span class="sidebar-badge">3</span>
+      </div>
+      <div class="sidebar-item">
+        <svg class="sidebar-item-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.4 7.6H18.4L13.6 11.2L15.4 17L10 13.4L4.6 17L6.4 11.2L1.6 7.6H7.6L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        Build logs
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <p class="sidebar-section-label">discovery</p>
+      <div class="sidebar-item">
+        <svg class="sidebar-item-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 2C10 2 7 6 7 10C7 14 10 18 10 18" stroke="currentColor" stroke-width="1.5"/><path d="M2 10H18" stroke="currentColor" stroke-width="1.5"/></svg>
+        Live feed
+        <span class="sidebar-badge" style="background:var(--green)">12</span>
+      </div>
+      <div class="sidebar-item">
+        <svg class="sidebar-item-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M14 14L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Explore builders
+      </div>
+    </div>
+
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar">AK</div>
+      <div>
+        <div class="sidebar-profile-name">Akinrodolu</div>
+        <div class="sidebar-profile-domain">product · Lagos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div class="dash-main">
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting">Good morning, <span>Akin</span> 👋</div>
+        <div class="dash-date">Wednesday, 3 June 2026 · Lagos, NG</div>
+      </div>
+      <button class="dash-add-btn" onclick="alert('New room flow would open here')">
+        <span style="font-size:16px;margin-top:-1px">+</span> New room
+      </button>
+    </div>
+
+    <!-- stat strip -->
+    <div class="stat-strip">
+      <div class="stat-card">
+        <div class="stat-card-num" style="color:var(--purple)">3</div>
+        <div class="stat-card-label">active rooms</div>
+        <div class="stat-card-delta">↑ 1 this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">47</div>
+        <div class="stat-card-label">total reactions</div>
+        <div class="stat-card-delta" style="color:var(--amber)">↑ 12 today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">28</div>
+        <div class="stat-card-label">observers</div>
+        <div class="stat-card-delta">↑ 5 new</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num">1</div>
+        <div class="stat-card-label">build logs</div>
+        <div class="stat-card-delta" style="color:var(--text-muted)">1 completed</div>
+      </div>
+    </div>
+
+    <!-- tabs -->
+    <div class="tab-strip">
+      <div class="tab active" onclick="switchTab('overview')">Overview</div>
+      <div class="tab" onclick="switchTab('rooms')">My rooms</div>
+      <div class="tab" onclick="switchTab('feed')">Live feed</div>
+    </div>
+
+    <!-- MY ROOMS section -->
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <span class="dash-section-title">Active rooms</span>
+        <span class="dash-section-link">View all</span>
+      </div>
+      <div class="rooms-list">
+        <div class="room-card" onclick="openRoomDetail()">
+          <div class="room-card-color" style="background:var(--purple)"></div>
+          <div class="room-card-body">
+            <div class="room-card-title">MoniFlow BNPL — merchant dashboard</div>
+            <div class="room-card-meta">
+              <span class="room-card-status"><span class="status-dot" style="background:var(--green)"></span> Live · Day 12</span>
+              <span>8 updates</span>
+            </div>
+          </div>
+          <div class="room-card-right">
+            <span class="room-card-domain domain-product">product</span>
+            <span class="room-card-reactions">24 reactions</span>
+          </div>
+        </div>
+        <div class="room-card">
+          <div class="room-card-color" style="background:var(--green)"></div>
+          <div class="room-card-body">
+            <div class="room-card-title">PalmPay promoter app — attendance feature</div>
+            <div class="room-card-meta">
+              <span class="room-card-status"><span class="status-dot" style="background:var(--green)"></span> Live · Day 5</span>
+              <span>4 updates</span>
+            </div>
+          </div>
+          <div class="room-card-right">
+            <span class="room-card-domain domain-product">product</span>
+            <span class="room-card-reactions">12 reactions</span>
+          </div>
+        </div>
+        <div class="room-card">
+          <div class="room-card-color" style="background:var(--amber)"></div>
+          <div class="room-card-body">
+            <div class="room-card-title">MoniFlow Trust Score algorithm — v1</div>
+            <div class="room-card-meta">
+              <span class="room-card-status"><span class="status-dot" style="background:var(--amber)"></span> Paused · Day 8</span>
+              <span>3 updates</span>
+            </div>
+          </div>
+          <div class="room-card-right">
+            <span class="room-card-domain domain-engineering">engineering</span>
+            <span class="room-card-reactions">11 reactions</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE FEED section -->
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <span class="dash-section-title">Live feed — builders you follow</span>
+        <span class="dash-section-link" style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.5s ease infinite"></span> 12 live rooms</span>
+      </div>
+      <div class="feed-list">
+
+        <div class="feed-item">
+          <div class="feed-item-top">
+            <div class="feed-avatar" style="background:#FFF0F3;color:#C2185B">TN</div>
+            <div>
+              <div class="feed-builder">Tobi Nwachukwu</div>
+              <div class="feed-room">Sahel Design System · design</div>
+            </div>
+            <div class="feed-time">14 min ago</div>
+          </div>
+          <div class="feed-text">Finally cracked the token naming convention for the colour system. Moved from semantic naming (primary/secondary) to a scale system (100–900) because semantic names break the moment you have more than 2 brand colours. Nairobi team is testing it now.</div>
+          <div class="feed-reactions">
+            <div class="feed-reaction reacted" onclick="toggleReact(this)">✦ Sharp · 9</div>
+            <div class="feed-reaction" onclick="toggleReact(this)">↩ Push back · 2</div>
+            <div class="feed-reaction" onclick="toggleReact(this)">? More · 5</div>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-item-top">
+            <div class="feed-avatar" style="background:#E8F5E9;color:#2E7D32">JO</div>
+            <div>
+              <div class="feed-builder">James Okafor</div>
+              <div class="feed-room">FastAPI wrapper · engineering</div>
+            </div>
+            <div class="feed-time">1 hr ago</div>
+          </div>
+          <div class="feed-text">Spent 2 hours chasing a bug that turned out to be a single missing await keyword. The wrapper now handles async auth middleware properly. Rate limiting is next. This is the third time I've made this exact mistake — writing it down so I don't do it a fourth time.</div>
+          <div class="feed-reactions">
+            <div class="feed-reaction" onclick="toggleReact(this)">✦ Sharp · 6</div>
+            <div class="feed-reaction" onclick="toggleReact(this)">↩ Push back · 0</div>
+            <div class="feed-reaction" onclick="toggleReact(this)">? More · 11</div>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-item-top">
+            <div class="feed-avatar" style="background:#FFF8E1;color:#F57F17">PM</div>
+            <div>
+              <div class="feed-builder">Priya Menon</div>
+              <div class="feed-room">Startup essay #4 · writing</div>
+            </div>
+            <div class="feed-time">3 hr ago</div>
+          </div>
+          <div class="feed-text">Restructured the essay completely. The original opening tried to be clever — dropped it. Starting with the uncomfortable truth instead: most startup advice is written by people who got lucky once. The whole piece flows better now that I stopped trying to be subtle about the point.</div>
+          <div class="feed-reactions">
+            <div class="feed-reaction" onclick="toggleReact(this)">✦ Sharp · 18</div>
+            <div class="feed-reaction" onclick="toggleReact(this)">↩ Push back · 4</div>
+            <div class="feed-reaction" onclick="toggleReact(this)">? More · 3</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /dash-main -->
+
+  <!-- right panel -->
+  <div class="dash-right">
+    <div class="right-panel">
+
+      <div class="rpanel-card">
+        <div class="rpanel-title">Recent activity</div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--purple)"></div>
+            <div>
+              <div class="activity-text"><strong>Tobi</strong> reacted "Sharp" to your MoniFlow update</div>
+              <div class="activity-time">8 min ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--green)"></div>
+            <div>
+              <div class="activity-text"><strong>Funmi</strong> started following your MoniFlow room</div>
+              <div class="activity-time">41 min ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--amber)"></div>
+            <div>
+              <div class="activity-text"><strong>Ade</strong> reacted "Tell me more" to your PalmPay update</div>
+              <div class="activity-time">2 hr ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--purple)"></div>
+            <div>
+              <div class="activity-text"><strong>James</strong> reacted "Push back" to MoniFlow — update 6</div>
+              <div class="activity-time">5 hr ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--green)"></div>
+            <div>
+              <div class="activity-text"><strong>3 new observers</strong> from your Build Log share</div>
+              <div class="activity-time">Yesterday</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rpanel-card">
+        <div class="rpanel-title">Observers on MoniFlow</div>
+        <div>
+          <div class="observer-row">
+            <div class="observer-avatar" style="background:var(--purple-50);color:var(--purple-dark)">TN</div>
+            <span class="observer-name">Tobi N.</span>
+            <span class="observer-action">8 visits</span>
+          </div>
+          <div class="observer-row">
+            <div class="observer-avatar" style="background:#E8F5E9;color:#2E7D32">FO</div>
+            <span class="observer-name">Funmi O.</span>
+            <span class="observer-action">5 visits</span>
+          </div>
+          <div class="observer-row">
+            <div class="observer-avatar" style="background:#FFF8E1;color:#F57F17">AI</div>
+            <span class="observer-name">Ade I.</span>
+            <span class="observer-action">3 visits</span>
+          </div>
+          <div class="observer-row">
+            <div class="observer-avatar" style="background:#FFF0F3;color:#C2185B">PM</div>
+            <span class="observer-name">Priya M.</span>
+            <span class="observer-action">2 visits</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rpanel-card" style="background:var(--purple);border-color:transparent">
+        <div class="rpanel-title" style="color:#fff">Post today's update</div>
+        <p style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:12px;line-height:1.5">Last update: 2 days ago. Your observers are watching.</p>
+        <button onclick="openRoomDetail()" style="background:rgba(255,255,255,.15);color:#fff;border:0.5px solid rgba(255,255,255,.2);border-radius:var(--r-pill);padding:8px 16px;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;width:100%">Open MoniFlow room →</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div><!-- /dashboard -->
+
+<!-- ════════ ROOM DETAIL MODAL ════════ -->
+<div class="room-detail" id="room-detail" onclick="closeRoomDetail(event)">
+  <div class="room-detail-card">
+    <button class="room-detail-close" onclick="closeRoomDetailBtn()">×</button>
+    <span class="room-detail-domain-tag">product · Lagos, NG</span>
+    <h2 class="room-detail-title">MoniFlow BNPL — merchant dashboard</h2>
+    <p class="room-detail-meta">Day 12 · 8 updates · 28 observers · 47 reactions</p>
+
+    <div class="update-thread">
+      <div class="update-item">
+        <div class="update-item-dot"><div class="update-item-dot-inner"></div></div>
+        <div>
+          <div class="update-item-time">Today · 2 hours ago</div>
+          <div class="update-item-text">Scrapped the full merchant onboarding flow — it was 9 steps. Realised the real problem is that merchants don't know their eligibility upfront. Moving KYC check to step 1 and cutting everything else to 4 steps. Drop-off should fall significantly.</div>
+          <div class="feed-reactions" style="margin-top:8px">
+            <div class="feed-reaction reacted">✦ Sharp · 14</div>
+            <div class="feed-reaction">↩ Push back · 3</div>
+            <div class="feed-reaction">? More · 7</div>
+          </div>
+        </div>
+      </div>
+      <div class="update-item">
+        <div class="update-item-dot"><div class="update-item-dot-inner"></div></div>
+        <div>
+          <div class="update-item-time">Yesterday · 4:12 PM</div>
+          <div class="update-item-text">First version of the repayment calculator is live internally. The weekly vs monthly toggle was confusing promoters — simplified to a single slider. Will test with field team on Friday.</div>
+          <div class="feed-reactions" style="margin-top:8px">
+            <div class="feed-reaction">✦ Sharp · 8</div>
+            <div class="feed-reaction">? More · 12</div>
+          </div>
+        </div>
+      </div>
+      <div class="update-item">
+        <div class="update-item-dot"><div class="update-item-dot-inner"></div></div>
+        <div>
+          <div class="update-item-time">2 days ago · 11:30 AM</div>
+          <div class="update-item-text">130-response promoter survey results came back. Key insight: repayment plans were switching from monthly to weekly without user consent. This is a critical trust break. Documenting this as a P0 fix before anything else ships.</div>
+          <div class="feed-reactions" style="margin-top:8px">
+            <div class="feed-reaction">✦ Sharp · 21</div>
+            <div class="feed-reaction">↩ Push back · 1</div>
+            <div class="feed-reaction">? More · 9</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="update-new-input" style="margin-top:16px">
+      <label style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:6px;display:block">POST A NEW UPDATE</label>
+      <textarea class="update-new-textarea" placeholder="What happened with this build today? A decision made, something scrapped, a question you're stuck on..." id="new-update-text"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="update-post-btn" onclick="postUpdate()">Post update →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function showLanding(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('landing').classList.add('active');
+  document.getElementById('nav-features').style.display='';
+  updateNav('landing');
+}
+
+function showOnboarding(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('onboarding').classList.add('active');
+  currentStep=1;
+  updateNav('onboarding');
+  updateOnboardingStep(1);
+}
+
+function showDashboard(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('dashboard').classList.add('active');
+  updateNav('dashboard');
+}
+
+function updateNav(screen){
+  const cta=document.querySelector('.nav-cta');
+  const links=document.querySelector('.nav-links');
+  if(screen==='dashboard'){
+    cta.textContent='New room +';
+    cta.onclick=()=>alert('New room modal');
+    document.querySelector('.nav-logo').textContent='patch·work';
+  } else if(screen==='onboarding'){
+    cta.style.display='none';
+  } else {
+    cta.style.display='';
+    cta.textContent='Join as a builder →';
+    cta.onclick=showOnboarding;
+  }
+}
+
+function nextStep(n){
+  updateOnboardingStep(n);
+}
+
+function updateOnboardingStep(n){
+  currentStep=n;
+  document.querySelectorAll('.onb-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+
+  for(let i=1;i<=4;i++){
+    const num=document.getElementById('step-num-'+i);
+    const title=document.getElementById('step-title-'+i);
+    num.className='onb-step-num';
+    title.className='onb-step-title';
+    if(i<n){num.classList.add('done');num.innerHTML='✓';title.classList.add('done');}
+    else if(i===n){num.classList.add('active');num.innerHTML=i;title.classList.add('active');}
+    else{num.innerHTML=i;}
+  }
+}
+
+function selectDomain(el){
+  document.querySelectorAll('.domain-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function updateRoomPreview(){
+  const name=document.getElementById('room-name').value||'Your room name will appear here';
+  const domain=document.getElementById('room-domain').value||'product';
+  document.getElementById('preview-title').textContent=name;
+  document.getElementById('preview-badge').textContent=domain;
+}
+
+function completeOnboarding(){
+  showDashboard();
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleReact(el){
+  el.classList.toggle('reacted');
+}
+
+function openRoomDetail(){
+  document.getElementById('room-detail').classList.add('open');
+}
+
+function closeRoomDetail(e){
+  if(e.target===document.getElementById('room-detail'))
+    document.getElementById('room-detail').classList.remove('open');
+}
+
+function closeRoomDetailBtn(){
+  document.getElementById('room-detail').classList.remove('open');
+}
+
+function postUpdate(){
+  const txt=document.getElementById('new-update-text').value;
+  if(!txt.trim()){
+    document.getElementById('new-update-text').style.borderColor='var(--red)';
+    return;
+  }
+  document.getElementById('new-update-text').value='';
+  alert('Update posted! Your observers have been notified.');
+  closeRoomDetailBtn();
+}
+</script>
+</body>
+</html>
