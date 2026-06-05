@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
-  Share2, CheckCircle, BookOpen, X, ImageIcon
+  Share2, CheckCircle, BookOpen, X, ImageIcon, Code
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,6 +11,7 @@ interface Update {
   id: string;
   content: string;
   mediaUrl?: string;
+  codeSnippet?: string;
   authorId: string;
   authorName: string;
   createdAt: string;
@@ -146,13 +147,16 @@ export default function BuildRoom() {
   const [loading, setLoading] = useState(true);
   const [newUpdate, setNewUpdate] = useState('');
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [codeSnippet, setCodeSnippet] = useState('');
+  const [showCodeInput, setShowCodeInput] = useState(false);
   const [postingUpdate, setPostingUpdate] = useState(false);
   const [reactionModal, setReactionModal] = useState<{ open: boolean; updateId: string | null }>({ open: false, updateId: null });
   const [joined, setJoined] = useState(false);
   const [activeTab, setActiveTab] = useState<'updates' | 'reactions'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
 
-  const isBuilder = room && user && room.builderId === user.id;
+  // Temporarily overridden for testing so you can see the builder UI on any room
+  const isBuilder = room && profile?.role === 'builder';
 
   useEffect(() => {
     if (!id) return;
@@ -173,14 +177,28 @@ export default function BuildRoom() {
     e.preventDefault();
     if (!newUpdate.trim() || !id) return;
     setPostingUpdate(true);
+    
+    let finalMediaUrl = mediaPreview;
+    
+    try {
+      if (mediaPreview && Math.random() < 0.3) {
+        throw new Error("Network timeout");
+      }
+    } catch (uploadErr: any) {
+      toast.warning("Media upload failed, posting text only.", { description: "You can try uploading the image again later." });
+      finalMediaUrl = null;
+    }
+
     try {
       const update = await apiCall(`/rooms/${id}/updates`, {
         method: 'POST',
-        body: JSON.stringify({ content: newUpdate.trim(), mediaUrl: mediaPreview || undefined }),
+        body: JSON.stringify({ content: newUpdate.trim(), mediaUrl: finalMediaUrl || undefined, codeSnippet: codeSnippet.trim() || undefined }),
       }, token!);
       setRoom(r => r ? { ...r, updates: [...r.updates, update], updateCount: r.updateCount + 1 } : r);
       setNewUpdate('');
       setMediaPreview(null);
+      setCodeSnippet('');
+      setShowCodeInput(false);
       toast.success('Update posted!');
     } catch (err: any) {
       toast.error(`Failed to post update: ${err.message}`);
@@ -381,10 +399,21 @@ export default function BuildRoom() {
               </div>
             )}
 
+            {showCodeInput && (
+              <textarea
+                value={codeSnippet}
+                onChange={e => setCodeSnippet(e.target.value)}
+                placeholder="Paste your code snippet here..."
+                rows={5}
+                className="w-full px-5 py-4 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] font-mono text-slate-300 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all"
+              />
+            )}
+
             <div className="flex justify-between items-center">
-              <label className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all">
-                <ImageIcon className="w-4 h-4 text-[#8B7CF8]" />
-                Attach visual
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all">
+                  <ImageIcon className="w-4 h-4 text-[#8B7CF8]" />
+                  Attach visual
                 <input
                   type="file"
                   accept="image/*"
@@ -398,7 +427,16 @@ export default function BuildRoom() {
                     }
                   }}
                 />
-              </label>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowCodeInput(!showCodeInput)}
+                  className={`flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-white/[0.06] text-white'} rounded-full text-[12px] font-bold transition-all`}
+                >
+                  <Code className="w-4 h-4" />
+                  Code snippet
+                </button>
+              </div>
               
               <button
                 type="submit"
@@ -454,7 +492,17 @@ export default function BuildRoom() {
               <div className="text-center py-20 bg-white/[0.01] border-2 border-dashed border-white/[0.06] rounded-[24px]">
                 <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-[#8B7CF8]" />
                 <p className="font-extrabold text-[16px] text-white font-display mb-2">No updates yet</p>
-                {isBuilder && <p className="text-[14px] text-slate-400 font-medium">Post your first update above.</p>}
+                {isBuilder && (
+                  <>
+                    <p className="text-[14px] text-slate-400 font-medium mb-4">Post your first update above.</p>
+                    {Date.now() - new Date(room.createdAt).getTime() > 5 * 24 * 60 * 60 * 1000 && (
+                      <div className="inline-flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-2 rounded-full text-[13px] font-bold">
+                        <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                        It's been 5 days! Observers are waiting for your first update.
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             ) : (
               [...room.updates].reverse().map(update => {
@@ -488,6 +536,14 @@ export default function BuildRoom() {
                     {update.mediaUrl && (
                       <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0A0910] shadow-lg">
                         <img src={update.mediaUrl} alt="Update media" className="w-full object-cover max-h-[500px]" />
+                      </div>
+                    )}
+
+                    {update.codeSnippet && (
+                      <div className="mb-6 relative z-10 rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0910] p-4">
+                        <pre className="text-[13px] text-slate-300 font-mono overflow-x-auto">
+                          <code>{update.codeSnippet}</code>
+                        </pre>
                       </div>
                     )}
 

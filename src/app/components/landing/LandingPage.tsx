@@ -462,8 +462,9 @@ export default function LandingPage() {
                 <path d="M9 6l3-3 3 3" />
               </svg>
             </div>
-            <span className="font-extrabold tracking-[-0.03em] text-base sm:text-xl text-white">
-              patch<span className="text-[#6C5CE7]">·</span>work
+            <span className="flex items-center gap-2 font-extrabold tracking-[-0.03em] text-base sm:text-xl text-white group">
+              <span>patch<span className="inline-block text-[#6C5CE7] group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
+              <span className="rounded bg-[#6C5CE7]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8B7CF8]">Beta</span>
             </span>
           </div>
 
