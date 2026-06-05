@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useAuth, apiCall } from "../auth/AuthContext";
 
 const topics = [
   "Product",
@@ -10,36 +11,26 @@ const topics = [
   "Research",
 ];
 
-const roomSuggestions = [
-  {
-    id: "moniflow-dashboard",
-    title: "MoniFlow BNPL — merchant dashboard",
-    tag: "Product",
-    status: "Live",
-    updates: 12,
-    observers: 8,
-  },
-  {
-    id: "palmpay-attendance",
-    title: "PalmPay promoter app — attendance feature",
-    tag: "Product",
-    status: "Live",
-    updates: 8,
-    observers: 5,
-  },
-  {
-    id: "trust-score-v1",
-    title: "Trust Score algorithm — v1",
-    tag: "Engineering",
-    status: "Paused",
-    updates: 21,
-    observers: 3,
-  },
-];
-
 export default function ObserverOnboarding() {
-  const [selectedTopics, setSelectedTopics] = useState<string[]>(["Product", "Design"]);
-  const [followedRooms, setFollowedRooms] = useState<string[]>(["moniflow-dashboard"]);
+  const { profile, token } = useAuth();
+  const navigate = useNavigate();
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [followedRooms, setFollowedRooms] = useState<string[]>([]);
+  const [roomSuggestions, setRoomSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!profile) {
+      navigate('/login');
+      return;
+    }
+    setSelectedTopics(profile.interests || ['Product', 'Design']);
+  }, [profile, navigate]);
+
+  useEffect(() => {
+    apiCall('/rooms').then((rooms: any) => setRoomSuggestions((rooms || []).slice(0, 6))).catch(() => setRoomSuggestions([]));
+  }, []);
 
   function toggleTopic(topic: string) {
     setSelectedTopics(current =>
@@ -55,6 +46,31 @@ export default function ObserverOnboarding() {
         ? current.filter(id => id !== roomId)
         : [...current, roomId],
     );
+  }
+
+  async function handleStartObserving() {
+    if (!profile || !token) {
+      navigate('/login');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await apiCall(`/users/${profile.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ interests: selectedTopics }),
+      }, token || undefined);
+
+      await Promise.all(
+        followedRooms.map(roomId => apiCall(`/rooms/${roomId}/join`, { method: 'POST' }, token || undefined)),
+      );
+
+      navigate('/dashboard/observer');
+    } catch (err: any) {
+      setError(err.message || 'Unable to save observer preferences.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -109,37 +125,50 @@ export default function ObserverOnboarding() {
               </div>
 
               <div className="space-y-4">
-                {roomSuggestions.map(room => {
-                  const isFollowed = followedRooms.includes(room.id);
-                  return (
-                    <div key={room.id} className="rounded-3xl border border-white/[0.06] bg-[#0F0C17] p-5">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <div className="text-[13px] uppercase tracking-[0.25em] text-slate-500">{room.tag}</div>
-                          <h2 className="mt-2 text-xl font-extrabold text-white">{room.title}</h2>
-                          <div className="mt-2 text-sm text-slate-400">{room.status} · {room.updates} updates · {room.observers} observers</div>
+                {roomSuggestions.length > 0 ? (
+                  roomSuggestions.map(room => {
+                    const isFollowed = followedRooms.includes(room.id);
+                    return (
+                      <button
+                        key={room.id}
+                        type="button"
+                        onClick={() => toggleFollow(room.id)}
+                        className={`w-full rounded-3xl border px-5 py-4 text-left transition ${isFollowed ? 'border-[#8B7CF8] bg-[#8B7CF8]/10 text-white' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:bg-white/[0.05]'}`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <div className="text-[13px] uppercase tracking-[0.2em] text-slate-500">{room.tags?.[0] || 'Product'}</div>
+                            <h2 className="mt-2 text-lg font-semibold text-white">{room.title}</h2>
+                            <p className="text-sm text-slate-400 mt-1">{room.observerCount} observers · {room.updateCount} updates</p>
+                          </div>
+                          <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-[#0A0910]' : 'bg-[#6C5CE7] text-white'}`}>
+                            {isFollowed ? 'Following' : 'Follow'}
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => toggleFollow(room.id)}
-                          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${isFollowed ? 'bg-white text-slate-950' : 'bg-[#6C5CE7] text-white hover:bg-[#5b4ed6]'}`}
-                        >
-                          {isFollowed ? 'Following' : 'Follow'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-3xl border border-white/[0.08] bg-[#0F0C17] p-6 text-slate-400">Loading rooms...</div>
+                )}
               </div>
             </div>
 
+            {error && (
+              <div className="rounded-3xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
+                {error}
+              </div>
+            )}
+
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                to="/dashboard/observer"
+              <button
+                type="button"
+                onClick={handleStartObserving}
+                disabled={loading || selectedTopics.length === 0}
                 className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition ${selectedTopics.length > 0 ? 'bg-[#6C5CE7] text-white hover:bg-[#5b4ed6]' : 'bg-white/[0.06] text-slate-400 cursor-not-allowed'}`}
               >
-                Start observing
-              </Link>
+                {loading ? 'Saving preferences...' : 'Start observing'}
+              </button>
               <p className="text-sm text-slate-500">You can update these preferences later from your observer feed.</p>
             </div>
           </div>

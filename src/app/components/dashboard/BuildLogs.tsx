@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp } from "lucide-react";
+
+const ACTIVE_ROOM_ID = "moniflow-bnpl";
 
 function Sparkline({ data, color }: { data: number[], color: string }) {
   const min = Math.min(...data);
@@ -135,12 +138,12 @@ export default function BuildLogs() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row relative">
-            <button className="inline-flex w-full sm:w-auto items-center gap-2 justify-center px-5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 rounded-full text-[13px] sm:text-[14px] font-bold cursor-pointer transition-all shadow-[0_4px_14px_rgba(245,158,11,0.1)]">
+            <Link to={`/dashboard/room/${ACTIVE_ROOM_ID}?action=post`} className="inline-flex w-full sm:w-auto items-center gap-2 justify-center px-5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 rounded-full text-[13px] sm:text-[14px] font-bold transition-all shadow-[0_4px_14px_rgba(245,158,11,0.1)]">
               <Edit3 size={16} /> Post quick update
-            </button>
-            <button className="inline-flex w-full sm:w-auto items-center gap-2 justify-center px-5 py-2.5 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[13px] sm:text-[14px] font-bold cursor-pointer transition-all">
+            </Link>
+            <Link to={`/dashboard/room/${ACTIVE_ROOM_ID}`} className="inline-flex w-full sm:w-auto items-center gap-2 justify-center px-5 py-2.5 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[13px] sm:text-[14px] font-bold transition-all">
               <ArrowUpRight size={16} /> Open room
-            </button>
+            </Link>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
@@ -141,6 +141,7 @@ function ReactionModal({
 
 export default function BuildRoom() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const { user, profile, token } = useAuth();
   const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
@@ -154,6 +155,8 @@ export default function BuildRoom() {
   const [joined, setJoined] = useState(false);
   const [activeTab, setActiveTab] = useState<'updates' | 'reactions'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
+  const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const quickUpdateMode = searchParams.get('action') === 'post';
 
   // Temporarily overridden for testing so you can see the builder UI on any room
   const isBuilder = room && profile?.role === 'builder';
@@ -172,6 +175,12 @@ export default function BuildRoom() {
     }
     load();
   }, [id, token]);
+
+  useEffect(() => {
+    if (quickUpdateMode && room && updateTextAreaRef.current && profile?.role === 'builder') {
+      updateTextAreaRef.current.focus();
+    }
+  }, [quickUpdateMode, room, profile]);
 
   async function handlePostUpdate(e: React.FormEvent) {
     e.preventDefault();
@@ -376,6 +385,7 @@ export default function BuildRoom() {
               <span className="text-[14px] font-extrabold text-white font-display">Post an update</span>
             </div>
             <textarea
+              ref={updateTextAreaRef}
               value={newUpdate}
               onChange={e => setNewUpdate(e.target.value)}
               placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."

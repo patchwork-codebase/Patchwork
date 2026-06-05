@@ -2,7 +2,6 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import { createClient } from "npm:@supabase/supabase-js";
-import * as kv from "./kv_store.tsx";
 
 const app = new Hono();
 
@@ -14,6 +13,7 @@ app.use("/*", cors({
   exposeHeaders: ["Content-Length"],
   maxAge: 600,
 }));
+app.options("/*", (c) => c.text('', 204));
 
 function getSupabaseAdmin() {
   return createClient(
@@ -47,41 +47,135 @@ function nanoid(len = 12) {
   return id;
 }
 
+function normalizeProfile(profile: any) {
+  if (!profile) return null;
+  return {
+    id: profile.id,
+    email: profile.email,
+    name: profile.name,
+    role: profile.role,
+    reputation: profile.reputation,
+    bio: profile.bio,
+    avatar: profile.avatar,
+    interests: profile.interests || [],
+    createdAt: profile.created_at,
+    updatedAt: profile.updated_at,
+  };
+}
+
+function normalizeRoom(room: any) {
+  if (!room) return null;
+  return {
+    id: room.id,
+    builderId: room.builder_id,
+    builderName: room.builder_name,
+    title: room.title,
+    description: room.description,
+    tags: room.tags || [],
+    status: room.status,
+    updateCount: room.update_count,
+    observerCount: room.observer_count,
+    lastUpdate: room.last_update,
+    createdAt: room.created_at,
+    updatedAt: room.updated_at,
+  };
+}
+
+function normalizeUpdate(update: any) {
+  if (!update) return null;
+  return {
+    id: update.id,
+    roomId: update.room_id,
+    authorId: update.author_id,
+    authorName: update.author_name,
+    content: update.content,
+    mediaUrl: update.media_url,
+    createdAt: update.created_at,
+  };
+}
+
+function normalizeReaction(reaction: any) {
+  if (!reaction) return null;
+  return {
+    id: reaction.id,
+    roomId: reaction.room_id,
+    updateId: reaction.update_id,
+    observerId: reaction.observer_id,
+    observerName: reaction.observer_name,
+    type: reaction.type,
+    text: reaction.text,
+    createdAt: reaction.created_at,
+  };
+}
+
 // ── Health ────────────────────────────────────────────────────────────────
 app.get("/make-server-30db7d9e/health", (c) => c.json({ status: "ok" }));
 
 // ── Auth: Signup ──────────────────────────────────────────────────────────
 app.post("/make-server-30db7d9e/auth/signup", async (c) => {
   try {
-    const { email, password, name, role } = await c.req.json();
+    const { email, password, name, role, city, domain } = await c.req.json();
     if (!email || !password || !name) {
       return c.json({ error: "email, password, and name are required" }, 400);
     }
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase.auth.admin.createUser({
+
+    const admin = getSupabaseAdmin();
+
+    // Create auth user with email auto-confirmed
+    // The DB trigger (handle_new_user) automatically creates the public.users row
+    const { data, error } = await admin.auth.admin.createUser({
       email,
       password,
-      user_metadata: { name, role: role || 'observer' },
+      user_metadata: { name, role: role || 'builder', city: city || '', domain: domain || '' },
       email_confirm: true,
     });
-    if (error) return c.json({ error: `Signup error: ${error.message}` }, 400);
+    if (error || !data.user) {
+      return c.json({ error: `Signup error: ${error?.message || 'Unable to create user'}` }, 400);
+    }
 
-    const profile = {
-      id: data.user.id,
-      name,
-      email,
-      role: role || 'observer',
-      reputation: 0,
-      bio: '',
-      avatar: '',
-      createdAt: new Date().toISOString(),
-    };
-    await kv.set(`user:${data.user.id}`, JSON.stringify(profile));
-
-    return c.json({ user: data.user, profile });
+    // Return immediately — no extra DB insert needed, trigger handles it
+    return c.json({
+      user: data.user,
+      profile: {
+        id: data.user.id,
+        email,
+        name,
+        role: role || 'builder',
+        reputation: 0,
+        bio: '',
+        avatar: '',
+        interests: [],
+        city: city || '',
+        domain: domain || '',
+        createdAt: data.user.created_at,
+      }
+    });
   } catch (err) {
     console.log('Signup error:', err);
     return c.json({ error: `Signup failed: ${err}` }, 500);
+  }
+});
+
+// ── Auth: Login ───────────────────────────────────────────────────────────
+app.post("/make-server-30db7d9e/auth/login", async (c) => {
+  try {
+    const { email, password } = await c.req.json();
+    if (!email || !password) {
+      return c.json({ error: "email and password are required" }, 400);
+    }
+
+    const client = getSupabaseClient();
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error || !data.user) return c.json({ error: `Login error: ${error?.message || 'Unable to sign in'}` }, 400);
+
+    const admin = getSupabaseAdmin();
+    const { data: profileData, error: profileError } = await admin.from('users').select('*').eq('id', data.user.id).maybeSingle();
+    if (profileError) return c.json({ error: `Profile fetch failed: ${profileError.message}` }, 500);
+
+    return c.json({ user: data.user, session: data.session, profile: normalizeProfile(profileData) });
+  } catch (err) {
+    console.log('Login error:', err);
+    return c.json({ error: `Login failed: ${err}` }, 500);
   }
 });
 
@@ -89,9 +183,11 @@ app.post("/make-server-30db7d9e/auth/signup", async (c) => {
 app.get("/make-server-30db7d9e/users/:id", async (c) => {
   try {
     const { id } = c.req.param();
-    const raw = await kv.get(`user:${id}`);
-    if (!raw) return c.json({ error: "User not found" }, 404);
-    return c.json(JSON.parse(raw));
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin.from('users').select('*').eq('id', id).maybeSingle();
+    if (error) return c.json({ error: `Get user failed: ${error.message}` }, 500);
+    if (!data) return c.json({ error: "User not found" }, 404);
+    return c.json(normalizeProfile(data));
   } catch (err) {
     return c.json({ error: `Get user failed: ${err}` }, 500);
   }
@@ -105,16 +201,17 @@ app.put("/make-server-30db7d9e/users/:id", async (c) => {
     const { id } = c.req.param();
     if (user.id !== id) return c.json({ error: "Forbidden" }, 403);
 
-    const raw = await kv.get(`user:${id}`);
-    if (!raw) return c.json({ error: "User not found" }, 404);
-    const profile = JSON.parse(raw);
     const updates = await c.req.json();
-    const allowed = ['name', 'bio', 'avatar', 'role'];
+    const allowed = ['name', 'bio', 'avatar', 'role', 'interests', 'domain', 'building_desc', 'feed_focus', 'city', 'signup_completed_at', 'onboarding_call_scheduled'];
+    const payload: Record<string, any> = { updated_at: new Date().toISOString() };
     for (const key of allowed) {
-      if (updates[key] !== undefined) profile[key] = updates[key];
+      if (updates[key] !== undefined) payload[key] = updates[key];
     }
-    await kv.set(`user:${id}`, JSON.stringify(profile));
-    return c.json(profile);
+
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin.from('users').update(payload).eq('id', id).select().single();
+    if (error) return c.json({ error: `Update user failed: ${error.message}` }, 500);
+    return c.json(normalizeProfile(data));
   } catch (err) {
     return c.json({ error: `Update user failed: ${err}` }, 500);
   }
@@ -123,15 +220,10 @@ app.put("/make-server-30db7d9e/users/:id", async (c) => {
 // ── Rooms: List ───────────────────────────────────────────────────────────
 app.get("/make-server-30db7d9e/rooms", async (c) => {
   try {
-    const rawIds = await kv.get('rooms:all');
-    const ids: string[] = rawIds ? JSON.parse(rawIds) : [];
-    if (ids.length === 0) return c.json([]);
-    const roomRaws = await kv.mget(ids.map(id => `room:${id}`));
-    const rooms = roomRaws
-      .filter((r): r is string => r !== null && r !== undefined)
-      .map(r => JSON.parse(r));
-    rooms.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    return c.json(rooms);
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin.from('rooms').select('*').order('updated_at', { ascending: false });
+    if (error) return c.json({ error: `List rooms failed: ${error.message}` }, 500);
+    return c.json((data || []).map(normalizeRoom));
   } catch (err) {
     return c.json({ error: `List rooms failed: ${err}` }, 500);
   }
@@ -149,30 +241,23 @@ app.post("/make-server-30db7d9e/rooms", async (c) => {
     const now = new Date().toISOString();
     const room = {
       id,
+      builder_id: user.id,
+      builder_name: user.user_metadata?.name || 'Anonymous',
       title,
       description: description || '',
       tags: tags || [],
-      builderId: user.id,
-      builderName: user.user_metadata?.name || 'Anonymous',
       status: 'active',
-      updateCount: 0,
-      observerCount: 0,
-      createdAt: now,
-      updatedAt: now,
+      update_count: 0,
+      observer_count: 0,
+      last_update: '',
+      created_at: now,
+      updated_at: now,
     };
-    await kv.set(`room:${id}`, JSON.stringify(room));
 
-    const rawIds = await kv.get('rooms:all');
-    const ids: string[] = rawIds ? JSON.parse(rawIds) : [];
-    ids.unshift(id);
-    await kv.set('rooms:all', JSON.stringify(ids));
-
-    const rawUserRooms = await kv.get(`user:${user.id}:rooms`);
-    const userRooms: string[] = rawUserRooms ? JSON.parse(rawUserRooms) : [];
-    userRooms.unshift(id);
-    await kv.set(`user:${user.id}:rooms`, JSON.stringify(userRooms));
-
-    return c.json(room, 201);
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin.from('rooms').insert(room).single();
+    if (error) return c.json({ error: `Create room failed: ${error.message}` }, 500);
+    return c.json(normalizeRoom(data), 201);
   } catch (err) {
     return c.json({ error: `Create room failed: ${err}` }, 500);
   }
@@ -182,17 +267,22 @@ app.post("/make-server-30db7d9e/rooms", async (c) => {
 app.get("/make-server-30db7d9e/rooms/:id", async (c) => {
   try {
     const { id } = c.req.param();
-    const raw = await kv.get(`room:${id}`);
-    if (!raw) return c.json({ error: "Room not found" }, 404);
-    const room = JSON.parse(raw);
+    const admin = getSupabaseAdmin();
+    const { data: room, error: roomError } = await admin.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (roomError) return c.json({ error: `Get room failed: ${roomError.message}` }, 500);
+    if (!room) return c.json({ error: "Room not found" }, 404);
 
-    const updatesRaw = await kv.get(`room:${id}:updates`);
-    const updates: any[] = updatesRaw ? JSON.parse(updatesRaw) : [];
+    const { data: updates, error: updatesError } = await admin.from('updates').select('*').eq('room_id', id).order('created_at', { ascending: false });
+    if (updatesError) return c.json({ error: `Get room updates failed: ${updatesError.message}` }, 500);
 
-    const reactionsRaw = await kv.get(`room:${id}:reactions`);
-    const reactions: any[] = reactionsRaw ? JSON.parse(reactionsRaw) : [];
+    const { data: reactions, error: reactionsError } = await admin.from('reactions').select('*').eq('room_id', id).order('created_at', { ascending: false });
+    if (reactionsError) return c.json({ error: `Get room reactions failed: ${reactionsError.message}` }, 500);
 
-    return c.json({ ...room, updates, reactions });
+    return c.json({
+      ...normalizeRoom(room),
+      updates: (updates || []).map(normalizeUpdate),
+      reactions: (reactions || []).map(normalizeReaction),
+    });
   } catch (err) {
     return c.json({ error: `Get room failed: ${err}` }, 500);
   }
@@ -204,19 +294,23 @@ app.put("/make-server-30db7d9e/rooms/:id", async (c) => {
     const user = await getAuthUser(c);
     if (!user) return c.json({ error: "Unauthorized" }, 401);
     const { id } = c.req.param();
-    const raw = await kv.get(`room:${id}`);
-    if (!raw) return c.json({ error: "Room not found" }, 404);
-    const room = JSON.parse(raw);
-    if (room.builderId !== user.id) return c.json({ error: "Forbidden" }, 403);
+    const admin = getSupabaseAdmin();
+
+    const { data: room, error: roomError } = await admin.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (roomError) return c.json({ error: `Update room failed: ${roomError.message}` }, 500);
+    if (!room) return c.json({ error: "Room not found" }, 404);
+    if (room.builder_id !== user.id) return c.json({ error: "Forbidden" }, 403);
 
     const updates = await c.req.json();
     const allowed = ['status', 'title', 'description', 'tags'];
+    const payload: Record<string, any> = { updated_at: new Date().toISOString() };
     for (const key of allowed) {
-      if (updates[key] !== undefined) room[key] = updates[key];
+      if (updates[key] !== undefined) payload[key] = updates[key];
     }
-    room.updatedAt = new Date().toISOString();
-    await kv.set(`room:${id}`, JSON.stringify(room));
-    return c.json(room);
+
+    const { data, error } = await admin.from('rooms').update(payload).eq('id', id).single();
+    if (error) return c.json({ error: `Update room failed: ${error.message}` }, 500);
+    return c.json(normalizeRoom(data));
   } catch (err) {
     return c.json({ error: `Update room failed: ${err}` }, 500);
   }
@@ -228,29 +322,35 @@ app.post("/make-server-30db7d9e/rooms/:id/updates", async (c) => {
     const user = await getAuthUser(c);
     if (!user) return c.json({ error: "Unauthorized" }, 401);
     const { id } = c.req.param();
-    const raw = await kv.get(`room:${id}`);
-    if (!raw) return c.json({ error: "Room not found" }, 404);
-    const room = JSON.parse(raw);
-    if (room.builderId !== user.id) return c.json({ error: "Only the builder can post updates" }, 403);
-
     const { content, mediaUrl } = await c.req.json();
     if (!content) return c.json({ error: "content is required" }, 400);
 
-    const updateId = nanoid();
-    const now = new Date().toISOString();
-    const update = { id: updateId, content, mediaUrl: mediaUrl || null, authorId: user.id, authorName: user.user_metadata?.name || 'Builder', createdAt: now };
+    const admin = getSupabaseAdmin();
+    const { data: room, error: roomError } = await admin.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (roomError) return c.json({ error: `Post update failed: ${roomError.message}` }, 500);
+    if (!room) return c.json({ error: "Room not found" }, 404);
+    if (room.builder_id !== user.id) return c.json({ error: "Only the builder can post updates" }, 403);
 
-    const updatesRaw = await kv.get(`room:${id}:updates`);
-    const updates: any[] = updatesRaw ? JSON.parse(updatesRaw) : [];
-    updates.push(update);
-    await kv.set(`room:${id}:updates`, JSON.stringify(updates));
+    const update = {
+      id: nanoid(),
+      room_id: id,
+      author_id: user.id,
+      author_name: user.user_metadata?.name || 'Builder',
+      content,
+      media_url: mediaUrl || null,
+      created_at: new Date().toISOString(),
+    };
 
-    room.updateCount = updates.length;
-    room.updatedAt = now;
-    room.lastUpdate = content.slice(0, 120);
-    await kv.set(`room:${id}`, JSON.stringify(room));
+    const { data: inserted, error: insertError } = await admin.from('updates').insert(update).single();
+    if (insertError) return c.json({ error: `Post update failed: ${insertError.message}` }, 500);
 
-    return c.json(update, 201);
+    await admin.from('rooms').update({
+      update_count: room.update_count + 1,
+      last_update: content.slice(0, 120),
+      updated_at: new Date().toISOString(),
+    }).eq('id', id);
+
+    return c.json(normalizeUpdate(inserted), 201);
   } catch (err) {
     return c.json({ error: `Post update failed: ${err}` }, 500);
   }
@@ -262,40 +362,45 @@ app.post("/make-server-30db7d9e/rooms/:id/reactions", async (c) => {
     const user = await getAuthUser(c);
     if (!user) return c.json({ error: "Unauthorized" }, 401);
     const { id } = c.req.param();
-    const raw = await kv.get(`room:${id}`);
-    if (!raw) return c.json({ error: "Room not found" }, 404);
-
     const { type, text, updateId } = await c.req.json();
     const validTypes = ['sharp', 'pushback', 'tellmemore'];
     if (!validTypes.includes(type)) return c.json({ error: "Invalid reaction type" }, 400);
     if (!text) return c.json({ error: "text is required" }, 400);
 
-    const reactionId = nanoid();
-    const now = new Date().toISOString();
-    const reaction = {
-      id: reactionId, type, text, updateId: updateId || null,
-      observerId: user.id, observerName: user.user_metadata?.name || 'Observer',
-      createdAt: now,
-    };
+    const admin = getSupabaseAdmin();
+    const { data: room, error: roomError } = await admin.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (roomError) return c.json({ error: `Add reaction failed: ${roomError.message}` }, 500);
+    if (!room) return c.json({ error: "Room not found" }, 404);
 
-    const reactionsRaw = await kv.get(`room:${id}:reactions`);
-    const reactions: any[] = reactionsRaw ? JSON.parse(reactionsRaw) : [];
-    reactions.push(reaction);
-    await kv.set(`room:${id}:reactions`, JSON.stringify(reactions));
-
-    const room = JSON.parse(raw);
-    room.updatedAt = now;
-    await kv.set(`room:${id}`, JSON.stringify(room));
-
-    // Bump reputation for observer
-    const userRaw = await kv.get(`user:${user.id}`);
-    if (userRaw) {
-      const profile = JSON.parse(userRaw);
-      profile.reputation = (profile.reputation || 0) + 1;
-      await kv.set(`user:${user.id}`, JSON.stringify(profile));
+    if (updateId) {
+      const { data: updateRow, error: updateError } = await admin.from('updates').select('id').eq('id', updateId).maybeSingle();
+      if (updateError) return c.json({ error: `Invalid update reference: ${updateError.message}` }, 500);
+      if (!updateRow) return c.json({ error: "Update not found" }, 404);
     }
 
-    return c.json(reaction, 201);
+    const reaction = {
+      id: nanoid(),
+      room_id: id,
+      update_id: updateId || null,
+      observer_id: user.id,
+      observer_name: user.user_metadata?.name || 'Observer',
+      type,
+      text,
+      created_at: new Date().toISOString(),
+    };
+
+    const { data: inserted, error: insertError } = await admin.from('reactions').insert(reaction).single();
+    if (insertError) return c.json({ error: `Add reaction failed: ${insertError.message}` }, 500);
+
+    await admin.from('rooms').update({ updated_at: new Date().toISOString() }).eq('id', id);
+
+    const { data: profileData, error: profileError } = await admin.from('profiles').select('reputation').eq('id', user.id).maybeSingle();
+    if (!profileError && profileData) {
+      const newReputation = (profileData.reputation || 0) + 1;
+      await admin.from('profiles').update({ reputation: newReputation }).eq('id', user.id);
+    }
+
+    return c.json(normalizeReaction(inserted), 201);
   } catch (err) {
     return c.json({ error: `Add reaction failed: ${err}` }, 500);
   }
@@ -307,28 +412,21 @@ app.post("/make-server-30db7d9e/rooms/:id/join", async (c) => {
     const user = await getAuthUser(c);
     if (!user) return c.json({ error: "Unauthorized" }, 401);
     const { id } = c.req.param();
-    const raw = await kv.get(`room:${id}`);
-    if (!raw) return c.json({ error: "Room not found" }, 404);
 
-    const observersRaw = await kv.get(`room:${id}:observers`);
-    const observers: string[] = observersRaw ? JSON.parse(observersRaw) : [];
-    if (!observers.includes(user.id)) {
-      observers.push(user.id);
-      await kv.set(`room:${id}:observers`, JSON.stringify(observers));
+    const admin = getSupabaseAdmin();
+    const { data: room, error: roomError } = await admin.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (roomError) return c.json({ error: `Join room failed: ${roomError.message}` }, 500);
+    if (!room) return c.json({ error: "Room not found" }, 404);
 
-      const room = JSON.parse(raw);
-      room.observerCount = observers.length;
-      room.updatedAt = new Date().toISOString();
-      await kv.set(`room:${id}`, JSON.stringify(room));
+    const { error: upsertError } = await admin.from('room_observers').upsert({ room_id: id, observer_id: user.id }, { onConflict: ['room_id', 'observer_id'] });
+    if (upsertError) return c.json({ error: `Join room failed: ${upsertError.message}` }, 500);
 
-      const userObservingRaw = await kv.get(`user:${user.id}:observing`);
-      const userObserving: string[] = userObservingRaw ? JSON.parse(userObservingRaw) : [];
-      if (!userObserving.includes(id)) {
-        userObserving.unshift(id);
-        await kv.set(`user:${user.id}:observing`, JSON.stringify(userObserving));
-      }
-    }
-    return c.json({ joined: true, observerCount: observers.length });
+    const { count, error: countError } = await admin.from('room_observers').select('*', { count: 'exact', head: true }).eq('room_id', id);
+    if (countError) return c.json({ error: `Join room failed: ${countError.message}` }, 500);
+
+    await admin.from('rooms').update({ observer_count: count, updated_at: new Date().toISOString() }).eq('id', id);
+
+    return c.json({ joined: true, observerCount: count });
   } catch (err) {
     return c.json({ error: `Join room failed: ${err}` }, 500);
   }
@@ -338,20 +436,26 @@ app.post("/make-server-30db7d9e/rooms/:id/join", async (c) => {
 app.get("/make-server-30db7d9e/log/:id", async (c) => {
   try {
     const { id } = c.req.param();
-    const raw = await kv.get(`room:${id}`);
-    if (!raw) return c.json({ error: "Room not found" }, 404);
-    const room = JSON.parse(raw);
+    const admin = getSupabaseAdmin();
+    const { data: room, error: roomError } = await admin.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (roomError) return c.json({ error: `Get log failed: ${roomError.message}` }, 500);
+    if (!room) return c.json({ error: "Room not found" }, 404);
 
-    const updatesRaw = await kv.get(`room:${id}:updates`);
-    const updates: any[] = updatesRaw ? JSON.parse(updatesRaw) : [];
+    const { data: updates, error: updatesError } = await admin.from('updates').select('*').eq('room_id', id).order('created_at', { ascending: false });
+    if (updatesError) return c.json({ error: `Get log failed: ${updatesError.message}` }, 500);
 
-    const reactionsRaw = await kv.get(`room:${id}:reactions`);
-    const reactions: any[] = reactionsRaw ? JSON.parse(reactionsRaw) : [];
+    const { data: reactions, error: reactionsError } = await admin.from('reactions').select('*').eq('room_id', id).order('created_at', { ascending: false });
+    if (reactionsError) return c.json({ error: `Get log failed: ${reactionsError.message}` }, 500);
 
-    const builderRaw = await kv.get(`user:${room.builderId}`);
-    const builder = builderRaw ? JSON.parse(builderRaw) : null;
+    const { data: builder, error: builderError } = await admin.from('profiles').select('*').eq('id', room.builder_id).maybeSingle();
+    if (builderError) return c.json({ error: `Get log failed: ${builderError.message}` }, 500);
 
-    return c.json({ room, updates, reactions, builder });
+    return c.json({
+      room: normalizeRoom(room),
+      updates: (updates || []).map(normalizeUpdate),
+      reactions: (reactions || []).map(normalizeReaction),
+      builder: normalizeProfile(builder),
+    });
   } catch (err) {
     return c.json({ error: `Get log failed: ${err}` }, 500);
   }
@@ -361,12 +465,10 @@ app.get("/make-server-30db7d9e/log/:id", async (c) => {
 app.get("/make-server-30db7d9e/users/:id/rooms", async (c) => {
   try {
     const { id } = c.req.param();
-    const rawIds = await kv.get(`user:${id}:rooms`);
-    const ids: string[] = rawIds ? JSON.parse(rawIds) : [];
-    if (ids.length === 0) return c.json([]);
-    const roomRaws = await kv.mget(ids.map(rid => `room:${rid}`));
-    const rooms = roomRaws.filter((r): r is string => r !== null && r !== undefined).map(r => JSON.parse(r));
-    return c.json(rooms);
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin.from('rooms').select('*').eq('builder_id', id).order('updated_at', { ascending: false });
+    if (error) return c.json({ error: `Get user rooms failed: ${error.message}` }, 500);
+    return c.json((data || []).map(normalizeRoom));
   } catch (err) {
     return c.json({ error: `Get user rooms failed: ${err}` }, 500);
   }
@@ -376,12 +478,15 @@ app.get("/make-server-30db7d9e/users/:id/rooms", async (c) => {
 app.get("/make-server-30db7d9e/users/:id/observing", async (c) => {
   try {
     const { id } = c.req.param();
-    const rawIds = await kv.get(`user:${id}:observing`);
-    const ids: string[] = rawIds ? JSON.parse(rawIds) : [];
-    if (ids.length === 0) return c.json([]);
-    const roomRaws = await kv.mget(ids.map(rid => `room:${rid}`));
-    const rooms = roomRaws.filter((r): r is string => r !== null && r !== undefined).map(r => JSON.parse(r));
-    return c.json(rooms);
+    const admin = getSupabaseAdmin();
+    const { data: observerRows, error: observerError } = await admin.from('room_observers').select('room_id').eq('observer_id', id);
+    if (observerError) return c.json({ error: `Get user observing failed: ${observerError.message}` }, 500);
+    const roomIds = observerRows?.map((row: any) => row.room_id) || [];
+    if (roomIds.length === 0) return c.json([]);
+
+    const { data: rooms, error: roomsError } = await admin.from('rooms').select('*').in('id', roomIds).order('updated_at', { ascending: false });
+    if (roomsError) return c.json({ error: `Get user observing failed: ${roomsError.message}` }, 500);
+    return c.json((rooms || []).map(normalizeRoom));
   } catch (err) {
     return c.json({ error: `Get user observing failed: ${err}` }, 500);
   }
