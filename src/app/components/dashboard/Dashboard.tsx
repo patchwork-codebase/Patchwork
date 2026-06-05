@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { useAuth, apiCall } from "../auth/AuthContext";
+import { useAuth, apiCall, supabase } from "../auth/AuthContext";
+import { projectId } from "/utils/supabase/info";
 import { motion, AnimatePresence } from "motion/react";
 import { SocialActionRow } from "../ui/social-actions";
 import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
+import { OnboardingChecklist } from "./OnboardingChecklist";
 
 
 /* ─────────────────────────────────────────────────────── types */
@@ -230,10 +233,28 @@ export default function Dashboard() {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [expandedComments, setExpandedComments] = useState<number[]>([]);
+  const [isResending, setIsResending] = useState(false);
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
   const isBuilder = profile?.role === 'builder';
-  const firstName = profile?.name === 'Developer' ? 'Akin' : (profile?.name?.split(' ')[0] || 'Akin');
+  const firstName = profile?.name?.split(' ')[0] || 'Akin';
+  const lastName = profile?.name?.split(' ').slice(1).join(' ') || '';
+  const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
+  const handle = `@${firstName.toLowerCase()}`;
+  const joinDate = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
+
+  // Helper to get domain badge color
+  function getDomainStyle(domain?: string) {
+    switch (domain?.toLowerCase()) {
+      case 'design': return { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' };
+      case 'engineering': return { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' };
+      case 'growth': return { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' };
+      case 'writing': return { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-500/20' };
+      case 'research': return { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' };
+      default: return { bg: 'bg-[#6C5CE7]/10', text: 'text-[#8B7CF8]', border: 'border-[#6C5CE7]/20' };
+    }
+  }
+  const domainStyle = getDomainStyle(profile?.domain);
 
   useEffect(() => {
     async function load() {
@@ -311,6 +332,31 @@ export default function Dashboard() {
     setReplyText("");
   };
 
+  const handleResendVerification = async () => {
+    if (isResending) return;
+    setIsResending(true);
+    try {
+      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/send-verification-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user?.id,
+          email: profile?.email || user?.email || '',
+          name: profile?.name || ''
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to resend email');
+      toast.success("Verification email resent! Check your inbox.");
+    } catch (err: any) {
+      let errorMessage = "Failed to resend verification email";
+      toast.error(errorMessage);
+    } finally {
+      // Add a 60 second cooldown
+      setTimeout(() => setIsResending(false), 60000);
+    }
+  };
+
   const handleShare = (id: number) => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard!");
@@ -323,15 +369,66 @@ export default function Dashboard() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full max-w-[1180px] mx-auto px-5 sm:px-6 py-8"
     >
+      {/* Email Verification Banner */}
+      {!profile?.emailVerified && (
+        <div className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-[16px] p-4 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-[14px] font-bold text-amber-100">Verify your email address</h3>
+            <p className="text-[13px] text-amber-200/70 mt-1">We sent a verification link to your email. Please verify to unlock all features.</p>
+          </div>
+          <button 
+            onClick={handleResendVerification}
+            disabled={isResending}
+            className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/20 rounded-full text-[12px] font-bold text-amber-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isResending ? "Resending..." : "Resend"}
+          </button>
+        </div>
+      )}
 
-      {/* ── HEADER GREETING ─────────────────── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="font-bold text-2xl sm:text-[28px] text-white leading-tight tracking-tight m-0 flex flex-wrap items-center gap-2">
-            Good morning, <span className="text-[#8B7CF8]">{firstName}</span> 👋
-          </h1>
-          <div className="text-[13px] text-slate-400 mt-2 font-medium">
-            {formatDate()} · Lagos, NG
+      {/* Onboarding Checklist — shown until all steps complete and signup_completed_at is set */}
+      {user && profile && !profile.signup_completed_at && (
+        <OnboardingChecklist
+          role={(profile.role as 'builder' | 'observer') || 'builder'}
+          userId={user.id}
+        />
+      )}
+
+      {/* ── HEADER ─────────────────── */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white font-extrabold text-xl shadow-[0_0_20px_rgba(108,92,231,0.3)]">
+            {initials}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-bold text-2xl sm:text-[28px] text-white leading-tight tracking-tight m-0">
+                {profile?.name || firstName}
+              </h1>
+              {profile?.domain && (
+                <span className={`px-2.5 py-1 rounded-full border ${domainStyle.border} ${domainStyle.bg} ${domainStyle.text} text-[11px] font-mono font-bold uppercase`}>
+                  {profile.domain}
+                </span>
+              )}
+              <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[11px] font-mono font-bold uppercase">
+                Free
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-2 text-[13px] text-slate-400 font-medium">
+              <span>{handle}</span>
+              {profile?.city && (
+                <>
+                  <span className="text-slate-600">·</span>
+                  <span>{profile.city}</span>
+                </>
+              )}
+              <span className="text-slate-600">·</span>
+              <span>Joined {joinDate}</span>
+            </div>
           </div>
         </div>
 
@@ -343,56 +440,82 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* ── STATS STRIP ─────────────────────── */}
-      <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 mb-4 sm:grid sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 sm:pb-0 sm:mb-8">
-        {[
-          {
-            label: 'active rooms',
-            value: activeRoomsCount,
-            delta: '↑ 1 this week',
-            deltaColor: 'text-emerald-400',
-            numColor: 'text-[#8B7CF8]',
-          },
-          {
-            label: 'total reactions',
-            value: totalReactions,
-            delta: '↑ 12 today',
-            deltaColor: 'text-amber-400',
-            numColor: 'text-white',
-          },
-          {
-            label: 'observers',
-            value: totalObservers,
-            delta: '↑ 5 new',
-            deltaColor: 'text-emerald-400',
-            numColor: 'text-white',
-          },
-          {
-            label: 'build logs',
-            value: 1,
-            delta: '1 completed',
-            deltaColor: 'text-slate-400',
-            numColor: 'text-white',
-          },
-        ].map((s, i) => (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-            key={s.label} 
-            className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-5 flex min-h-[140px] flex-col justify-between group hover:bg-white/[0.03] transition-colors cursor-default min-w-[150px] shrink-0 snap-center sm:min-w-0"
-          >
-            <div className={`font-bold text-[32px] sm:text-[36px] tracking-tight leading-none ${s.numColor}`}>
-              {s.value}
+      {/* ── PROFILE CARD & STATS ─────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
+        {/* Profile Card */}
+        <div className="xl:col-span-2 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white font-bold text-lg">
+              {initials}
             </div>
-            <div className="text-[13px] text-slate-400 lowercase mt-3 font-mono font-medium">
-              {s.label}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-white text-[16px] truncate">{profile?.name}</h3>
+              <p className="text-[13px] text-slate-400 mt-0.5">{handle}</p>
             </div>
-            <div className={`text-[12px] font-bold mt-3 ${s.deltaColor}`}>
-              {s.delta}
+          </div>
+          <div className="mt-4 pt-4 border-t border-white/[0.05] grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Reputation</p>
+              <p className="text-[20px] font-bold text-[#8B7CF8] mt-1">{profile?.reputation || 0}</p>
             </div>
-          </motion.div>
-        ))}
+            <div>
+              <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Member since</p>
+              <p className="text-[16px] font-semibold text-white mt-1">{joinDate}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Strip (2 columns) */}
+        <div className="xl:col-span-3 flex overflow-x-auto snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:overflow-visible">
+          {[
+            {
+              label: 'active rooms',
+              value: activeRoomsCount,
+              delta: '↑ 1 this week',
+              deltaColor: 'text-emerald-400',
+              numColor: 'text-[#8B7CF8]',
+            },
+            {
+              label: 'total reactions',
+              value: totalReactions,
+              delta: '↑ 12 today',
+              deltaColor: 'text-amber-400',
+              numColor: 'text-white',
+            },
+            {
+              label: 'observers',
+              value: totalObservers,
+              delta: '↑ 5 new',
+              deltaColor: 'text-emerald-400',
+              numColor: 'text-white',
+            },
+            {
+              label: 'build logs',
+              value: 1,
+              delta: '1 completed',
+              deltaColor: 'text-slate-400',
+              numColor: 'text-white',
+            },
+          ].map((s, i) => (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              key={s.label} 
+              className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-5 flex min-h-[120px] flex-col justify-between group hover:bg-white/[0.03] transition-colors cursor-default min-w-[150px] shrink-0 snap-center sm:min-w-0 flex-1"
+            >
+              <div className={`font-bold text-[30px] tracking-tight leading-none ${s.numColor}`}>
+                {s.value}
+              </div>
+              <div className="text-[13px] text-slate-400 lowercase mt-2 font-mono font-medium">
+                {s.label}
+              </div>
+              <div className={`text-[12px] font-bold mt-2 ${s.deltaColor}`}>
+                {s.delta}
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       {/* ── INLINE TEXT TABS ────────────────── */}

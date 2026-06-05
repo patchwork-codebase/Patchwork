@@ -1,0 +1,3 @@
+function_name = "send-verification-email"
+[function.config]
+auth_type = "none"

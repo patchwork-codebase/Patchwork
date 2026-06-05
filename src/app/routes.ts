@@ -12,7 +12,7 @@ import Layout from "./components/layout/Layout";
 import UserProfile from "./components/profile/UserProfile";
 
 export const router = createBrowserRouter([
-  // Public landing and onboarding
+  // Public landing and auth
   {
     path: "/",
     Component: LandingPage,
@@ -50,3 +50,4 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
