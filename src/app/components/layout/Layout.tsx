@@ -115,8 +115,9 @@ export default function Layout() {
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
       <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.06] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition">
-            patch<span className="text-[#8B7CF8]">·</span>work
+          <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition group">
+            <span>patch<span className="inline-block text-[#8B7CF8] group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
+            <span className="rounded bg-[#8B7CF8]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8B7CF8]">Beta</span>
           </Link>
         </div>
         <div className="hidden lg:flex items-center gap-6">

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+import { SocialActionRow } from "../ui/social-actions";
+import { toast } from "sonner";
 
 
 /* ─────────────────────────────────────────────────────── types */
@@ -100,7 +102,10 @@ const mockFeedUpdates = [
     tag: 'design',
     content: 'Just finalized the new component library for the core transaction flow. We managed to reduce the visual noise by 30% without sacrificing information density. What do you think of this spacing?',
     likes: 12,
-    replies: 4
+    replies: 4,
+    comments: [
+      { id: 'c1', name: 'Funmi O.', handle: '@funmi_o', text: 'Looks really clean! The spacing gives the primary actions much more breathing room.', time: '1h' }
+    ]
   },
   {
     id: 2,
@@ -112,7 +117,8 @@ const mockFeedUpdates = [
     tag: 'research',
     content: 'Completed 15 user interviews this week. The overarching theme: users want fewer clicks to reach their payout history. Drafting the synthesis doc now, will share here tomorrow.',
     likes: 8,
-    replies: 1
+    replies: 1,
+    comments: []
   },
   {
     id: 3,
@@ -124,7 +130,12 @@ const mockFeedUpdates = [
     tag: 'engineering',
     content: 'Deployed the new Redis caching layer to staging. We are seeing a 40ms drop in p95 latency on the main feed endpoint. If this holds during load testing tomorrow, we push to prod by Friday. 🚀',
     likes: 24,
-    replies: 6
+    replies: 6,
+    isLiked: false,
+    comments: [
+      { id: 'c2', name: 'Amara O.', handle: '@amara_design', text: 'This is huge! Will make the feed feel so much snappier on mobile.', time: '12h' },
+      { id: 'c3', name: 'Akinrodolu', handle: '@akin_dev', text: 'Amazing work! Let me know if you need help analyzing the load test metrics.', time: '2h' }
+    ]
   }
 ];
 
@@ -215,6 +226,10 @@ export default function Dashboard() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [myRooms, setMyRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedUpdates, setFeedUpdates] = useState(mockFeedUpdates);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [expandedComments, setExpandedComments] = useState<number[]>([]);
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
   const isBuilder = profile?.role === 'builder';
@@ -255,6 +270,51 @@ export default function Dashboard() {
     // Wednesday, 3 June 2026 format
     return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
+
+  const handleLike = (id: number) => {
+    setFeedUpdates(prev => prev.map(update => {
+      if (update.id === id) {
+        const isLiked = !update.isLiked;
+        if (isLiked) toast.success("Liked update!");
+        return {
+          ...update,
+          isLiked,
+          likes: isLiked ? update.likes + 1 : update.likes - 1
+        };
+      }
+      return update;
+    }));
+  };
+
+  const handleReply = (id: number) => {
+    setReplyingTo(id);
+  };
+
+  const toggleComments = (id: number) => {
+    setExpandedComments(prev => 
+      prev.includes(id) ? prev.filter(cId => cId !== id) : [...prev, id]
+    );
+  };
+
+  const submitReply = () => {
+    if (!replyText.trim()) return;
+    setFeedUpdates(prev => prev.map(update => {
+      if (update.id === replyingTo) {
+        const newComment = { id: Date.now().toString(), name: firstName, handle: `@${firstName.toLowerCase()}`, text: replyText, time: 'just now' };
+        return { ...update, replies: update.replies + 1, comments: [...(update.comments || []), newComment] };
+      }
+      return update;
+    }));
+    toast.success("Reply posted successfully!");
+    setExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
+    setReplyingTo(null);
+    setReplyText("");
+  };
+
+  const handleShare = (id: number) => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard!");
+  };
 
   return (
     <motion.div 
@@ -528,10 +588,10 @@ export default function Dashboard() {
 
           {/* TIMELINE FEED */}
           <div className="border border-white/[0.08] rounded-b-[16px] bg-[#0D0B14] overflow-hidden mb-12">
-            {mockFeedUpdates.map((update, idx) => {
+            {feedUpdates.map((update, idx) => {
               const tStyle = tagStyle(update.tag);
               return (
-                <div key={update.id} className={`p-5 flex gap-4 hover:bg-white/[0.02] transition-colors cursor-pointer ${idx !== mockFeedUpdates.length - 1 ? 'border-b border-white/[0.06]' : ''}`}>
+                <div key={update.id} className={`p-5 flex gap-4 hover:bg-white/[0.02] transition-colors cursor-pointer ${idx !== feedUpdates.length - 1 ? 'border-b border-white/[0.06]' : ''}`}>
                   <div className="w-10 h-10 rounded-full bg-white/5 text-slate-300 font-bold flex items-center justify-center shrink-0">
                     {update.avatar}
                   </div>
@@ -554,25 +614,64 @@ export default function Dashboard() {
                       {update.content}
                     </p>
 
-                    <div className="flex items-center justify-between text-slate-500 max-w-[400px]">
-                      <button className="flex items-center gap-2 hover:text-[#8B7CF8] transition-colors group active:scale-90">
-                        <div className="p-2 rounded-full group-hover:bg-[#8B7CF8]/10 transition-colors">
-                          <ReplyIcon />
+                    <SocialActionRow
+                      actions={[
+                        {
+                          key: "reply",
+                          icon: <ReplyIcon />,
+                          count: update.replies,
+                          accent: "blue",
+                          onClick: () => toggleComments(update.id),
+                        },
+                        {
+                          key: "like",
+                          icon: <HeartIcon />,
+                          count: update.likes,
+                          accent: "rose",
+                          active: update.isLiked,
+                          onClick: () => handleLike(update.id),
+                        },
+                        {
+                          key: "share",
+                          icon: <ShareIcon />,
+                          accent: "emerald",
+                          onClick: () => handleShare(update.id),
+                        },
+                      ]}
+                    />
+
+                    {/* Comments section */}
+                    {expandedComments.includes(update.id) && (
+                      <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-3">
+                        {(update.comments || []).map((comment: any) => (
+                          <div key={comment.id} className="flex gap-3">
+                            <div className="w-8 h-8 rounded-full bg-white/5 text-slate-300 font-bold flex items-center justify-center shrink-0 text-[11px]">
+                              {comment.name.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="flex-1 bg-white/[0.02] rounded-xl p-3 border border-white/[0.04]">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-[13px] text-white hover:underline">{comment.name}</span>
+                                <span className="text-[12px] text-slate-500">{comment.handle}</span>
+                                <span className="text-[12px] text-slate-500">·</span>
+                                <span className="text-[12px] text-slate-500">{comment.time}</span>
+                              </div>
+                              <p className="text-[13.5px] text-slate-300 leading-relaxed m-0">
+                                {comment.text}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="flex items-center gap-3 mt-1">
+                          <button 
+                            onClick={() => handleReply(update.id)}
+                            className="text-[13px] font-bold text-[#8B7CF8] hover:text-[#7b6ce8] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1.5"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            Add a reply
+                          </button>
                         </div>
-                        <span className="text-[13px]">{update.replies}</span>
-                      </button>
-                      <button className="flex items-center gap-2 hover:text-rose-400 transition-colors group active:scale-90">
-                        <div className="p-2 rounded-full group-hover:bg-rose-500/10 transition-colors">
-                          <HeartIcon />
-                        </div>
-                        <span className="text-[13px]">{update.likes}</span>
-                      </button>
-                      <button className="flex items-center gap-2 hover:text-emerald-400 transition-colors group active:scale-90">
-                        <div className="p-2 rounded-full group-hover:bg-emerald-500/10 transition-colors">
-                          <ShareIcon />
-                        </div>
-                      </button>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -588,6 +687,57 @@ export default function Dashboard() {
           50% { opacity: 0.4; }
         }
       `}</style>
+
+      {/* ── REPLY MODAL ────────────────────────── */}
+      <AnimatePresence>
+        {replyingTo !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setReplyingTo(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md bg-[#0D0B14] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-10"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-white/[0.08] bg-white/[0.02]">
+                <h3 className="text-white font-bold text-[15px]">Reply to Update</h3>
+                <button
+                  onClick={() => setReplyingTo(null)}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4">
+                <textarea
+                  autoFocus
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Type your reply here..."
+                  className="w-full bg-transparent border border-white/[0.1] rounded-xl outline-none text-white text-[15px] p-3 min-h-[120px] resize-none placeholder:text-slate-500 focus:border-[#8B7CF8] transition-colors"
+                />
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={submitReply}
+                    disabled={!replyText.trim()}
+                    className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full font-bold text-[14px] transition-colors active:scale-95"
+                  >
+                    Post Reply
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

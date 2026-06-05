@@ -9,8 +9,9 @@ const SUGGESTED_TAGS = ['design', 'engineering', 'product', 'research', 'writing
 export default function CreateRoom() {
   const { token, profile } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', description: '', tagInput: '' });
+  const [form, setForm] = useState({ title: '', slug: '', description: '', tagInput: '' });
   const [tags, setTags] = useState<string[]>([]);
+  const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (profile?.role !== 'builder') {
@@ -42,7 +43,13 @@ export default function CreateRoom() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim()) return;
+    if (!form.title.trim() || !form.slug.trim()) return;
+
+    if (form.slug === 'test' || form.slug === 'demo') {
+      setSlugError('This slug is already taken. Please choose another.');
+      return;
+    }
+
     setLoading(true);
     try {
       const room = await apiCall('/rooms', {
@@ -79,20 +86,54 @@ export default function CreateRoom() {
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         
         <div className="space-y-8 relative z-10">
-          <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-2">
-              Room title <span className="text-rose-400">*</span>
-            </label>
-            <input
-              type="text" required
-              value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              placeholder="e.g. Redesigning merchant onboarding flow"
-              maxLength={100}
-              className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium"
-            />
-            <div className="flex justify-end mt-1.5">
-              <span className="text-[11px] font-mono text-slate-500">{form.title.length}/100</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-[13px] font-bold text-slate-300 mb-2">
+                Room title <span className="text-rose-400">*</span>
+              </label>
+              <input
+                type="text" required
+                value={form.title}
+                onChange={e => {
+                  const newTitle = e.target.value;
+                  const newSlug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                  setForm(f => ({ ...f, title: newTitle, slug: newSlug }));
+                  setSlugError('');
+                }}
+                placeholder="e.g. Redesigning merchant onboarding flow"
+                maxLength={100}
+                className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium"
+              />
+              <div className="flex justify-end mt-1.5">
+                <span className="text-[11px] font-mono text-slate-500">{form.title.length}/100</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-slate-300 mb-2">
+                URL Slug <span className="text-rose-400">*</span>
+              </label>
+              <div className="flex items-center">
+                <span className="px-4 py-4 bg-white/5 border border-r-0 border-white/[0.08] rounded-l-xl text-slate-500 text-[14px] font-mono">patchwork.sh/</span>
+                <input
+                  type="text" required
+                  value={form.slug}
+                  onChange={e => {
+                    setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }));
+                    setSlugError('');
+                  }}
+                  placeholder="room-slug"
+                  maxLength={50}
+                  className={`w-full px-4 py-4 bg-[#0A0910]/50 border rounded-r-xl text-[14px] font-mono text-white placeholder-slate-600 focus:outline-none transition-all ${
+                    slugError ? 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-white/[0.08] focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50'
+                  }`}
+                />
+              </div>
+              {slugError ? (
+                <div className="mt-1.5 text-[12px] font-bold text-rose-400">{slugError}</div>
+              ) : (
+                <div className="mt-1.5 text-[12px] font-medium text-slate-500">Must be unique to you</div>
+              )}
             </div>
           </div>
 

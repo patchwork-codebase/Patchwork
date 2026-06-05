@@ -109,7 +109,10 @@ export default function BuildLog() {
               <div className="w-6 h-6 bg-foreground rounded-sm flex items-center justify-center">
                 <Hammer className="w-3 h-3 text-background" />
               </div>
-              <span className="font-semibold text-sm hidden sm:block">patch·work</span>
+              <span className="flex items-center gap-2 font-semibold text-sm hidden sm:block group">
+                <span>patch<span className="inline-block text-primary group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
+                <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">Beta</span>
+              </span>
             </Link>
             <span className="text-border">·</span>
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-mono">
@@ -246,7 +249,10 @@ export default function BuildLog() {
             <div className="w-6 h-6 bg-foreground rounded-sm flex items-center justify-center">
               <Hammer className="w-3 h-3 text-background" />
             </div>
-            <span className="font-semibold font-display text-foreground">patch·work</span>
+            <span className="flex items-center gap-2 font-semibold font-display text-foreground group">
+              <span>patch<span className="inline-block text-primary group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
+              <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">Beta</span>
+            </span>
           </div>
           <p className="text-sm text-muted-foreground font-mono">Build Log generated automatically · Powered by Patchwork</p>
           <Link to="/login" className="text-primary hover:underline text-sm font-bold mt-3 inline-block">Join to start building →</Link>
