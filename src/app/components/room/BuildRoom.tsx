@@ -64,10 +64,12 @@ function toCamelCase(key: string) {
 
 
 
-const REACTION_CONFIG = {
+const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20', desc: 'Incisive, direct critique' },
   pushback: { emoji: '🔄', label: 'Push back', color: 'bg-rose-500/5 border-rose-500/20 text-rose-400', badge: 'bg-rose-500/10 text-rose-400 border border-rose-500/20', desc: 'Challenge this assumption' },
   tellmemore: { emoji: '💬', label: 'Tell me more', color: 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20', desc: 'I want to explore this deeper' },
+  reply: { emoji: '↩️', label: 'Reply', color: 'bg-blue-500/5 border-blue-500/20 text-blue-400', badge: 'bg-blue-500/10 text-blue-400 border border-blue-500/20', desc: 'A direct reply' },
+  like: { emoji: '👍', label: 'Like', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-white/10 text-white border border-white/20', desc: 'A like reaction' },
 };
 
 function timeAgo(iso: string) {
@@ -669,7 +671,7 @@ export default function BuildRoom() {
                     {updateReactions.length > 0 && (
                       <div className="mt-8 pt-6 border-t border-white/[0.06] space-y-4 relative z-10">
                         {updateReactions.map(r => {
-                          const cfg = REACTION_CONFIG[r.type];
+                          const cfg = REACTION_CONFIG[r.type] || { emoji: '💬', label: 'Reaction', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-white/10 text-white border border-white/20', desc: 'Reaction' };
                           return (
                             <div key={r.id} className={`flex items-start gap-4 p-5 rounded-2xl ${cfg.color} border shadow-sm`}>
                               <span className="text-2xl">{cfg.emoji}</span>
@@ -710,7 +712,7 @@ export default function BuildRoom() {
               </div>
             ) : (
               [...room.reactions].reverse().map(r => {
-                const cfg = REACTION_CONFIG[r.type];
+                const cfg = REACTION_CONFIG[r.type] || { emoji: '💬', label: 'Reaction', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-white/10 text-white border border-white/20', desc: 'Reaction' };
                 const linkedUpdate = r.updateId ? room.updates.find(u => u.id === r.updateId) : null;
                 return (
                   <div key={r.id} className={`flex items-start gap-4 p-6 rounded-[20px] ${cfg.color} border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`} tabIndex={0}>
