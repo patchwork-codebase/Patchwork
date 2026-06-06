@@ -31,7 +31,7 @@ export default function ExplorePage() {
         </p>
         <p className="text-[14px] text-slate-400 max-w-[360px] mx-auto leading-relaxed font-medium mb-8">
           The builder directory is in active development. For now,{' '}
-          <Link to="/dashboard" className="text-[#8B7CF8] font-bold hover:text-white transition-colors">browse the live feed</Link>{' '}
+          <Link to="/dashboard" className="text-[#8B7CF8] font-bold hover:text-white transition-colors">browse the global timeline</Link>{' '}
           to discover what's being built.
         </p>
       </div>

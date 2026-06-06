@@ -2,24 +2,7 @@ import { useEffect } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase, apiCall } from '../components/auth/AuthContext';
 
-function toCamelCase(key: string) {
-  return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
-}
-
-export function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') return row;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
-    const camelKey = toCamelCase(key);
-    if (Array.isArray(value)) {
-      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
-    } else if (value && typeof value === 'object') {
-      result[camelKey] = normalizeRow(value);
-    } else {
-      result[camelKey] = value;
-    }
-    return result;
-  }, {});
-}
+import { normalizeRow } from "../utils/helpers";
 
 export function useRooms() {
   const queryClient = useQueryClient();
@@ -114,4 +97,105 @@ export function useUserRooms(userId?: string) {
   }, [userId, queryClient]);
 
   return query;
+}
+
+export function useObservedRooms(userId?: string) {
+  const queryClient = useQueryClient();
+
+  const query = useInfiniteQuery<any[], Error>({
+    queryKey: ['observed-rooms', userId],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!userId) return [];
+      const pageSize = 12;
+      const from = (pageParam as number) * pageSize;
+      const to = from + pageSize - 1;
+
+      // We select the room_id and expand the room details.
+      const { data, error } = await supabase
+        .from('room_observers')
+        .select(`
+          room_id,
+          rooms:rooms(*)
+        `)
+        .eq('observer_id', userId)
+        .order('joined_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      
+      // Map to return just the room objects formatted correctly
+      return (data || []).map(row => {
+        const room = Array.isArray(row.rooms) ? row.rooms[0] : row.rooms;
+        return room ? normalizeRow(room) : null;
+      }).filter(Boolean);
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === 12 ? allPages.length : undefined;
+    },
+    enabled: !!userId,
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`observed-rooms-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'room_observers', filter: `observer_id=eq.${userId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['observed-rooms', userId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+
+  return query;
+}
+
+export function useObserverStats(userId?: string) {
+  return useQuery({
+    queryKey: ['observer-stats', userId],
+    queryFn: async () => {
+      if (!userId) return { totalReactions: 0, sharpInsights: 0, shippedProducts: 0, roomsFollowed: 0 };
+      
+      const { count: roomsFollowed } = await supabase
+        .from('room_observers')
+        .select('*', { count: 'exact', head: true })
+        .eq('observer_id', userId);
+
+      const { data: reactionsData } = await supabase
+        .from('reactions')
+        .select('type')
+        .eq('user_id', userId);
+        
+      const totalReactions = reactionsData?.length || 0;
+      const sharpInsights = reactionsData?.filter(r => r.type === 'sharp').length || 0;
+      
+      const { data: observed } = await supabase.from('room_observers').select('room_id').eq('observer_id', userId);
+      const roomIds = observed?.map(d => d.room_id) || [];
+      let shippedProducts = 0;
+      if (roomIds.length > 0) {
+        const { count } = await supabase
+          .from('rooms')
+          .select('id', { count: 'exact', head: true })
+          .in('id', roomIds)
+          .eq('status', 'shipped');
+        shippedProducts = count || 0;
+      }
+        
+      return {
+        roomsFollowed: roomsFollowed || 0,
+        totalReactions,
+        sharpInsights,
+        shippedProducts
+      };
+    },
+    enabled: !!userId,
+  });
 }

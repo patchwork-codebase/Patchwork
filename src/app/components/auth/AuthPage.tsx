@@ -13,9 +13,10 @@ interface SearchableSelectProps {
   onChange: (val: string) => void;
   options: { value: string; label: string }[];
   disabled?: boolean;
+  searchable?: boolean;
 }
 
-function SearchableSelect({ label, value, onChange, options, disabled }: SearchableSelectProps) {
+function SearchableSelect({ label, value, onChange, options, disabled, searchable = true }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -61,14 +62,16 @@ function SearchableSelect({ label, value, onChange, options, disabled }: Searcha
               transition={{ duration: 0.12 }}
               className="absolute left-0 right-0 bottom-full mb-2 bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-2 z-50 overflow-hidden max-h-[260px] flex flex-col"
             >
-              <input
-                type="text"
-                autoFocus
-                placeholder={`Search ${label.toLowerCase()}...`}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 transition-all mb-2"
-              />
+              {searchable && (
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder={`Search ${label.toLowerCase()}...`}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 transition-all mb-2"
+                />
+              )}
               <div className="flex-1 overflow-y-auto max-h-[180px] space-y-0.5 pr-1">
                 {filtered.length === 0 ? (
                   <div className="px-3 py-2 text-[12px] text-slate-500 font-semibold">No results found</div>
@@ -168,6 +171,7 @@ export default function AuthPage() {
     countryIso: '',
     stateIso: '',
     city: '',
+    gender: '',
     role: 'builder' as 'builder' | 'observer',
   });
 
@@ -195,7 +199,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const name = `${signup.fname} ${signup.lname}`.trim() || 'Anonymous Builder';
-      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '');
+      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '', signup.gender);
       redirectForRole(profile?.role || signup.role);
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
@@ -204,7 +208,7 @@ export default function AuthPage() {
     }
   }
 
-  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.countryIso && signup.stateIso && signup.city;
+  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.countryIso && signup.stateIso && signup.city && signup.gender;
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
@@ -441,6 +445,22 @@ export default function AuthPage() {
                     value={signup.lname}
                     onChange={e => setSignup(s => ({ ...s, lname: e.target.value }))}
                     className="w-full px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                  />
+                </div>
+
+                {/* Gender */}
+                <div className="relative z-20">
+                  <SearchableSelect
+                    label="Gender"
+                    value={signup.gender}
+                    onChange={val => setSignup(s => ({ ...s, gender: val }))}
+                    searchable={false}
+                    options={[
+                      { value: "male", label: "Male" },
+                      { value: "female", label: "Female" },
+                      { value: "non-binary", label: "Non-binary" },
+                      { value: "prefer-not-to-say", label: "Prefer not to say" }
+                    ]}
                   />
                 </div>
 

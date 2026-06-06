@@ -23,25 +23,7 @@ export class ApiError extends Error {
   }
 }
 
-function toCamelCase(key: string) {
-  if (key === 'onboarding_call_scheduled' || key === 'signup_completed_at') return key;
-  return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
-}
-
-function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') return row;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
-    const camelKey = toCamelCase(key);
-    if (Array.isArray(value)) {
-      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
-    } else if (value && typeof value === 'object') {
-      result[camelKey] = normalizeRow(value);
-    } else {
-      result[camelKey] = value;
-    }
-    return result;
-  }, {});
-}
+import { normalizeRow } from "../../utils/helpers";
 
 export async function apiCall(path: string, opts: RequestInit = {}, token?: string) {
   try {
@@ -156,6 +138,7 @@ interface Profile {
   emailVerified?: boolean;
   onboarding_call_scheduled?: boolean;
   signup_completed_at?: string | null;
+  gender?: string;
 }
 
 interface SignInResult {
@@ -169,7 +152,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   token: string | null;
-  signUp: (email: string, password: string, name: string, role: string, city: string, domain: string) => Promise<SignInResult>;
+  signUp: (email: string, password: string, name: string, role: string, city: string, domain: string, gender: string) => Promise<SignInResult>;
   signIn: (email: string, password: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -196,6 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       city: metadata.city || '',
       domain: metadata.domain || '',
       interests: metadata.interests || [],
+      gender: metadata.gender || '',
       bio: '',
       avatar: '',
     };
@@ -285,10 +269,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-      setLoading(false);
       if (currentSession?.user) {
-        loadProfile(currentSession.user.id);
+        await loadProfile(currentSession.user.id);
       }
+      setLoading(false);
     });
 
     const handleVisibilityChange = async () => {
@@ -356,14 +340,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return activeSession;
   }
 
-  async function signUp(email: string, password: string, name: string, role: string, city: string, domain: string) {
+  async function signUp(email: string, password: string, name: string, role: string, city: string, domain: string, gender: string) {
     // ── Direct Supabase auth signup — no edge function, no cold start ──
     // The DB trigger (handle_new_user) auto-creates the public.users row.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, role, city, domain },
+        data: { name, role, city, domain, gender },
       },
     });
     if (error) throw error;
@@ -392,6 +376,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
       city,
       domain,
+      gender,
       emailVerified: !!data.user.email_confirmed_at,
     };
     setProfile(profile);

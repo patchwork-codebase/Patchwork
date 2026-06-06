@@ -136,7 +136,7 @@ export default function ObserverDashboard() {
             <div className="flex flex-wrap gap-2 bg-white/[0.04] border border-white/[0.06] p-2 rounded-full">
               {[
                 { key: 'overview', label: 'Overview' },
-                { key: 'feed', label: 'Live feed' },
+                { key: 'feed', label: 'Global timeline' },
                 { key: 'following', label: 'Following' },
               ].map(tab => (
                 <button

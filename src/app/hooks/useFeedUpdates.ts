@@ -27,24 +27,7 @@ export interface FeedUpdate {
   }[];
 }
 
-function toCamelCase(key: string) {
-  return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
-}
-
-function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') return row;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
-    const camelKey = toCamelCase(key);
-    if (Array.isArray(value)) {
-      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
-    } else if (value && typeof value === 'object') {
-      result[camelKey] = normalizeRow(value);
-    } else {
-      result[camelKey] = value;
-    }
-    return result;
-  }, {});
-}
+import { normalizeRow } from "../utils/helpers";
 
 export function useFeedUpdates() {
   const queryClient = useQueryClient();

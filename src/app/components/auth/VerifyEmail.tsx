@@ -30,7 +30,28 @@ export default function VerifyEmail() {
         }
 
         // Refresh the local Supabase session to update email_confirmed_at in the user object instantly
-        await supabase.auth.refreshSession();
+        const { data: { session } } = await supabase.auth.refreshSession();
+
+        if (session?.user) {
+          // Fetch user profile from the 'users' table
+          const { data: profile } = await supabase
+            .from('users')
+            .select('name, role')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile) {
+            // Trigger the welcome email non-blockingly
+            supabase.functions.invoke('send-welcome-email', {
+              body: {
+                userId: session.user.id,
+                email: session.user.email,
+                name: profile.name,
+                role: profile.role
+              }
+            }).catch(console.error);
+          }
+        }
 
         setStatus("success");
       } catch (err: any) {

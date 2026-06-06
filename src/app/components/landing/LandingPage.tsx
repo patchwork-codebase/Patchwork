@@ -1774,7 +1774,7 @@ export default function LandingPage() {
 
                   {/* Tabs */}
                   <div className="flex gap-2 border-b border-white/[0.06] pb-2">
-                    {["Overview", "My rooms", "Live feed"].map((tab, idx) => (
+                    {["Overview", "My rooms", "Global timeline"].map((tab, idx) => (
                       <button
                         key={tab}
                         className={`rounded-full px-4 py-2 text-xs font-bold transition ${idx === 0
