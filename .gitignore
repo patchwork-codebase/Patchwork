@@ -1,4 +1,12 @@
 node_modules
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .sql
 .md
 .cjs
+.git
+.gitignore
+.debug.log

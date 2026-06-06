@@ -5,9 +5,10 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
-import { useRooms, useUserRooms } from "../../hooks/useRooms";
+import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDashboardStats, useRecentActivity, useRoomObservers } from "../../hooks/useDashboardStats";
 
 // Subcomponents
 import { StatsStrip } from "./StatsStrip";
@@ -21,50 +22,50 @@ const IconPlus = () => (
   </svg>
 );
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
-  const { 
-    data: roomsData, 
+  const {
+    data: roomsData,
     isLoading: roomsLoading,
   } = useRooms();
   const { data: myRoomsData, isLoading: myRoomsLoading } = useUserRooms(user?.id || undefined);
-  
-  const { 
-    data: dbUpdatesData, 
+  const { data: observedRoomsData, isLoading: observedRoomsLoading } = useObservedRooms(user?.id || undefined);
+
+  const {
+    data: dbUpdatesData,
     isLoading: dbUpdatesLoading,
     fetchNextPage: fetchNextUpdates,
     hasNextPage: hasNextUpdates,
     isFetchingNextPage: isFetchingNextUpdates
   } = useFeedUpdates();
-  
+
   const rooms = roomsData?.pages.flat() || [];
   const myRooms = myRoomsData?.pages.flat() || [];
+  const observedRooms = observedRoomsData?.pages.flat() || [];
   const dbUpdates = dbUpdatesData?.pages.flat() || [];
-  
+
   const [updateContent, setUpdateContent] = useState("");
+  const [codeSnippet, setCodeSnippet] = useState("");
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [posting, setPosting] = useState(false);
 
-  const [reactions, setReactions] = useState<any[]>([]);
-  const [observers, setObservers] = useState<any[]>([]);
-  const [recentEvents, setRecentEvents] = useState<any[]>([]);
-  const [roomObservers, setRoomObservers] = useState<any[]>([]);
+  const { data: statsData, isLoading: statsLoading } = useDashboardStats(user?.id);
+  const reactions = statsData?.reactions || [];
+  const observers = statsData?.observers || [];
+  const reactionsLoading = statsLoading;
+  const observersLoading = statsLoading;
 
-  const [reactionsLoading, setReactionsLoading] = useState(true);
-  const [observersLoading, setObserversLoading] = useState(true);
+  const { data: recentEventsData } = useRecentActivity(user?.id);
+  const recentEvents = recentEventsData || [];
+
+  const { data: roomObserversData } = useRoomObservers(selectedRoomId);
+  const roomObservers = roomObserversData || [];
 
   // Email resend countdown cooldown state
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
@@ -79,7 +80,7 @@ export default function Dashboard() {
   }, [myRooms, selectedRoomId]);
 
   const handlePostUpdate = async () => {
-    if (!updateContent.trim() || !selectedRoomId || !user) return;
+    if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
     setPosting(true);
     try {
       const { data: room, error: roomError } = await supabase
@@ -87,7 +88,7 @@ export default function Dashboard() {
         .select('*')
         .eq('id', selectedRoomId)
         .single();
-      
+
       if (roomError || !room) {
         throw new Error(roomError?.message || "Room not found");
       }
@@ -99,16 +100,17 @@ export default function Dashboard() {
         author_id: user.id,
         author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
         content: updateContent.trim(),
-        media_url: null,
+        media_url: mediaPreview || null,
+        code_snippet: codeSnippet.trim() || null,
         created_at: new Date().toISOString(),
       };
-      
+
       const { error: insertError } = await supabase
         .from('updates')
         .insert(payload);
-        
+
       if (insertError) throw insertError;
-      
+
       await supabase
         .from('rooms')
         .update({
@@ -119,6 +121,8 @@ export default function Dashboard() {
         .eq('id', selectedRoomId);
 
       setUpdateContent("");
+      setCodeSnippet("");
+      setMediaPreview(null);
       queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
       toast.success("Update posted successfully!");
     } catch (err: any) {
@@ -130,9 +134,7 @@ export default function Dashboard() {
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
-  const initials = profile?.name
-    ? profile.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
-    : user?.email?.substring(0, 2).toUpperCase() || 'U';
+  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
   const handle = `@${firstName.toLowerCase()}`;
   const joinDate = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
 
@@ -148,135 +150,6 @@ export default function Dashboard() {
   }
   const domainStyle = getDomainStyle(profile?.domain);
 
-  async function loadReactions() {
-    if (user) {
-      setReactionsLoading(true);
-      try {
-        const { data } = await supabase
-          .from('reactions')
-          .select('id, created_at, rooms!inner(builder_id)')
-          .eq('rooms.builder_id', user.id);
-        setReactions(data || []);
-      } catch (err) {
-        console.log('Reactions count error:', err);
-      } finally {
-        setReactionsLoading(false);
-      }
-    } else {
-      setReactions([]);
-      setReactionsLoading(false);
-    }
-  }
-
-  async function loadObservers() {
-    if (user) {
-      setObserversLoading(true);
-      try {
-        const { data } = await supabase
-          .from('room_observers')
-          .select('id, created_at, rooms!inner(builder_id)')
-          .eq('rooms.builder_id', user.id);
-        setObservers(data || []);
-      } catch (err) {
-        console.log('Observers count error:', err);
-      } finally {
-        setObserversLoading(false);
-      }
-    } else {
-      setObservers([]);
-      setObserversLoading(false);
-    }
-  }
-
-  async function loadRecentActivity() {
-    if (!user) return;
-    try {
-      const { data: reactionsData } = await supabase
-        .from('reactions')
-        .select('created_at, type, observer_id, update_id, users(name), rooms!inner(builder_id)')
-        .eq('rooms.builder_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const { data: observersData } = await supabase
-        .from('room_observers')
-        .select('created_at, observer_id, room_id, rooms!inner(title, builder_id), users(name)')
-        .eq('rooms.builder_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const mergedEvents: any[] = [];
-
-      if (reactionsData) {
-        reactionsData.forEach((re: any) => {
-          const name = re.users?.name || 'Someone';
-          const text = re.type === 'like' ? 'reacted "Like" to your update' : `replied to your update`;
-          mergedEvents.push({
-            name,
-            text,
-            time: timeAgo(re.created_at),
-            color: 'bg-[#6C5CE7]',
-            date: new Date(re.created_at)
-          });
-        });
-      }
-
-      if (observersData) {
-        observersData.forEach((ob: any) => {
-          const name = ob.users?.name || 'Someone';
-          const roomTitle = ob.rooms?.title || 'your room';
-          mergedEvents.push({
-            name,
-            text: `started following your "${roomTitle}" room`,
-            time: timeAgo(ob.created_at),
-            color: 'bg-emerald-500',
-            date: new Date(ob.created_at)
-          });
-        });
-      }
-
-      const sorted = mergedEvents.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
-      setRecentEvents(sorted);
-    } catch (err) {
-      console.log('Error loading recent activity:', err);
-    }
-  }
-
-  async function loadRoomObservers() {
-    if (!selectedRoomId) return;
-    try {
-      const { data } = await supabase
-        .from('room_observers')
-        .select('id, created_at, observer_id, users(name)')
-        .eq('room_id', selectedRoomId);
-
-      const mapped = (data || []).map((ob: any) => {
-        const name = ob.users?.name || 'Observer';
-        const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-        return {
-          initials,
-          name,
-          visits: 'Active',
-          bg: 'bg-[#6C5CE7]/20',
-          color: 'text-[#8B7CF8]'
-        };
-      });
-      setRoomObservers(mapped);
-    } catch (err) {
-      console.log('Error loading room observers list:', err);
-    }
-  }
-
-  useEffect(() => {
-    loadReactions();
-    loadObservers();
-    loadRecentActivity();
-  }, [user]);
-
-  useEffect(() => {
-    loadRoomObservers();
-  }, [selectedRoomId]);
-
   // Real-time Postgres subscriptions
   useEffect(() => {
     if (!user) return;
@@ -287,8 +160,8 @@ export default function Dashboard() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions' },
         () => {
-          loadReactions();
-          loadRecentActivity();
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
           queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
         }
       )
@@ -296,11 +169,9 @@ export default function Dashboard() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_observers' },
         () => {
-          loadObservers();
-          loadRoomObservers();
-          loadRecentActivity();
-          queryClient.invalidateQueries({ queryKey: ['user-rooms', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['rooms'] });
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['room-observers'] });
+          queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
         }
       )
       .on(
@@ -308,16 +179,6 @@ export default function Dashboard() {
         { event: '*', schema: 'public', table: 'updates' },
         () => {
           queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-          queryClient.invalidateQueries({ queryKey: ['user-rooms', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['rooms'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'rooms' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['user-rooms', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['rooms'] });
         }
       )
       .subscribe();
@@ -325,7 +186,7 @@ export default function Dashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, selectedRoomId, queryClient]);
+  }, [user, queryClient]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -365,7 +226,7 @@ export default function Dashboard() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -382,7 +243,7 @@ export default function Dashboard() {
             <h3 className="text-[14px] font-bold text-amber-100">Verify your email address</h3>
             <p className="text-[13px] text-amber-200/70 mt-1">We sent a verification link to your email. Please verify to unlock all features.</p>
           </div>
-          <button 
+          <button
             onClick={handleResendVerification}
             disabled={cooldownSeconds > 0}
             className="px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/20 rounded-full text-[12px] font-bold text-amber-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
@@ -404,8 +265,8 @@ export default function Dashboard() {
       {/* HEADER */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-6 sm:gap-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white font-extrabold text-xl shadow-[0_0_20px_rgba(108,92,231,0.3)]">
-            {initials}
+          <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center overflow-hidden shadow-xl shrink-0">
+            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -451,8 +312,8 @@ export default function Dashboard() {
         {/* Profile Card - hidden on mobile to prevent redundancy with header */}
         <div className="hidden md:block xl:col-span-2 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white font-bold text-lg">
-              {initials}
+            <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center overflow-hidden shrink-0">
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-white text-[16px] truncate">{profile?.name}</h3>
@@ -487,18 +348,17 @@ export default function Dashboard() {
         {[
           { key: 'overview' as const, label: 'Overview' },
           { key: 'mine' as const, label: 'My rooms' },
-          { key: 'feed' as const, label: 'Live feed' },
+          { key: 'feed' as const, label: 'Global timeline' },
         ].map(tab => {
           const isCurrent = activeTab === tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => setTab(tab.key)}
-              className={`relative px-3 py-3 text-[14px] sm:text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
-                isCurrent 
-                  ? 'text-white' 
+              className={`relative px-3 py-3 text-[14px] sm:text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${isCurrent
+                  ? 'text-white'
                   : 'text-slate-400 hover:text-white hover:bg-white/[0.03] rounded-t-md'
-              }`}
+                }`}
             >
               {tab.label}
               {isCurrent && (
@@ -514,12 +374,12 @@ export default function Dashboard() {
       </div>
 
       {/* MAIN COLUMNS GRID */}
-      {activeTab === 'overview' ? (
+      {activeTab === 'mine' ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.95fr] gap-8">
           {/* LEFT COLUMN: ACTIVE WORK LIST */}
           <ActiveRoomsList
-            rooms={rooms}
-            loading={loading}
+            rooms={myRooms}
+            loading={myRoomsLoading}
             setTab={setTab}
           />
 
@@ -536,11 +396,16 @@ export default function Dashboard() {
           user={user}
           profile={profile}
           myRooms={myRooms}
+          observedRooms={observedRooms}
           dbUpdates={dbUpdates}
           selectedRoomId={selectedRoomId}
           setSelectedRoomId={setSelectedRoomId}
           updateContent={updateContent}
           setUpdateContent={setUpdateContent}
+          codeSnippet={codeSnippet}
+          setCodeSnippet={setCodeSnippet}
+          mediaPreview={mediaPreview}
+          setMediaPreview={setMediaPreview}
           posting={posting}
           handlePostUpdate={handlePostUpdate}
           hasNextUpdates={hasNextUpdates}

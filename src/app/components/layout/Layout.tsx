@@ -3,6 +3,7 @@ import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNotifications } from "../../hooks/useNotifications";
+import { getAvatarUrl } from "../../utils/helpers";
 
 /* ─── tiny inline SVGs ─────────────────────────────────────────── */
 const HammerIcon = () => (
@@ -26,6 +27,26 @@ const SearchIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="7" />
     <path d="M16 16L21 21" />
+  </svg>
+);
+
+const ActivityIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+  </svg>
+);
+
+const EyeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+const CompassIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
   </svg>
 );
 
@@ -65,15 +86,7 @@ const BellIcon = () => (
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+import { timeAgo } from "../../utils/helpers";
 
 export default function Layout() {
   const { user, profile, signOut, loading } = useAuth();
@@ -123,9 +136,7 @@ export default function Layout() {
     navigate('/login');
   }
 
-  const initials = profile?.name
-    ? profile.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
-    : user?.email?.substring(0, 2).toUpperCase() || 'U';
+  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
 
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
@@ -133,7 +144,7 @@ export default function Layout() {
     <div className="flex flex-col min-h-screen bg-[#08070D] text-white">
       
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
-      <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.06] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
+      <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.08] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition group">
             <span>patch<span className="inline-block text-[#8B7CF8] group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
@@ -163,7 +174,7 @@ export default function Layout() {
                 transition={{ duration: 0.2 }}
                 className="absolute top-full right-0 sm:-right-4 mt-2 w-[320px] bg-[#0A0910]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50"
               >
-                <div className="p-4 border-b border-white/[0.06] flex justify-between items-center">
+                <div className="p-4 border-b border-white/[0.08] flex justify-between items-center">
                   <span className="text-[14px] font-bold text-white font-display">Notifications</span>
                   {unreadCount > 0 && (
                     <button onClick={() => markAllAsRead.mutate()} className="text-[11px] font-bold text-[#8B7CF8] hover:text-white transition-colors">Mark all read</button>
@@ -223,7 +234,7 @@ export default function Layout() {
 
           <button
             type="button"
-            className="lg:hidden inline-flex items-center justify-center rounded-full border border-white/[0.12] p-2 text-slate-300 hover:text-white hover:border-white/[0.2] transition"
+            className="lg:hidden inline-flex items-center justify-center rounded-full border border-white/[0.08] p-2 text-slate-300 hover:text-white hover:border-white/[0.2] transition"
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileMenuOpen(open => !open)}
           >
@@ -264,7 +275,7 @@ export default function Layout() {
               onClick={() => setMobileMenuOpen(false)}
               className={`rounded-xl px-3 py-3 text-sm font-medium ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8]' : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'}`}
             >
-              Live feed
+              Global timeline
             </Link>
             <Link
               to="/dashboard/build-logs"
@@ -370,13 +381,13 @@ export default function Layout() {
       <div className="flex flex-col lg:flex-row flex-1">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0A0910] border-r border-white/[0.06] flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
+        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0A0910] border-r border-white/[0.08] flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
 
           <nav className="p-5 flex-1">
             
             {/* workspace section */}
-            <div className="mb-2.5 px-2 text-[10px] lowercase tracking-wider text-slate-500 font-bold">
-              workspace
+            <div className="mb-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+              Primary
             </div>
 
             <Link
@@ -409,8 +420,8 @@ export default function Layout() {
             </Link>
 
             {/* discovery section */}
-            <div className="mb-2.5 px-2 text-[10px] lowercase tracking-wider text-slate-500 font-bold">
-              discovery
+            <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+              Secondary
             </div>
 
             <Link
@@ -418,8 +429,8 @@ export default function Layout() {
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
             >
               <div className="flex items-center gap-2.5">
-                <SearchIcon />
-                Live feed
+                <ActivityIcon />
+                Global timeline
               </div>
               <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'feed' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-300'}`}>
                 12
@@ -431,7 +442,7 @@ export default function Layout() {
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
             >
               <div className="flex items-center gap-2.5">
-                <SearchIcon />
+                <EyeIcon />
                 Observer hub
               </div>
               <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'observer' ? 'bg-[#6C5CE7] text-white' : 'bg-white/10 text-slate-300'}`}>
@@ -443,7 +454,7 @@ export default function Layout() {
               to="/dashboard/explore"
               className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
             >
-              <SearchIcon />
+              <CompassIcon />
               Explore builders
             </Link>
 
@@ -451,15 +462,15 @@ export default function Layout() {
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-white/[0.06] p-4 bg-white/[0.01]">
+          <div className="border-t border-white/[0.08] p-4 bg-white/[0.01]">
             <div className="relative">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}
                 className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-lg bg-[#6C5CE7]/20 border border-[#6C5CE7]/30 text-[#8B7CF8] flex items-center justify-center text-[11px] font-bold shrink-0 font-mono">
-                  {initials === 'DE' ? 'AK' : initials}
+                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-white truncate">
@@ -489,7 +500,7 @@ export default function Layout() {
                     transition={{ duration: 0.2 }}
                     className="absolute bottom-full left-0 right-0 mb-2 bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
                   >
-                    <div className="p-3 border-b border-white/[0.06]">
+                    <div className="p-3 border-b border-white/[0.08]">
                       <div className="text-[12px] font-bold text-white">{profile?.name}</div>
                       <div className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">
                         {profile?.email || user.email}
@@ -516,9 +527,19 @@ export default function Layout() {
           </div>
         </aside>
 
-        {/* ── MAIN CONTENT ────────────────────────────── */}
         <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#08070D] pb-28">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

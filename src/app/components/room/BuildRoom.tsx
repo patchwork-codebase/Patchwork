@@ -1,6 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { normalizeRow } from "../../utils/helpers";
 import { useAuth, supabase } from "../auth/AuthContext";
+import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
   Share2, CheckCircle, BookOpen, X, ImageIcon, Code
@@ -48,20 +62,7 @@ function toCamelCase(key: string) {
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 
-function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') return row;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
-    const camelKey = toCamelCase(key);
-    if (Array.isArray(value)) {
-      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
-    } else if (value && typeof value === 'object') {
-      result[camelKey] = normalizeRow(value);
-    } else {
-      result[camelKey] = value;
-    }
-    return result;
-  }, {});
-}
+
 
 const REACTION_CONFIG = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20', desc: 'Incisive, direct critique' },
@@ -83,6 +84,7 @@ export default function BuildRoom() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
@@ -222,7 +224,7 @@ export default function BuildRoom() {
 
   async function handlePostUpdate(e: React.FormEvent) {
     e.preventDefault();
-    if (!newUpdate.trim() || !id || !user) return;
+    if ((!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview) || !id || !user) return;
     setPostingUpdate(true);
     
     let finalMediaUrl = mediaPreview;
@@ -327,13 +329,15 @@ export default function BuildRoom() {
       setJoined(true);
       setRoom(r => r ? { ...r, observerCount: count || 0 } : r);
       toast.success('Joined as observer!');
+      
+      queryClient.invalidateQueries({ queryKey: ['observed-rooms', user.id] });
     } catch (err: any) {
       toast.error(`Failed to join: ${err.message}`);
     }
   }
 
   async function handleCloseRoom() {
-    if (!id || !window.confirm('Close this room and generate a Build Log?')) return;
+    if (!id) return;
     setClosingRoom(true);
     try {
       const { error } = await supabase
@@ -432,14 +436,31 @@ export default function BuildRoom() {
                 </Link>
               )}
               {isBuilder && room.status === 'active' && (
-                <button
-                  onClick={handleCloseRoom}
-                  disabled={closingRoom}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {closingRoom ? 'Closing...' : 'Close Room'}
-                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      disabled={closingRoom}
+                      className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {closingRoom ? 'Closing...' : 'Close Room'}
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-[#0D0B14] border-white/[0.08] text-white">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-white text-xl font-display">Close this room?</AlertDialogTitle>
+                      <AlertDialogDescription className="text-slate-400">
+                        This will generate a permanent Build Log and prevent any further updates to this room. You cannot undo this action.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="bg-transparent border-white/[0.08] hover:bg-white/[0.05] text-white">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleCloseRoom} className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white font-bold">
+                        Yes, Close Room
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
               {room.status === 'completed' && (
                 <button
@@ -544,7 +565,7 @@ export default function BuildRoom() {
               
               <button
                 type="submit"
-                disabled={postingUpdate || !newUpdate.trim()}
+                disabled={postingUpdate || (!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview)}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
               >
                 {postingUpdate ? 'Posting...' : <><Send className="w-4 h-4" /> Post Update</>}
@@ -643,13 +664,7 @@ export default function BuildRoom() {
                       </div>
                     )}
 
-                    {update.codeSnippet && (
-                      <div className="mb-6 relative z-10 rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0910] p-4">
-                        <pre className="text-[13px] text-slate-300 font-mono overflow-x-auto">
-                          <code>{update.codeSnippet}</code>
-                        </pre>
-                      </div>
-                    )}
+                    {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
                     {updateReactions.length > 0 && (
                       <div className="mt-8 pt-6 border-t border-white/[0.06] space-y-4 relative z-10">

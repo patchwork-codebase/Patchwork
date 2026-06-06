@@ -1,3 +1,5 @@
+import { getAvatarUrl } from "../../utils/helpers";
+
 interface RecentEvent {
   name: string;
   text: string;
@@ -71,8 +73,8 @@ export function RecentActivityList({
                 tabIndex={0}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full ${obs.bg} ${obs.color} font-bold text-[11px] flex items-center justify-center font-mono`}>
-                    {obs.initials}
+                  <div className={`w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center font-mono overflow-hidden shadow-sm`}>
+                    <img src={getAvatarUrl(obs.name)} alt="Avatar" className="w-full h-full object-cover scale-110" />
                   </div>
                   <span className="text-[13px] font-bold text-slate-200">
                     {obs.name}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
+import { normalizeRow } from "../../utils/helpers";
 import { apiCall, supabase } from "../auth/AuthContext";
 import { Hammer, Users, Clock, ArrowLeft, Share2, BookOpen, Zap, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -41,20 +42,7 @@ function toCamelCase(key: string) {
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 
-function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') return row;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
-    const camelKey = toCamelCase(key);
-    if (Array.isArray(value)) {
-      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
-    } else if (value && typeof value === 'object') {
-      result[camelKey] = normalizeRow(value);
-    } else {
-      result[camelKey] = value;
-    }
-    return result;
-  }, {});
-}
+
 
 const REACTION_CONFIG = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-amber-50 border-amber-200 text-amber-800', badge: 'bg-amber-100 text-amber-700' },

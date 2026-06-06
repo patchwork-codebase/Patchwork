@@ -9,6 +9,7 @@ interface CompletionState {
   room: boolean;
   update: boolean;
   call: boolean;
+  alreadyCompleted?: boolean;
 }
 
 const EMPTY: CompletionState = { domain: false, room: false, update: false, call: false };
@@ -45,6 +46,7 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
       state.domain = !!(userRow?.interests?.length);
     }
     state.call = !!userRow?.onboarding_call_scheduled;
+    state.alreadyCompleted = !!userRow?.signup_completed_at;
 
     // Check room created
     const { data: rooms } = await supabase
@@ -219,7 +221,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
 
         {stepId === 'room' && role === 'observer' && (
           <p className="text-[13px] text-slate-400 mb-6 bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-            Explore the Live Feed tab to find rooms you want to follow. Click "Follow" on any room.
+            Explore the Global Timeline tab to find rooms you want to follow. Click "Follow" on any room.
           </p>
         )}
 
@@ -288,6 +290,9 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
     loadCompletion(userId, role).then(state => {
       if (!cancelled) {
         setCompletion(state);
+        if (state.alreadyCompleted) {
+          setDismissed(true);
+        }
         setLoading(false);
       }
     });
@@ -313,6 +318,15 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
 
   const completedCount = Object.values(completion).filter(Boolean).length;
   const allDone = completedCount === steps.length;
+
+  useEffect(() => {
+    if (allDone && !dismissed) {
+      const timer = setTimeout(() => {
+        handleDismiss();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [allDone, dismissed, userId]);
 
   if (loading) return null; // Don't flash an empty checklist
 

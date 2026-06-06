@@ -1,18 +1,29 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
+import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
+import { 
+  Heart, MessageCircle, Share2, ShieldAlert, Sparkles, X, 
+  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
+import { getAvatarUrl } from "../../utils/helpers";
 
 interface TimelineFeedProps {
   user: any;
   profile: any;
   myRooms: any[];
+  observedRooms: any[];
   dbUpdates: any[];
   selectedRoomId: string;
   setSelectedRoomId: (id: string) => void;
   updateContent: string;
   setUpdateContent: (content: string) => void;
+  codeSnippet: string;
+  setCodeSnippet: (content: string) => void;
+  mediaPreview: string | null;
+  setMediaPreview: (preview: string | null) => void;
   posting: boolean;
   handlePostUpdate: () => Promise<void>;
   hasNextUpdates: boolean;
@@ -50,11 +61,16 @@ export function TimelineFeed({
   user,
   profile,
   myRooms,
+  observedRooms,
   dbUpdates,
   selectedRoomId,
   setSelectedRoomId,
   updateContent,
   setUpdateContent,
+  codeSnippet,
+  setCodeSnippet,
+  mediaPreview,
+  setMediaPreview,
   posting,
   handlePostUpdate,
   hasNextUpdates,
@@ -69,10 +85,11 @@ export function TimelineFeed({
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [activeDomainFilter, setActiveDomainFilter] = useState('All');
+  const [feedSort, setFeedSort] = useState<'latest' | 'trending'>('latest');
 
-  const initials = profile?.name
-    ? profile.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
-    : user?.email?.substring(0, 2).toUpperCase() || 'U';
+  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
 
   const toggleComments = (id: string) => {
     setExpandedComments(prev => 
@@ -120,6 +137,18 @@ export function TimelineFeed({
       queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
     } catch (err: any) {
       toast.error(`Failed to post reply: ${err.message}`);
+    }
+  };
+
+  const handleFollowRoom = async (roomId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    try {
+      await supabase.from('room_observers').upsert({ room_id: roomId, observer_id: user.id });
+      toast.success("You are now observing this room!");
+      queryClient.invalidateQueries({ queryKey: ['observed-rooms', user.id] });
+    } catch (err: any) {
+      toast.error(`Failed to follow room: ${err.message}`);
     }
   };
 
@@ -212,96 +241,170 @@ export function TimelineFeed({
     );
   };
 
-  const filteredUpdates = activeTab === 'mine'
-    ? dbUpdates.filter(update => update.authorId === user?.id)
-    : dbUpdates;
+  const filteredUpdates = useMemo(() => {
+    let result = dbUpdates;
+    
+    // 1. Base filter by tab
+    if (activeTab === 'overview') {
+      result = result.filter(u => myRooms.some(r => r.id === u.roomId));
+    }
+
+    // 2. Domain filter (only on Global feed)
+    if (activeTab === 'feed' && activeDomainFilter !== 'All') {
+      result = result.filter(u => {
+        const room = rooms?.find(r => r.id === u.roomId) || u.rooms;
+        return room?.tags?.includes(activeDomainFilter.toLowerCase());
+      });
+    }
+
+    // 3. Sorting (Trending vs Latest)
+    if (activeTab === 'feed' && feedSort === 'trending') {
+      result = [...result].sort((a, b) => {
+        const aInteractions = (a.reactions?.length || 0);
+        const bInteractions = (b.reactions?.length || 0);
+        return bInteractions - aInteractions;
+      });
+    }
+    
+    return result;
+  }, [dbUpdates, myRooms, activeTab, activeDomainFilter, feedSort, rooms]);
 
   return (
     <div className="max-w-[700px] w-full mx-auto">
       {/* INLINE COMPOSER */}
-      {profile?.role === 'builder' && (
-        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-5 flex gap-4 items-start mb-6">
-          <div className="w-10 h-10 rounded-full bg-[#6C5CE7]/20 text-[#8B7CF8] font-bold flex items-center justify-center shrink-0 font-mono">
-            {initials}
+      {profile?.role === 'builder' && activeTab === 'overview' && (
+        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-3 sm:p-5 flex gap-3 sm:gap-4 items-start mb-6">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <textarea 
               value={updateContent}
               onChange={(e) => setUpdateContent(e.target.value)}
               disabled={!profile?.emailVerified}
               placeholder={profile?.emailVerified ? "What are you building right now?" : "Please verify your email address to post updates."}
               aria-label="New update content"
-              className="w-full bg-transparent border-none outline-none text-white text-[16px] resize-none placeholder:text-slate-500 min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
+              className="w-full bg-transparent border-none outline-none text-white text-[15px] sm:text-[16px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
             />
-            <div className="flex justify-between items-center border-t border-white/[0.06] pt-3 mt-2">
-              <div>
+
+            {mediaPreview && (
+              <div className="relative w-fit mb-4 group/preview mt-3">
+                <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0910]">
+                  <img src={mediaPreview} alt="Upload preview" className="max-h-[200px] object-cover" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMediaPreview(null)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/preview:opacity-100 transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {showCodeInput && (
+              <textarea
+                value={codeSnippet}
+                onChange={e => setCodeSnippet(e.target.value)}
+                placeholder="Paste your code snippet here..."
+                rows={5}
+                aria-label="Code snippet"
+                className="w-full px-5 py-4 mt-3 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] font-mono text-slate-300 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+              />
+            )}
+
+            <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 mt-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 {!profile?.emailVerified ? (
-                  <span className="text-[12px] font-bold text-amber-400">⚠️ Email verification required to post updates.</span>
+                  <span className="text-[12px] font-bold text-amber-400">⚠️ Verification required.</span>
                 ) : myRooms && myRooms.length > 0 ? (
-                  <div className="relative inline-block text-left">
+                  <>
+                    <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/[0.06] text-slate-400 hover:text-white rounded-full cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+                      <ImageIcon className="w-[18px] h-[18px]" />
+                      <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Media</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => setMediaPreview(reader.result as string);
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+
                     <button
                       type="button"
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="flex items-center gap-2 bg-[#0A0910] border border-white/[0.08] hover:border-[#8B7CF8]/50 text-slate-300 hover:text-white text-[13px] font-semibold rounded-full px-4 py-1.5 focus:outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#8B7CF8] select-none transition-all"
+                      onClick={() => setShowCodeInput(!showCodeInput)}
+                      className={`flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/[0.06] rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${showCodeInput ? 'text-[#8B7CF8] bg-[#8B7CF8]/10' : 'text-slate-400 hover:text-white'}`}
                     >
-                      <span>{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
-                      <svg
-                        className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <Code className="w-[18px] h-[18px]" />
+                      <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Code</span>
                     </button>
 
-                    <AnimatePresence>
-                      {dropdownOpen && (
-                        <>
-                          <div 
-                            className="fixed inset-0 z-40 cursor-default" 
-                            onClick={() => setDropdownOpen(false)} 
-                          />
-                          <motion.div
-                            initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                            transition={{ duration: 0.12 }}
-                            className="absolute left-0 bottom-full mb-2 min-w-[180px] w-max max-w-[280px] bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.6)] p-1 z-50 overflow-hidden"
-                          >
-                            {myRooms.map(r => (
-                              <button
-                                key={r.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedRoomId(r.id);
-                                  setDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all block ${
-                                  selectedRoomId === r.id
-                                    ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-                                }`}
-                              >
-                                {r.title}
-                              </button>
-                            ))}
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                    <div className="w-px h-5 bg-white/[0.08] mx-1 sm:mx-2"></div>
+
+                    <div className="relative inline-block text-left">
+                      <button
+                        type="button"
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        className="flex items-center gap-1.5 bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 text-[#8B7CF8] text-[12px] sm:text-[13px] font-bold rounded-full px-3 py-1.5 focus:outline-none cursor-pointer transition-all max-w-[130px] sm:max-w-[200px]"
+                      >
+                        <span className="truncate">{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
+                        <svg className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+
+                      <AnimatePresence>
+                        {dropdownOpen && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40 cursor-default" 
+                              onClick={() => setDropdownOpen(false)} 
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                              transition={{ duration: 0.12 }}
+                              className="absolute left-0 bottom-full mb-2 min-w-[180px] w-max max-w-[280px] bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.6)] p-1 z-50 overflow-hidden"
+                            >
+                              {myRooms.map(r => (
+                                <button
+                                  key={r.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedRoomId(r.id);
+                                    setDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all block ${
+                                    selectedRoomId === r.id
+                                      ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]'
+                                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                                  }`}
+                                >
+                                  {r.title}
+                                </button>
+                              ))}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </>
                 ) : (
-                  <span className="text-slate-500 text-[12px] font-medium">Create a room first to post updates</span>
+                  <span className="text-slate-500 text-[12px] font-medium">Create a room first</span>
                 )}
               </div>
+
               <button 
                 onClick={handlePostUpdate}
-                disabled={posting || !updateContent.trim() || !selectedRoomId || !profile?.emailVerified}
-                className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full font-bold text-[14px] transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !profile?.emailVerified}
+                className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-[13px] sm:text-[14px] transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shrink-0 ml-2"
               >
-                {posting ? "Posting..." : "Post Update"}
+                {posting ? "Posting..." : "Post"}
               </button>
             </div>
           </div>
@@ -309,14 +412,54 @@ export function TimelineFeed({
       )}
 
       {/* TIMELINE HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-[20px] font-extrabold text-white leading-tight font-display tracking-tight">
-          {activeTab === 'mine' ? 'My rooms — active updates' : 'Live feed — builders you follow'}
-        </h2>
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-white/[0.02] border border-white/[0.08] px-3 py-1 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>{rooms.length} live rooms</span>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+            {activeTab === 'overview' ? 'Overview — active updates' : 'Global timeline'}
+          </div>
+          <div className="h-px bg-white/[0.08] flex-1 ml-4" />
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-white/[0.02] border border-white/[0.08] px-3 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{rooms.length} live rooms</span>
+          </div>
         </div>
+        {activeTab === 'feed' && (
+          <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
+            <div className="flex flex-wrap items-center gap-2">
+              {['All', 'Design', 'Engineering', 'Product', 'Research', 'Dev', 'Writing'].map(domain => (
+                <button
+                  key={domain}
+                  onClick={() => setActiveDomainFilter(domain)}
+                  className={`px-3 py-1.5 rounded-full text-[12px] font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+                    activeDomainFilter === domain
+                      ? 'bg-[#6C5CE7] border-[#6C5CE7] text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]'
+                      : 'bg-white/[0.02] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.05]'
+                  }`}
+                >
+                  {domain}
+                </button>
+              ))}
+            </div>
+            <div className="flex bg-[#0D0B14] border border-white/[0.08] rounded-full p-1 self-start sm:self-auto">
+              <button
+                onClick={() => setFeedSort('latest')}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  feedSort === 'latest' ? 'bg-white/[0.08] text-white' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                Latest
+              </button>
+              <button
+                onClick={() => setFeedSort('trending')}
+                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  feedSort === 'trending' ? 'bg-white/[0.08] text-white' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                Trending
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* TIMELINE FEED */}
@@ -327,19 +470,23 @@ export function TimelineFeed({
           </div>
         ) : (
           filteredUpdates.map((update, idx) => {
-            const tag = update.rooms?.tags?.[0] || 'product';
+            const fullRoom = rooms?.find(r => r.id === update.roomId);
+            const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
             const tStyle = tagStyle(tag);
             const builderName = update.authorName;
-            const updateInitials = builderName.substring(0, 2).toUpperCase();
+            const updateAvatarUrl = getAvatarUrl(update.authorId || builderName);
             const timeString = timeAgo(update.createdAt);
-            const roomTitle = update.rooms?.title || 'Unknown Room';
+            const roomTitle = fullRoom?.title || update.rooms?.title || 'Unknown Room';
             const comments = update.reactions?.filter((r: any) => r.type === 'reply' || r.text) || [];
+            
+            const isFollowing = observedRooms.some(r => r.id === update.roomId);
+            const isLaunch = fullRoom?.updateCount === 1;
 
             return (
               <div 
                 key={update.id} 
                 onClick={() => toggleComments(update.id)}
-                className="bg-[#0D0B14] border border-white/[0.08] rounded-[24px] p-6 shadow-xl hover:bg-white/[0.01] transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[24px] p-6 shadow-xl hover:bg-white/[0.01] transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -350,28 +497,57 @@ export function TimelineFeed({
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-[14px] font-display shadow-inner ${tStyle.bg} ${tStyle.color}`}>
-                      {updateInitials}
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-white/[0.03] border border-white/[0.08] shadow-inner'}`}>
+                      {isLaunch ? (
+                        <div className="w-full h-full bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[18px]">🚀</div>
+                      ) : (
+                        <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+                      )}
                     </div>
                     <div>
-                      <div className="font-extrabold text-[16px] text-white leading-tight font-display hover:underline" onClick={(e) => e.stopPropagation()}>{builderName}</div>
-                      <div className="text-[13px] text-slate-400 mt-1 font-medium">
+                      <div className="flex items-center gap-2">
+                        <div className="font-extrabold text-[16px] text-white leading-tight font-display hover:underline" onClick={(e) => e.stopPropagation()}>{builderName}</div>
+                        {isLaunch && (
+                          <span className="text-[10px] uppercase tracking-widest font-bold bg-[#8B7CF8]/20 text-[#8B7CF8] px-2 py-0.5 rounded-full">Launched</span>
+                        )}
+                      </div>
+                      <div className="text-[13px] text-slate-400 mt-1 font-medium flex items-center">
                         <span className="text-white font-semibold hover:underline" onClick={(e) => e.stopPropagation()}>{roomTitle}</span>
                         <span className="text-slate-600 mx-1.5">·</span>
                         <span className="capitalize">{tag}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap mt-0.5">
-                    {timeString}
+                  <div className="flex flex-col items-end gap-1.5">
+                    <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
+                      {timeString}
+                    </div>
+                    {activeTab === 'feed' && !isFollowing && (
+                      <button 
+                        onClick={(e) => handleFollowRoom(update.roomId, e)}
+                        className="text-[11px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 px-2.5 py-1 rounded-full transition-colors"
+                      >
+                        + Follow
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                <p className="text-[15px] text-slate-200 leading-relaxed mb-4">
-                  {update.content}
-                </p>
+                {update.content && (
+                  <p className="text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap">
+                    {update.content}
+                  </p>
+                )}
 
-                <div className="flex flex-wrap items-center gap-3 mt-4">
+                {update.mediaUrl && (
+                  <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0A0910] shadow-lg">
+                    <img src={update.mediaUrl} alt="Update media" className="w-full object-cover max-h-[500px]" />
+                  </div>
+                )}
+
+                {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
+
+                <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-white/[0.08]">
                   {renderReactionButton(update.id, update.roomId, 'sharp', 'Sharp', '✦', 'bg-[#8B7CF8]/10 border-[#8B7CF8]/30 text-[#8B7CF8]', update.reactions || [])}
                   {renderReactionButton(update.id, update.roomId, 'pushback', 'Push back', '↩', 'bg-rose-500/10 border-rose-500/30 text-rose-400', update.reactions || [])}
                   {renderReactionButton(update.id, update.roomId, 'tellmemore', 'More', '?', 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400', update.reactions || [])}
@@ -397,13 +573,13 @@ export function TimelineFeed({
                 {expandedComments.includes(update.id) && (
                   <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-3">
                     {comments.map((comment: any) => {
-                      const commentInitials = comment.observerName.substring(0, 2).toUpperCase();
+                      const commentAvatarUrl = getAvatarUrl(comment.observerId || comment.observerName);
                       const commentHandle = `@${comment.observerName.toLowerCase().replace(/\s+/g, '')}`;
                       const commentTime = timeAgo(comment.createdAt);
                       return (
                         <div key={comment.id} className="flex gap-3" onClick={(e) => e.stopPropagation()}>
-                          <div className="w-8 h-8 rounded-full bg-white/5 text-slate-300 font-bold flex items-center justify-center shrink-0 text-[11px] font-mono">
-                            {commentInitials}
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                            <img src={commentAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                           </div>
                           <div className="flex-1 bg-white/[0.02] rounded-xl p-3 border border-white/[0.04]">
                             <div className="flex items-center gap-2 mb-1">

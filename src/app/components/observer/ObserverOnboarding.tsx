@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, apiCall, supabase } from "../auth/AuthContext";
-import { normalizeRow } from "../../hooks/useRooms";
+import { normalizeRow } from "../../utils/helpers";
 
 const topics = [
   "Product",
@@ -152,7 +152,7 @@ export default function ObserverOnboarding() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500">Recommended live rooms</div>
-                  <p className="mt-2 text-sm text-slate-400">Follow the rooms you want to observe and jump straight into the live feed.</p>
+                  <p className="mt-2 text-sm text-slate-400">Follow the rooms you want to observe and jump straight into the global timeline.</p>
                 </div>
                 <div className="text-[11px] font-bold text-slate-300">{followedRooms.length} followed</div>
               </div>
