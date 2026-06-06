@@ -15,17 +15,17 @@ const EMPTY: CompletionState = { domain: false, room: false, update: false, call
 
 /* ─── Step definitions ───────────────────────────────────── */
 const BUILDER_STEPS = [
-  { id: 'domain',  emoji: '🎯', title: 'Set your domain',        description: 'What space are you building in? Product, Design, Engineering...' },
-  { id: 'room',    emoji: '🚪', title: 'Open your first room',   description: 'Give your build a name and open it for observers to follow.' },
-  { id: 'update',  emoji: '📝', title: 'Post your first update', description: "What's happening right now? Share the messy truth." },
-  { id: 'call',    emoji: '📅', title: 'Schedule intro call',    description: '20 minutes with the team to frame your build room.' },
+  { id: 'domain', emoji: '🎯', title: 'Set your domain', description: 'What space are you building in? Product, Design, Engineering...' },
+  { id: 'room', emoji: '🚪', title: 'Open your first room', description: 'Give your build a name and open it for observers to follow.' },
+  { id: 'update', emoji: '📝', title: 'Post your first update', description: "What's happening right now? Share the messy truth." },
+  { id: 'call', emoji: '📅', title: 'Schedule intro call', description: '20 minutes with the team to frame your build room.' },
 ];
 
 const OBSERVER_STEPS = [
-  { id: 'domain',  emoji: '🎯', title: 'Set your interests',     description: 'What domains do you want to follow — Product, Design...' },
-  { id: 'room',    emoji: '🚪', title: 'Follow your first room', description: 'Find a builder whose work you want to watch unfold.' },
-  { id: 'update',  emoji: '📡', title: 'Tune your feed',         description: 'Tell us what kinds of updates matter most to you.' },
-  { id: 'call',    emoji: '📅', title: 'Schedule intro call',    description: '20 minutes to get the most out of Patchwork as an observer.' },
+  { id: 'domain', emoji: '🎯', title: 'Set your interests', description: 'What domains do you want to follow — Product, Design...' },
+  { id: 'room', emoji: '🚪', title: 'Follow your first room', description: 'Find a builder whose work you want to watch unfold.' },
+  { id: 'update', emoji: '📡', title: 'Tune your feed', description: 'Tell us what kinds of updates matter most to you.' },
+  { id: 'call', emoji: '📅', title: 'Schedule intro call', description: '20 minutes to get the most out of Patchwork as an observer.' },
 ];
 
 /* ─── Load completion state from Supabase ───────────────── */
@@ -187,11 +187,10 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
                 key={d}
                 type="button"
                 onClick={() => setSelectedDomain(d)}
-                className={`px-4 py-2 rounded-full text-[13px] font-bold capitalize transition-all border ${
-                  selectedDomain === d
+                className={`px-4 py-2 rounded-full text-[13px] font-bold capitalize transition-all border ${selectedDomain === d
                     ? 'bg-[#6C5CE7] border-[#6C5CE7] text-white'
                     : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 {d}
               </button>
@@ -204,19 +203,19 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
           (stepId === 'room' && role === 'builder') ||
           (stepId === 'update' && role === 'builder') ||
           (stepId === 'update' && role === 'observer')) && (
-          <textarea
-            rows={stepId === 'update' ? 4 : 2}
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder={
-              stepId === 'domain'  ? 'e.g. Product, Design, Growth' :
-              stepId === 'room'    ? 'e.g. MoniFlow — Fintech redesign' :
-              stepId === 'update'  && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
-              'e.g. I want updates about early-stage product decisions and launch pivots.'
-            }
-            className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
-          />
-        )}
+            <textarea
+              rows={stepId === 'update' ? 4 : 2}
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder={
+                stepId === 'domain' ? 'e.g. Product, Design, Growth' :
+                  stepId === 'room' ? 'e.g. MoniFlow — Fintech redesign' :
+                    stepId === 'update' && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
+                      'e.g. I want updates about early-stage product decisions and launch pivots.'
+              }
+              className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
+            />
+          )}
 
         {stepId === 'room' && role === 'observer' && (
           <p className="text-[13px] text-slate-400 mb-6 bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
@@ -241,8 +240,8 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
             {saving
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
               : stepId === 'call' ? '📅 Open calendar'
-              : stepId === 'room' && role === 'observer' ? 'Got it'
-              : 'Save & continue'}
+                : stepId === 'room' && role === 'observer' ? 'Got it'
+                  : 'Save & continue'}
           </motion.button>
         </div>
       </motion.div>
@@ -263,6 +262,25 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
   const [loading, setLoading] = useState(true);
   const [activeStep, setActiveStep] = useState<typeof steps[0] | null>(null);
   const [dismissed, setDismissed] = useState(false);
+
+  // Sync dismissed state from localStorage on mount/userId change
+  useEffect(() => {
+    try {
+      const isDismissed = localStorage.getItem(`checklist_dismissed_${userId}`) === "true";
+      setDismissed(isDismissed);
+    } catch (e) {
+      console.error('[Checklist] Error reading from localStorage:', e);
+    }
+  }, [userId]);
+
+  function handleDismiss() {
+    setDismissed(true);
+    try {
+      localStorage.setItem(`checklist_dismissed_${userId}`, "true");
+    } catch (e) {
+      console.error('[Checklist] Error saving to localStorage:', e);
+    }
+  }
 
   // Load real completion state from DB on mount
   useEffect(() => {
@@ -288,7 +306,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       if (fresh.domain && fresh.room && fresh.update && fresh.call) {
         supabase.from('users').update({
           signup_completed_at: new Date().toISOString()
-        }).eq('id', userId).catch(() => {});
+        }).eq('id', userId).catch(() => { });
       }
     }, 800);
   }
@@ -313,7 +331,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
             <p className="text-[14px] font-bold text-emerald-300">You're all set! 🎉</p>
             <p className="text-[13px] text-emerald-400/70 mt-0.5">Your Patchwork profile is complete. Time to build.</p>
           </div>
-          <button onClick={() => setDismissed(true)} className="text-emerald-400/50 hover:text-emerald-400 transition-colors">
+          <button onClick={handleDismiss} className="text-emerald-400/50 hover:text-emerald-400 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </motion.div>
@@ -380,15 +398,13 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                 transition={{ delay: idx * 0.06 }}
                 onClick={() => !done && setActiveStep(step)}
                 disabled={done}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                  done ? 'opacity-50 cursor-default' : 'hover:bg-white/[0.04] cursor-pointer'
-                }`}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${done ? 'opacity-50 cursor-default' : 'hover:bg-white/[0.04] cursor-pointer'
+                  }`}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all ${
-                  done
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all ${done
                     ? 'bg-emerald-500/20 border-emerald-500/30'
                     : 'bg-white/[0.04] border-white/[0.1] group-hover:border-[#8B7CF8]/40'
-                }`}>
+                  }`}>
                   {done
                     ? <Check className="w-3.5 h-3.5 text-emerald-400" />
                     : <span className="text-[11px] font-bold text-slate-500">{idx + 1}</span>

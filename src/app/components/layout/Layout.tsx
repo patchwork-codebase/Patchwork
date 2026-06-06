@@ -125,10 +125,6 @@ export default function Layout() {
             <span className="rounded bg-[#8B7CF8]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8B7CF8]">Beta</span>
           </Link>
         </div>
-        <div className="hidden lg:flex items-center gap-6">
-          <Link to="/" className="text-[13px] font-semibold text-slate-400 hover:text-white transition">Features</Link>
-          <Link to="/" className="text-[13px] font-semibold text-slate-400 hover:text-white transition">Builders</Link>
-        </div>
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Notifications Toggle */}
           <div className="relative">
@@ -385,16 +381,7 @@ export default function Layout() {
               Explore builders
             </Link>
 
-            {/* + Massive Post button at the bottom of navigation */}
-            <div className="mt-8 px-2">
-              <Link
-                to="/dashboard/create"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white rounded-full text-[15px] font-bold transition shadow-[0_4px_14px_rgba(108,92,231,0.25)] active:scale-95"
-              >
-                <PlusIcon />
-                Post Update
-              </Link>
-            </div>
+
           </nav>
 
           {/* Profile card at the very bottom */}
