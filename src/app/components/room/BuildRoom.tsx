@@ -99,6 +99,7 @@ export default function BuildRoom() {
   const [joined, setJoined] = useState(false);
   const [activeTab, setActiveTab] = useState<'updates' | 'reactions'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
+  const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const quickUpdateMode = searchParams.get('action') === 'post';
 
@@ -406,8 +407,8 @@ export default function BuildRoom() {
         {/* Room header */}
         <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50" />
-          <div className="flex items-start justify-between gap-6 flex-wrap relative z-10">
-            <div className="flex-1 min-w-0">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
+            <div className="flex-1 min-w-0 w-full">
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md uppercase tracking-widest ${
                   room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-white/5 text-slate-400 ring-1 ring-white/10'
@@ -428,7 +429,7 @@ export default function BuildRoom() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap mt-2 md:mt-0">
+            <div className="flex flex-wrap md:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
               {room.status === 'completed' && (
                 <Link
                   to={`/dashboard/build-logs`}
@@ -536,9 +537,9 @@ export default function BuildRoom() {
               />
             )}
 
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+              <div className="grid grid-cols-2 sm:flex items-center gap-2">
+                <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
                   <ImageIcon className="w-4 h-4 text-[#8B7CF8]" />
                   Attach visual
                   <input
@@ -558,7 +559,7 @@ export default function BuildRoom() {
                 <button
                   type="button"
                   onClick={() => setShowCodeInput(!showCodeInput)}
-                  className={`flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-white/[0.06] text-white'} rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                  className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-white/[0.06] text-white'} rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                 >
                   <Code className="w-4 h-4" />
                   Code snippet
@@ -568,7 +569,7 @@ export default function BuildRoom() {
               <button
                 type="submit"
                 disabled={postingUpdate || (!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview)}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
               >
                 {postingUpdate ? 'Posting...' : <><Send className="w-4 h-4" /> Post Update</>}
               </button>
@@ -668,25 +669,65 @@ export default function BuildRoom() {
 
                     {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
-                    {updateReactions.length > 0 && (
-                      <div className="mt-8 pt-6 border-t border-white/[0.06] space-y-4 relative z-10">
-                        {updateReactions.map(r => {
-                          const cfg = REACTION_CONFIG[r.type] || { emoji: '💬', label: 'Reaction', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-white/10 text-white border border-white/20', desc: 'Reaction' };
-                          return (
-                            <div key={r.id} className={`flex items-start gap-4 p-5 rounded-2xl ${cfg.color} border shadow-sm`}>
-                              <span className="text-2xl">{cfg.emoji}</span>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                  <span className={`text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md ${cfg.badge}`}>{cfg.label}</span>
-                                  <span className="text-[11px] text-current opacity-60 font-mono font-medium">by {r.observerName} · {timeAgo(r.createdAt)}</span>
+                    {updateReactions.length > 0 && (() => {
+                      const reactionCounts = updateReactions.reduce((acc, r) => {
+                        acc[r.type] = (acc[r.type] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      
+                      const textReactions = updateReactions.filter(r => r.text && r.text.trim().length > 0);
+                      const isExpanded = expandedUpdates[update.id];
+                      const visibleReactions = isExpanded ? textReactions : textReactions.slice(0, 3);
+                      const hiddenCount = textReactions.length - visibleReactions.length;
+
+                      return (
+                        <div className="mt-6 space-y-4 relative z-10">
+                          {/* Aggregate Pills */}
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(reactionCounts).map(([type, count]) => {
+                              const cfg = REACTION_CONFIG[type] || REACTION_CONFIG['reply'];
+                              return (
+                                <div key={type} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold ${cfg.color} border shadow-sm`}>
+                                  <span>{cfg.emoji}</span>
+                                  <span>{count}</span>
                                 </div>
-                                <p className="text-[14px] leading-relaxed font-medium">{r.text}</p>
-                              </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Text Reactions */}
+                          {visibleReactions.length > 0 && (
+                            <div className="pt-4 border-t border-white/[0.06] space-y-3">
+                              {visibleReactions.map(r => {
+                                const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
+                                return (
+                                  <div key={r.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                                    <div className="text-xl mt-0.5">{cfg.emoji}</div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
+                                        <span className="text-[11px] font-bold text-slate-300">{r.observerName}</span>
+                                        <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
+                                      </div>
+                                      <p className="text-[13px] text-slate-300 leading-relaxed font-medium">{r.text}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              
+                              {hiddenCount > 0 && (
+                                <button
+                                  onClick={() => setExpandedUpdates(prev => ({ ...prev, [update.id]: true }))}
+                                  className="text-[12px] font-bold text-[#8B7CF8] hover:text-white transition-colors"
+                                >
+                                  View {hiddenCount} more {hiddenCount === 1 ? 'reply' : 'replies'}...
+                                </button>
+                              )}
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })
@@ -711,20 +752,21 @@ export default function BuildRoom() {
                 )}
               </div>
             ) : (
-              [...room.reactions].reverse().map(r => {
-                const cfg = REACTION_CONFIG[r.type] || { emoji: '💬', label: 'Reaction', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-white/10 text-white border border-white/20', desc: 'Reaction' };
+              [...room.reactions].reverse().filter(r => r.text && r.text.trim().length > 0).map(r => {
+                const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                 const linkedUpdate = r.updateId ? room.updates.find(u => u.id === r.updateId) : null;
                 return (
-                  <div key={r.id} className={`flex items-start gap-4 p-6 rounded-[20px] ${cfg.color} border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`} tabIndex={0}>
-                    <span className="text-2xl">{cfg.emoji}</span>
+                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
+                    <div className="text-xl mt-0.5">{cfg.emoji}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <span className={`text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md ${cfg.badge}`}>{cfg.label}</span>
-                        <span className="text-[11px] text-current opacity-60 font-mono font-medium">by {r.observerName} · {timeAgo(r.createdAt)}</span>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
+                        <span className="text-[12px] font-bold text-slate-300">{r.observerName}</span>
+                        <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
                       </div>
-                      <p className="text-[14px] leading-relaxed font-medium mb-3">{r.text}</p>
+                      <p className="text-[14px] leading-relaxed font-medium text-slate-200 mb-2">{r.text}</p>
                       {linkedUpdate && (
-                        <div className="text-[12px] opacity-60 border-l-[2px] border-current pl-4 font-serif italic line-clamp-2">
+                        <div className="text-[12px] text-slate-500 border-l-[2px] border-slate-700 pl-3 font-medium italic line-clamp-2">
                           Re: "{linkedUpdate.content.slice(0, 100)}..."
                         </div>
                       )}

@@ -83,6 +83,7 @@ export function TimelineFeed({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
+  const [fullyExpandedComments, setFullyExpandedComments] = useState<string[]>([]);
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showCodeInput, setShowCodeInput] = useState(false);
@@ -570,14 +571,31 @@ export function TimelineFeed({
                 </div>
 
                 {/* Comments section */}
-                {expandedComments.includes(update.id) && (
-                  <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-3">
-                    {comments.map((comment: any) => {
-                      const commentAvatarUrl = getAvatarUrl(comment.observerId || comment.observerName);
-                      const commentHandle = `@${comment.observerName.toLowerCase().replace(/\s+/g, '')}`;
-                      const commentTime = timeAgo(comment.createdAt);
-                      return (
-                        <div key={comment.id} className="flex gap-3" onClick={(e) => e.stopPropagation()}>
+                {expandedComments.includes(update.id) && (() => {
+                  const isFullyExpanded = fullyExpandedComments.includes(update.id);
+                  const visibleComments = isFullyExpanded ? comments : comments.slice(0, 3);
+                  const hiddenCount = comments.length - visibleComments.length;
+
+                  return (
+                    <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-3">
+                      {hiddenCount > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFullyExpandedComments(prev => [...prev, update.id]);
+                          }}
+                          className="text-[12px] font-bold text-[#8B7CF8] hover:text-white transition-colors self-start mb-2"
+                        >
+                          View {hiddenCount} previous {hiddenCount === 1 ? 'reply' : 'replies'}...
+                        </button>
+                      )}
+                      
+                      {visibleComments.map((comment: any) => {
+                        const commentAvatarUrl = getAvatarUrl(comment.observerId || comment.observerName);
+                        const commentHandle = `@${comment.observerName.toLowerCase().replace(/\s+/g, '')}`;
+                        const commentTime = timeAgo(comment.createdAt);
+                        return (
+                          <div key={comment.id} className="flex gap-3" onClick={(e) => e.stopPropagation()}>
                           <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                             <img src={commentAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                           </div>
@@ -605,7 +623,7 @@ export function TimelineFeed({
                       </button>
                     </div>
                   </div>
-                )}
+                );})()}
               </div>
             );
           })
