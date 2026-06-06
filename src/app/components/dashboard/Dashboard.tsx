@@ -369,7 +369,7 @@ export default function Dashboard() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="w-full max-w-[1180px] mx-auto px-5 sm:px-6 py-8"
+      className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8"
     >
 
       {/* Email Verification Banner */}
@@ -402,8 +402,8 @@ export default function Dashboard() {
       )}
 
       {/* HEADER */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-6 sm:gap-6 sm:mb-8">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white font-extrabold text-xl shadow-[0_0_20px_rgba(108,92,231,0.3)]">
             {initials}
           </div>
@@ -424,7 +424,7 @@ export default function Dashboard() {
                 Rep {profile?.reputation || 0}
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-2 text-[13px] text-slate-400 font-medium">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 sm:mt-2 text-[12px] sm:text-[13px] text-slate-400 font-medium">
               <span>{handle}</span>
               {profile?.city && (
                 <>
@@ -432,8 +432,8 @@ export default function Dashboard() {
                   <span>{profile.city}</span>
                 </>
               )}
-              <span className="text-slate-600">·</span>
-              <span>Joined {joinDate}</span>
+              <span className="text-slate-600 hidden sm:inline-block">·</span>
+              <span className="hidden sm:inline-block">Joined {joinDate}</span>
             </div>
           </div>
         </div>
@@ -447,7 +447,7 @@ export default function Dashboard() {
       </div>
 
       {/* PROFILE CARD & STATS */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Profile Card - hidden on mobile to prevent redundancy with header */}
         <div className="hidden md:block xl:col-span-2 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
           <div className="flex items-center gap-4">
@@ -483,7 +483,7 @@ export default function Dashboard() {
       </div>
 
       {/* INLINE TEXT TABS */}
-      <div className="flex flex-wrap items-center gap-6 mb-8 border-b border-white/[0.08] relative">
+      <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 sm:mb-8 border-b border-white/[0.08] relative">
         {[
           { key: 'overview' as const, label: 'Overview' },
           { key: 'mine' as const, label: 'My rooms' },
