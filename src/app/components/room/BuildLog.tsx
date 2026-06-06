@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
-import { apiCall } from "../auth/AuthContext";
+import { apiCall, supabase } from "../auth/AuthContext";
 import { Hammer, Users, Clock, ArrowLeft, Share2, BookOpen, Zap, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +37,25 @@ interface LogData {
   builder: { name: string; bio: string; reputation: number } | null;
 }
 
+function toCamelCase(key: string) {
+  return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function normalizeRow(row: any): any {
+  if (!row || typeof row !== 'object') return row;
+  return Object.entries(row).reduce((result: any, [key, value]) => {
+    const camelKey = toCamelCase(key);
+    if (Array.isArray(value)) {
+      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
+    } else if (value && typeof value === 'object') {
+      result[camelKey] = normalizeRow(value);
+    } else {
+      result[camelKey] = value;
+    }
+    return result;
+  }, {});
+}
+
 const REACTION_CONFIG = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-amber-50 border-amber-200 text-amber-800', badge: 'bg-amber-100 text-amber-700' },
   pushback: { emoji: '🔄', label: 'Push back', color: 'bg-red-50 border-red-200 text-red-800', badge: 'bg-red-100 text-red-700' },
@@ -58,7 +77,62 @@ export default function BuildLog() {
 
   useEffect(() => {
     if (!id) return;
-    apiCall(`/log/${id}`).then(setData).catch(console.log).finally(() => setLoading(false));
+    async function load() {
+      try {
+        // 1. Fetch room details
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (roomError) throw roomError;
+        if (!roomData) {
+          setData(null);
+          return;
+        }
+
+        // 2. Fetch updates
+        const { data: updatesData, error: updatesError } = await supabase
+          .from('updates')
+          .select('*')
+          .eq('room_id', id)
+          .order('created_at', { ascending: false });
+
+        if (updatesError) throw updatesError;
+
+        // 3. Fetch reactions
+        const { data: reactionsData, error: reactionsError } = await supabase
+          .from('reactions')
+          .select('*')
+          .eq('room_id', id)
+          .order('created_at', { ascending: false });
+
+        if (reactionsError) throw reactionsError;
+
+        // 4. Fetch builder details
+        const { data: builderData, error: builderError } = await supabase
+          .from('users')
+          .select('name, bio, reputation')
+          .eq('id', roomData.builder_id)
+          .maybeSingle();
+
+        if (builderError) throw builderError;
+
+        setData({
+          room: normalizeRow(roomData),
+          updates: (updatesData || []).map(normalizeRow),
+          reactions: (reactionsData || []).map(normalizeRow),
+          builder: builderData ? normalizeRow(builderData) : null
+        });
+      } catch (err: any) {
+        console.log('Load log error:', err);
+        toast.error("Failed to load Build Log details");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, [id]);
 
   function copyLink() {

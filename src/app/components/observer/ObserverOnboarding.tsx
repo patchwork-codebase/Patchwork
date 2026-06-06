@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth, apiCall } from "../auth/AuthContext";
+import { useAuth, apiCall, supabase } from "../auth/AuthContext";
+import { normalizeRow } from "../../hooks/useRooms";
 
 const topics = [
   "Product",
@@ -29,7 +30,19 @@ export default function ObserverOnboarding() {
   }, [profile, navigate]);
 
   useEffect(() => {
-    apiCall('/rooms').then((rooms: any) => setRoomSuggestions((rooms || []).slice(0, 6))).catch(() => setRoomSuggestions([]));
+    supabase
+      .from('rooms')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(6)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(error);
+          setRoomSuggestions([]);
+        } else {
+          setRoomSuggestions((data || []).map(normalizeRow));
+        }
+      });
   }, []);
 
   function toggleTopic(topic: string) {
@@ -49,21 +62,41 @@ export default function ObserverOnboarding() {
   }
 
   async function handleStartObserving() {
-    if (!profile || !token) {
+    if (!profile) {
       navigate('/login');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      await apiCall(`/users/${profile.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ interests: selectedTopics }),
-      }, token || undefined);
+      const { error: profileError } = await supabase
+        .from('users')
+        .update({ interests: selectedTopics })
+        .eq('id', profile.id);
 
-      await Promise.all(
-        followedRooms.map(roomId => apiCall(`/rooms/${roomId}/join`, { method: 'POST' }, token || undefined)),
-      );
+      if (profileError) throw profileError;
+
+      for (const roomId of followedRooms) {
+        const { error: upsertError } = await supabase
+          .from('room_observers')
+          .upsert({ room_id: roomId, observer_id: profile.id });
+
+        if (upsertError) throw upsertError;
+
+        const { count, error: countError } = await supabase
+          .from('room_observers')
+          .select('*', { count: 'exact', head: true })
+          .eq('room_id', roomId);
+
+        if (countError) throw countError;
+
+        const { error: roomUpdateError } = await supabase
+          .from('rooms')
+          .update({ observer_count: count || 0, updated_at: new Date().toISOString() })
+          .eq('id', roomId);
+
+        if (roomUpdateError) throw roomUpdateError;
+      }
 
       navigate('/dashboard/observer');
     } catch (err: any) {

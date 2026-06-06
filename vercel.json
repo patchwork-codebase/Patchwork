@@ -8,6 +8,7 @@
     }
   ],
   "routes": [
+    { "src": "/api/v1/(.*)", "dest": "https://oaielnxqahmywdpisomd.supabase.co/functions/v1/make-server-30db7d9e/$1" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]

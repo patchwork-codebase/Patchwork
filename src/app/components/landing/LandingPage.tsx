@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { Country, State, City } from "country-state-city";
 import {
   Sparkles,
   ArrowRight,
@@ -314,7 +315,9 @@ export default function LandingPage() {
   const [lname, setLname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [city, setCity] = useState("Lagos, Nigeria");
+  const [countryIso, setCountryIso] = useState("");
+  const [stateIso, setStateIso] = useState("");
+  const [city, setCity] = useState("");
   const [domain, setDomain] = useState("product");
   const [buildingDesc, setBuildingDesc] = useState("");
   const [roomName, setRoomName] = useState("");
@@ -1506,20 +1509,54 @@ export default function LandingPage() {
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300 block">Location City</label>
-                      <input
-                        value={city}
-                        onChange={e => setCity(e.target.value)}
-                        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition"
-                        placeholder="Lagos, Nigeria"
-                      />
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-300 block">Country</label>
+                        <select
+                          value={countryIso}
+                          onChange={e => { setCountryIso(e.target.value); setStateIso(""); setCity(""); }}
+                          className="w-full rounded-xl border border-white/[0.08] bg-[#0E0C16] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition"
+                        >
+                          <option value="">Select Country</option>
+                          {Country.getAllCountries().map(c => (
+                            <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-300 block">State</label>
+                        <select
+                          value={stateIso}
+                          onChange={e => { setStateIso(e.target.value); setCity(""); }}
+                          disabled={!countryIso}
+                          className="w-full rounded-xl border border-white/[0.08] bg-[#0E0C16] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition disabled:opacity-50"
+                        >
+                          <option value="">Select State</option>
+                          {countryIso && State.getStatesOfCountry(countryIso).map(s => (
+                            <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-300 block">City</label>
+                        <select
+                          value={city}
+                          onChange={e => setCity(e.target.value)}
+                          disabled={!stateIso}
+                          className="w-full rounded-xl border border-white/[0.08] bg-[#0E0C16] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition disabled:opacity-50"
+                        >
+                          <option value="">Select City</option>
+                          {stateIso && City.getCitiesOfState(countryIso, stateIso).map(c => (
+                            <option key={c.name} value={c.name}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row pt-4">
                       <button
                         onClick={() => setStep(2)}
-                        disabled={!fname || !lname || !email || !password}
+                        disabled={!fname || !lname || !email || !password || !countryIso || !stateIso || !city}
                         className="inline-flex items-center justify-center gap-2 rounded-full bg-[#6C5CE7] hover:bg-[#5b4ed6] px-6 py-3 text-xs font-bold text-white transition disabled:opacity-50"
                       >
                         Continue <ArrowRight className="h-4 w-4" />

@@ -33,37 +33,37 @@ function timeAgo(iso: string) {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
+import { useProfile } from "../../hooks/useProfile";
+import { useUserRooms } from "../../hooks/useRooms";
+import { useQueryClient } from "@tanstack/react-query";
+
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const { user, token, refreshProfile } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  
+  const { data: profile, isLoading: profileLoading } = useProfile(id);
+  const { 
+    data: roomsData, 
+    isLoading: roomsLoading,
+    fetchNextPage: fetchNextRooms,
+    hasNextPage: hasNextRooms,
+    isFetchingNextPage: isFetchingNextRooms
+  } = useUserRooms(id);
+  const rooms = roomsData?.pages.flat() || [];
+  
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', bio: '', role: '' });
   const [saving, setSaving] = useState(false);
 
+  const loading = profileLoading || roomsLoading;
   const isOwn = user?.id === id;
 
   useEffect(() => {
-    if (!id) return;
-    async function load() {
-      try {
-        const [p, r] = await Promise.all([
-          apiCall(`/users/${id}`),
-          apiCall(`/users/${id}/rooms`),
-        ]);
-        setProfile(p);
-        setRooms(r);
-        setEditForm({ name: p.name, bio: p.bio || '', role: p.role });
-      } catch (err) {
-        console.log('Profile load error:', err);
-      } finally {
-        setLoading(false);
-      }
+    if (profile) {
+      setEditForm({ name: profile.name || '', bio: profile.bio || '', role: profile.role || '' });
     }
-    load();
-  }, [id]);
+  }, [profile]);
 
   async function handleSave() {
     if (!id || !token) return;
@@ -73,7 +73,7 @@ export default function UserProfile() {
         method: 'PUT',
         body: JSON.stringify(editForm),
       }, token);
-      setProfile(updated);
+      queryClient.invalidateQueries({ queryKey: ['profile', id] });
       setEditing(false);
       await refreshProfile();
       toast.success('Profile updated!');
@@ -275,6 +275,17 @@ export default function UserProfile() {
                 )}
               </Link>
             ))}
+            {hasNextRooms && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => fetchNextRooms()}
+                  disabled={isFetchingNextRooms}
+                  className="px-6 py-2.5 bg-white/[0.02] border border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.04] rounded-full text-[13px] font-bold text-slate-300 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isFetchingNextRooms ? "Loading..." : "Load More Rooms"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

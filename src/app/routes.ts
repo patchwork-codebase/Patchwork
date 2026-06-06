@@ -10,6 +10,7 @@ import ObserverOnboarding from "./components/observer/ObserverOnboarding";
 import LandingPage from "./components/landing/LandingPage";
 import Layout from "./components/layout/Layout";
 import UserProfile from "./components/profile/UserProfile";
+import VerifyEmail from "./components/auth/VerifyEmail";
 
 export const router = createBrowserRouter([
   // Public landing and auth
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     Component: AuthPage,
+  },
+  {
+    path: "/verify-email",
+    Component: VerifyEmail,
   },
 
   {

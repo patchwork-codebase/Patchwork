@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
+import { Country, State, City } from "country-state-city";
 import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
 import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -31,6 +32,8 @@ export default function AuthPage() {
     lname: '',
     email: '',
     password: '',
+    countryIso: '',
+    stateIso: '',
     city: '',
     role: 'builder' as 'builder' | 'observer',
   });
@@ -68,7 +71,7 @@ export default function AuthPage() {
     }
   }
 
-  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8;
+  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.countryIso && signup.stateIso && signup.city;
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
@@ -345,16 +348,42 @@ export default function AuthPage() {
                   </button>
                 </div>
 
-                {/* City (optional) */}
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="text"
-                    placeholder="City (optional)"
+                {/* Location (mandatory) */}
+                <div className="grid grid-cols-3 gap-2">
+                  <select
+                    value={signup.countryIso}
+                    onChange={e => setSignup(s => ({ ...s, countryIso: e.target.value, stateIso: '', city: '' }))}
+                    className="w-full px-3 py-3.5 bg-[#0E0C16] border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                  >
+                    <option value="">Country</option>
+                    {Country.getAllCountries().map(c => (
+                      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={signup.stateIso}
+                    onChange={e => setSignup(s => ({ ...s, stateIso: e.target.value, city: '' }))}
+                    disabled={!signup.countryIso}
+                    className="w-full px-3 py-3.5 bg-[#0E0C16] border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50"
+                  >
+                    <option value="">State</option>
+                    {signup.countryIso && State.getStatesOfCountry(signup.countryIso).map(s => (
+                      <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+                    ))}
+                  </select>
+
+                  <select
                     value={signup.city}
                     onChange={e => setSignup(s => ({ ...s, city: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
-                  />
+                    disabled={!signup.stateIso}
+                    className="w-full px-3 py-3.5 bg-[#0E0C16] border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50"
+                  >
+                    <option value="">City</option>
+                    {signup.stateIso && City.getCitiesOfState(signup.countryIso, signup.stateIso).map(c => (
+                      <option key={c.name} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <motion.button
