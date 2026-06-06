@@ -8,7 +8,7 @@ const app = new Hono();
 app.use('*', logger(console.log));
 app.use("/*", cors({
   origin: "*",
-  allowHeaders: ["Content-Type", "Authorization"],
+  allowHeaders: ["Content-Type", "Authorization", "x-client-info", "apikey"],
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   exposeHeaders: ["Content-Length"],
   maxAge: 600,
@@ -118,9 +118,18 @@ app.post("/make-server-30db7d9e/auth/signup", async (c) => {
     if (!email || !password || !name) {
       return c.json({ error: "email, password, and name are required" }, 400);
     }
+    if (name.trim().length < 2) {
+      return c.json({ error: "Name must be at least 2 characters long" }, 400);
+    }
+    if (role && role !== 'builder' && role !== 'observer') {
+      return c.json({ error: "Role must be either builder or observer" }, 400);
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return c.json({ error: "Invalid email format" }, 400);
+    }
 
     const admin = getSupabaseAdmin();
-
     // Create auth user with email auto-confirmed
     // The DB trigger (handle_new_user) automatically creates the public.users row
     const { data, error } = await admin.auth.admin.createUser({
@@ -202,6 +211,12 @@ app.put("/make-server-30db7d9e/users/:id", async (c) => {
     if (user.id !== id) return c.json({ error: "Forbidden" }, 403);
 
     const updates = await c.req.json();
+    if (updates.name !== undefined && updates.name.trim().length < 2) {
+      return c.json({ error: "Name must be at least 2 characters long" }, 400);
+    }
+    if (updates.role !== undefined && updates.role !== 'builder' && updates.role !== 'observer') {
+      return c.json({ error: "Role must be either builder or observer" }, 400);
+    }
     const allowed = ['name', 'bio', 'avatar', 'role', 'interests', 'domain', 'building_desc', 'feed_focus', 'city', 'signup_completed_at', 'onboarding_call_scheduled'];
     const payload: Record<string, any> = { updated_at: new Date().toISOString() };
     for (const key of allowed) {
@@ -394,10 +409,10 @@ app.post("/make-server-30db7d9e/rooms/:id/reactions", async (c) => {
 
     await admin.from('rooms').update({ updated_at: new Date().toISOString() }).eq('id', id);
 
-    const { data: profileData, error: profileError } = await admin.from('profiles').select('reputation').eq('id', user.id).maybeSingle();
+    const { data: profileData, error: profileError } = await admin.from('users').select('reputation').eq('id', user.id).maybeSingle();
     if (!profileError && profileData) {
       const newReputation = (profileData.reputation || 0) + 1;
-      await admin.from('profiles').update({ reputation: newReputation }).eq('id', user.id);
+      await admin.from('users').update({ reputation: newReputation }).eq('id', user.id);
     }
 
     return c.json(normalizeReaction(inserted), 201);
@@ -447,7 +462,7 @@ app.get("/make-server-30db7d9e/log/:id", async (c) => {
     const { data: reactions, error: reactionsError } = await admin.from('reactions').select('*').eq('room_id', id).order('created_at', { ascending: false });
     if (reactionsError) return c.json({ error: `Get log failed: ${reactionsError.message}` }, 500);
 
-    const { data: builder, error: builderError } = await admin.from('profiles').select('*').eq('id', room.builder_id).maybeSingle();
+    const { data: builder, error: builderError } = await admin.from('users').select('*').eq('id', room.builder_id).maybeSingle();
     if (builderError) return c.json({ error: `Get log failed: ${builderError.message}` }, 500);
 
     return c.json({

@@ -71,13 +71,13 @@ serve(async (req) => {
       .update({ used: true })
       .eq("id", tokenData.id);
 
-    // Update user's email verified status in auth and profiles table
+    // Update user's email verified status in auth and users table
     await supabase.auth.admin.updateUserById(tokenData.user_id, {
       email_confirm: true
     });
 
     await supabase
-      .from("profiles")
+      .from("users")
       .update({ email_verified: true })
       .eq("id", tokenData.user_id);
 

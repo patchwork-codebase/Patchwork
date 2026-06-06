@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@3.4.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get("RESEND_API_KEY") || "re_bxj3KLqG_nh6hxq34aHSK7UbWhLZA9FPr");
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") as string,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string
@@ -16,7 +16,7 @@ serve(async (req) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, apikey",
       },
     });
   }
@@ -25,7 +25,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
       headers: { "Content-Type": "application/json" },
-    };
+    });
   }
 
   try {
@@ -36,7 +36,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      };
+      });
     }
 
     // Generate a verification token
@@ -52,11 +52,12 @@ serve(async (req) => {
       throw dbError;
     }
 
-    const verificationLink = `https://joinpatchwork.xyz/verify-email?token=${token}`;
+    const origin = req.headers.get("origin") || "http://localhost:5174";
+    const verificationLink = `${origin}/verify-email?token=${token}`;
 
     // Send verification email using Resend
     const { data, error } = await resend.emails.send({
-      from: "Patchwork <verify@joinpatchwork.xyz",
+      from: "Patchwork <verify@joinpatchwork.xyz>",
       to: email,
       subject: "Verify your Patchwork email",
       html: `

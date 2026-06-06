@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { useAuth, apiCall } from "../auth/AuthContext";
+import { useAuth, apiCall, supabase } from "../auth/AuthContext";
 import { ArrowLeft, Plus, X, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,7 +43,7 @@ export default function CreateRoom() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim() || !form.slug.trim()) return;
+    if (!form.title.trim() || !form.slug.trim() || !profile) return;
 
     if (form.slug === 'test' || form.slug === 'demo') {
       setSlugError('This slug is already taken. Please choose another.');
@@ -52,12 +52,31 @@ export default function CreateRoom() {
 
     setLoading(true);
     try {
-      const room = await apiCall('/rooms', {
-        method: 'POST',
-        body: JSON.stringify({ title: form.title.trim(), description: form.description.trim(), tags }),
-      }, token!);
+      const roomId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      const payload = {
+        id: roomId,
+        builder_id: profile.id,
+        builder_name: profile.name || 'Builder',
+        title: form.title.trim(),
+        description: form.description.trim(),
+        tags,
+        status: 'active',
+        update_count: 0,
+        observer_count: 0,
+        last_update: '',
+        created_at: now,
+        updated_at: now,
+      };
+
+      const { error } = await supabase
+        .from('rooms')
+        .insert(payload);
+        
+      if (error) throw error;
+      
       toast.success('Room created successfully!');
-      navigate(`/dashboard/room/${room.id}`);
+      navigate(`/dashboard/room/${roomId}`);
     } catch (err: any) {
       toast.error(`Failed to create room: ${err.message}`);
     } finally {
@@ -201,19 +220,26 @@ export default function CreateRoom() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-white/[0.06]">
-            <Link
-              to="/dashboard"
-              className="px-6 py-3 border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-full text-[14px] font-bold transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit" disabled={loading || !form.title.trim()}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating...' : <><ArrowRight className="w-4 h-4" /> Initialize Room</>}
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-white/[0.06]">
+            {!profile?.emailVerified && (
+              <span className="text-[12px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-xl">
+                ⚠️ Verify your email address to initialize rooms.
+              </span>
+            )}
+            <div className="flex gap-3 ml-auto">
+              <Link
+                to="/dashboard"
+                className="px-6 py-3 border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-full text-[14px] font-bold transition-colors"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit" disabled={loading || !form.title.trim() || !profile?.emailVerified}
+                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Creating...' : <><ArrowRight className="w-4 h-4" /> Initialize Room</>}
+              </button>
+            </div>
           </div>
         </div>
       </form>

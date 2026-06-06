@@ -68,7 +68,7 @@ export default async function handler(req: Request) {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-        'Access-Control-Allow-Headers': 'Authorization,Content-Type',
+        'Access-Control-Allow-Headers': 'Authorization,Content-Type,x-client-info,apikey',
       },
     });
   }
@@ -85,7 +85,7 @@ export default async function handler(req: Request) {
 
     if (req.method === 'GET' && parts[0] === 'users' && parts.length === 2) {
       const userId = parts[1];
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+      const { data, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
       if (error) return jsonResponse({ error: error.message }, 500);
       return jsonResponse(data ? normalizeRow(data) : null);
     }
@@ -101,6 +101,12 @@ export default async function handler(req: Request) {
     if (req.method === 'POST' && route === '/users') {
       if (!authUser) return jsonResponse({ error: 'Unauthorized' }, 401);
       const body = await req.json().catch(() => ({}));
+      if (body.name !== undefined && body.name.trim().length < 2) {
+        return jsonResponse({ error: 'Name must be at least 2 characters long' }, 400);
+      }
+      if (body.role !== undefined && body.role !== 'builder' && body.role !== 'observer') {
+        return jsonResponse({ error: 'Role must be either builder or observer' }, 400);
+      }
       const payload = {
         id: authUser.id,
         email: body.email || authUser.email || '',
@@ -112,7 +118,7 @@ export default async function handler(req: Request) {
         bio: body.bio || '',
         avatar: body.avatar || '',
       };
-      const { data, error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' }).select().maybeSingle();
+      const { data, error } = await supabase.from('users').upsert(payload, { onConflict: 'id' }).select().maybeSingle();
       if (error) return jsonResponse({ error: error.message }, 500);
       return jsonResponse(data ? normalizeRow(data) : null, 201);
     }
@@ -122,14 +128,19 @@ export default async function handler(req: Request) {
       const targetUserId = parts[1];
       if (authUser.id !== targetUserId) return jsonResponse({ error: 'Forbidden' }, 403);
       const body = await req.json().catch(() => ({}));
+      if (body.name !== undefined && body.name.trim().length < 2) {
+        return jsonResponse({ error: 'Name must be at least 2 characters long' }, 400);
+      }
+      if (body.role !== undefined && body.role !== 'builder' && body.role !== 'observer') {
+        return jsonResponse({ error: 'Role must be either builder or observer' }, 400);
+      }
       const updates: Record<string, any> = {};
       ['name', 'bio', 'role', 'city', 'domain'].forEach(key => {
         if (body[key] !== undefined) updates[key] = body[key];
       });
       if (body.interests !== undefined) updates.interests = body.interests;
       if (!Object.keys(updates).length) return jsonResponse({ error: 'Nothing to update' }, 400);
-      updates.updated_at = new Date().toISOString();
-      const { data, error } = await supabase.from('profiles').update(updates).eq('id', targetUserId).select().maybeSingle();
+      const { data, error } = await supabase.from('users').update(updates).eq('id', targetUserId).select().maybeSingle();
       if (error) return jsonResponse({ error: error.message }, 500);
       return jsonResponse(data ? normalizeRow(data) : null);
     }
@@ -137,6 +148,16 @@ export default async function handler(req: Request) {
     if (req.method === 'POST' && route === '/auth/signup') {
       const body = await req.json().catch(() => ({}));
       if (!body.email || !body.password) return jsonResponse({ error: 'Email and password are required' }, 400);
+      if (!body.name || body.name.trim().length < 2) {
+        return jsonResponse({ error: 'Name must be at least 2 characters long' }, 400);
+      }
+      if (body.role && body.role !== 'builder' && body.role !== 'observer') {
+        return jsonResponse({ error: 'Role must be either builder or observer' }, 400);
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.email)) {
+        return jsonResponse({ error: 'Invalid email format' }, 400);
+      }
       const { data, error } = await supabase.auth.admin.createUser({
         email: body.email,
         password: body.password,
@@ -161,7 +182,7 @@ export default async function handler(req: Request) {
         bio: '',
         avatar: '',
       };
-      const { data: profileData, error: profileError } = await supabase.from('profiles').upsert(profilePayload, { onConflict: 'id' }).select().maybeSingle();
+      const { data: profileData, error: profileError } = await supabase.from('users').upsert(profilePayload, { onConflict: 'id' }).select().maybeSingle();
       if (profileError) return jsonResponse({ error: profileError.message }, 500);
       
       return jsonResponse({ userId: data.user.id, profile: profileData ? normalizeRow(profileData) : null }, 201);

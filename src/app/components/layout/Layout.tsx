@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-router";
 import { useAuth } from "../auth/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 /* ─── tiny inline SVGs ─────────────────────────────────────────── */
@@ -82,6 +82,12 @@ export default function Layout() {
         ? 'observer'
         : activeTab;
 
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#08070D] flex items-center justify-center">
@@ -94,7 +100,6 @@ export default function Layout() {
   }
 
   if (!user) {
-    navigate('/login');
     return null;
   }
 
@@ -105,9 +110,9 @@ export default function Layout() {
 
   const initials = profile?.name
     ? profile.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
-    : 'U';
+    : user?.email?.substring(0, 2).toUpperCase() || 'U';
 
-  const userDisplayName = profile?.name === 'Developer' ? 'Akinrodolu' : (profile?.name || 'Akinrodolu');
+  const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
     <div className="flex flex-col min-h-screen bg-[#08070D] text-white">

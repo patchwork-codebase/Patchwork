@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router";
-import { useAuth, apiCall } from "../auth/AuthContext";
+import { useAuth, supabase } from "../auth/AuthContext";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
   Share2, CheckCircle, BookOpen, X, ImageIcon, Code
 } from "lucide-react";
 import { toast } from "sonner";
+import { ReactionModal } from "./ReactionModal";
 
 interface Update {
   id: string;
@@ -43,6 +44,25 @@ interface Room {
   reactions: Reaction[];
 }
 
+function toCamelCase(key: string) {
+  return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function normalizeRow(row: any): any {
+  if (!row || typeof row !== 'object') return row;
+  return Object.entries(row).reduce((result: any, [key, value]) => {
+    const camelKey = toCamelCase(key);
+    if (Array.isArray(value)) {
+      result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
+    } else if (value && typeof value === 'object') {
+      result[camelKey] = normalizeRow(value);
+    } else {
+      result[camelKey] = value;
+    }
+    return result;
+  }, {});
+}
+
 const REACTION_CONFIG = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20', desc: 'Incisive, direct critique' },
   pushback: { emoji: '🔄', label: 'Push back', color: 'bg-rose-500/5 border-rose-500/20 text-rose-400', badge: 'bg-rose-500/10 text-rose-400 border border-rose-500/20', desc: 'Challenge this assumption' },
@@ -59,90 +79,10 @@ function timeAgo(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function ReactionModal({
-  updateId, onClose, onSubmit
-}: {
-  updateId: string | null;
-  onClose: () => void;
-  onSubmit: (type: string, text: string, updateId: string | null) => Promise<void>;
-}) {
-  const [type, setType] = useState<'sharp' | 'pushback' | 'tellmemore'>('sharp');
-  const [text, setText] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!text.trim()) return;
-    setLoading(true);
-    try {
-      await onSubmit(type, text.trim(), updateId);
-      onClose();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0A0910] border border-white/[0.08] rounded-[32px] w-full max-w-md shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50" />
-        <div className="flex items-center justify-between p-6 border-b border-white/[0.06] relative z-10">
-          <h2 className="text-[20px] font-extrabold text-white font-display">Leave a reaction</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/[0.05] transition-colors text-slate-400 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 relative z-10">
-          <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-3 uppercase tracking-widest">Reaction type</label>
-            <div className="grid grid-cols-3 gap-3">
-              {(Object.keys(REACTION_CONFIG) as Array<keyof typeof REACTION_CONFIG>).map(k => {
-                const r = REACTION_CONFIG[k];
-                return (
-                  <button
-                    key={k} type="button"
-                    onClick={() => setType(k)}
-                    className={`p-4 border rounded-2xl text-center transition-all ${
-                      type === k ? `${r.color} shadow-[0_0_20px_rgba(255,255,255,0.05)]` : 'border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] text-slate-400'
-                    }`}
-                  >
-                    <div className="text-[28px] mb-2">{r.emoji}</div>
-                    <div className="text-[12px] font-bold">{r.label}</div>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[12px] text-slate-500 mt-3 font-medium text-center">{REACTION_CONFIG[type].desc}</p>
-          </div>
-          <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-3 uppercase tracking-widest">Your thoughts</label>
-            <textarea
-              required autoFocus
-              value={text}
-              onChange={e => setText(e.target.value)}
-              placeholder={`Write your ${REACTION_CONFIG[type].label.toLowerCase()} reaction...`}
-              rows={4}
-              className="w-full px-4 py-3 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all resize-none font-medium"
-            />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-3 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[14px] font-bold text-white transition-colors">
-              Cancel
-            </button>
-            <button type="submit" disabled={loading || !text.trim()} className="flex-1 py-3 bg-white text-[#0A0910] rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-              {loading ? 'Posting...' : <><Send className="w-4 h-4" /> Post reaction</>}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 export default function BuildRoom() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { user, profile, token } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
@@ -158,23 +98,121 @@ export default function BuildRoom() {
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const quickUpdateMode = searchParams.get('action') === 'post';
 
-  // Temporarily overridden for testing so you can see the builder UI on any room
   const isBuilder = room && profile?.role === 'builder';
 
   useEffect(() => {
     if (!id) return;
     async function load() {
       try {
-        const data = await apiCall(`/rooms/${id}`, {}, token || undefined);
-        setRoom(data);
-      } catch (err) {
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (roomError) throw roomError;
+        if (!roomData) {
+          setRoom(null);
+          return;
+        }
+
+        const { data: updatesData, error: updatesError } = await supabase
+          .from('updates')
+          .select('*')
+          .eq('room_id', id)
+          .order('created_at', { ascending: false });
+
+        if (updatesError) throw updatesError;
+
+        const { data: reactionsData, error: reactionsError } = await supabase
+          .from('reactions')
+          .select('*')
+          .eq('room_id', id)
+          .order('created_at', { ascending: false });
+
+        if (reactionsError) throw reactionsError;
+
+        const normalizedRoom = normalizeRow(roomData);
+        const normalizedUpdates = (updatesData || []).map(normalizeRow);
+        const normalizedReactions = (reactionsData || []).map(normalizeRow);
+
+        setRoom({
+          ...normalizedRoom,
+          updates: normalizedUpdates,
+          reactions: normalizedReactions
+        });
+
+        if (user) {
+          const { data: observerRecord } = await supabase
+            .from('room_observers')
+            .select('*')
+            .eq('room_id', id)
+            .eq('observer_id', user.id)
+            .maybeSingle();
+          if (observerRecord) setJoined(true);
+        }
+
+      } catch (err: any) {
         console.log('Load room error:', err);
+        toast.error("Failed to load room details");
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [id, token]);
+  }, [id, user]);
+
+  // Real-time database sync listener
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`room-detail-sync-${id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${id}` },
+        (payload) => {
+          const freshRoom = normalizeRow(payload.new);
+          setRoom(r => r ? { ...r, ...freshRoom } : r);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'updates', filter: `room_id=eq.${id}` },
+        (payload) => {
+          const freshUpdate = normalizeRow(payload.new);
+          setRoom(r => {
+            if (!r) return r;
+            if (r.updates.some(u => u.id === freshUpdate.id)) return r;
+            return {
+              ...r,
+              updates: [freshUpdate, ...r.updates],
+              updateCount: r.updateCount + 1
+            };
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reactions', filter: `room_id=eq.${id}` },
+        (payload) => {
+          const freshReaction = normalizeRow(payload.new);
+          setRoom(r => {
+            if (!r) return r;
+            if (r.reactions.some(rc => rc.id === freshReaction.id)) return r;
+            return {
+              ...r,
+              reactions: [freshReaction, ...r.reactions]
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id]);
 
   useEffect(() => {
     if (quickUpdateMode && room && updateTextAreaRef.current && profile?.role === 'builder') {
@@ -184,7 +222,7 @@ export default function BuildRoom() {
 
   async function handlePostUpdate(e: React.FormEvent) {
     e.preventDefault();
-    if (!newUpdate.trim() || !id) return;
+    if (!newUpdate.trim() || !id || !user) return;
     setPostingUpdate(true);
     
     let finalMediaUrl = mediaPreview;
@@ -199,11 +237,35 @@ export default function BuildRoom() {
     }
 
     try {
-      const update = await apiCall(`/rooms/${id}/updates`, {
-        method: 'POST',
-        body: JSON.stringify({ content: newUpdate.trim(), mediaUrl: finalMediaUrl || undefined, codeSnippet: codeSnippet.trim() || undefined }),
-      }, token!);
-      setRoom(r => r ? { ...r, updates: [...r.updates, update], updateCount: r.updateCount + 1 } : r);
+      const updateId = crypto.randomUUID();
+      const payload = {
+        id: updateId,
+        room_id: id,
+        author_id: user.id,
+        author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
+        content: newUpdate.trim(),
+        media_url: finalMediaUrl || null,
+        code_snippet: codeSnippet.trim() || null,
+        created_at: new Date().toISOString(),
+      };
+      
+      const { error: insertError } = await supabase
+        .from('updates')
+        .insert(payload);
+        
+      if (insertError) throw insertError;
+      
+      await supabase
+        .from('rooms')
+        .update({
+          update_count: (room?.updateCount || 0) + 1,
+          last_update: newUpdate.trim().slice(0, 120),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      const normalizedUpdate = normalizeRow(payload);
+      setRoom(r => r ? { ...r, updates: [normalizedUpdate, ...r.updates], updateCount: r.updateCount + 1 } : r);
       setNewUpdate('');
       setMediaPreview(null);
       setCodeSnippet('');
@@ -217,13 +279,24 @@ export default function BuildRoom() {
   }
 
   async function handleReaction(type: string, text: string, updateId: string | null) {
-    if (!id) return;
+    if (!id || !user) return;
     try {
-      const reaction = await apiCall(`/rooms/${id}/reactions`, {
-        method: 'POST',
-        body: JSON.stringify({ type, text, updateId }),
-      }, token!);
-      setRoom(r => r ? { ...r, reactions: [...r.reactions, reaction] } : r);
+      const payload = {
+        id: `${id}-reaction-${type}-${user.id}-${Date.now()}`,
+        room_id: id,
+        update_id: updateId || null,
+        observer_id: user.id,
+        observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
+        type,
+        text,
+        created_at: new Date().toISOString(),
+      };
+      
+      const { error } = await supabase.from('reactions').insert(payload);
+      if (error) throw error;
+      
+      const normalizedReaction = normalizeRow(payload);
+      setRoom(r => r ? { ...r, reactions: [normalizedReaction, ...r.reactions] } : r);
       toast.success('Reaction posted!');
     } catch (err: any) {
       toast.error(`Failed to post reaction: ${err.message}`);
@@ -231,11 +304,28 @@ export default function BuildRoom() {
   }
 
   async function handleJoin() {
-    if (!id) return;
+    if (!id || !user) return;
     try {
-      const res = await apiCall(`/rooms/${id}/join`, { method: 'POST' }, token!);
+      const { error: upsertError } = await supabase
+        .from('room_observers')
+        .upsert({ room_id: id, observer_id: user.id });
+      
+      if (upsertError) throw upsertError;
+
+      const { count, error: countError } = await supabase
+        .from('room_observers')
+        .select('*', { count: 'exact', head: true })
+        .eq('room_id', id);
+
+      if (countError) throw countError;
+
+      await supabase
+        .from('rooms')
+        .update({ observer_count: count || 0, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
       setJoined(true);
-      setRoom(r => r ? { ...r, observerCount: res.observerCount } : r);
+      setRoom(r => r ? { ...r, observerCount: count || 0 } : r);
       toast.success('Joined as observer!');
     } catch (err: any) {
       toast.error(`Failed to join: ${err.message}`);
@@ -246,10 +336,12 @@ export default function BuildRoom() {
     if (!id || !window.confirm('Close this room and generate a Build Log?')) return;
     setClosingRoom(true);
     try {
-      await apiCall(`/rooms/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'completed' }),
-      }, token!);
+      const { error } = await supabase
+        .from('rooms')
+        .update({ status: 'completed', updated_at: new Date().toISOString() })
+        .eq('id', id);
+        
+      if (error) throw error;
       setRoom(r => r ? { ...r, status: 'completed' } : r);
       toast.success('Room closed. Build Log is now available!');
     } catch (err: any) {
@@ -281,7 +373,7 @@ export default function BuildRoom() {
     return (
       <div className="max-w-[1000px] mx-auto px-6 py-20 text-center text-slate-400">
         <p className="text-lg font-bold">Room not found</p>
-        <Link to="/dashboard" className="text-[#8B7CF8] hover:text-white transition-colors text-sm mt-4 inline-flex items-center gap-2">
+        <Link to="/dashboard" className="text-[#8B7CF8] hover:text-white transition-colors text-sm mt-4 inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
           <ArrowLeft className="w-4 h-4" /> Back to dashboard
         </Link>
       </div>
@@ -301,7 +393,7 @@ export default function BuildRoom() {
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
         {/* Back */}
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded">
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Dashboard
         </Link>
 
@@ -334,7 +426,7 @@ export default function BuildRoom() {
               {room.status === 'completed' && (
                 <Link
                   to={`/dashboard/build-logs`}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 >
                   <BookOpen className="w-4 h-4" /> View Log
                 </Link>
@@ -343,7 +435,7 @@ export default function BuildRoom() {
                 <button
                   onClick={handleCloseRoom}
                   disabled={closingRoom}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 >
                   <CheckCircle className="w-4 h-4" />
                   {closingRoom ? 'Closing...' : 'Close Room'}
@@ -352,7 +444,7 @@ export default function BuildRoom() {
               {room.status === 'completed' && (
                 <button
                   onClick={copyLogLink}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0A0910] rounded-full text-[13px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0A0910] rounded-full text-[13px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 >
                   <Share2 className="w-4 h-4" /> Share Log
                 </button>
@@ -360,7 +452,7 @@ export default function BuildRoom() {
               {!isBuilder && room.status === 'active' && !joined && (
                 <button
                   onClick={handleJoin}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#6C5CE7] text-white rounded-full text-[13px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-[#6C5CE7] text-white rounded-full text-[13px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 >
                   <Plus className="w-4 h-4" /> Join Room
                 </button>
@@ -390,7 +482,8 @@ export default function BuildRoom() {
               onChange={e => setNewUpdate(e.target.value)}
               placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
               rows={3}
-              className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-4 text-white placeholder-slate-600 font-medium transition-all"
+              aria-label="Room update text"
+              className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-4 text-white placeholder-slate-600 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
             />
             
             {/* Media Preview Area */}
@@ -402,7 +495,7 @@ export default function BuildRoom() {
                 <button
                   type="button"
                   onClick={() => setMediaPreview(null)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/preview:opacity-100 transition-all shadow-lg"
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/preview:opacity-100 transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -415,33 +508,34 @@ export default function BuildRoom() {
                 onChange={e => setCodeSnippet(e.target.value)}
                 placeholder="Paste your code snippet here..."
                 rows={5}
-                className="w-full px-5 py-4 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] font-mono text-slate-300 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all"
+                aria-label="Code snippet"
+                className="w-full px-5 py-4 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] font-mono text-slate-300 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
               />
             )}
 
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all">
+                <label className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
                   <ImageIcon className="w-4 h-4 text-[#8B7CF8]" />
                   Attach visual
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => setMediaPreview(reader.result as string);
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => setMediaPreview(reader.result as string);
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowCodeInput(!showCodeInput)}
-                  className={`flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-white/[0.06] text-white'} rounded-full text-[12px] font-bold transition-all`}
+                  className={`flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-white/[0.06] text-white'} rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                 >
                   <Code className="w-4 h-4" />
                   Code snippet
@@ -451,7 +545,7 @@ export default function BuildRoom() {
               <button
                 type="submit"
                 disabled={postingUpdate || !newUpdate.trim()}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
               >
                 {postingUpdate ? 'Posting...' : <><Send className="w-4 h-4" /> Post Update</>}
               </button>
@@ -465,7 +559,7 @@ export default function BuildRoom() {
             <div />
             <button
               onClick={() => setReactionModal({ open: true, updateId: null })}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
             >
               <MessageCircle className="w-4 h-4" /> React to room
             </button>
@@ -481,7 +575,7 @@ export default function BuildRoom() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-5 py-3 text-[14px] font-bold border-b-2 transition-all flex items-center gap-2 ${
+              className={`px-5 py-3 text-[14px] font-bold border-b-2 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
                 activeTab === tab.key
                   ? 'border-[#8B7CF8] text-white'
                   : 'border-transparent text-slate-400 hover:text-white hover:border-white/20'
@@ -518,7 +612,7 @@ export default function BuildRoom() {
               [...room.updates].reverse().map(update => {
                 const updateReactions = reactionsByUpdate[update.id] || [];
                 return (
-                  <div key={update.id} className="bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-6 md:p-8 shadow-lg backdrop-blur-sm relative overflow-hidden group">
+                  <div key={update.id} className="bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-6 md:p-8 shadow-lg backdrop-blur-sm relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
                     <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
                     <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
@@ -534,7 +628,7 @@ export default function BuildRoom() {
                       {!isBuilder && room.status === 'active' && (
                         <button
                           onClick={() => setReactionModal({ open: true, updateId: update.id })}
-                          className="text-[11px] text-slate-400 hover:text-white border border-white/[0.08] hover:border-white/20 rounded-full px-4 py-2 hover:bg-white/[0.05] transition-all font-bold uppercase tracking-widest"
+                          className="text-[11px] text-slate-400 hover:text-white border border-white/[0.08] hover:border-white/20 rounded-full px-4 py-2 hover:bg-white/[0.05] transition-all font-bold uppercase tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                         >
                           React
                         </button>
@@ -593,7 +687,7 @@ export default function BuildRoom() {
                 {!isBuilder && room.status === 'active' && (
                   <button
                     onClick={() => setReactionModal({ open: true, updateId: null })}
-                    className="text-[#8B7CF8] hover:text-white font-bold text-[14px] transition-colors"
+                    className="text-[#8B7CF8] hover:text-white font-bold text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                   >
                     Be the first to react
                   </button>
@@ -604,7 +698,7 @@ export default function BuildRoom() {
                 const cfg = REACTION_CONFIG[r.type];
                 const linkedUpdate = r.updateId ? room.updates.find(u => u.id === r.updateId) : null;
                 return (
-                  <div key={r.id} className={`flex items-start gap-4 p-6 rounded-[20px] ${cfg.color} border shadow-sm`}>
+                  <div key={r.id} className={`flex items-start gap-4 p-6 rounded-[20px] ${cfg.color} border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`} tabIndex={0}>
                     <span className="text-2xl">{cfg.emoji}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">

@@ -244,12 +244,6 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
               : stepId === 'room' && role === 'observer' ? 'Got it'
               : 'Save & continue'}
           </motion.button>
-          <button
-            onClick={() => onComplete(stepId)}
-            className="px-4 py-3.5 border border-white/[0.08] rounded-xl text-[13px] text-slate-400 hover:text-white hover:bg-white/[0.04] transition-all font-bold"
-          >
-            Skip
-          </button>
         </div>
       </motion.div>
     </motion.div>
@@ -362,12 +356,6 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
               Fills your profile, creates your room, and syncs to your account
             </p>
           </div>
-          <button
-            onClick={() => setDismissed(true)}
-            className="text-slate-600 hover:text-slate-400 transition-colors shrink-0 mt-0.5"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Progress bar */}
