@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-r
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useNotifications } from "../../hooks/useNotifications";
 
 /* ─── tiny inline SVGs ─────────────────────────────────────────── */
 const HammerIcon = () => (
@@ -63,6 +64,17 @@ const BellIcon = () => (
 );
 
 /* ─── Layout ────────────────────────────────────────────────────── */
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 export default function Layout() {
   const { user, profile, signOut, loading } = useAuth();
   const location = useLocation();
@@ -71,7 +83,10 @@ export default function Layout() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+
+  const { data: notificationsData, markAllAsRead } = useNotifications(user?.id);
+  const notifications = notificationsData || [];
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const activeTab = searchParams.get('tab') || 'overview';
   const activeSection = location.pathname.startsWith('/dashboard/explore')
@@ -150,27 +165,53 @@ export default function Layout() {
               >
                 <div className="p-4 border-b border-white/[0.06] flex justify-between items-center">
                   <span className="text-[14px] font-bold text-white font-display">Notifications</span>
-                  <button onClick={() => setUnreadCount(0)} className="text-[11px] font-bold text-[#8B7CF8] hover:text-white transition-colors">Mark all read</button>
+                  {unreadCount > 0 && (
+                    <button onClick={() => markAllAsRead.mutate()} className="text-[11px] font-bold text-[#8B7CF8] hover:text-white transition-colors">Mark all read</button>
+                  )}
                 </div>
                 <div className="max-h-[340px] overflow-y-auto">
-                  {[
-                    { id: 1, text: 'reacted "Sharp" to your MoniFlow update', user: 'Tobi N.', icon: '⚡', color: 'text-[#8B7CF8]', bg: 'bg-[#8B7CF8]/10' },
-                    { id: 2, text: 'started following your room', user: 'Funmi O.', icon: '👀', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                    { id: 3, text: 'reacted "Push back" on day 12 update', user: 'James', icon: '🔄', color: 'text-rose-400', bg: 'bg-rose-500/10' }
-                  ].map(n => (
-                    <div key={n.id} className="p-4 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors cursor-pointer flex gap-3 relative">
-                      {unreadCount > 0 && n.id <= unreadCount && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-rose-500" />}
-                      <div className={`w-9 h-9 rounded-full ${n.bg} flex items-center justify-center shrink-0`}>
-                        <span className="text-[16px]">{n.icon}</span>
-                      </div>
-                      <div>
-                        <div className="text-[13px] text-slate-300 leading-snug">
-                          <strong className="text-white">{n.user}</strong> {n.text}
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500 text-[13px]">No notifications yet.</div>
+                  ) : (
+                    notifications.map(n => {
+                      const isReaction = n.type === 'reaction';
+                      const actorName = n.actor?.name || 'Someone';
+                      
+                      let text = '';
+                      let icon = '';
+                      let bg = '';
+                      let color = '';
+                      
+                      if (isReaction) {
+                        const isLike = n.metadata?.reaction_type === 'like';
+                        text = isLike ? 'reacted "Like" to your update' : 'replied to your update';
+                        icon = isLike ? '⚡' : '🔄';
+                        bg = 'bg-[#8B7CF8]/10';
+                        color = 'text-[#8B7CF8]';
+                      } else {
+                        const roomTitle = n.metadata?.room_title || 'your room';
+                        text = `started following "${roomTitle}"`;
+                        icon = '👀';
+                        bg = 'bg-emerald-500/10';
+                        color = 'text-emerald-400';
+                      }
+
+                      return (
+                        <div key={n.id} className="p-4 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors cursor-pointer flex gap-3 relative">
+                          {!n.read && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-rose-500" />}
+                          <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center shrink-0`}>
+                            <span className="text-[16px]">{icon}</span>
+                          </div>
+                          <div>
+                            <div className="text-[13px] text-slate-300 leading-snug">
+                              <strong className="text-white">{actorName}</strong> {text}
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-1.5 font-mono font-medium">{timeAgo(n.created_at)}</div>
+                          </div>
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-1.5 font-mono font-medium">just now</div>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })
+                  )}
                 </div>
                 <Link to="/dashboard/notifications" onClick={() => setNotificationsOpen(false)} className="block p-3 text-center text-[12px] font-bold text-slate-400 hover:text-white bg-white/[0.01] hover:bg-white/[0.04] transition-colors">
                   View all activity
@@ -246,6 +287,31 @@ export default function Layout() {
             >
               Explore
             </Link>
+            
+            <div className="mt-2 pt-2 border-t border-white/[0.08]">
+              <div className="px-3 py-2 mb-1">
+                <div className="text-[12px] font-bold text-white">{profile?.name}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">
+                  {profile?.email || user.email}
+                </div>
+              </div>
+              <Link
+                to={`/dashboard/profile/${user.id}`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/[0.04] rounded-xl"
+              >
+                <UserIcon /> Profile
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleSignOut();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-3 text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl text-left"
+              >
+                <LogOutIcon /> Sign out
+              </button>
+            </div>
           </nav>
         </motion.div>
       )}
