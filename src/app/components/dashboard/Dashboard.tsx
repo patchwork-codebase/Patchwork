@@ -420,6 +420,9 @@ export default function Dashboard() {
               <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[11px] font-mono font-bold uppercase">
                 Free
               </span>
+              <span className="px-2.5 py-1 rounded-full border border-[#8B7CF8]/20 bg-[#8B7CF8]/10 text-[#8B7CF8] text-[11px] font-mono font-bold uppercase">
+                Rep {profile?.reputation || 0}
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-2 text-[13px] text-slate-400 font-medium">
               <span>{handle}</span>
@@ -445,8 +448,8 @@ export default function Dashboard() {
 
       {/* PROFILE CARD & STATS */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
-        {/* Profile Card */}
-        <div className="xl:col-span-2 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
+        {/* Profile Card - hidden on mobile to prevent redundancy with header */}
+        <div className="hidden md:block xl:col-span-2 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white font-bold text-lg">
               {initials}

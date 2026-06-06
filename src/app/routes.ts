@@ -11,6 +11,7 @@ import LandingPage from "./components/landing/LandingPage";
 import Layout from "./components/layout/Layout";
 import UserProfile from "./components/profile/UserProfile";
 import VerifyEmail from "./components/auth/VerifyEmail";
+import Notifications from "./components/dashboard/Notifications";
 
 export const router = createBrowserRouter([
   // Public landing and auth
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
       { path: "observer", Component: ObserverHub },
       { path: "explore", Component: ExplorePage },
       { path: "build-logs", Component: BuildLogs },
+      { path: "notifications", Component: Notifications },
     ],
   },
 ]);
