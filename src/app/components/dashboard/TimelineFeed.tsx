@@ -68,6 +68,7 @@ export function TimelineFeed({
   const [replyText, setReplyText] = useState("");
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const initials = profile?.name
     ? profile.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
@@ -237,18 +238,60 @@ export function TimelineFeed({
                 {!profile?.emailVerified ? (
                   <span className="text-[12px] font-bold text-amber-400">⚠️ Email verification required to post updates.</span>
                 ) : myRooms && myRooms.length > 0 ? (
-                  <select
-                    value={selectedRoomId}
-                    onChange={(e) => setSelectedRoomId(e.target.value)}
-                    aria-label="Target Room"
-                    className="bg-[#0A0910] border border-white/[0.08] text-slate-300 text-[13px] font-semibold rounded-full px-3.5 py-1.5 focus:outline-none focus:border-[#8B7CF8]/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
-                  >
-                    {myRooms.map(r => (
-                      <option key={r.id} value={r.id}>
-                        {r.title}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative inline-block text-left">
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="flex items-center gap-2 bg-[#0A0910] border border-white/[0.08] hover:border-[#8B7CF8]/50 text-slate-300 hover:text-white text-[13px] font-semibold rounded-full px-4 py-1.5 focus:outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#8B7CF8] select-none transition-all"
+                    >
+                      <span>{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
+                      <svg
+                        className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-40 cursor-default" 
+                            onClick={() => setDropdownOpen(false)} 
+                          />
+                          <motion.div
+                            initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                            transition={{ duration: 0.12 }}
+                            className="absolute left-0 bottom-full mb-2 min-w-[180px] w-max max-w-[280px] bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.6)] p-1 z-50 overflow-hidden"
+                          >
+                            {myRooms.map(r => (
+                              <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedRoomId(r.id);
+                                  setDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all block ${
+                                  selectedRoomId === r.id
+                                    ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                                }`}
+                              >
+                                {r.title}
+                              </button>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 ) : (
                   <span className="text-slate-500 text-[12px] font-medium">Create a room first to post updates</span>
                 )}

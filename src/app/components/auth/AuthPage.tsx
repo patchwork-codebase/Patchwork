@@ -5,6 +5,139 @@ import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
 import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
+
+/* ─── Searchable Custom Select Component ──────────────────────── */
+interface SearchableSelectProps {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[];
+  disabled?: boolean;
+}
+
+function SearchableSelect({ label, value, onChange, options, disabled }: SearchableSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const selectedOption = options.find(o => o.value === value);
+  const displayLabel = selectedOption ? selectedOption.label : label;
+
+  const filtered = options.filter(o =>
+    o.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setSearch("");
+        }}
+        className="w-full flex items-center justify-between px-3 py-3 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[13.5px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50 text-left cursor-pointer"
+      >
+        <span className={selectedOption ? "text-white font-medium truncate" : "text-slate-500 font-medium truncate"}>
+          {displayLabel}
+        </span>
+        <svg
+          className={`w-3.5 h-3.5 text-slate-500 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && !disabled && (
+          <>
+            <div className="fixed inset-0 z-40 cursor-default" onClick={() => setIsOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              transition={{ duration: 0.12 }}
+              className="absolute left-0 right-0 bottom-full mb-2 bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-2 z-50 overflow-hidden max-h-[260px] flex flex-col"
+            >
+              <input
+                type="text"
+                autoFocus
+                placeholder={`Search ${label.toLowerCase()}...`}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 transition-all mb-2"
+              />
+              <div className="flex-1 overflow-y-auto max-h-[180px] space-y-0.5 pr-1">
+                {filtered.length === 0 ? (
+                  <div className="px-3 py-2 text-[12px] text-slate-500 font-semibold">No results found</div>
+                ) : (
+                  filtered.map(o => (
+                    <button
+                      key={o.value}
+                      type="button"
+                      onClick={() => {
+                        onChange(o.value);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-lg text-[12.5px] font-semibold transition-all truncate block ${
+                        value === o.value
+                          ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]'
+                          : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─── Testimonial Slider Component ───────────────────────────── */
+const TESTIMONIALS = [
+  { quote: '"Finally a space that rewards honesty over hype."', handle: '@tobi_builds' },
+  { quote: '"The feed rewards in-progress updates and honest pivots — not launch announcements."', handle: '@funmi_product' },
+  { quote: '"Observing builds on Patchwork feels like peering into the future. High signal, zero noise."', handle: '@lanre_designer' },
+];
+
+function TestimonialSlider() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex(prev => (prev + 1) % TESTIMONIALS.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const t = TESTIMONIALS[index];
+
+  return (
+    <div className="min-h-[130px] flex items-center">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.35, ease: "easeInOut" }}
+          className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 backdrop-blur-sm shadow-xl"
+        >
+          <p className="text-[14px] text-slate-300 italic leading-relaxed min-h-[48px]">{t.quote}</p>
+          <p className="text-[12px] text-[#8B7CF8] font-mono font-bold mt-3">{t.handle}</p>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function AuthPage() {
   const location = useLocation();
   const defaultTab = location.pathname === '/login' ? 'login' : 'signup';
@@ -131,17 +264,9 @@ export default function AuthPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-12 flex flex-col gap-4"
+            className="mt-12 w-full"
           >
-            {[
-              { quote: '"Finally a space that rewards honesty over hype."', handle: '@tobi_builds' },
-              { quote: '"The feed rewards in-progress updates and honest pivots — not launch announcements."', handle: '@funmi_product' },
-            ].map((t, i) => (
-              <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-                <p className="text-[14px] text-slate-300 italic leading-relaxed">{t.quote}</p>
-                <p className="text-[12px] text-[#8B7CF8] font-mono font-bold mt-2">{t.handle}</p>
-              </div>
-            ))}
+            <TestimonialSlider />
           </motion.div>
         </div>
 
@@ -350,40 +475,28 @@ export default function AuthPage() {
 
                 {/* Location (mandatory) */}
                 <div className="grid grid-cols-3 gap-2">
-                  <select
+                  <SearchableSelect
+                    label="Country"
                     value={signup.countryIso}
-                    onChange={e => setSignup(s => ({ ...s, countryIso: e.target.value, stateIso: '', city: '' }))}
-                    className="w-full px-3 py-3.5 bg-[#0E0C16] border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
-                  >
-                    <option value="">Country</option>
-                    {Country.getAllCountries().map(c => (
-                      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
-                    ))}
-                  </select>
+                    onChange={val => setSignup(s => ({ ...s, countryIso: val, stateIso: '', city: '' }))}
+                    options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
+                  />
 
-                  <select
+                  <SearchableSelect
+                    label="State"
                     value={signup.stateIso}
-                    onChange={e => setSignup(s => ({ ...s, stateIso: e.target.value, city: '' }))}
+                    onChange={val => setSignup(s => ({ ...s, stateIso: val, city: '' }))}
                     disabled={!signup.countryIso}
-                    className="w-full px-3 py-3.5 bg-[#0E0C16] border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50"
-                  >
-                    <option value="">State</option>
-                    {signup.countryIso && State.getStatesOfCountry(signup.countryIso).map(s => (
-                      <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
-                    ))}
-                  </select>
+                    options={signup.countryIso ? State.getStatesOfCountry(signup.countryIso).map(s => ({ value: s.isoCode, label: s.name })) : []}
+                  />
 
-                  <select
+                  <SearchableSelect
+                    label="City"
                     value={signup.city}
-                    onChange={e => setSignup(s => ({ ...s, city: e.target.value }))}
+                    onChange={val => setSignup(s => ({ ...s, city: val }))}
                     disabled={!signup.stateIso}
-                    className="w-full px-3 py-3.5 bg-[#0E0C16] border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50"
-                  >
-                    <option value="">City</option>
-                    {signup.stateIso && City.getCitiesOfState(signup.countryIso, signup.stateIso).map(c => (
-                      <option key={c.name} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+                    options={signup.stateIso ? City.getCitiesOfState(signup.countryIso, signup.stateIso).map(c => ({ value: c.name, label: c.name })) : []}
+                  />
                 </div>
 
                 <motion.button
