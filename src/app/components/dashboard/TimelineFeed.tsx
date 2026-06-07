@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { 
   Heart, MessageCircle, Share2, ShieldAlert, Sparkles, X, 
-  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code
+  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code, CheckCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
@@ -145,7 +145,8 @@ export function TimelineFeed({
     e.stopPropagation();
     if (!user) return;
     try {
-      await supabase.from('room_observers').upsert({ room_id: roomId, observer_id: user.id });
+      const { error } = await supabase.from('room_observers').upsert({ room_id: roomId, observer_id: user.id });
+      if (error) throw error;
       toast.success("You are now observing this room!");
       queryClient.invalidateQueries({ queryKey: ['observed-rooms', user.id] });
     } catch (err: any) {
@@ -285,7 +286,7 @@ export function TimelineFeed({
               disabled={!profile?.emailVerified}
               placeholder={profile?.emailVerified ? "What are you building right now?" : "Please verify your email address to post updates."}
               aria-label="New update content"
-              className="w-full bg-transparent border-none outline-none text-white text-[15px] sm:text-[16px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
+              className="w-full bg-transparent border-none outline-none text-white text-[14px] sm:text-[16px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
             />
 
             {mediaPreview && (
@@ -426,7 +427,7 @@ export function TimelineFeed({
         </div>
         {activeTab === 'feed' && (
           <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex overflow-x-auto custom-scrollbar items-center gap-2 pb-2 sm:pb-0 snap-x">
               {['All', 'Design', 'Engineering', 'Product', 'Research', 'Dev', 'Writing'].map(domain => (
                 <button
                   key={domain}
@@ -466,7 +467,7 @@ export function TimelineFeed({
       {/* TIMELINE FEED */}
       <div className="flex flex-col gap-4 mb-12">
         {filteredUpdates.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-[14px] font-medium bg-[#0D0B14] border border-white/[0.08] rounded-[24px]">
+          <div className="p-8 sm:p-12 text-center text-slate-500 text-[14px] font-medium bg-[#0D0B14] border border-white/[0.08] rounded-[24px]">
             No updates posted yet.
           </div>
         ) : (
@@ -487,7 +488,7 @@ export function TimelineFeed({
               <div 
                 key={update.id} 
                 onClick={() => toggleComments(update.id)}
-                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[24px] p-6 shadow-xl hover:bg-white/[0.01] transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[24px] p-4 sm:p-6 shadow-xl hover:bg-white/[0.01] transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -496,25 +497,25 @@ export function TimelineFeed({
                 }}
               >
                 {/* Header */}
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-white/[0.03] border border-white/[0.08] shadow-inner'}`}>
+                <div className="flex justify-between items-start gap-3 mb-4">
+                  <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-white/[0.03] border border-white/[0.08] shadow-inner'}`}>
                       {isLaunch ? (
-                        <div className="w-full h-full bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[18px]">🚀</div>
+                        <div className="w-full h-full bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[16px] sm:text-[18px]">🚀</div>
                       ) : (
                         <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                       )}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div className="font-extrabold text-[16px] text-white leading-tight font-display hover:underline" onClick={(e) => e.stopPropagation()}>{builderName}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <div className="font-extrabold text-[15px] sm:text-[16px] text-white leading-tight font-display hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{builderName}</div>
                         {isLaunch && (
-                          <span className="text-[10px] uppercase tracking-widest font-bold bg-[#8B7CF8]/20 text-[#8B7CF8] px-2 py-0.5 rounded-full">Launched</span>
+                          <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-[#8B7CF8]/20 text-[#8B7CF8] px-2 py-0.5 rounded-full shrink-0">Launched</span>
                         )}
                       </div>
-                      <div className="text-[13px] text-slate-400 mt-1 font-medium flex items-center">
-                        <span className="text-white font-semibold hover:underline" onClick={(e) => e.stopPropagation()}>{roomTitle}</span>
-                        <span className="text-slate-600 mx-1.5">·</span>
+                      <div className="text-[12px] sm:text-[13px] text-slate-400 mt-1 font-medium flex items-center flex-wrap gap-x-1.5">
+                        <span className="text-white font-semibold hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{roomTitle}</span>
+                        <span className="text-slate-600 hidden sm:inline">·</span>
                         <span className="capitalize">{tag}</span>
                       </div>
                     </div>
@@ -523,19 +524,25 @@ export function TimelineFeed({
                     <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
                       {timeString}
                     </div>
-                    {activeTab === 'feed' && !isFollowing && (
-                      <button 
-                        onClick={(e) => handleFollowRoom(update.roomId, e)}
-                        className="text-[11px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 px-2.5 py-1 rounded-full transition-colors"
-                      >
-                        + Follow
-                      </button>
+                    {activeTab === 'feed' && (
+                      isFollowing ? (
+                        <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full flex items-center gap-1 transition-all">
+                          <CheckCircle className="w-3 h-3" /> Following
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={(e) => handleFollowRoom(update.roomId, e)}
+                          className="text-[11px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 hover:bg-[#8B7CF8]/20 px-2.5 py-1 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                        >
+                          + Follow
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
 
                 {update.content && (
-                  <p className="text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap">
+                  <p className="text-[14px] sm:text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap break-words">
                     {update.content}
                   </p>
                 )}

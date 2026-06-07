@@ -45,9 +45,9 @@ export function ReactionModal({ updateId, onClose, onSubmit }: ReactionModalProp
       {/* Click outside backdrop with protection */}
       <div className="absolute inset-0" onClick={handleOverlayClick} />
 
-      <div className="bg-[#0A0910] border border-white/[0.08] rounded-[32px] w-full max-w-md shadow-2xl relative overflow-hidden z-10">
+      <div className="bg-[#0A0910] border border-white/[0.08] rounded-[24px] md:rounded-[32px] w-full max-w-md shadow-2xl relative overflow-hidden z-10 flex flex-col max-h-[90vh]">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50" />
-        <div className="flex items-center justify-between p-6 border-b border-white/[0.06] relative z-10">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/[0.06] relative z-10 shrink-0">
           <h2 className="text-[20px] font-extrabold text-white font-display">Leave a reaction</h2>
           <button
             onClick={handleOverlayClick}
@@ -56,10 +56,10 @@ export function ReactionModal({ updateId, onClose, onSubmit }: ReactionModalProp
             <X className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 relative z-10">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6 relative z-10 overflow-y-auto">
           <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-3 uppercase tracking-widest">Reaction type</label>
-            <div className="grid grid-cols-3 gap-3">
+            <label className="block text-[12px] sm:text-[13px] font-bold text-slate-300 mb-2 sm:mb-3 uppercase tracking-widest">Reaction type</label>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {(Object.keys(REACTION_CONFIG) as Array<keyof typeof REACTION_CONFIG>).map(k => {
                 const r = REACTION_CONFIG[k];
                 return (
@@ -67,19 +67,19 @@ export function ReactionModal({ updateId, onClose, onSubmit }: ReactionModalProp
                     key={k}
                     type="button"
                     onClick={() => setType(k)}
-                    className={`p-4 border rounded-2xl text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${type === k ? `${r.color} shadow-[0_0_20px_rgba(255,255,255,0.05)]` : 'border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] text-slate-400'
+                    className={`p-3 sm:p-4 border rounded-[16px] sm:rounded-[20px] text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] flex flex-col items-center justify-center ${type === k ? `${r.color} shadow-[0_0_20px_rgba(255,255,255,0.05)]` : 'border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] text-slate-400'
                       }`}
                   >
-                    <div className="text-[28px] mb-2">{r.emoji}</div>
-                    <div className="text-[12px] font-bold">{r.label}</div>
+                    <div className="text-[24px] sm:text-[28px] mb-1 sm:mb-2 leading-none">{r.emoji}</div>
+                    <div className="text-[11px] sm:text-[12px] font-bold leading-tight">{r.label}</div>
                   </button>
                 );
               })}
             </div>
-            <p className="text-[12px] text-slate-500 mt-3 font-medium text-center">{REACTION_CONFIG[type].desc}</p>
+            <p className="text-[11px] sm:text-[12px] text-slate-500 mt-2 sm:mt-3 font-medium text-center">{REACTION_CONFIG[type].desc}</p>
           </div>
           <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-3 uppercase tracking-widest">Your thoughts</label>
+            <label className="block text-[12px] sm:text-[13px] font-bold text-slate-300 mb-2 sm:mb-3 uppercase tracking-widest">Your thoughts</label>
             <textarea
               required
               autoFocus

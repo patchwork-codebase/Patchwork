@@ -172,7 +172,7 @@ export function useObserverStats(userId?: string) {
       const { data: reactionsData } = await supabase
         .from('reactions')
         .select('type')
-        .eq('user_id', userId);
+        .eq('observer_id', userId);
         
       const totalReactions = reactionsData?.length || 0;
       const sharpInsights = reactionsData?.filter(r => r.type === 'sharp').length || 0;

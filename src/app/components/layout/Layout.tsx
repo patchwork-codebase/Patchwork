@@ -141,7 +141,7 @@ export default function Layout() {
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#08070D] text-white">
+    <div className="flex flex-col min-h-screen bg-[#08070D] text-white pb-[env(safe-area-inset-bottom)] lg:pb-0">
       
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
       <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.08] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
@@ -257,12 +257,12 @@ export default function Layout() {
       {mobileMenuOpen && (
         <motion.div 
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
+          animate={{ opacity: 1, height: "100vh" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.2 }}
-          className="lg:hidden absolute inset-x-0 top-[60px] z-40 bg-[#08070D]/95 border-b border-white/[0.08] backdrop-blur-xl overflow-hidden"
+          className="lg:hidden fixed inset-0 top-[60px] z-50 bg-[#08070D]/98 border-b border-white/[0.08] backdrop-blur-xl overflow-y-auto"
         >
-          <nav className="flex flex-col gap-1 px-4 py-4">
+          <nav className="flex flex-col gap-1 px-4 py-4 pb-[env(safe-area-inset-bottom)]">
             <Link
               to="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
@@ -328,8 +328,8 @@ export default function Layout() {
       )}
       </AnimatePresence>
 
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[#08070D]/95 backdrop-blur-xl shadow-[0_-2px_30px_rgba(0,0,0,0.2)]">
-        <nav className="mx-auto max-w-[1100px] grid grid-cols-5 gap-2 px-3 py-3">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[#08070D]/95 backdrop-blur-xl shadow-[0_-2px_30px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">
+        <nav className="mx-auto max-w-[1100px] grid grid-cols-5 gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3">
           <Link
             to="/dashboard"
             className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 ${activeSection === 'overview' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
@@ -378,7 +378,7 @@ export default function Layout() {
         </nav>
       </div>
 
-      <div className="flex flex-col lg:flex-row flex-1">
+      <div className="flex flex-col lg:flex-row flex-1 pb-[70px] lg:pb-0">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
         <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0A0910] border-r border-white/[0.08] flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
