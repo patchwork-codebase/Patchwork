@@ -136,9 +136,10 @@ interface Profile {
   city?: string;
   domain?: string;
   emailVerified?: boolean;
-  onboarding_call_scheduled?: boolean;
   signup_completed_at?: string | null;
   gender?: string;
+  phone_country_code?: string;
+  phone_number?: string;
 }
 
 interface SignInResult {
@@ -152,7 +153,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   token: string | null;
-  signUp: (email: string, password: string, name: string, role: string, city: string, domain: string, gender: string) => Promise<SignInResult>;
+  signUp: (email: string, password: string, name: string, role: string, city: string, domain: string, gender: string, phone_country_code?: string, phone_number?: string) => Promise<SignInResult>;
   signIn: (email: string, password: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -180,6 +181,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       domain: metadata.domain || '',
       interests: metadata.interests || [],
       gender: metadata.gender || '',
+      phone_country_code: metadata.phone_country_code || '',
+      phone_number: metadata.phone_number || '',
       bio: '',
       avatar: '',
     };
@@ -340,15 +343,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return activeSession;
   }
 
-  async function signUp(email: string, password: string, name: string, role: string, city: string, domain: string, gender: string) {
-    // ── Direct Supabase auth signup — no edge function, no cold start ──
-    // The DB trigger (handle_new_user) auto-creates the public.users row.
+  async function signUp(email: string, password: string, name: string, role: string, city: string, domain: string, gender: string, phone_country_code?: string, phone_number?: string): Promise<SignInResult> {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, role, city, domain, gender },
-      },
+        data: {
+          name,
+          role,
+          city,
+          domain,
+          gender,
+          phone_country_code: phone_country_code || '',
+          phone_number: phone_number || ''
+        }
+      }
     });
     if (error) throw error;
     if (!data.user) throw new Error('Account creation failed. Please try again.');
