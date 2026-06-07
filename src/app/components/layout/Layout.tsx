@@ -459,7 +459,11 @@ export default function Layout() {
               Explore builders
             </Link>
 
-
+            <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
+              <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+              <span>·</span>
+              <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
+            </div>
           </nav>
 
           {/* Profile card at the very bottom */}

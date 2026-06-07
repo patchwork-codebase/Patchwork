@@ -243,6 +243,9 @@ export default function Dashboard() {
     setSearchParams({ tab });
   }
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -287,21 +290,23 @@ export default function Dashboard() {
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-bold text-2xl sm:text-[28px] text-white leading-tight tracking-tight m-0">
-                {profile?.name || firstName}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <h1 className="font-bold text-[22px] sm:text-[28px] text-white leading-tight tracking-tight m-0">
+                {greeting}, <span className="text-[#8B7CF8] whitespace-nowrap">{firstName} 👋</span>
               </h1>
-              {profile?.domain && (
-                <span className={`px-2.5 py-1 rounded-full border ${domainStyle.border} ${domainStyle.bg} ${domainStyle.text} text-[11px] font-mono font-bold uppercase`}>
-                  {profile.domain}
+              <div className="flex flex-wrap items-center gap-2">
+                {profile?.domain && (
+                  <span className={`px-2.5 py-1 rounded-full border ${domainStyle.border} ${domainStyle.bg} ${domainStyle.text} text-[11px] font-mono font-bold uppercase`}>
+                    {profile.domain}
+                  </span>
+                )}
+                <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[11px] font-mono font-bold uppercase">
+                  Free
                 </span>
-              )}
-              <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[11px] font-mono font-bold uppercase">
-                Free
-              </span>
-              <span className="px-2.5 py-1 rounded-full border border-[#8B7CF8]/20 bg-[#8B7CF8]/10 text-[#8B7CF8] text-[11px] font-mono font-bold uppercase">
-                Rep {profile?.reputation || 0}
-              </span>
+                <span className="px-2.5 py-1 rounded-full border border-[#8B7CF8]/20 bg-[#8B7CF8]/10 text-[#8B7CF8] text-[11px] font-mono font-bold uppercase">
+                  Rep {profile?.reputation || 0}
+                </span>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 sm:mt-2 text-[12px] sm:text-[13px] text-slate-400 font-medium">
               <span>{handle}</span>
