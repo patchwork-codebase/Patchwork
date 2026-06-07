@@ -172,6 +172,8 @@ export default function AuthPage() {
     stateIso: '',
     city: '',
     gender: '',
+    phoneCountryCode: '+1',
+    phoneNumber: '',
     role: 'builder' as 'builder' | 'observer',
   });
 
@@ -199,7 +201,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const name = `${signup.fname} ${signup.lname}`.trim() || 'Anonymous Builder';
-      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '', signup.gender);
+      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '', signup.gender, signup.phoneCountryCode, signup.phoneNumber);
       redirectForRole(profile?.role || signup.role);
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
@@ -237,7 +239,12 @@ export default function AuthPage() {
           className="flex items-center gap-3 relative z-10"
         >
           <div className="w-9 h-9 bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(108,92,231,0.5)]">
-            <Hammer className="w-4 h-4 text-white" />
+            <motion.div
+              animate={{ rotate: [0, -45, 15, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
+            >
+              <Hammer className="w-4 h-4 text-white" />
+            </motion.div>
           </div>
           <span className="text-xl font-bold tracking-tight text-white">patch·work</span>
         </motion.div>
@@ -290,7 +297,12 @@ export default function AuthPage() {
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2.5 mb-8">
           <div className="w-8 h-8 bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] rounded-lg flex items-center justify-center">
-            <Hammer className="w-4 h-4 text-white" />
+            <motion.div
+              animate={{ rotate: [0, -45, 15, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
+            >
+              <Hammer className="w-4 h-4 text-white" />
+            </motion.div>
           </div>
           <span className="text-lg font-bold text-white">patch·work</span>
         </div>
@@ -491,6 +503,27 @@ export default function AuthPage() {
                   <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
+                </div>
+
+                {/* Phone (optional) */}
+                <div className="flex gap-2">
+                  <div className="w-[140px] shrink-0 relative z-20">
+                    <SearchableSelect
+                      label="Code"
+                      value={signup.phoneCountryCode}
+                      onChange={val => setSignup(s => ({ ...s, phoneCountryCode: val }))}
+                      options={Country.getAllCountries().map(c => ({ value: `+${c.phonecode}`, label: `${c.isoCode} (+${c.phonecode})` }))}
+                    />
+                  </div>
+                  <div className="flex-1 relative">
+                    <input
+                      type="tel"
+                      placeholder="Phone (optional)"
+                      value={signup.phoneNumber}
+                      onChange={e => setSignup(s => ({ ...s, phoneNumber: e.target.value }))}
+                      className="w-full px-4 py-[13px] bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    />
+                  </div>
                 </div>
 
                 {/* Location (mandatory) */}
