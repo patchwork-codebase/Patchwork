@@ -57,14 +57,14 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
       // await supabase.functions.invoke('github-api', { body: { action: 'create_webhook', repo_full_name: repo.full_name, room_id: roomId } });
       
       // 2. Save to database
-      const { error } = await supabase.from('repositories').insert({
+      const { error } = await supabase.from('repositories').upsert({
         github_repo_id: repo.id,
         github_repo_name: repo.full_name,
         github_owner: repo.full_name.split('/')[0],
         is_public: !repo.private,
         linked_room_id: roomId,
         linked_user_id: userId
-      });
+      }, { onConflict: 'linked_room_id' });
 
       if (error) throw error;
       
