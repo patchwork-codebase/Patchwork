@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
+import { LinkRepositoryModal } from "./LinkRepositoryModal";
+import { DraftUpdates } from "./DraftUpdates";
 
 interface Update {
   id: string;
@@ -405,7 +407,7 @@ export default function BuildRoom() {
         </Link>
 
         {/* Room header */}
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden">
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50" />
           <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
             <div className="flex-1 min-w-0 w-full">
@@ -420,30 +422,32 @@ export default function BuildRoom() {
                   <span key={tag} className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-white/[0.03] text-[#8B7CF8] ring-1 ring-white/[0.06]">{tag}</span>
                 ))}
               </div>
-              <h1 className="text-[36px] font-extrabold text-white mb-3 font-display leading-tight">{room.title}</h1>
-              {room.description && <p className="text-slate-400 text-[15px] mb-6 leading-relaxed max-w-2xl font-medium">{room.description}</p>}
-              <div className="flex items-center gap-5 text-[13px] text-slate-400 flex-wrap font-medium">
+              <h1 className="text-[28px] md:text-[36px] font-extrabold text-white mb-3 font-display leading-tight">{room.title}</h1>
+              {room.description && <p className="text-slate-400 text-[14px] md:text-[15px] mb-6 leading-relaxed max-w-2xl font-medium">{room.description}</p>}
+              <div className="flex items-center gap-3 sm:gap-5 text-[12px] sm:text-[13px] text-slate-400 flex-wrap font-medium">
                 <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-[#8B7CF8]" /></div>{room.builderName}</span>
                 <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Users className="w-3 h-3" /></div>{room.observerCount} observers</span>
                 <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Clock className="w-3 h-3" /></div>Updated {timeAgo(room.updatedAt)}</span>
               </div>
             </div>
 
-            <div className="flex flex-wrap md:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <div className="flex flex-col sm:flex-row md:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
               {room.status === 'completed' && (
                 <Link
                   to={`/dashboard/build-logs`}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
                 >
                   <BookOpen className="w-4 h-4" /> View Log
                 </Link>
               )}
               {isBuilder && room.status === 'active' && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                <>
+                  <LinkRepositoryModal roomId={id!} userId={user.id} />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
                     <button
                       disabled={closingRoom}
-                      className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                      className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
                     >
                       <CheckCircle className="w-4 h-4" />
                       {closingRoom ? 'Closing...' : 'Close Room'}
@@ -463,7 +467,8 @@ export default function BuildRoom() {
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
-                </AlertDialog>
+                  </AlertDialog>
+                </>
               )}
               {room.status === 'completed' && (
                 <button
@@ -476,7 +481,7 @@ export default function BuildRoom() {
               {!isBuilder && room.status === 'active' && !joined && (
                 <button
                   onClick={handleJoin}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#6C5CE7] text-white rounded-full text-[13px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="flex justify-center items-center gap-2 px-5 py-2.5 bg-[#6C5CE7] text-white rounded-full text-[13px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
                 >
                   <Plus className="w-4 h-4" /> Join Room
                 </button>
@@ -489,6 +494,11 @@ export default function BuildRoom() {
             </div>
           </div>
         </div>
+
+        {/* Draft Updates (builder only) */}
+        {isBuilder && room.status === 'active' && (
+          <DraftUpdates roomId={id!} profile={profile} />
+        )}
 
         {/* Post update (builder only) */}
         {isBuilder && room.status === 'active' && (
@@ -663,7 +673,7 @@ export default function BuildRoom() {
 
                     {update.mediaUrl && (
                       <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0A0910] shadow-lg">
-                        <img src={update.mediaUrl} alt="Update media" className="w-full object-cover max-h-[500px]" />
+                        <img src={update.mediaUrl} alt="Update media" className="w-full h-auto object-cover max-h-[400px] sm:max-h-[500px]" />
                       </div>
                     )}
 
