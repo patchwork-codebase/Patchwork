@@ -250,7 +250,7 @@ export function TimelineFeed({
           e.stopPropagation();
           handleToggleReaction(updateId, roomId, type, serverReactions);
         }}
-        className={`px-4 py-1.5 rounded-full text-[12px] font-bold transition-all border active:scale-95 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+        className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[12px] font-bold transition-all border active:scale-95 flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
           isActive 
             ? activeClass
             : "bg-white/[0.02] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.04]"
