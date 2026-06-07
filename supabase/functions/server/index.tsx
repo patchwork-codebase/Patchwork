@@ -507,4 +507,104 @@ app.get("/make-server-30db7d9e/users/:id/observing", async (c) => {
   }
 });
 
+// ── LinkedIn: Generate Post ────────────────────────────────────────────────
+app.post("/make-server-30db7d9e/linkedin/generate-post", async (c) => {
+  try {
+    const user = await getAuthUser(c);
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+    const { room_id } = await c.req.json();
+    if (!room_id) return c.json({ error: "room_id is required" }, 400);
+
+    const admin = getSupabaseAdmin();
+    const { data: room } = await admin.from('rooms').select('*').eq('id', room_id).maybeSingle();
+    if (!room) return c.json({ error: "Room not found" }, 404);
+
+    const { data: updates } = await admin.from('updates').select('*').eq('room_id', room_id).order('created_at', { ascending: false }).limit(5);
+    const latestUpdate = updates && updates.length > 0 ? updates[0].content : "Built some amazing features and polished the UI.";
+
+    // Generate formatted content based on latest log
+    const content = `🚀 Just wrapped another milestone on Patchwork: ${room.title}\n\nKey updates:\n• ${latestUpdate.slice(0, 150).replace(/\n/g, '\n• ')}\n\nBuilding products means solving small problems that create better user experiences.\n\nFollow the journey:\nhttps://patchwork.com/dashboard/rooms/${room.id}\n\n#buildinpublic #product #engineering`;
+
+    return c.json({ content });
+  } catch (err) {
+    return c.json({ error: `Generate post failed: ${err}` }, 500);
+  }
+});
+
+// ── LinkedIn: Publish Post ────────────────────────────────────────────────
+app.post("/make-server-30db7d9e/linkedin/publish", async (c) => {
+  try {
+    const user = await getAuthUser(c);
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+    const { room_id, content } = await c.req.json();
+    if (!content) return c.json({ error: "content is required" }, 400);
+
+    const admin = getSupabaseAdmin();
+    
+    // Check rate limits (max 10 per day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count } = await admin.from('linkedin_posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('published_at', today.toISOString());
+    
+    if (count !== null && count >= 10) {
+      return c.json({ error: "Daily LinkedIn post limit (10) reached." }, 429);
+    }
+
+    // Get LinkedIn Account token
+    const { data: linkedInAcc, error: accError } = await admin.from('linkedin_accounts').select('*').eq('user_id', user.id).maybeSingle();
+    if (!linkedInAcc || !linkedInAcc.access_token) {
+      return c.json({ error: "LinkedIn account not connected" }, 400);
+    }
+
+    // Post to LinkedIn UGC API
+    const urn = linkedInAcc.linkedin_user_id; // "urn:li:person:XXXX" or just the ID. Supabase linkedin_oidc provider returns the URN or sub.
+    // Ensure it's prefixed properly if not already
+    const authorUrn = urn.startsWith('urn:li:person:') ? urn : `urn:li:person:${urn}`;
+
+    const linkedinResponse = await fetch('https://api.linkedin.com/v2/ugcPosts', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${linkedInAcc.access_token}`,
+        'Content-Type': 'application/json',
+        'X-Restli-Protocol-Version': '2.0.0'
+      },
+      body: JSON.stringify({
+        author: authorUrn,
+        lifecycleState: 'PUBLISHED',
+        specificContent: {
+          'com.linkedin.ugc.ShareContent': {
+            shareCommentary: { text: content },
+            shareMediaCategory: 'NONE'
+          }
+        },
+        visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' }
+      })
+    });
+
+    if (!linkedinResponse.ok) {
+      const errorData = await linkedinResponse.text();
+      // Record failed post
+      await admin.from('linkedin_posts').insert({
+        user_id: user.id, build_log_id: room_id, content, status: 'failed'
+      });
+      return c.json({ error: `LinkedIn API error: ${errorData}` }, 502);
+    }
+
+    const responseData = await linkedinResponse.json();
+    
+    // Record successful post
+    await admin.from('linkedin_posts').insert({
+      user_id: user.id, build_log_id: room_id, content, status: 'published',
+      linkedin_post_id: responseData.id, published_at: new Date().toISOString()
+    });
+
+    return c.json({ success: true, id: responseData.id });
+  } catch (err) {
+    return c.json({ error: `Publish post failed: ${err}` }, 500);
+  }
+});
+
 Deno.serve(app.fetch);
