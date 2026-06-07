@@ -84,11 +84,11 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {roomLinkedRepo ? (
-           <button className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+           <button className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto">
              <Github className="w-4 h-4" /> {roomLinkedRepo.github_repo_name.split('/')[1]}
            </button>
         ) : (
-          <button className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+          <button className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto">
             <LinkIcon className="w-4 h-4" /> Link Repository
           </button>
         )}

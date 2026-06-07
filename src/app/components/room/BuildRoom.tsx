@@ -17,7 +17,7 @@ import {
 } from "../ui/alert-dialog";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
-  Share2, CheckCircle, BookOpen, X, ImageIcon, Code
+  Share2, CheckCircle, BookOpen, X, ImageIcon, Code, ExternalLink
 } from "lucide-react";
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
@@ -56,6 +56,10 @@ interface Room {
   observerCount: number;
   createdAt: string;
   updatedAt: string;
+  coverImage?: string | null;
+  primaryLink?: string | null;
+  projectStage?: string;
+  primaryGoal?: string;
   updates: Update[];
   reactions: Reaction[];
 }
@@ -232,15 +236,21 @@ export default function BuildRoom() {
     if ((!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview) || !id || !user) return;
     setPostingUpdate(true);
     
-    let finalMediaUrl = mediaPreview;
+    let finalMediaUrl = null;
     
-    try {
-      if (mediaPreview && Math.random() < 0.3) {
-        throw new Error("Network timeout");
+    if (mediaPreview) {
+      toast.loading("Uploading image...", { id: "upload" });
+      try {
+        const { data, error } = await supabase.functions.invoke('upload-image', {
+          body: { image: mediaPreview }
+        });
+        if (error) throw error;
+        finalMediaUrl = data?.secure_url || null;
+        toast.dismiss("upload");
+      } catch (uploadErr: any) {
+        toast.dismiss("upload");
+        toast.warning("Media upload failed, posting text only.", { description: "You can try uploading the image again later." });
       }
-    } catch (uploadErr: any) {
-      toast.warning("Media upload failed, posting text only.", { description: "You can try uploading the image again later." });
-      finalMediaUrl = null;
     }
 
     try {
@@ -407,8 +417,16 @@ export default function BuildRoom() {
         </Link>
 
         {/* Room header */}
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50" />
+        <div className={`bg-white/[0.02] border border-white/[0.06] rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
+          {room.coverImage && (
+            <>
+              <div className="absolute inset-0 z-0">
+                <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover opacity-30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0910] via-[#0A0910]/80 to-transparent" />
+              </div>
+            </>
+          )}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50 z-10" />
           <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
             <div className="flex-1 min-w-0 w-full">
               <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -418,6 +436,19 @@ export default function BuildRoom() {
                   {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
                   {room.status}
                 </span>
+                
+                {room.projectStage && (
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
+                    Stage: {room.projectStage}
+                  </span>
+                )}
+                
+                {room.primaryGoal && (
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20">
+                    Goal: {room.primaryGoal}
+                  </span>
+                )}
+
                 {room.tags.map(tag => (
                   <span key={tag} className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-white/[0.03] text-[#8B7CF8] ring-1 ring-white/[0.06]">{tag}</span>
                 ))}
@@ -431,7 +462,27 @@ export default function BuildRoom() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row md:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <div className="flex flex-col sm:flex-row flex-wrap md:justify-end items-stretch sm:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+              {room.primaryLink && (
+                <a
+                  href={room.primaryLink.startsWith('http') ? room.primaryLink : `https://${room.primaryLink}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.05] hover:bg-white/[0.1] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white w-full sm:w-auto"
+                >
+                  <ExternalLink className="w-4 h-4" /> Open Project
+                </a>
+              )}
+              <button
+                onClick={() => {
+                  const url = encodeURIComponent(window.location.href);
+                  const text = encodeURIComponent(`I'm building ${room.title} in public. Follow my raw, unfiltered progress on @Patchwork!\n`);
+                  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+                }}
+                className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-full text-[13px] font-bold text-slate-300 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] w-full sm:w-auto"
+              >
+                <Share2 className="w-4 h-4" /> Share Room
+              </button>
               {room.status === 'completed' && (
                 <Link
                   to={`/dashboard/build-logs`}
@@ -632,7 +683,9 @@ export default function BuildRoom() {
                 <p className="font-extrabold text-[16px] text-white font-display mb-2">No updates yet</p>
                 {isBuilder && (
                   <>
-                    <p className="text-[14px] text-slate-400 font-medium mb-4">Post your first update above.</p>
+                    <p className="text-[14px] text-slate-400 font-medium mb-4 max-w-sm mx-auto">
+                      Post a manual update or link an integration. GitHub is currently available, with Figma, Jira, and more coming soon.
+                    </p>
                     {Date.now() - new Date(room.createdAt).getTime() > 5 * 24 * 60 * 60 * 1000 && (
                       <div className="inline-flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-2 rounded-full text-[13px] font-bold">
                         <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
@@ -718,6 +771,18 @@ export default function BuildRoom() {
                                         <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
                                         <span className="text-[11px] font-bold text-slate-300">{r.observerName}</span>
                                         <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
+                                        {isBuilder && r.type === 'tellmemore' && (
+                                          <button 
+                                            onClick={() => {
+                                              setNewUpdate(`> Replying to Tell Me More from @${r.observerName}:\n\n`);
+                                              updateTextAreaRef.current?.focus();
+                                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            className="text-[10px] font-bold text-[#8B7CF8] hover:text-white ml-2 underline decoration-[#8B7CF8]/30 underline-offset-2 transition-colors"
+                                          >
+                                            Draft Follow-up
+                                          </button>
+                                        )}
                                       </div>
                                       <p className="text-[13px] text-slate-300 leading-relaxed font-medium">{r.text}</p>
                                     </div>

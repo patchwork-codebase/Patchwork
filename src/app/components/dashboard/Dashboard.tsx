@@ -94,13 +94,25 @@ export default function Dashboard() {
       }
 
       const updateId = crypto.randomUUID();
+
+      let uploadedMediaUrl = null;
+      if (mediaPreview) {
+        toast.loading("Uploading image...", { id: "upload" });
+        const { data, error } = await supabase.functions.invoke('upload-image', {
+          body: { image: mediaPreview }
+        });
+        if (error) throw error;
+        uploadedMediaUrl = data?.secure_url || null;
+        toast.dismiss("upload");
+      }
+
       const payload = {
         id: updateId,
         room_id: selectedRoomId,
         author_id: user.id,
         author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
         content: updateContent.trim(),
-        media_url: mediaPreview || null,
+        media_url: uploadedMediaUrl,
         code_snippet: codeSnippet.trim() || null,
         created_at: new Date().toISOString(),
       };
