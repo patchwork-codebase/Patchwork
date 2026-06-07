@@ -17,12 +17,13 @@ import {
 } from "../ui/alert-dialog";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
-  Share2, CheckCircle, BookOpen, X, ImageIcon, Code, ExternalLink
+  Share2, CheckCircle, BookOpen, X, ImageIcon, Code, ExternalLink, Linkedin
 } from "lucide-react";
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import { DraftUpdates } from "./DraftUpdates";
+import { LinkedInShareModal } from "../ui/LinkedInShareModal";
 
 interface Update {
   id: string;
@@ -105,6 +106,7 @@ export default function BuildRoom() {
   const [joined, setJoined] = useState(false);
   const [activeTab, setActiveTab] = useState<'updates' | 'reactions'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
+  const [linkedinShareOpen, setLinkedinShareOpen] = useState(false);
   const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const quickUpdateMode = searchParams.get('action') === 'post';
@@ -231,9 +233,14 @@ export default function BuildRoom() {
     }
   }, [quickUpdateMode, room, profile]);
 
+  const isPostingRef = useRef(false);
+
   async function handlePostUpdate(e: React.FormEvent) {
     e.preventDefault();
+    if (isPostingRef.current) return;
     if ((!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview) || !id || !user) return;
+    
+    isPostingRef.current = true;
     setPostingUpdate(true);
     
     let finalMediaUrl = null;
@@ -291,6 +298,7 @@ export default function BuildRoom() {
     } catch (err: any) {
       toast.error(`Failed to post update: ${err.message}`);
     } finally {
+      isPostingRef.current = false;
       setPostingUpdate(false);
     }
   }
@@ -484,12 +492,22 @@ export default function BuildRoom() {
                 <Share2 className="w-4 h-4" /> Share Room
               </button>
               {room.status === 'completed' && (
-                <Link
-                  to={`/dashboard/build-logs`}
-                  className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
-                >
-                  <BookOpen className="w-4 h-4" /> View Log
-                </Link>
+                <>
+                  <Link
+                    to={`/dashboard/build-logs`}
+                    className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
+                  >
+                    <BookOpen className="w-4 h-4" /> View Log
+                  </Link>
+                  {isBuilder && (
+                    <button
+                      onClick={() => setLinkedinShareOpen(true)}
+                      className="flex justify-center items-center gap-2 px-5 py-2.5 border border-[#0077b5]/30 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 rounded-full text-[13px] font-bold text-[#0077b5] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5] w-full sm:w-auto"
+                    >
+                      <Linkedin className="w-4 h-4" /> Share to LinkedIn
+                    </button>
+                  )}
+                </>
               )}
               {isBuilder && room.status === 'active' && (
                 <>
@@ -861,6 +879,13 @@ export default function BuildRoom() {
           onSubmit={handleReaction}
         />
       )}
+      <LinkedInShareModal
+        open={linkedinShareOpen}
+        onClose={() => setLinkedinShareOpen(false)}
+        roomId={id!}
+        userId={user?.id!}
+        roomTitle={room?.title || ''}
+      />
     </>
   );
 }
