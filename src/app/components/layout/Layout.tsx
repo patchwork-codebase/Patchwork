@@ -328,52 +328,53 @@ export default function Layout() {
       )}
       </AnimatePresence>
 
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.08] bg-[#08070D]/95 backdrop-blur-xl shadow-[0_-2px_30px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">
-        <nav className="mx-auto max-w-[1100px] grid grid-cols-5 gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3">
+      {/* ── MOBILE BOTTOM NAVIGATION ─────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 h-[70px] bg-[#0A0910]/90 backdrop-blur-xl border-t border-white/[0.08] flex items-center justify-center px-1 sm:px-2 z-50 lg:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <nav className="flex items-center justify-between gap-1 w-full max-w-md mx-auto px-1 pb-1">
           <Link
             to="/dashboard"
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 ${activeSection === 'overview' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
+            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'overview' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
           >
-            <div className={`flex items-center justify-center w-9 h-9 rounded-2xl ${activeSection === 'overview' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'overview' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
               <DashboardIcon />
             </div>
-            <span className="text-[11px] font-semibold">Home</span>
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Home</span>
           </Link>
           <Link
             to="/dashboard?tab=feed"
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 ${activeSection === 'feed' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
+            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'feed' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
           >
-            <div className={`flex items-center justify-center w-9 h-9 rounded-2xl ${activeSection === 'feed' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'feed' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
               <SearchIcon />
             </div>
-            <span className="text-[11px] font-semibold">Feed</span>
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Feed</span>
           </Link>
           <Link
             to="/dashboard/build-logs"
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 ${activeSection === 'logs' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
+            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'logs' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
           >
-            <div className={`flex items-center justify-center w-9 h-9 rounded-2xl ${activeSection === 'logs' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'logs' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
               <ZapIcon />
             </div>
-            <span className="text-[11px] font-semibold">Build log</span>
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Logs</span>
           </Link>
           <Link
             to="/dashboard/observer"
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 ${activeSection === 'observer' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
+            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'observer' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
           >
-            <div className={`flex items-center justify-center w-9 h-9 rounded-2xl ${activeSection === 'observer' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'observer' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
               <ZapIcon />
             </div>
-            <span className="text-[11px] font-semibold">Observer</span>
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Observer</span>
           </Link>
           <Link
             to="/dashboard/explore"
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 ${activeSection === 'explore' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
+            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'explore' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
           >
-            <div className={`flex items-center justify-center w-9 h-9 rounded-2xl ${activeSection === 'explore' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'explore' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
               <HammerIcon />
             </div>
-            <span className="text-[11px] font-semibold">Explore</span>
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Explore</span>
           </Link>
         </nav>
       </div>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { Country, State, City } from "country-state-city";
 import {
   Sparkles,
   ArrowRight,
@@ -345,6 +344,21 @@ export default function LandingPage() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterSent, setNewsletterSent] = useState(false);
 
+  // Lazy load country-state-city
+  const [countryLib, setCountryLib] = useState<any>(null);
+  const [stateLib, setStateLib] = useState<any>(null);
+  const [cityLib, setCityLib] = useState<any>(null);
+
+  useEffect(() => {
+    if (screen === "onboarding" && step === 1 && !countryLib) {
+      import("country-state-city").then(({ Country, State, City }) => {
+        setCountryLib(Country);
+        setStateLib(State);
+        setCityLib(City);
+      });
+    }
+  }, [screen, step, countryLib]);
+
   useEffect(() => {
     if (location.pathname === "/onboarding") {
       setScreen("onboarding");
@@ -628,31 +642,31 @@ export default function LandingPage() {
                     <div className="pt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                       <button
                         onClick={showOnboarding}
-                        className="w-full rounded-full bg-[#6C5CE7] hover:bg-[#5b4ed6] px-6 py-4 text-base font-bold text-white shadow-[0_12px_32px_rgba(108,92,231,0.3)] transition hover:-translate-y-0.5 active:translate-y-0 sm:w-auto"
+                        className="w-full rounded-full bg-[#6C5CE7] hover:bg-[#5b4ed6] px-5 sm:px-6 py-3.5 sm:py-4 text-[14px] sm:text-base font-bold text-white shadow-[0_12px_32px_rgba(108,92,231,0.3)] transition hover:-translate-y-0.5 active:translate-y-0 sm:w-auto"
                       >
                         Start building for free
                       </button>
                       <button
                         onClick={showDashboard}
-                        className="w-full rounded-full border border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05] px-6 py-4 text-base font-bold text-white transition flex items-center justify-center gap-2 sm:w-auto"
+                        className="w-full rounded-full border border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05] px-5 sm:px-6 py-3.5 sm:py-4 text-[14px] sm:text-base font-bold text-white transition flex items-center justify-center gap-2 sm:w-auto"
                       >
                         Enter dashboard
                         <ArrowRight className="h-4 w-4" />
                       </button>
                     </div>
 
-                    <div className="pt-6 grid grid-cols-1 gap-4 border-t border-white/[0.06] sm:grid-cols-3 sm:max-w-none">
-                      <div className="rounded-3xl border border-white/[0.06] bg-white/[0.03] p-4">
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">312+</div>
-                        <div className="text-sm text-slate-400 font-medium mt-1">Raw updates streamed</div>
+                    <div className="pt-6 grid grid-cols-2 gap-3 border-t border-white/[0.06] sm:grid-cols-3 sm:max-w-none">
+                      <div className="rounded-2xl sm:rounded-3xl border border-white/[0.06] bg-white/[0.03] p-3 sm:p-4">
+                        <div className="text-xl sm:text-3xl font-extrabold text-white">312+</div>
+                        <div className="text-[11px] sm:text-sm text-slate-400 font-medium mt-1">Raw updates streamed</div>
                       </div>
-                      <div className="rounded-3xl border border-white/[0.06] bg-white/[0.03] p-4">
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">68%</div>
-                        <div className="text-sm text-slate-400 font-medium mt-1">Week-2 retention</div>
+                      <div className="rounded-2xl sm:rounded-3xl border border-white/[0.06] bg-white/[0.03] p-3 sm:p-4">
+                        <div className="text-xl sm:text-3xl font-extrabold text-white">68%</div>
+                        <div className="text-[11px] sm:text-sm text-slate-400 font-medium mt-1">Week-2 retention</div>
                       </div>
-                      <div className="rounded-3xl border border-white/[0.06] bg-white/[0.03] p-4">
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">4.9★</div>
-                        <div className="text-sm text-slate-400 font-medium mt-1">Builder rating</div>
+                      <div className="rounded-2xl sm:rounded-3xl border border-white/[0.06] bg-white/[0.03] p-3 sm:p-4 col-span-2 sm:col-span-1">
+                        <div className="text-xl sm:text-3xl font-extrabold text-white">4.9★</div>
+                        <div className="text-[11px] sm:text-sm text-slate-400 font-medium mt-1">Builder rating</div>
                       </div>
                     </div>
                   </div>
@@ -662,23 +676,23 @@ export default function LandingPage() {
                     <div className="absolute -inset-0.5 rounded-[28px] bg-gradient-to-tr from-[#6C5CE7]/30 to-[#8B7CF8]/10 blur opacity-45 pointer-events-none" />
 
                     {/* Live Playground Frame */}
-                    <div className="relative overflow-hidden rounded-[24px] border border-white/[0.08] bg-[#0E0C16] shadow-2xl">
+                    <div className="relative overflow-hidden rounded-[20px] sm:rounded-[24px] border border-white/[0.08] bg-[#0E0C16] shadow-2xl">
                       {/* Window header */}
-                      <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.03] px-5 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
-                          <span className="h-3 w-3 rounded-full bg-[#FEBC2E]" />
-                          <span className="h-3 w-3 rounded-full bg-[#28C840]" />
+                      <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.03] px-3 sm:px-5 py-3 sm:py-4">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#FF5F57]" />
+                          <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#FEBC2E]" />
+                          <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#28C840]" />
                         </div>
-                        <div className="text-[11px] font-mono tracking-widest text-slate-500">PLAYGROUND DEMO</div>
-                        <div className="h-3 w-3" />
+                        <div className="text-[9px] sm:text-[11px] font-mono tracking-widest text-slate-500">PLAYGROUND DEMO</div>
+                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                       </div>
 
                       {/* Playground main grid */}
-                      <div className="grid gap-0 md:grid-cols-[200px_1fr] h-[480px]">
+                      <div className="grid gap-0 md:grid-cols-[200px_1fr] h-[550px] sm:h-[480px] grid-rows-[160px_1fr] md:grid-rows-1">
 
                         {/* Sidebar */}
-                        <aside className="border-r border-white/[0.06] bg-[#0A0910] p-4 flex flex-col justify-between overflow-y-auto">
+                        <aside className="border-b md:border-b-0 md:border-r border-white/[0.06] bg-[#0A0910] p-3 sm:p-4 flex flex-col justify-between overflow-y-auto">
                           <div className="space-y-4">
                             <div className="text-[9px] font-bold tracking-wider text-slate-600 uppercase">Live Rooms</div>
                             <div className="space-y-1.5">
@@ -1053,25 +1067,25 @@ export default function LandingPage() {
                         
                         <div className="space-y-4 relative z-10">
                           {/* Card Top: Builder Profile */}
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
+                            <div className="flex items-center gap-3 sm:gap-4">
                               <div
-                                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl font-bold font-mono text-slate-800 text-base shadow-inner"
+                                className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl font-bold font-mono text-slate-800 text-sm sm:text-base shadow-inner"
                                 style={{ background: builder.avatarColor }}
                               >
                                 {builder.avatarText}
                               </div>
-                              <div>
-                                <div className="text-[16px] font-extrabold text-white flex items-center gap-2 font-display group-hover:text-[#8B7CF8] transition-colors">
-                                  {builder.name}
-                                  <span className="inline-flex items-center gap-0.5 rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-500 uppercase tracking-widest ring-1 ring-amber-500/20">
+                              <div className="min-w-0">
+                                <div className="text-[15px] sm:text-[16px] font-extrabold text-white flex flex-wrap items-center gap-1.5 sm:gap-2 font-display group-hover:text-[#8B7CF8] transition-colors">
+                                  <span className="whitespace-nowrap truncate">{builder.name}</span>
+                                  <span className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-amber-500/10 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-amber-500 uppercase tracking-widest ring-1 ring-amber-500/20">
                                     ★ {builder.rep} rep
                                   </span>
                                 </div>
-                                <div className="text-[12px] text-slate-500 font-medium capitalize mt-0.5">{builder.title} · {builder.location}</div>
+                                <div className="text-[11px] sm:text-[12px] text-slate-500 font-medium capitalize mt-0.5 truncate">{builder.title} · {builder.location}</div>
                               </div>
                             </div>
-                            <span className="rounded-md bg-white/[0.03] px-2.5 py-1 text-[10px] font-bold font-mono uppercase text-[#8B7CF8] ring-1 ring-white/[0.05] tracking-widest">
+                            <span className="self-start sm:self-auto rounded-md bg-white/[0.03] px-2 sm:px-2.5 py-1 text-[9px] sm:text-[10px] font-bold font-mono uppercase text-[#8B7CF8] ring-1 ring-white/[0.05] tracking-widest">
                               {builder.domain}
                             </span>
                           </div>
@@ -1359,7 +1373,7 @@ export default function LandingPage() {
                   </div>
 
                   {/* Footer Right Columns */}
-                  <div className="md:col-span-7 grid grid-cols-3 gap-6">
+                  <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-6 pt-8 md:pt-0">
                     <div className="space-y-4">
                       <div className="text-xs font-bold text-white uppercase tracking-wider">Product</div>
                       <ul className="space-y-2 text-xs">
@@ -1407,7 +1421,7 @@ export default function LandingPage() {
             <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 lg:flex-row w-full items-stretch">
 
               {/* Onboarding Sidebar */}
-              <aside className="w-full rounded-[24px] border border-white/[0.08] bg-[#0E0C16] p-8 text-white lg:w-[360px] flex flex-col justify-between">
+              <aside className="w-full rounded-[24px] border border-white/[0.08] bg-[#0E0C16] p-6 sm:p-8 text-white lg:w-[360px] flex flex-col justify-between">
                 <div className="space-y-8">
                   <div className="flex items-center gap-3 text-lg font-extrabold">
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#6C5CE7] text-white">⚒️</span>
@@ -1456,7 +1470,7 @@ export default function LandingPage() {
               </aside>
 
               {/* Onboarding Wizard Card */}
-              <div className="flex-1 rounded-[24px] border border-white/[0.08] bg-[#0E0C16] p-8 md:p-12 shadow-2xl flex flex-col justify-between">
+              <div className="flex-1 rounded-[24px] border border-white/[0.08] bg-[#0E0C16] p-6 sm:p-8 md:p-12 shadow-2xl flex flex-col justify-between">
 
                 {step === 1 && (
                   <div className="space-y-6">
@@ -1518,7 +1532,7 @@ export default function LandingPage() {
                           className="w-full rounded-xl border border-white/[0.08] bg-[#0E0C16] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition"
                         >
                           <option value="">Select Country</option>
-                          {Country.getAllCountries().map(c => (
+                          {countryLib?.getAllCountries().map((c: any) => (
                             <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
                           ))}
                         </select>
@@ -1532,7 +1546,7 @@ export default function LandingPage() {
                           className="w-full rounded-xl border border-white/[0.08] bg-[#0E0C16] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition disabled:opacity-50"
                         >
                           <option value="">Select State</option>
-                          {countryIso && State.getStatesOfCountry(countryIso).map(s => (
+                          {countryIso && stateLib?.getStatesOfCountry(countryIso).map((s: any) => (
                             <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
                           ))}
                         </select>
@@ -1546,7 +1560,7 @@ export default function LandingPage() {
                           className="w-full rounded-xl border border-white/[0.08] bg-[#0E0C16] px-4 py-3 text-xs text-white outline-none focus:border-[#6C5CE7] transition disabled:opacity-50"
                         >
                           <option value="">Select City</option>
-                          {stateIso && City.getCitiesOfState(countryIso, stateIso).map(c => (
+                          {stateIso && cityLib?.getCitiesOfState(countryIso, stateIso).map((c: any) => (
                             <option key={c.name} value={c.name}>{c.name}</option>
                           ))}
                         </select>
@@ -1744,7 +1758,7 @@ export default function LandingPage() {
               <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
 
                 {/* Main panel */}
-                <div className="rounded-[24px] border border-white/[0.08] bg-[#0E0C16] p-8 space-y-8">
+                <div className="rounded-[24px] border border-white/[0.08] bg-[#0E0C16] p-6 sm:p-8 space-y-6 sm:space-y-8">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.06] pb-6">
                     <div>
                       <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Good morning, Akin 👋</h1>
@@ -1773,7 +1787,7 @@ export default function LandingPage() {
                   </div>
 
                   {/* Tabs */}
-                  <div className="flex gap-2 border-b border-white/[0.06] pb-2">
+                  <div className="flex gap-2 border-b border-white/[0.06] pb-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
                     {["Overview", "My rooms", "Global timeline"].map((tab, idx) => (
                       <button
                         key={tab}
@@ -1797,7 +1811,7 @@ export default function LandingPage() {
                       {detailedRooms.map(room => (
                         <div
                           key={room.id}
-                          className="rounded-2xl border border-white/[0.06] bg-[#0A0910] p-6 hover:border-[#6C5CE7]/35 transition flex justify-between items-center"
+                          className="rounded-2xl border border-white/[0.06] bg-[#0A0910] p-5 sm:p-6 hover:border-[#6C5CE7]/35 transition flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 sm:gap-0"
                         >
                           <div className="flex items-center gap-4">
                             <div className="h-2 w-12 rounded-full" style={{ background: room.color }} />

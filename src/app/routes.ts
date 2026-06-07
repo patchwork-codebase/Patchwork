@@ -1,27 +1,14 @@
 import { createBrowserRouter, redirect } from "react-router";
-import AuthPage from "./components/auth/AuthPage";
-import BuildRoom from "./components/room/BuildRoom";
-import CreateRoom from "./components/room/CreateRoom";
-import Dashboard from "./components/dashboard/Dashboard";
-import BuildLogs from "./components/dashboard/BuildLogs";
-import ExplorePage from "./components/explore/ExplorePage";
-import ObserverHub from "./components/observer/ObserverHub";
-import ObserverOnboarding from "./components/observer/ObserverOnboarding";
-import LandingPage from "./components/landing/LandingPage";
-import Layout from "./components/layout/Layout";
-import UserProfile from "./components/profile/UserProfile";
-import VerifyEmail from "./components/auth/VerifyEmail";
-import Notifications from "./components/dashboard/Notifications";
 
 export const router = createBrowserRouter([
   // Public landing and auth
   {
     path: "/",
-    Component: LandingPage,
+    lazy: () => import("./components/landing/LandingPage").then(m => ({ Component: m.default })),
   },
   {
     path: "/onboarding",
-    Component: AuthPage,
+    lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
   },
   {
     path: "/onbaording",
@@ -29,32 +16,31 @@ export const router = createBrowserRouter([
   },
   {
     path: "/login",
-    Component: AuthPage,
+    lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
   },
   {
     path: "/verify-email",
-    Component: VerifyEmail,
+    lazy: () => import("./components/auth/VerifyEmail").then(m => ({ Component: m.default })),
   },
 
   {
     path: "/observer-onboarding",
-    Component: ObserverOnboarding,
+    lazy: () => import("./components/observer/ObserverOnboarding").then(m => ({ Component: m.default })),
   },
 
   // Authenticated dashboard shell
   {
     path: "/dashboard",
-    Component: Layout,
+    lazy: () => import("./components/layout/Layout").then(m => ({ Component: m.default })),
     children: [
-      { index: true, Component: Dashboard },
-      { path: "create", Component: CreateRoom },
-      { path: "room/:id", Component: BuildRoom },
-      { path: "profile/:id", Component: UserProfile },
-      { path: "observer", Component: ObserverHub },
-      { path: "explore", Component: ExplorePage },
-      { path: "build-logs", Component: BuildLogs },
-      { path: "notifications", Component: Notifications },
+      { index: true, lazy: () => import("./components/dashboard/Dashboard").then(m => ({ Component: m.default })) },
+      { path: "create", lazy: () => import("./components/room/CreateRoom").then(m => ({ Component: m.default })) },
+      { path: "room/:id", lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })) },
+      { path: "profile/:id", lazy: () => import("./components/profile/UserProfile").then(m => ({ Component: m.default })) },
+      { path: "observer", lazy: () => import("./components/observer/ObserverHub").then(m => ({ Component: m.default })) },
+      { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },
+      { path: "build-logs", lazy: () => import("./components/dashboard/BuildLogs").then(m => ({ Component: m.default })) },
+      { path: "notifications", lazy: () => import("./components/dashboard/Notifications").then(m => ({ Component: m.default })) },
     ],
   },
 ]);
-
