@@ -79,8 +79,13 @@ export default function Dashboard() {
     }
   }, [myRooms, selectedRoomId]);
 
+  const isPostingRef = useRef(false);
+
   const handlePostUpdate = async () => {
+    if (isPostingRef.current) return;
     if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
+    
+    isPostingRef.current = true;
     setPosting(true);
     try {
       const { data: room, error: roomError } = await supabase
@@ -140,6 +145,7 @@ export default function Dashboard() {
     } catch (err: any) {
       toast.error(`Failed to post update: ${err.message}`);
     } finally {
+      isPostingRef.current = false;
       setPosting(false);
     }
   };
