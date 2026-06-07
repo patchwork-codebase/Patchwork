@@ -1397,8 +1397,8 @@ export default function LandingPage() {
                     <div className="space-y-4">
                       <div className="text-xs font-bold text-white uppercase tracking-wider">Legal & Social</div>
                       <ul className="space-y-2 text-xs">
-                        <li><span className="hover:text-white transition cursor-pointer">Privacy Policy</span></li>
-                        <li><span className="hover:text-white transition cursor-pointer">Terms of Service</span></li>
+                        <li><span onClick={() => navigate('/privacy')} className="hover:text-white transition cursor-pointer">Privacy Policy</span></li>
+                        <li><span onClick={() => navigate('/terms')} className="hover:text-white transition cursor-pointer">Terms of Service</span></li>
                         <li><a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-white transition">GitHub</a></li>
                         <li><a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-white transition">Twitter / X</a></li>
                       </ul>
