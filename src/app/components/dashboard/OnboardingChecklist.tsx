@@ -115,7 +115,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
       } else if (stepId === 'room' && role === 'builder') {
         if (!text.trim()) { setError('Room name is required'); setSaving(false); return; }
         const { error: e } = await supabase.from('rooms').insert({
-          id: crypto.randomUUID(),
+          id: window.crypto.randomUUID(),
           builder_id: userId,
           builder_name: userName || 'Builder',
           title: text.trim(),
