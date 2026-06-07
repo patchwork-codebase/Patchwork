@@ -365,6 +365,27 @@ app.post("/make-server-30db7d9e/rooms/:id/updates", async (c) => {
       updated_at: new Date().toISOString(),
     }).eq('id', id);
 
+    // --- Advanced Reputation Engine ---
+    let reputationEarned = 1; // Base score
+    const lowerContent = content.toLowerCase();
+    
+    if (/(scrapped|pivot|pivoted|changed direction|dropping|decided not to)/.test(lowerContent)) {
+      reputationEarned += 2;
+    }
+    if (/(user testing|analytics|metrics|data shows|feedback|interview)/.test(lowerContent)) {
+      reputationEarned += 1;
+    }
+    if (/(learned|realized|takeaway|lesson)/.test(lowerContent)) {
+      reputationEarned += 1;
+    }
+
+    const { data: profileData } = await admin.from('users').select('reputation').eq('id', user.id).maybeSingle();
+    if (profileData) {
+      const newReputation = (profileData.reputation || 0) + reputationEarned;
+      await admin.from('users').update({ reputation: newReputation }).eq('id', user.id);
+    }
+    // ----------------------------------
+
     return c.json(normalizeUpdate(inserted), 201);
   } catch (err) {
     return c.json({ error: `Post update failed: ${err}` }, 500);
