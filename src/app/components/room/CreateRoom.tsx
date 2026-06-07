@@ -128,7 +128,7 @@ export default function CreateRoom() {
 
     setLoading(true);
     try {
-      const roomId = crypto.randomUUID();
+      const roomId = window.crypto.randomUUID();
       const now = new Date().toISOString();
       
       let coverImageUrl = null;
@@ -145,7 +145,7 @@ export default function CreateRoom() {
           
           const encoder = new TextEncoder();
           const data = encoder.encode(strToSign);
-          const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+          const hashBuffer = await window.crypto.subtle.digest("SHA-1", data);
           const hashArray = Array.from(new Uint8Array(hashBuffer));
           const signature = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 

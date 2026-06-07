@@ -93,7 +93,7 @@ export default function Dashboard() {
         throw new Error(roomError?.message || "Room not found");
       }
 
-      const updateId = crypto.randomUUID();
+      const updateId = window.crypto.randomUUID();
 
       let uploadedMediaUrl = null;
       if (mediaPreview) {

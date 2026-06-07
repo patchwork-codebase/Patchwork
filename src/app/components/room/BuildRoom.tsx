@@ -254,7 +254,7 @@ export default function BuildRoom() {
     }
 
     try {
-      const updateId = crypto.randomUUID();
+      const updateId = window.crypto.randomUUID();
       const payload = {
         id: updateId,
         room_id: id,
