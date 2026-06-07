@@ -1,7 +1,15 @@
-import { Link } from "react-router";
-import { Search, Compass } from "lucide-react";
+import { Link, useNavigate } from "react-router";
+import { Compass, Users, Clock, Hammer } from "lucide-react";
+import { useRooms } from "../../hooks/useRooms";
+import { timeAgo } from "../../utils/helpers";
 
 export default function ExplorePage() {
+  const { data, isLoading } = useRooms();
+  const navigate = useNavigate();
+
+  // useRooms is an infinite query, so data.pages contains the arrays of rooms
+  const rooms = data?.pages.flat() || [];
+
   return (
     <div className="max-w-[1080px] w-full mx-auto px-4 sm:px-6 py-12 relative overflow-hidden">
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[380px] h-[380px] sm:w-[600px] sm:h-[600px] bg-[#6C5CE7]/5 rounded-full blur-[120px] pointer-events-none -z-10" />
@@ -19,22 +27,87 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] px-6 py-10 sm:p-16 text-center backdrop-blur-md relative overflow-hidden max-w-2xl mx-auto shadow-xl">
-        <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6C5CE7]/30 to-transparent opacity-50" />
-        
-        <div className="w-20 h-20 rounded-[24px] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 flex items-center justify-center mx-auto mb-6 shadow-inner relative group">
-          <Search className="w-8 h-8 text-[#8B7CF8] group-hover:scale-110 transition-transform duration-300" />
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 h-[200px] animate-pulse">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-white/[0.05]" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-white/[0.05] rounded w-1/2" />
+                  <div className="h-3 bg-white/[0.05] rounded w-1/3" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-white/[0.05] rounded w-full" />
+                <div className="h-3 bg-white/[0.05] rounded w-4/5" />
+              </div>
+            </div>
+          ))}
         </div>
-        
-        <p className="font-display font-extrabold text-[24px] text-white mb-3 tracking-tight">
-          Coming soon
-        </p>
-        <p className="text-[14px] text-slate-400 max-w-[360px] mx-auto leading-relaxed font-medium mb-8">
-          The builder directory is in active development. For now,{' '}
-          <Link to="/dashboard" className="text-[#8B7CF8] font-bold hover:text-white transition-colors">browse the global timeline</Link>{' '}
-          to discover what's being built.
-        </p>
-      </div>
+      ) : rooms.length === 0 ? (
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] px-6 py-16 text-center backdrop-blur-md">
+          <p className="text-white font-bold text-lg">No active rooms found</p>
+          <p className="text-slate-400 text-sm mt-2">Check back later or start your own room!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rooms.map((room) => (
+            <div 
+              key={room.id}
+              onClick={() => navigate(`/dashboard/room/${room.id}`)}
+              className="group bg-[#0A0910]/80 border border-white/[0.06] hover:border-[#6C5CE7]/50 rounded-[24px] p-0 flex flex-col cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(108,92,231,0.15)] relative overflow-hidden h-[340px]"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+              
+              {/* Cover Image Banner */}
+              {room.coverImage && (
+                <div className="w-full h-32 overflow-hidden border-b border-white/[0.06] shrink-0">
+                  <img 
+                    src={room.coverImage} 
+                    alt={room.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              )}
+
+              <div className="p-6 flex flex-col h-full">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {!room.coverImage && (
+                      <div className="w-10 h-10 rounded-xl bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 flex items-center justify-center text-[#8B7CF8] shrink-0">
+                        <Hammer className="w-5 h-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="text-white font-bold text-lg group-hover:text-[#8B7CF8] transition-colors line-clamp-1">{room.title}</h3>
+                      <p className="text-slate-400 text-xs">by {room.builderName}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-slate-300 mb-6 line-clamp-2 flex-grow">
+                  {room.description || "No description provided."}
+                </p>
+
+                <div className="flex items-center gap-4 mt-auto pt-4 border-t border-white/[0.06]">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{timeAgo(room.updatedAt)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>{room.observerCount || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 ml-auto bg-[#6C5CE7]/10 text-[#8B7CF8] px-2 py-0.5 rounded-full font-medium">
+                    {room.updateCount || 0} updates
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

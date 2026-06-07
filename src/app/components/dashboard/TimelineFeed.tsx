@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { 
   Heart, MessageCircle, Share2, ShieldAlert, Sparkles, X, 
-  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code, CheckCircle
+  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code, CheckCircle,
+  Bold, Italic, ListOrdered, List, Link as LinkIcon, Quote, AtSign
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
@@ -91,6 +92,26 @@ export function TimelineFeed({
   const [feedSort, setFeedSort] = useState<'latest' | 'trending'>('latest');
 
   const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
+
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertFormatting = (prefix: string, suffix: string = '') => {
+    const textarea = replyTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = replyText;
+    const selectedText = text.substring(start, end);
+
+    const newText = text.substring(0, start) + prefix + selectedText + suffix + text.substring(end);
+    setReplyText(newText);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+    }, 0);
+  };
 
   const toggleComments = (id: string) => {
     setExpandedComments(prev => 
@@ -584,14 +605,17 @@ export function TimelineFeed({
                   const hiddenCount = comments.length - visibleComments.length;
 
                   return (
-                    <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-3">
+                    <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-3 relative">
+                      {/* Thread Trail */}
+                      <div className="absolute top-8 bottom-12 left-[15px] w-px bg-white/10 z-0 hidden sm:block" />
+                      
                       {hiddenCount > 0 && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setFullyExpandedComments(prev => [...prev, update.id]);
                           }}
-                          className="text-[12px] font-bold text-[#8B7CF8] hover:text-white transition-colors self-start mb-2"
+                          className="text-[12px] font-bold text-[#8B7CF8] hover:text-white transition-colors self-start mb-2 relative z-10 bg-[#0D0B14] pr-2"
                         >
                           View {hiddenCount} previous {hiddenCount === 1 ? 'reply' : 'replies'}...
                         </button>
@@ -602,33 +626,101 @@ export function TimelineFeed({
                         const commentHandle = `@${comment.observerName.toLowerCase().replace(/\s+/g, '')}`;
                         const commentTime = timeAgo(comment.createdAt);
                         return (
-                          <div key={comment.id} className="flex gap-3" onClick={(e) => e.stopPropagation()}>
-                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                          <div key={comment.id} className="flex gap-3 relative z-10" onClick={(e) => e.stopPropagation()}>
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm ring-4 ring-[#0D0B14]">
                             <img src={commentAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                           </div>
                           <div className="flex-1 bg-white/[0.02] rounded-xl p-3 border border-white/[0.04]">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-bold text-[13px] text-white hover:underline">{comment.observerName}</span>
-                              <span className="text-[12px] text-slate-500">{commentHandle}</span>
-                              <span className="text-[12px] text-slate-500">·</span>
-                              <span className="text-[12px] text-slate-500">{commentTime}</span>
+                            <div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5 mb-1">
+                              <span className="font-bold text-[13px] text-white hover:underline whitespace-nowrap truncate max-w-[150px] sm:max-w-[250px]">{comment.observerName}</span>
+                              <span className="text-[12px] text-slate-500 truncate max-w-[100px] sm:max-w-[180px]">{commentHandle}</span>
+                              <span className="text-[12px] text-slate-500 shrink-0">·</span>
+                              <span className="text-[12px] text-slate-500 shrink-0">{commentTime}</span>
                             </div>
                             <p className="text-[13.5px] text-slate-300 leading-relaxed m-0">
-                              {comment.text}
+                              {comment.text.split(/(@\w+)/g).map((part: string, i: number) => 
+                                part.startsWith('@') ? (
+                                  <span key={i} className="text-[#E75C5C] font-semibold">{part}</span>
+                                ) : (
+                                  <span key={i}>{part}</span>
+                                )
+                              )}
                             </p>
+                            <div className="flex items-center gap-4 mt-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleReplyClick(e, update.id);
+                                  setReplyText(`${commentHandle} `);
+                                }}
+                                className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-[#8B7CF8] transition-colors"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                Reply
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
                     })}
-                    <div className="flex items-center gap-3 mt-1" onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        onClick={(e) => handleReplyClick(e, update.id)}
-                        className="text-[13px] font-bold text-[#8B7CF8] hover:text-[#7b6ce8] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded px-1"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        Add a reply
-                      </button>
-                    </div>
+                    {replyingTo === update.id ? (
+                      <div className="mt-3 flex flex-col gap-2 relative z-10" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                        <div className="w-full bg-[#0A0910] border border-white/[0.08] rounded-xl overflow-hidden focus-within:border-[#6C5CE7]/50 focus-within:ring-1 focus-within:ring-[#6C5CE7]/50 transition-all">
+                          {/* Formatting Toolbar */}
+                          <div className="flex items-center gap-1 px-3 py-2 border-b border-white/[0.04] bg-white/[0.01] overflow-x-auto">
+                            <button onClick={() => insertFormatting('**', '**')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Bold"><Bold className="w-4 h-4" /></button>
+                            <button onClick={() => insertFormatting('*', '*')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Italic"><Italic className="w-4 h-4" /></button>
+                            <div className="w-px h-4 bg-white/[0.08] mx-1" />
+                            <button onClick={() => insertFormatting('1. ')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Numbered List"><ListOrdered className="w-4 h-4" /></button>
+                            <button onClick={() => insertFormatting('- ')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Bulleted List"><List className="w-4 h-4" /></button>
+                            <div className="w-px h-4 bg-white/[0.08] mx-1" />
+                            <button onClick={() => insertFormatting('[', '](url)')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Link"><LinkIcon className="w-4 h-4" /></button>
+                            <button onClick={() => insertFormatting('`', '`')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Code"><Code className="w-4 h-4" /></button>
+                            <button onClick={() => insertFormatting('> ')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Quote"><Quote className="w-4 h-4" /></button>
+                            <div className="w-px h-4 bg-white/[0.08] mx-1" />
+                            <button onClick={() => insertFormatting('@')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Mention"><AtSign className="w-4 h-4" /></button>
+                            <div className="w-px h-4 bg-white/[0.08] mx-1" />
+                            <button onClick={() => insertFormatting('![alt text](', ')')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded transition-colors" title="Image"><ImageIcon className="w-4 h-4" /></button>
+                          </div>
+                          <textarea
+                            ref={replyTextareaRef}
+                            autoFocus
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder={`Replying to @${update.authorName.toLowerCase().replace(/\s+/g, '')}...`}
+                            className="w-full bg-transparent p-3 text-[14px] text-white placeholder-slate-500 focus:outline-none resize-none min-h-[80px]"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2 mt-1">
+                          <button
+                            onClick={() => {
+                              setReplyingTo(null);
+                              setReplyText("");
+                            }}
+                            className="px-4 py-2 rounded-full text-[13px] font-bold text-slate-400 hover:text-white transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={submitReply}
+                            disabled={!replyText.trim()}
+                            className="px-5 py-2 rounded-full bg-[#6C5CE7] hover:bg-[#5b4cdb] text-white text-[13px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 mt-1 relative z-10 pl-2" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                          onClick={(e) => handleReplyClick(e, update.id)}
+                          className="text-[13px] font-bold text-[#8B7CF8] hover:text-[#7b6ce8] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded px-1"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                          Add a reply
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );})()}
               </div>
@@ -658,58 +750,6 @@ export function TimelineFeed({
           </div>
         )}
       </div>
-
-      {/* REPLY MODAL */}
-      <AnimatePresence>
-        {replyingTo !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleOverlayClick}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-md bg-[#0D0B14] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-10"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-white/[0.08] bg-white/[0.02]">
-                <h3 className="text-white font-bold text-[15px]">Reply to Update</h3>
-                <button
-                  onClick={handleOverlayClick}
-                  className="text-slate-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="p-4">
-                <textarea
-                  autoFocus
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Type your reply here..."
-                  aria-label="Reply text"
-                  className="w-full bg-transparent border border-white/[0.1] rounded-xl outline-none text-white text-[15px] p-3 min-h-[120px] resize-none placeholder:text-slate-500 focus:border-[#8B7CF8] transition-colors focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
-                />
-                <div className="flex justify-end mt-4">
-                  <button
-                    onClick={submitReply}
-                    disabled={!replyText.trim()}
-                    className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full font-bold text-[14px] transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
-                  >
-                    Post Reply
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

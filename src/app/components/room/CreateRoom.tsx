@@ -1,18 +1,81 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth, apiCall, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Plus, X, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, X, ArrowRight, Sparkles, Image as ImageIcon, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 const SUGGESTED_TAGS = ['design', 'engineering', 'product', 'research', 'writing', 'growth'];
 
+function CustomSelect({ value, onChange, options, label }: { value: string, onChange: (v: string) => void, options: {value: string, label: string}[], label: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(o => o.value === value);
+
+  return (
+    <div className="relative" ref={ref}>
+      <label className="block text-[13px] font-bold text-slate-300 mb-2">{label}</label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full px-5 py-4 bg-[#0A0910]/50 border ${isOpen ? 'border-[#6C5CE7]/50 ring-1 ring-[#6C5CE7]/50' : 'border-white/[0.08]'} rounded-xl text-[15px] text-white focus:outline-none transition-all font-medium flex items-center justify-between`}
+      >
+        <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-2 bg-[#1A1825] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden py-1">
+          {options.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
+                value === option.value 
+                  ? 'bg-[#6C5CE7]/20 text-[#8B7CF8] font-bold' 
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white font-medium'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CreateRoom() {
   const { token, profile } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', slug: '', description: '', tagInput: '' });
+  const [form, setForm] = useState({ 
+    title: '', 
+    slug: '', 
+    description: '', 
+    tagInput: '',
+    coverImage: null as string | null,
+    primaryLink: '',
+    projectStage: 'Ideation',
+    primaryGoal: 'Just sharing my journey'
+  });
   const [tags, setTags] = useState<string[]>([]);
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (profile?.role !== 'builder') {
     return (
@@ -41,6 +104,19 @@ export default function CreateRoom() {
     setTags(t => t.filter(x => x !== tag));
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image must be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => setForm(f => ({ ...f, coverImage: reader.result as string }));
+      reader.readAsDataURL(file);
+    }
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title.trim() || !form.slug.trim() || !profile) return;
@@ -54,6 +130,48 @@ export default function CreateRoom() {
     try {
       const roomId = crypto.randomUUID();
       const now = new Date().toISOString();
+      
+      let coverImageUrl = null;
+      if (form.coverImage) {
+        toast.loading("Uploading cover image...", { id: "upload" });
+        
+        try {
+          const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dfqvoc8dz/image/upload";
+          const CLOUDINARY_API_KEY = "566318394499849";
+          const CLOUDINARY_API_SECRET = "wyljhM7EMezYpd5iNFrmqNV3J_I";
+
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          const strToSign = `timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
+          
+          const encoder = new TextEncoder();
+          const data = encoder.encode(strToSign);
+          const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const signature = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+          const formData = new FormData();
+          formData.append("file", form.coverImage);
+          formData.append("api_key", CLOUDINARY_API_KEY);
+          formData.append("timestamp", timestamp);
+          formData.append("signature", signature);
+
+          const response = await fetch(CLOUDINARY_URL, {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.error?.message || "Cloudinary upload failed");
+          }
+          coverImageUrl = result.secure_url;
+          toast.dismiss("upload");
+        } catch (error: any) {
+          toast.dismiss("upload");
+          throw new Error(`Image upload failed: ${error.message}`);
+        }
+      }
+
       const payload = {
         id: roomId,
         builder_id: profile.id,
@@ -67,6 +185,10 @@ export default function CreateRoom() {
         last_update: '',
         created_at: now,
         updated_at: now,
+        cover_image: coverImageUrl,
+        primary_link: form.primaryLink.trim() || null,
+        project_stage: form.projectStage,
+        primary_goal: form.primaryGoal
       };
 
       const { error } = await supabase
@@ -105,6 +227,38 @@ export default function CreateRoom() {
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         
         <div className="space-y-8 relative z-10">
+          {/* Cover Image Upload */}
+          <div>
+            <label className="block text-[13px] font-bold text-slate-300 mb-2">Cover Image (Optional)</label>
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-[#6C5CE7]/50 bg-[#0A0910]/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+            >
+              {form.coverImage ? (
+                <>
+                  <img src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white text-sm font-bold flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4" /> Change Image
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-slate-500 flex flex-col items-center gap-2">
+                  <ImageIcon className="w-8 h-8 opacity-50" />
+                  <span className="text-[13px] font-medium">Click to upload cover image</span>
+                </div>
+              )}
+            </div>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImageUpload} 
+              accept="image/*" 
+              className="hidden" 
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-[13px] font-bold text-slate-300 mb-2">
@@ -169,6 +323,41 @@ export default function CreateRoom() {
             <div className="flex justify-end mt-1.5">
               <span className="text-[11px] font-mono text-slate-500">{form.description.length}/500</span>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-[13px] font-bold text-slate-300 mb-2">Primary Link (Optional)</label>
+            <input
+              type="url"
+              value={form.primaryLink}
+              onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
+              placeholder="https://github.com/your/repo or your live site"
+              className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 transition-all font-medium"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CustomSelect
+              label="Project Stage"
+              value={form.projectStage}
+              onChange={(val) => setForm(f => ({ ...f, projectStage: val }))}
+              options={[
+                { value: "Ideation", label: "Ideation (Just starting)" },
+                { value: "Prototyping", label: "Prototyping (Building MVP)" },
+                { value: "Beta", label: "Beta (Ready for early testers)" },
+                { value: "Launched", label: "Launched (Live)" },
+              ]}
+            />
+            <CustomSelect
+              label="Primary Goal"
+              value={form.primaryGoal}
+              onChange={(val) => setForm(f => ({ ...f, primaryGoal: val }))}
+              options={[
+                { value: "Seeking technical feedback", label: "Seeking technical feedback" },
+                { value: "Seeking design critique", label: "Seeking design critique" },
+                { value: "Just sharing my journey", label: "Just sharing my journey" },
+              ]}
+            />
           </div>
 
           <div>
