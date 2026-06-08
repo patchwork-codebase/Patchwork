@@ -151,6 +151,24 @@ export default function AuthPage() {
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
+  const ALLOWED_PHONE_COUNTRIES = [
+    { iso: 'NG', code: '+234', name: 'Nigeria' },
+    { iso: 'KE', code: '+254', name: 'Kenya' },
+    { iso: 'RW', code: '+250', name: 'Rwanda' },
+    { iso: 'GH', code: '+233', name: 'Ghana' }
+  ];
+
+  const calculatePasswordStrength = (pass: string) => {
+    if (!pass) return 0;
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[a-z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+    return score; // 0 to 5
+  };
+
   useEffect(() => {
     if (profile) {
       navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
@@ -168,11 +186,12 @@ export default function AuthPage() {
     lname: '',
     email: '',
     password: '',
+    confirmPassword: '',
     countryIso: '',
     stateIso: '',
     city: '',
     gender: '',
-    phoneCountryCode: '+1',
+    phoneCountryCode: '+234',
     phoneNumber: '',
     role: 'builder' as 'builder' | 'observer',
   });
@@ -210,7 +229,7 @@ export default function AuthPage() {
     }
   }
 
-  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.countryIso && signup.stateIso && signup.city && signup.gender;
+  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.password === signup.confirmPassword && signup.countryIso && signup.stateIso && signup.city && signup.gender;
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
@@ -490,19 +509,61 @@ export default function AuthPage() {
                 </div>
 
                 {/* Password */}
+                <div>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password (min 8 characters)"
+                      value={signup.password}
+                      onChange={e => setSignup(s => ({ ...s, password: e.target.value }))}
+                      required
+                      className="w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    />
+                    <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  
+                  {/* Password Strength */}
+                  {signup.password && (
+                    <div className="mt-2 flex gap-1">
+                      {[1, 2, 3, 4, 5].map((level) => {
+                        const strength = calculatePasswordStrength(signup.password);
+                        let bgColor = "bg-white/[0.08]";
+                        if (strength >= level) {
+                          if (strength <= 2) bgColor = "bg-rose-500";
+                          else if (strength <= 3) bgColor = "bg-amber-400";
+                          else bgColor = "bg-emerald-500";
+                        }
+                        return <div key={level} className={`h-1.5 flex-1 rounded-full transition-colors ${bgColor}`} />;
+                      })}
+                    </div>
+                  )}
+                  {signup.password && (
+                    <p className="text-[11px] text-slate-500 mt-1.5 font-medium">
+                      {calculatePasswordStrength(signup.password) <= 2 && "Weak: Use 8+ characters, mix letters, numbers & symbols."}
+                      {calculatePasswordStrength(signup.password) === 3 && "Fair: Add special characters or numbers to make it stronger."}
+                      {calculatePasswordStrength(signup.password) >= 4 && "Strong password."}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Password (min 8 characters)"
-                    value={signup.password}
-                    onChange={e => setSignup(s => ({ ...s, password: e.target.value }))}
+                    placeholder="Confirm password"
+                    value={signup.confirmPassword}
+                    onChange={e => setSignup(s => ({ ...s, confirmPassword: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    className={`w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:ring-1 transition-all ${
+                      signup.confirmPassword && signup.password !== signup.confirmPassword
+                        ? 'border-rose-500/50 focus:border-rose-500/50 focus:ring-rose-500/30'
+                        : 'border-white/[0.08] focus:border-[#8B7CF8]/50 focus:ring-[#8B7CF8]/30'
+                    }`}
                   />
-                  <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
                 </div>
 
                 {/* Phone (optional) */}
@@ -511,8 +572,15 @@ export default function AuthPage() {
                     <SearchableSelect
                       label="Code"
                       value={signup.phoneCountryCode}
-                      onChange={val => setSignup(s => ({ ...s, phoneCountryCode: val }))}
-                      options={Country.getAllCountries().map(c => ({ value: `+${c.phonecode}`, label: `${c.isoCode} (+${c.phonecode})` }))}
+                      onChange={val => {
+                        const matched = ALLOWED_PHONE_COUNTRIES.find(c => c.code === val);
+                        setSignup(s => ({ 
+                          ...s, 
+                          phoneCountryCode: val,
+                          ...(matched ? { countryIso: matched.iso, stateIso: '', city: '' } : {})
+                        }));
+                      }}
+                      options={ALLOWED_PHONE_COUNTRIES.map(c => ({ value: c.code, label: `${c.iso} (${c.code})` }))}
                     />
                   </div>
                   <div className="flex-1 relative">
@@ -531,7 +599,16 @@ export default function AuthPage() {
                   <SearchableSelect
                     label="Country"
                     value={signup.countryIso}
-                    onChange={val => setSignup(s => ({ ...s, countryIso: val, stateIso: '', city: '' }))}
+                    onChange={val => {
+                      const matched = ALLOWED_PHONE_COUNTRIES.find(c => c.iso === val);
+                      setSignup(s => ({ 
+                        ...s, 
+                        countryIso: val, 
+                        stateIso: '', 
+                        city: '',
+                        ...(matched ? { phoneCountryCode: matched.code } : { phoneCountryCode: '' })
+                      }));
+                    }}
                     options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
                   />
 
