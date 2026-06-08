@@ -6,9 +6,8 @@ export function useLinkedinAccount(userId: string | undefined) {
     queryKey: ['linkedin_account', userId],
     queryFn: async () => {
       if (!userId) return null;
-      const { data, error } = await supabase.from('linkedin_accounts').select('*').eq('user_id', userId).single();
+      const { data, error } = await supabase.from('linkedin_accounts').select('*').eq('user_id', userId).maybeSingle();
       if (error) {
-        if (error.code === 'PGRST116') return null;
         throw error;
       }
       return data;

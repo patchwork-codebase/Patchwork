@@ -17,13 +17,14 @@ import {
 } from "../ui/alert-dialog";
 import {
   Hammer, Users, Clock, ArrowLeft, Plus, Send, Zap, RotateCcw, MessageCircle,
-  Share2, CheckCircle, BookOpen, X, ImageIcon, Code, ExternalLink, Linkedin
+  Share2, CheckCircle, BookOpen, X, ImageIcon, Code, ExternalLink, Linkedin, Trash2
 } from "lucide-react";
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import { DraftUpdates } from "./DraftUpdates";
 import { LinkedInShareModal } from "../ui/LinkedInShareModal";
+import { ReadMoreText } from "../ui/ReadMoreText";
 
 interface Update {
   id: string;
@@ -288,8 +289,7 @@ export default function BuildRoom() {
         })
         .eq('id', id);
 
-      const normalizedUpdate = normalizeRow(payload);
-      setRoom(r => r ? { ...r, updates: [normalizedUpdate, ...r.updates], updateCount: r.updateCount + 1 } : r);
+      // Removed optimistic update to prevent duplication with real-time listener
       setNewUpdate('');
       setMediaPreview(null);
       setCodeSnippet('');
@@ -320,8 +320,7 @@ export default function BuildRoom() {
       const { error } = await supabase.from('reactions').insert(payload);
       if (error) throw error;
       
-      const normalizedReaction = normalizeRow(payload);
-      setRoom(r => r ? { ...r, reactions: [normalizedReaction, ...r.reactions] } : r);
+      // Removed optimistic update to prevent duplication with real-time listener
       toast.success('Reaction posted!');
     } catch (err: any) {
       toast.error(`Failed to post reaction: ${err.message}`);
@@ -369,14 +368,39 @@ export default function BuildRoom() {
         .eq('id', id);
         
       if (error) throw error;
+      toast.success('Room closed successfully!');
       setRoom(r => r ? { ...r, status: 'completed' } : r);
-      toast.success('Room closed. Build Log is now available!');
+      queryClient.invalidateQueries({ queryKey: ['user-rooms', user.id] });
     } catch (err: any) {
       toast.error(`Failed to close room: ${err.message}`);
     } finally {
       setClosingRoom(false);
     }
   }
+
+  const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
+
+  const handleDeleteUpdate = async (updateId: string) => {
+    if (!user) return;
+    if (!window.confirm("Are you sure you want to delete this update? This action cannot be undone.")) return;
+    
+    setDeletingUpdateId(updateId);
+    try {
+      const { error } = await supabase.from('updates').delete().eq('id', updateId).eq('author_id', user.id);
+      if (error) throw error;
+      toast.success("Update deleted");
+      setRoom(prev => prev ? {
+        ...prev,
+        updates: prev.updates?.filter(u => u.id !== updateId) || [],
+        updateCount: Math.max(0, prev.updateCount - 1)
+      } : prev);
+    } catch (error: any) {
+      console.error("Error deleting update:", error);
+      toast.error(error.message || "Failed to delete update");
+    } finally {
+      setDeletingUpdateId(null);
+    }
+  };
 
   function copyLogLink() {
     const url = `${window.location.origin}/log/${id}`;
@@ -436,49 +460,57 @@ export default function BuildRoom() {
           )}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent opacity-50 z-10" />
           <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
-            <div className="flex-1 min-w-0 w-full">
-              <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md uppercase tracking-widest ${
-                  room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-white/5 text-slate-400 ring-1 ring-white/10'
-                }`}>
-                  {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-                  {room.status}
-                </span>
-                
+            <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <h1 className="text-[28px] md:text-[36px] font-extrabold text-white font-display leading-tight truncate">{room.title}</h1>
+                  <span className={`shrink-0 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider ${
+                    room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_8px_rgba(52,211,153,0.3)]' : 'bg-white/5 text-slate-400 border border-white/10'
+                  }`}>
+                    {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
+                    {room.status}
+                  </span>
+                </div>
+                {room.description && <p className="text-slate-400 text-[14px] md:text-[15px] leading-relaxed max-w-2xl font-medium">{room.description}</p>}
+              </div>
+
+              {/* Horizontally scrollable tags container for mobile density */}
+              <div className="flex items-center gap-2 overflow-x-auto md:overflow-visible md:flex-wrap scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0 py-1">
                 {room.projectStage && (
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
+                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 snap-start">
                     Stage: {room.projectStage}
                   </span>
                 )}
                 
                 {room.primaryGoal && (
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20">
+                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 snap-start">
                     Goal: {room.primaryGoal}
                   </span>
                 )}
 
                 {room.tags.map(tag => (
-                  <span key={tag} className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-white/[0.03] text-[#8B7CF8] ring-1 ring-white/[0.06]">{tag}</span>
+                  <span key={tag} className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-white/[0.03] text-[#8B7CF8] border border-white/[0.06] snap-start">{tag}</span>
                 ))}
               </div>
-              <h1 className="text-[28px] md:text-[36px] font-extrabold text-white mb-3 font-display leading-tight">{room.title}</h1>
-              {room.description && <p className="text-slate-400 text-[14px] md:text-[15px] mb-6 leading-relaxed max-w-2xl font-medium">{room.description}</p>}
-              <div className="flex items-center gap-3 sm:gap-5 text-[12px] sm:text-[13px] text-slate-400 flex-wrap font-medium">
+
+              <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-400 flex-wrap font-medium mt-1">
                 <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-[#8B7CF8]" /></div>{room.builderName}</span>
-                <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Users className="w-3 h-3" /></div>{room.observerCount} observers</span>
-                <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Clock className="w-3 h-3" /></div>Updated {timeAgo(room.updatedAt)}</span>
+                <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Users className="w-3 h-3" /></div>{room.observerCount}</span>
+                <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Clock className="w-3 h-3" /></div>{timeAgo(room.updatedAt)}</span>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row flex-wrap md:justify-end items-stretch sm:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <div className="flex flex-row flex-wrap md:justify-end items-center gap-2 w-full md:w-auto mt-6 md:mt-0">
               {room.primaryLink && (
                 <a
                   href={room.primaryLink.startsWith('http') ? room.primaryLink : `https://${room.primaryLink}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.05] hover:bg-white/[0.1] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white w-full sm:w-auto"
+                  title="Open Project"
+                  aria-label="Open Project"
+                  className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.05] hover:bg-white/[0.1] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
                 >
-                  <ExternalLink className="w-4 h-4" /> Open Project
+                  <ExternalLink className="w-5 h-5" />
                 </a>
               )}
               <button
@@ -487,24 +519,30 @@ export default function BuildRoom() {
                   const text = encodeURIComponent(`I'm building ${room.title} in public. Follow my raw, unfiltered progress on @Patchwork!\n`);
                   window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
                 }}
-                className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-full text-[13px] font-bold text-slate-300 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] w-full sm:w-auto"
+                title="Share Room"
+                aria-label="Share Room"
+                className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-xl text-slate-300 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] active:scale-95"
               >
-                <Share2 className="w-4 h-4" /> Share Room
+                <Share2 className="w-5 h-5" />
               </button>
               {room.status === 'completed' && (
                 <>
                   <Link
                     to={`/dashboard/build-logs`}
-                    className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
+                    title="View Build Log"
+                    aria-label="View Build Log"
+                    className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
                   >
-                    <BookOpen className="w-4 h-4" /> View Log
+                    <BookOpen className="w-5 h-5" />
                   </Link>
                   {isBuilder && (
                     <button
                       onClick={() => setLinkedinShareOpen(true)}
-                      className="flex justify-center items-center gap-2 px-5 py-2.5 border border-[#0077b5]/30 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 rounded-full text-[13px] font-bold text-[#0077b5] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5] w-full sm:w-auto"
+                      title="Share to LinkedIn"
+                      aria-label="Share to LinkedIn"
+                      className="flex items-center justify-center w-11 h-11 border border-[#0077b5]/30 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 rounded-xl text-[#0077b5] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5] active:scale-95"
                     >
-                      <Linkedin className="w-4 h-4" /> Share to LinkedIn
+                      <Linkedin className="w-5 h-5" />
                     </button>
                   )}
                 </>
@@ -516,10 +554,11 @@ export default function BuildRoom() {
                     <AlertDialogTrigger asChild>
                     <button
                       disabled={closingRoom}
-                      className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] hover:bg-white/[0.05] rounded-full text-[13px] font-bold text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
+                      title={closingRoom ? 'Closing...' : 'Close Room'}
+                      aria-label={closingRoom ? 'Closing...' : 'Close Room'}
+                      className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05] rounded-xl text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
                     >
-                      <CheckCircle className="w-4 h-4" />
-                      {closingRoom ? 'Closing...' : 'Close Room'}
+                      {closingRoom ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                     </button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-[#0D0B14] border-white/[0.08] text-white">
@@ -542,23 +581,23 @@ export default function BuildRoom() {
               {room.status === 'completed' && (
                 <button
                   onClick={copyLogLink}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0A0910] rounded-full text-[13px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="flex justify-center items-center gap-2 px-5 min-h-[48px] bg-white text-[#0A0910] rounded-[16px] sm:rounded-full text-[14px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
                 >
-                  <Share2 className="w-4 h-4" /> Share Log
+                  <Share2 className="w-5 h-5" /> Share Log
                 </button>
               )}
               {!isBuilder && room.status === 'active' && !joined && (
                 <button
                   onClick={handleJoin}
-                  className="flex justify-center items-center gap-2 px-5 py-2.5 bg-[#6C5CE7] text-white rounded-full text-[13px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto"
+                  className="flex justify-center items-center gap-2 px-5 min-h-[48px] bg-[#6C5CE7] text-white rounded-[16px] sm:rounded-full text-[14px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto active:scale-95"
                 >
-                  <Plus className="w-4 h-4" /> Join Room
+                  <Plus className="w-5 h-5" /> Join Room
                 </button>
               )}
               {joined && (
-                <span className="flex items-center gap-2 text-[12px] text-emerald-400 font-bold bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20 uppercase tracking-widest font-mono">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Observing
-                </span>
+                <div className="flex justify-center items-center gap-2 px-5 min-h-[48px] text-[14px] text-emerald-400 font-bold bg-emerald-500/10 rounded-[16px] sm:rounded-full border border-emerald-500/20 uppercase tracking-widest font-mono shadow-[0_0_15px_rgba(52,211,153,0.15)] w-full sm:w-auto">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> Observing
+                </div>
               )}
             </div>
           </div>
@@ -727,7 +766,23 @@ export default function BuildRoom() {
                         </div>
                         <div>
                           <div className="text-[15px] font-extrabold text-white font-display">{update.authorName}</div>
-                          <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide mt-0.5">{timeAgo(update.createdAt)}</div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide">{timeAgo(update.createdAt)}</div>
+                            {update.authorId === user?.id && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteUpdate(update.id); }}
+                                disabled={deletingUpdateId === update.id}
+                                className="text-slate-500 hover:text-rose-400 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                                title="Delete update"
+                              >
+                                {deletingUpdateId === update.id ? (
+                                  <span className="w-3 h-3 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                                ) : (
+                                  <Trash2 className="w-3 h-3" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                       {!isBuilder && room.status === 'active' && (
@@ -740,7 +795,10 @@ export default function BuildRoom() {
                       )}
                     </div>
                     
-                    <p className="text-[15px] text-slate-300 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-[#8B7CF8]/40 pl-5 mb-4 relative z-10">{update.content}</p>
+                    <ReadMoreText 
+                      content={update.content} 
+                      className="text-[15px] text-slate-300 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-[#8B7CF8]/40 pl-4 sm:pl-5 mb-4 relative z-10" 
+                    />
 
                     {update.mediaUrl && (
                       <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0A0910] shadow-lg">

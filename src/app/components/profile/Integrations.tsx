@@ -75,7 +75,6 @@ export default function Integrations({ userId }: { userId: string }) {
       const { error } = await supabase.auth.linkIdentity({
         provider: 'linkedin_oidc',
         options: {
-          scopes: 'openid profile email w_member_social',
           redirectTo: `${window.location.origin}/dashboard/profile/${userId}`,
         }
       });
