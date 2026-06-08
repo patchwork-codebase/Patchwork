@@ -294,6 +294,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (refreshedSession) {
             setSession(refreshedSession);
             setUser(refreshedUser ?? refreshedSession.user);
+            if (refreshedUser?.id || refreshedSession.user?.id) {
+              await loadProfile(refreshedUser?.id || refreshedSession.user.id);
+            }
           }
         } catch (e) {
           console.error("Failed to refresh session on page visibility change:", e);
@@ -370,11 +373,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
     if (!data.user) throw new Error('Account creation failed. Please try again.');
 
-    // Send welcome + verification emails (fire and forget — never blocks signup)
-    Promise.all([
-      sendWelcomeEmailDirect(email, name, role),
-      sendVerificationEmailDirect(data.user.id, email, name),
-    ]).catch(err => console.error('Failed to send emails:', err));
+    // Send verification email (fire and forget — never blocks signup)
+    sendVerificationEmailDirect(data.user.id, email, name)
+      .catch(err => console.error('Failed to send verification email:', err));
 
     const authToken = data.session?.access_token || null;
 
