@@ -582,22 +582,22 @@ export default function BuildRoom() {
               {room.status === 'completed' && (
                 <button
                   onClick={copyLogLink}
-                  className="flex justify-center items-center gap-2 px-5 min-h-[48px] bg-white text-[#0A0910] rounded-[16px] sm:rounded-full text-[14px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+                  className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[44px] sm:min-h-[48px] bg-white text-[#0A0910] rounded-xl sm:rounded-full text-[13px] sm:text-[14px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 w-full sm:w-auto"
                 >
-                  <Share2 className="w-5 h-5" /> Share Log
+                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5" /> Share Log
                 </button>
               )}
               {!isBuilder && room.status === 'active' && !joined && (
                 <button
                   onClick={handleJoin}
-                  className="flex justify-center items-center gap-2 px-5 min-h-[48px] bg-[#6C5CE7] text-white rounded-[16px] sm:rounded-full text-[14px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto active:scale-95"
+                  className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[44px] sm:min-h-[48px] bg-[#6C5CE7] text-white rounded-xl sm:rounded-full text-[13px] sm:text-[14px] font-bold hover:bg-[#8B7CF8] transition-all shadow-lg shadow-[#6C5CE7]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto active:scale-95"
                 >
-                  <Plus className="w-5 h-5" /> Join Room
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" /> Join Room
                 </button>
               )}
               {joined && (
-                <div className="flex justify-center items-center gap-2 px-5 min-h-[48px] text-[14px] text-emerald-400 font-bold bg-emerald-500/10 rounded-[16px] sm:rounded-full border border-emerald-500/20 uppercase tracking-widest font-mono shadow-[0_0_15px_rgba(52,211,153,0.15)] w-full sm:w-auto">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> Observing
+                <div className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[40px] sm:min-h-[48px] text-[12px] sm:text-[14px] text-emerald-400 font-bold bg-emerald-500/10 rounded-xl sm:rounded-full border border-emerald-500/20 uppercase tracking-widest font-mono shadow-[0_0_15px_rgba(52,211,153,0.15)] w-auto inline-flex">
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" /> Observing
                 </div>
               )}
             </div>
