@@ -583,7 +583,7 @@ export function TimelineFeed({
                 transition={{ duration: 0.3 }}
                 key={update.id} 
                 onClick={() => toggleComments(update.id)}
-                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 shadow-xl hover:bg-white/[0.01] active:scale-95 transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 shadow-xl hover:bg-white/[0.01] transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
