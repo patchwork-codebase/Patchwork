@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
-import { Link } from "react-router";
+import { Link } from 'react-router-dom';
+import { apiCall, useAuth } from '../auth/AuthContext';
 import { motion, AnimatePresence } from "motion/react";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { 
@@ -11,6 +12,17 @@ import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { getAvatarUrl } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 interface TimelineFeedProps {
   user: any;
@@ -84,6 +96,7 @@ export function TimelineFeed({
   queryClient,
   loading,
 }: TimelineFeedProps) {
+  const { session } = useAuth();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
@@ -119,15 +132,24 @@ export function TimelineFeed({
   const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
 
   const handleDeleteUpdate = async (updateId: string) => {
-    if (!window.confirm("Are you sure you want to delete this update? This action cannot be undone.")) return;
-    
     setDeletingUpdateId(updateId);
     try {
-      const { error } = await supabase.from('updates').delete().eq('id', updateId).eq('author_id', user.id);
+      const { error, count } = await supabase.from('updates').delete({ count: 'exact' }).eq('id', updateId).eq('author_id', user.id);
       if (error) throw error;
+      if (count === 0) throw new Error("Update not found or you don't have permission to delete it.");
+      
       toast.success("Update deleted");
-      queryClient.invalidateQueries({ queryKey: ['feedUpdates'] });
-      queryClient.invalidateQueries({ queryKey: ['roomUpdates'] });
+      
+      queryClient.setQueryData(['feed-updates'], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any[]) => 
+            page.filter((u: any) => u.id !== updateId)
+          )
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
     } catch (error: any) {
       console.error("Error deleting update:", error);
       toast.error(error.message || "Failed to delete update");
@@ -599,18 +621,45 @@ export function TimelineFeed({
                         {timeString}
                       </div>
                       {update.authorId === user?.id && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDeleteUpdate(update.id); }}
-                          disabled={deletingUpdateId === update.id}
-                          className="text-slate-500 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-                          title="Delete update"
-                        >
-                          {deletingUpdateId === update.id ? (
-                             <span className="w-3.5 h-3.5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
-                          ) : (
-                             <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                onClick={(e) => e.stopPropagation()}
+                                disabled={deletingUpdateId === update.id}
+                                className="text-slate-500 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 relative z-20"
+                                title="Delete update"
+                              >
+                                {deletingUpdateId === update.id ? (
+                                   <span className="w-3.5 h-3.5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                                ) : (
+                                   <Trash2 className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent 
+                              onClick={(e) => e.stopPropagation()}
+                              className="bg-[#0E0C16] border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.8)] sm:rounded-[24px]"
+                            >
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-[20px] font-display font-extrabold text-white">Delete this update?</AlertDialogTitle>
+                                <AlertDialogDescription className="text-slate-400 text-[14px] font-medium leading-relaxed mt-2">
+                                  This action cannot be undone. This will permanently remove your update from the timeline.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="mt-6 border-t border-white/[0.05] pt-4">
+                                <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUpdate(update.id);
+                                  }}
+                                  className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 font-bold transition-all"
+                                >
+                                  Delete Update
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                       )}
                     </div>
                     {activeTab === 'feed' && (

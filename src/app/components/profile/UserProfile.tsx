@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
-import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft } from "lucide-react";
+import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users } from "lucide-react";
 import { getAvatarUrl } from "../../utils/helpers";
 import { toast } from "sonner";
 
@@ -43,6 +43,7 @@ export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const { user, token, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   const { data: profile, isLoading: profileLoading } = useProfile(id);
   const { 
@@ -55,17 +56,61 @@ export default function UserProfile() {
   const rooms = roomsData?.pages.flat() || [];
   
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', bio: '', role: '' });
+  const [editForm, setEditForm] = useState({ 
+    name: '', 
+    bio: '', 
+    role: '',
+    website: '',
+    twitter: '',
+    github_url: '',
+    linkedin_url: '',
+    skills: [] as string[]
+  });
+  const [skillInput, setSkillInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const loading = profileLoading || roomsLoading;
   const isOwn = user?.id === id;
 
   useEffect(() => {
     if (profile) {
-      setEditForm({ name: profile.name || '', bio: profile.bio || '', role: profile.role || '' });
+      setIsFollowing(profile.isFollowing || false);
+      setEditForm({ 
+        name: profile.name || '', 
+        bio: profile.bio || '', 
+        role: profile.role || '',
+        website: profile.website || '',
+        twitter: profile.twitter || '',
+        github_url: profile.github_url || '',
+        linkedin_url: profile.linkedin_url || '',
+        skills: profile.skills || []
+      });
     }
   }, [profile]);
+
+  const handleFollowToggle = async () => {
+    if (!id || !token || isOwn) return;
+    setFollowLoading(true);
+    try {
+      await apiCall(`/users/${id}/follow`, {
+        method: isFollowing ? 'DELETE' : 'POST'
+      }, token);
+      setIsFollowing(!isFollowing);
+      queryClient.invalidateQueries({ queryKey: ['profile', id] });
+      toast.success(isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
+    } catch (err: any) {
+      toast.error(`Failed to update follow status: ${err.message}`);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Profile link copied to clipboard!");
+  };
 
   async function handleSave() {
     if (!id || !token) return;
@@ -119,9 +164,9 @@ export default function UserProfile() {
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 mb-8 backdrop-blur-md shadow-xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6C5CE7]/50 to-transparent opacity-50" />
         
-        <div className="flex items-start justify-between gap-6 flex-wrap relative z-10">
-          <div className="flex items-start gap-6 w-full md:w-auto flex-1">
-            <div className="w-20 h-20 rounded-[20px] bg-[#1C1826] border border-white/[0.08] overflow-hidden shrink-0 shadow-[0_0_0_4px_rgba(108,92,231,0.15)] relative">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 flex-wrap relative z-10">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 sm:gap-6 w-full md:w-auto flex-1">
+            <div className="w-24 h-24 rounded-[24px] bg-[#1C1826] border border-white/[0.08] overflow-hidden shrink-0 shadow-[0_0_0_4px_rgba(108,92,231,0.15)] relative">
               <img
                 src={getAvatarUrl(profile.id || profile.name)}
                 alt={profile.name}
@@ -137,9 +182,9 @@ export default function UserProfile() {
                 }}
               />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 w-full">
               {editing ? (
-                <div className="space-y-4 max-w-md">
+                <div className="space-y-4 max-w-md mx-auto sm:mx-0 text-left">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Name</label>
                     <input
@@ -161,7 +206,7 @@ export default function UserProfile() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Role</label>
-                    <div className="flex gap-3">
+                    <div className="flex justify-center sm:justify-start gap-3">
                       {['builder', 'observer'].map(r => (
                         <button
                           key={r} type="button"
@@ -178,31 +223,176 @@ export default function UserProfile() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Social Links Form */}
+                  <div className="pt-4 border-t border-white/[0.08] space-y-4">
+                    <h3 className="text-[12px] font-bold text-white uppercase tracking-widest">Social Links</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Website URL</label>
+                        <input
+                          value={editForm.website}
+                          onChange={e => setEditForm(f => ({ ...f, website: e.target.value }))}
+                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Twitter Username</label>
+                        <input
+                          value={editForm.twitter}
+                          onChange={e => setEditForm(f => ({ ...f, twitter: e.target.value }))}
+                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
+                          placeholder="@username"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">GitHub URL</label>
+                        <input
+                          value={editForm.github_url}
+                          onChange={e => setEditForm(f => ({ ...f, github_url: e.target.value }))}
+                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
+                          placeholder="https://github.com/..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">LinkedIn URL</label>
+                        <input
+                          value={editForm.linkedin_url}
+                          onChange={e => setEditForm(f => ({ ...f, linkedin_url: e.target.value }))}
+                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
+                          placeholder="https://linkedin.com/in/..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Skills Form */}
+                  <div className="pt-4 border-t border-white/[0.08]">
+                    <h3 className="text-[12px] font-bold text-white uppercase tracking-widest mb-3">Tech Stack / Skills</h3>
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        value={skillInput}
+                        onChange={e => setSkillInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (skillInput.trim() && !editForm.skills.includes(skillInput.trim())) {
+                              setEditForm(f => ({ ...f, skills: [...f.skills, skillInput.trim()] }));
+                              setSkillInput('');
+                            }
+                          }
+                        }}
+                        className="flex-1 px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white focus:outline-none focus:border-[#6C5CE7]/50"
+                        placeholder="Add a skill (e.g. React) and press Enter"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (skillInput.trim() && !editForm.skills.includes(skillInput.trim())) {
+                            setEditForm(f => ({ ...f, skills: [...f.skills, skillInput.trim()] }));
+                            setSkillInput('');
+                          }
+                        }}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-[13px] font-bold rounded-xl transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {editForm.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {editForm.skills.map(skill => (
+                          <span key={skill} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-white text-[12px] font-medium">
+                            {skill}
+                            <button
+                              type="button"
+                              onClick={() => setEditForm(f => ({ ...f, skills: f.skills.filter(s => s !== skill) }))}
+                              className="text-slate-400 hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <>
-                  <h1 className="text-[32px] font-extrabold text-white font-display tracking-tight leading-none mb-3">{profile.name}</h1>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#8B7CF8] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-3 py-1 rounded-full capitalize tracking-wide">
+                  <h1 className="text-[28px] sm:text-[32px] font-extrabold text-white font-display tracking-tight leading-tight sm:leading-none mb-3 break-words">{profile.name}</h1>
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3">
+                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#8B7CF8] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-3 py-1.5 rounded-full capitalize tracking-wide">
                       {profile.role === 'builder' ? <Hammer className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                       {profile.role}
                     </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full tracking-wide">
+                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full tracking-wide">
                       <Zap className="w-3 h-3" /> {profile.reputation} rep
                     </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-white/[0.03] border border-white/[0.06] px-3 py-1 rounded-full tracking-wide">
+                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 rounded-full tracking-wide">
                       <Calendar className="w-3 h-3" /> Joined {timeAgo(profile.createdAt)}
                     </span>
+                    <div className="w-px h-4 bg-white/10 hidden sm:block mx-1"></div>
+                    <span className="flex items-center gap-1.5 text-[12px] font-bold text-white tracking-wide">
+                      <Users className="w-3.5 h-3.5 text-slate-400" />
+                      {profile.followerCount || 0} <span className="text-slate-400 font-medium">followers</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[12px] font-bold text-white tracking-wide">
+                      {profile.followingCount || 0} <span className="text-slate-400 font-medium">following</span>
+                    </span>
                   </div>
-                  {profile.bio && <p className="text-[14px] text-slate-300 mt-4 leading-relaxed max-w-xl font-medium">{profile.bio}</p>}
+                  {profile.bio && <p className="text-[14px] text-slate-300 mt-4 leading-relaxed max-w-xl mx-auto sm:mx-0 font-medium">{profile.bio}</p>}
+                  
+                  {/* Social Links & Skills */}
+                  {(profile.website || profile.twitter || profile.github_url || profile.linkedin_url || (profile.skills && profile.skills.length > 0)) && (
+                    <div className="mt-5 space-y-4 max-w-xl mx-auto sm:mx-0">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                        {profile.website && (
+                          <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full transition-colors">
+                            <Globe className="w-3.5 h-3.5" /> Website
+                          </a>
+                        )}
+                        {profile.twitter && (
+                          <a href={`https://twitter.com/${profile.twitter.replace('@', '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-300 hover:text-[#1DA1F2] bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full transition-colors">
+                            <Twitter className="w-3.5 h-3.5" /> Twitter
+                          </a>
+                        )}
+                        {profile.github_url && (
+                          <a href={profile.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full transition-colors">
+                            <Github className="w-3.5 h-3.5" /> GitHub
+                          </a>
+                        )}
+                        {profile.linkedin_url && (
+                          <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-300 hover:text-[#0A66C2] bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full transition-colors">
+                            <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+                          </a>
+                        )}
+                      </div>
+                      
+                      {profile.skills && profile.skills.length > 0 && (
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                          {profile.skills.map(skill => (
+                            <span key={skill} className="px-2.5 py-1 rounded-md bg-[#2D2A3D] text-[#8B7CF8] text-[11px] font-bold uppercase tracking-wider">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </div>
           </div>
 
-          {isOwn && (
-            <div className="flex gap-3 w-full md:w-auto justify-end mt-4 md:mt-0">
-              {editing ? (
+          <div className="flex gap-3 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0 flex-wrap">
+            <button
+              onClick={handleShare}
+              className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-colors"
+            >
+              <Share className="w-4 h-4" /> Share
+            </button>
+            {isOwn ? (
+              editing ? (
                 <>
                   <button
                     onClick={() => setEditing(false)}
@@ -221,13 +411,35 @@ export default function UserProfile() {
               ) : (
                 <button
                   onClick={() => setEditing(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-colors"
+                  className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-colors"
                 >
                   <Edit2 className="w-4 h-4" /> Edit Profile
                 </button>
-              )}
-            </div>
-          )}
+              )
+            ) : (
+              <button
+                onClick={handleFollowToggle}
+                disabled={followLoading || !user}
+                className={`flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all disabled:opacity-50 ${
+                  isFollowing 
+                    ? 'border border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-red-500/50 hover:text-red-400 group' 
+                    : 'bg-white text-[#0A0910] hover:bg-slate-200'
+                }`}
+              >
+                {isFollowing ? (
+                  <>
+                    <UserMinus className="w-4 h-4 hidden group-hover:block" />
+                    <span className="hidden group-hover:block">Unfollow</span>
+                    <span className="group-hover:hidden flex items-center gap-2"><Check className="w-4 h-4" /> Following</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4" /> Follow
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -285,13 +497,16 @@ export default function UserProfile() {
                   </div>
                 </div>
                 {room.status === 'completed' && (
-                  <Link
-                    to={`/dashboard/build-logs`}
-                    onClick={e => e.stopPropagation()}
+                  <button
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(`/dashboard/build-logs`);
+                    }}
                     className="shrink-0 text-[12px] font-bold px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-full text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all whitespace-nowrap"
                   >
                     View in Logs
-                  </Link>
+                  </button>
                 )}
               </Link>
             ))}

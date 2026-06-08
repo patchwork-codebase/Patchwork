@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { normalizeRow } from "../../utils/helpers";
-import { useAuth, supabase } from "../auth/AuthContext";
+import { useAuth, apiCall, supabase } from "../auth/AuthContext";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import {
   AlertDialog,
@@ -92,8 +92,9 @@ function timeAgo(iso: string) {
 
 export default function BuildRoom() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const { user, profile } = useAuth();
+  const [isJoined, setIsJoined] = useState(false);
+
+  const { user, profile, session } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
@@ -382,12 +383,12 @@ export default function BuildRoom() {
 
   const handleDeleteUpdate = async (updateId: string) => {
     if (!user) return;
-    if (!window.confirm("Are you sure you want to delete this update? This action cannot be undone.")) return;
     
     setDeletingUpdateId(updateId);
     try {
-      const { error } = await supabase.from('updates').delete().eq('id', updateId).eq('author_id', user.id);
+      const { error, count } = await supabase.from('updates').delete({ count: 'exact' }).eq('id', updateId).eq('author_id', user.id);
       if (error) throw error;
+      if (count === 0) throw new Error("Update not found or you don't have permission to delete it.");
       toast.success("Update deleted");
       setRoom(prev => prev ? {
         ...prev,
@@ -769,18 +770,45 @@ export default function BuildRoom() {
                           <div className="flex items-center gap-2 mt-0.5">
                             <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide">{timeAgo(update.createdAt)}</div>
                             {update.authorId === user?.id && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleDeleteUpdate(update.id); }}
-                                disabled={deletingUpdateId === update.id}
-                                className="text-slate-500 hover:text-rose-400 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-                                title="Delete update"
-                              >
-                                {deletingUpdateId === update.id ? (
-                                  <span className="w-3 h-3 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
-                                ) : (
-                                  <Trash2 className="w-3 h-3" />
-                                )}
-                              </button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <button
+                                      onClick={(e) => e.stopPropagation()}
+                                      disabled={deletingUpdateId === update.id}
+                                      className="text-slate-500 hover:text-rose-400 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                                      title="Delete update"
+                                    >
+                                      {deletingUpdateId === update.id ? (
+                                        <span className="w-3 h-3 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                                      ) : (
+                                        <Trash2 className="w-3 h-3" />
+                                      )}
+                                    </button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="bg-[#0E0C16] border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.8)] sm:rounded-[24px]"
+                                  >
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle className="text-[20px] font-display font-extrabold text-white">Delete this update?</AlertDialogTitle>
+                                      <AlertDialogDescription className="text-slate-400 text-[14px] font-medium leading-relaxed mt-2">
+                                        This action cannot be undone. This will permanently remove your update from the timeline.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter className="mt-6 border-t border-white/[0.05] pt-4">
+                                      <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteUpdate(update.id);
+                                        }}
+                                        className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 font-bold transition-all"
+                                      >
+                                        Delete Update
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                             )}
                           </div>
                         </div>

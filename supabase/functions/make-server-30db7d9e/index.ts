@@ -87,7 +87,26 @@ export default async function handler(req: Request) {
       const userId = parts[1];
       const { data, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
       if (error) return jsonResponse({ error: error.message }, 500);
-      return jsonResponse(data ? normalizeRow(data) : null);
+      
+      // Fetch follower/following counts
+      const [{ count: followerCount }, { count: followingCount }] = await Promise.all([
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId)
+      ]);
+      
+      let isFollowing = false;
+      if (authUser) {
+        const { data: followData } = await supabase.from('follows').select('follower_id').eq('follower_id', authUser.id).eq('following_id', userId).maybeSingle();
+        isFollowing = !!followData;
+      }
+      
+      const responseData = data ? normalizeRow(data) : null;
+      if (responseData) {
+        responseData.followerCount = followerCount || 0;
+        responseData.followingCount = followingCount || 0;
+        responseData.isFollowing = isFollowing;
+      }
+      return jsonResponse(responseData);
     }
 
     if (req.method === 'GET' && parts[0] === 'users' && parts[2] === 'rooms') {
@@ -135,14 +154,35 @@ export default async function handler(req: Request) {
         return jsonResponse({ error: 'Role must be either builder or observer' }, 400);
       }
       const updates: Record<string, any> = {};
-      ['name', 'bio', 'role', 'city', 'domain'].forEach(key => {
+      ['name', 'bio', 'role', 'city', 'domain', 'website', 'twitter', 'github_url', 'linkedin_url'].forEach(key => {
         if (body[key] !== undefined) updates[key] = body[key];
       });
       if (body.interests !== undefined) updates.interests = body.interests;
+      if (body.skills !== undefined) updates.skills = body.skills;
       if (!Object.keys(updates).length) return jsonResponse({ error: 'Nothing to update' }, 400);
       const { data, error } = await supabase.from('users').update(updates).eq('id', targetUserId).select().maybeSingle();
       if (error) return jsonResponse({ error: error.message }, 500);
       return jsonResponse(data ? normalizeRow(data) : null);
+    }
+
+    // Follows
+    if (req.method === 'POST' && parts[0] === 'users' && parts[2] === 'follow') {
+      if (!authUser) return jsonResponse({ error: 'Unauthorized' }, 401);
+      const targetUserId = parts[1];
+      if (authUser.id === targetUserId) return jsonResponse({ error: 'Cannot follow yourself' }, 400);
+      
+      const { error } = await supabase.from('follows').upsert({ follower_id: authUser.id, following_id: targetUserId });
+      if (error) return jsonResponse({ error: error.message }, 500);
+      return jsonResponse({ success: true }, 201);
+    }
+
+    if (req.method === 'DELETE' && parts[0] === 'users' && parts[2] === 'follow') {
+      if (!authUser) return jsonResponse({ error: 'Unauthorized' }, 401);
+      const targetUserId = parts[1];
+      
+      const { error } = await supabase.from('follows').delete().eq('follower_id', authUser.id).eq('following_id', targetUserId);
+      if (error) return jsonResponse({ error: error.message }, 500);
+      return jsonResponse({ success: true });
     }
 
     if (req.method === 'POST' && route === '/auth/signup') {
