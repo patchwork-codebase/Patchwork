@@ -626,7 +626,7 @@ export function TimelineFeed({
                               <button
                                 onClick={(e) => e.stopPropagation()}
                                 disabled={deletingUpdateId === update.id}
-                                className="text-slate-500 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 relative z-20"
+                                className="text-slate-500 hover:text-rose-400 transition-colors p-2.5 sm:p-2 -m-2 sm:-m-1 rounded-lg hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 relative z-20 flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-0 sm:min-h-0"
                                 title="Delete update"
                               >
                                 {deletingUpdateId === update.id ? (
