@@ -7,15 +7,21 @@ import { queryClient } from "./queryClient";
 import { Analytics } from "@vercel/analytics/react";
 import CookiesPolicyModal from "./components/legal/CookiesPolicyModal";
 
+import UpdateNotification from "./components/ui/UpdateNotification";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
+
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-        <CookiesPolicyModal />
-        <Toaster position="bottom-right" richColors />
-        <Analytics />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RouterProvider router={router} />
+          <CookiesPolicyModal />
+          <UpdateNotification />
+          <Toaster position="bottom-right" richColors />
+          <Analytics />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

@@ -84,12 +84,18 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {roomLinkedRepo ? (
-           <button className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto">
-             <Github className="w-4 h-4" /> {roomLinkedRepo.github_repo_name.split('/')[1]}
+           <button
+             title={roomLinkedRepo.github_repo_name.split('/')[1]}
+             aria-label={`Repository: ${roomLinkedRepo.github_repo_name}`}
+             className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
+             <Github className="w-5 h-5" />
            </button>
         ) : (
-          <button className="flex justify-center items-center gap-2 px-5 py-2.5 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-full text-[13px] font-bold text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] w-full sm:w-auto">
-            <LinkIcon className="w-4 h-4" /> Link Repository
+          <button
+            title="Link Repository"
+            aria-label="Link Repository"
+            className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
+            <LinkIcon className="w-5 h-5" />
           </button>
         )}
       </DialogTrigger>

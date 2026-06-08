@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useAuth, supabase, sendVerificationEmailDirect } from "../auth/AuthContext";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, X, Image as ImageIcon, ChevronDown } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
+import { WelcomeTour } from "./WelcomeTour";
 import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
@@ -60,6 +61,9 @@ export default function Dashboard() {
   const observers = statsData?.observers || [];
   const reactionsLoading = statsLoading;
   const observersLoading = statsLoading;
+
+  const [fabActionSheetOpen, setFabActionSheetOpen] = useState(false);
+  const [composerSheetOpen, setComposerSheetOpen] = useState(false);
 
   const { data: recentEventsData } = useRecentActivity(user?.id);
   const recentEvents = recentEventsData || [];
@@ -254,6 +258,11 @@ export default function Dashboard() {
       className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8"
     >
 
+      {/* Welcome Tour — shown once to new users */}
+      {user && profile && (
+        <WelcomeTour userId={user.id} userName={profile.name} />
+      )}
+
       {/* Email Verification Banner */}
       {!profile?.emailVerified && (
         <div className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-[16px] p-4 flex items-start gap-3">
@@ -286,12 +295,12 @@ export default function Dashboard() {
       {/* HEADER */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-6 sm:gap-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center overflow-hidden shadow-xl shrink-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center overflow-hidden shadow-xl shrink-0">
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <h1 className="font-bold text-[22px] sm:text-[28px] text-white leading-tight tracking-tight m-0">
+              <h1 className="font-bold text-[20px] sm:text-[28px] text-white leading-tight tracking-tight m-0">
                 {greeting}, <span className="text-[#8B7CF8] whitespace-nowrap">{firstName} 👋</span>
               </h1>
               <div className="flex flex-wrap items-center gap-2">
@@ -324,7 +333,7 @@ export default function Dashboard() {
 
         <Link
           to="/dashboard/create"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+          className="hidden sm:inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
         >
           <IconPlus /> New room
         </Link>
@@ -367,7 +376,7 @@ export default function Dashboard() {
       </div>
 
       {/* INLINE TEXT TABS */}
-      <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 sm:mb-8 border-b border-white/[0.08] relative">
+      <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-white/[0.08] relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
         {[
           { key: 'overview' as const, label: 'Overview' },
           { key: 'mine' as const, label: 'My rooms' },
@@ -378,16 +387,16 @@ export default function Dashboard() {
             <button
               key={tab.key}
               onClick={() => setTab(tab.key)}
-              className={`relative px-3 py-3 text-[14px] sm:text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${isCurrent
+              className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] whitespace-nowrap snap-start active:scale-95 ${isCurrent
                   ? 'text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-white/[0.03] rounded-t-md'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.03] rounded-t-lg'
                 }`}
             >
               {tab.label}
               {isCurrent && (
                 <motion.div
                   layoutId="tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-1 bg-[#8B7CF8] rounded-t-full"
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-[#8B7CF8] rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
@@ -437,8 +446,190 @@ export default function Dashboard() {
           rooms={rooms}
           activeTab={activeTab}
           queryClient={queryClient}
+          loading={loading}
         />
       )}
+
+      {/* MOBILE FAB */}
+      <div className="fixed bottom-[86px] right-4 z-[40] sm:hidden">
+        <button
+          onClick={() => {
+            if (!profile?.emailVerified) {
+              toast.error("Please verify your email to post.");
+              return;
+            }
+            setFabActionSheetOpen(true);
+          }}
+          className="w-14 h-14 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(108,92,231,0.4)] active:scale-95 transition-transform"
+        >
+          <IconPlus />
+        </button>
+      </div>
+
+      {/* FAB ACTION SHEET */}
+      <AnimatePresence>
+        {fabActionSheetOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-[#08070D]/80 backdrop-blur-sm sm:hidden flex flex-col justify-end"
+            onClick={() => setFabActionSheetOpen(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-6 pb-[env(safe-area-inset-bottom)]"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    setFabActionSheetOpen(false);
+                    setComposerSheetOpen(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-4 bg-white/[0.03] active:bg-white/[0.06] rounded-2xl text-left border border-white/[0.05] active:scale-95 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center text-[#8B7CF8]">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                  </div>
+                  <div>
+                    <div className="text-[15px] font-bold text-white">Post an update</div>
+                    <div className="text-[12px] font-medium text-slate-400">Share what you're working on</div>
+                  </div>
+                </button>
+                <Link
+                  to="/dashboard/create"
+                  className="w-full flex items-center gap-3 p-4 bg-white/[0.03] active:bg-white/[0.06] rounded-2xl text-left border border-white/[0.05] active:scale-95 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center text-[#6C5CE7]">
+                    <IconPlus />
+                  </div>
+                  <div>
+                    <div className="text-[15px] font-bold text-white">Create new room</div>
+                    <div className="text-[12px] font-medium text-slate-400">Initialize a new project space</div>
+                  </div>
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* POST UPDATE BOTTOM SHEET */}
+      <AnimatePresence>
+        {composerSheetOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-[#08070D]/80 backdrop-blur-sm sm:hidden flex flex-col justify-end"
+            onClick={() => setComposerSheetOpen(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-6 pb-[env(safe-area-inset-bottom)]"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-[18px] font-bold text-white">Post an Update</h2>
+                <button
+                  onClick={() => setComposerSheetOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-slate-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <textarea 
+                value={updateContent}
+                onChange={(e) => setUpdateContent(e.target.value)}
+                placeholder="What are you building right now?"
+                className="w-full bg-white/[0.03] border border-white/[0.08] text-white text-[16px] sm:text-[15px] resize-none placeholder:text-slate-500 min-h-[100px] focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-xl p-4 mb-4"
+              />
+
+              {/* Action row similar to desktop inline composer */}
+              <div className="flex items-center justify-between border-t border-white/[0.06] pt-4">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center justify-center w-10 h-10 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 rounded-full cursor-pointer transition-all">
+                    <ImageIcon className="w-5 h-5" />
+                    <input
+                      type="file" accept="image/*" className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => setMediaPreview(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                  
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="flex items-center gap-1.5 bg-[#8B7CF8]/10 text-[#8B7CF8] text-[13px] font-bold rounded-full px-4 py-2 transition-all max-w-[150px]"
+                    >
+                      <span className="truncate">{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
+                      <ChevronDown className="w-4 h-4 shrink-0" />
+                    </button>
+
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                          <motion.div
+                            initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                            className="absolute left-0 bottom-full mb-2 min-w-[200px] w-max bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-2xl p-1 z-50 overflow-hidden"
+                          >
+                            {myRooms.map(r => (
+                              <button
+                                key={r.id} type="button"
+                                onClick={() => {
+                                  setSelectedRoomId(r.id);
+                                  setDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-3.5 py-2.5 rounded-lg text-[13px] font-semibold ${
+                                  selectedRoomId === r.id ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]' : 'text-slate-300 hover:bg-white/[0.04]'
+                                }`}
+                              >
+                                {r.title}
+                              </button>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    handlePostUpdate();
+                    setComposerSheetOpen(false);
+                  }}
+                  disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId}
+                  className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-full font-bold text-[14px] transition-colors active:scale-95"
+                >
+                  {posting ? "Posting..." : "Post"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

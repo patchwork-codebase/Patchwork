@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
 import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft } from "lucide-react";
+import { getAvatarUrl } from "../../utils/helpers";
 import { toast } from "sonner";
 
 interface Profile {
@@ -120,8 +121,21 @@ export default function UserProfile() {
         
         <div className="flex items-start justify-between gap-6 flex-wrap relative z-10">
           <div className="flex items-start gap-6 w-full md:w-auto flex-1">
-            <div className="w-20 h-20 rounded-[20px] bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[32px] font-extrabold shrink-0 shadow-inner" style={{ fontFamily: 'var(--font-display)' }}>
-              {profile.name?.[0]?.toUpperCase()}
+            <div className="w-20 h-20 rounded-[20px] bg-[#1C1826] border border-white/[0.08] overflow-hidden shrink-0 shadow-[0_0_0_4px_rgba(108,92,231,0.15)] relative">
+              <img
+                src={getAvatarUrl(profile.id || profile.name)}
+                alt={profile.name}
+                className="w-full h-full object-cover scale-110"
+                onError={e => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.classList.add('bg-gradient-to-br', 'from-[#6C5CE7]', 'to-[#8B7CF8]', 'flex', 'items-center', 'justify-center');
+                    parent.innerHTML = `<span style="color:white;font-size:32px;font-weight:800">${profile.name?.[0]?.toUpperCase() ?? '?'}</span>`;
+                  }
+                }}
+              />
             </div>
             <div className="flex-1 min-w-0">
               {editing ? (

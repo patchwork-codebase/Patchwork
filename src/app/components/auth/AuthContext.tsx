@@ -370,6 +370,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const authToken = data.session?.access_token || null;
 
+    // Set user and session immediately to prevent router redirect loops
+    setUser(data.user);
+    if (data.session) setSession(data.session);
+
     // Ensure profile row is created in users table immediately
     await ensureProfileRow(data.user, authToken);
 
@@ -401,6 +405,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     if (data.user) {
+      setUser(data.user);
+      setSession(data.session);
       await ensureProfileRow(data.user, data.session?.access_token || null);
       const profile = await loadProfile(data.user.id);
       return { profile, token: data.session?.access_token || null };

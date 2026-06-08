@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, Link } from "react-router";
 import { Country, State, City } from "country-state-city";
 import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
 import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
@@ -579,6 +579,17 @@ export default function AuthPage() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Legal footer */}
+        <p className="mt-8 flex items-center gap-2 text-[11.5px] text-slate-600 font-medium">
+          <Link to="/privacy" className="hover:text-slate-300 transition-colors duration-200">
+            Privacy Policy
+          </Link>
+          <span className="text-slate-700">·</span>
+          <Link to="/terms" className="hover:text-slate-300 transition-colors duration-200">
+            Terms of Service
+          </Link>
+        </p>
       </div>
     </div>
   );

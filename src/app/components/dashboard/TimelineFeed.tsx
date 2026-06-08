@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { 
   Heart, MessageCircle, Share2, ShieldAlert, Sparkles, X, 
-  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code, CheckCircle,
+  Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code, CheckCircle, Trash2,
   Bold, Italic, ListOrdered, List, Link as LinkIcon, Quote, AtSign
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { getAvatarUrl } from "../../utils/helpers";
+import { ReadMoreText } from "../ui/ReadMoreText";
 
 interface TimelineFeedProps {
   user: any;
@@ -33,6 +34,7 @@ interface TimelineFeedProps {
   rooms: any[];
   activeTab: 'overview' | 'feed' | 'mine';
   queryClient: any;
+  loading?: boolean;
 }
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
@@ -80,6 +82,7 @@ export function TimelineFeed({
   rooms,
   activeTab,
   queryClient,
+  loading,
 }: TimelineFeedProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
@@ -111,6 +114,26 @@ export function TimelineFeed({
       textarea.focus();
       textarea.setSelectionRange(start + prefix.length, end + prefix.length);
     }, 0);
+  };
+
+  const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
+
+  const handleDeleteUpdate = async (updateId: string) => {
+    if (!window.confirm("Are you sure you want to delete this update? This action cannot be undone.")) return;
+    
+    setDeletingUpdateId(updateId);
+    try {
+      const { error } = await supabase.from('updates').delete().eq('id', updateId).eq('author_id', user.id);
+      if (error) throw error;
+      toast.success("Update deleted");
+      queryClient.invalidateQueries({ queryKey: ['feedUpdates'] });
+      queryClient.invalidateQueries({ queryKey: ['roomUpdates'] });
+    } catch (error: any) {
+      console.error("Error deleting update:", error);
+      toast.error(error.message || "Failed to delete update");
+    } finally {
+      setDeletingUpdateId(null);
+    }
   };
 
   const toggleComments = (id: string) => {
@@ -250,7 +273,7 @@ export function TimelineFeed({
           e.stopPropagation();
           handleToggleReaction(updateId, roomId, type, serverReactions);
         }}
-        className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[12px] font-bold transition-all border active:scale-95 flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-all border active:scale-95 flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
           isActive 
             ? activeClass
             : "bg-white/[0.02] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.04]"
@@ -296,7 +319,7 @@ export function TimelineFeed({
     <div className="max-w-[700px] w-full mx-auto">
       {/* INLINE COMPOSER */}
       {profile?.role === 'builder' && activeTab === 'overview' && (
-        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-3 sm:p-5 flex gap-3 sm:gap-4 items-start mb-6">
+        <div className="hidden sm:flex bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
@@ -307,7 +330,7 @@ export function TimelineFeed({
               disabled={!profile?.emailVerified}
               placeholder={profile?.emailVerified ? "What are you building right now?" : "Please verify your email address to post updates."}
               aria-label="New update content"
-              className="w-full bg-transparent border-none outline-none text-white text-[14px] sm:text-[16px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
+              className="w-full bg-transparent border-none outline-none text-white text-[16px] sm:text-[14px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
             />
 
             {mediaPreview && (
@@ -329,9 +352,7 @@ export function TimelineFeed({
                 value={codeSnippet}
                 onChange={e => setCodeSnippet(e.target.value)}
                 placeholder="Paste your code snippet here..."
-                rows={5}
-                aria-label="Code snippet"
-                className="w-full px-5 py-4 mt-3 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] font-mono text-slate-300 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="w-full bg-white/[0.02] border border-white/[0.08] text-white text-[16px] sm:text-[14px] font-mono resize-none placeholder:text-slate-600 min-h-[100px] rounded-lg p-3 mt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
               />
             )}
 
@@ -487,12 +508,38 @@ export function TimelineFeed({
 
       {/* TIMELINE FEED */}
       <div className="flex flex-col gap-4 mb-12">
-        {filteredUpdates.length === 0 ? (
-          <div className="p-8 sm:p-12 text-center text-slate-500 text-[14px] font-medium bg-[#0D0B14] border border-white/[0.08] rounded-[24px]">
+        {loading ? (
+          <>
+            {[1, 2, 3].map(i => (
+              <div key={`skeleton-${i}`} className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 shadow-xl relative overflow-hidden">
+                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="flex items-center gap-2.5 sm:gap-4 flex-1">
+                    <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl bg-white/5 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
+                      <div className="h-3 w-48 bg-white/5 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+                  <div className="h-4 w-5/6 bg-white/5 rounded animate-pulse" />
+                  <div className="h-4 w-4/6 bg-white/5 rounded animate-pulse" />
+                </div>
+                <div className="flex items-center gap-3 pt-4 border-t border-white/[0.08]">
+                  <div className="h-8 w-20 bg-white/5 rounded-full animate-pulse" />
+                  <div className="h-8 w-24 bg-white/5 rounded-full animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </>
+        ) : filteredUpdates.length === 0 ? (
+          <motion.div layout className="p-8 sm:p-12 text-center text-slate-500 text-[14px] font-medium bg-[#0D0B14] border border-white/[0.08] rounded-[24px]">
             No updates posted yet.
-          </div>
+          </motion.div>
         ) : (
-          filteredUpdates.map((update, idx) => {
+          <AnimatePresence initial={false}>
+            {filteredUpdates.map((update, idx) => {
             const fullRoom = rooms?.find(r => r.id === update.roomId);
             const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
             const tStyle = tagStyle(tag);
@@ -506,10 +553,15 @@ export function TimelineFeed({
             const isLaunch = fullRoom?.updateCount === 1;
 
             return (
-              <div 
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
                 key={update.id} 
                 onClick={() => toggleComments(update.id)}
-                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[24px] p-4 sm:p-6 shadow-xl hover:bg-white/[0.01] transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                className={`bg-[#0D0B14] border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-white/[0.08]'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 shadow-xl hover:bg-white/[0.01] active:scale-95 transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -518,18 +570,18 @@ export function TimelineFeed({
                 }}
               >
                 {/* Header */}
-                <div className="flex justify-between items-start gap-3 mb-4">
-                  <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                    <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-white/[0.03] border border-white/[0.08] shadow-inner'}`}>
+                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
+                    <div className={`w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-white/[0.03] border border-white/[0.08] shadow-inner'}`}>
                       {isLaunch ? (
-                        <div className="w-full h-full bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[16px] sm:text-[18px]">🚀</div>
+                        <div className="w-full h-full bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[14px] sm:text-[18px]">🚀</div>
                       ) : (
                         <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <div className="font-extrabold text-[15px] sm:text-[16px] text-white leading-tight font-display hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{builderName}</div>
+                        <div className="font-extrabold text-[13px] sm:text-[16px] text-white leading-tight font-display hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{builderName}</div>
                         {isLaunch && (
                           <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-[#8B7CF8]/20 text-[#8B7CF8] px-2 py-0.5 rounded-full shrink-0">Launched</span>
                         )}
@@ -541,9 +593,25 @@ export function TimelineFeed({
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1.5">
-                    <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
-                      {timeString}
+                  <div className="flex flex-col-reverse items-end gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
+                        {timeString}
+                      </div>
+                      {update.authorId === user?.id && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteUpdate(update.id); }}
+                          disabled={deletingUpdateId === update.id}
+                          className="text-slate-500 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                          title="Delete update"
+                        >
+                          {deletingUpdateId === update.id ? (
+                             <span className="w-3.5 h-3.5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                          ) : (
+                             <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      )}
                     </div>
                     {activeTab === 'feed' && (
                       isFollowing ? (
@@ -563,9 +631,10 @@ export function TimelineFeed({
                 </div>
 
                 {update.content && (
-                  <p className="text-[14px] sm:text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap break-words">
-                    {update.content}
-                  </p>
+                  <ReadMoreText 
+                    content={update.content} 
+                    className="text-[14px] sm:text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap break-words" 
+                  />
                 )}
 
                 {update.mediaUrl && (
@@ -688,7 +757,7 @@ export function TimelineFeed({
                             value={replyText}
                             onChange={(e) => setReplyText(e.target.value)}
                             placeholder={`Replying to @${update.authorName.toLowerCase().replace(/\s+/g, '')}...`}
-                            className="w-full bg-transparent p-3 text-[14px] text-white placeholder-slate-500 focus:outline-none resize-none min-h-[80px]"
+                            className="w-full bg-transparent p-3 text-[16px] sm:text-[14px] text-white placeholder-slate-500 focus:outline-none resize-none min-h-[80px]"
                           />
                         </div>
                         <div className="flex justify-end gap-2 mt-1">
@@ -723,9 +792,10 @@ export function TimelineFeed({
                     )}
                   </div>
                 );})()}
-              </div>
+              </motion.div>
             );
           })
+          }</AnimatePresence>
         )}
 
         {hasNextUpdates && (
