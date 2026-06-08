@@ -92,6 +92,21 @@ export default function CreateRoom() {
     );
   }
 
+  if (profile && !profile.emailVerified) {
+    return (
+      <div className="max-w-[1100px] mx-auto px-6 py-20 flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-12 text-center backdrop-blur-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-32 bg-amber-500/10 rounded-full blur-[80px] pointer-events-none" />
+          <h2 className="text-[32px] font-extrabold text-white mb-3 font-display">Verification Required</h2>
+          <p className="text-slate-400 mb-8 max-w-sm mx-auto font-medium">You must verify your email address before you can initialize a room.</p>
+          <Link to="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-full text-white font-bold transition-all">
+            <ArrowLeft size={16} /> Back to dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   function addTag(tag: string) {
     const clean = tag.trim().toLowerCase().replace(/\s+/g, '-');
     if (clean && !tags.includes(clean) && tags.length < 5) {

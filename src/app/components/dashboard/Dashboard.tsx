@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AlertCircle, X, Image as ImageIcon, ChevronDown } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { WelcomeTour } from "./WelcomeTour";
+import VerificationSuccessModal from "./VerificationSuccessModal";
 import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
@@ -74,6 +75,18 @@ export default function Dashboard() {
   // Email resend countdown cooldown state
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("verified") === "true") {
+      setShowVerificationSuccess(true);
+      setSearchParams(params => {
+        params.delete("verified");
+        return params;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const loading = roomsLoading || myRoomsLoading || dbUpdatesLoading;
 
@@ -630,6 +643,12 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <VerificationSuccessModal 
+        isOpen={showVerificationSuccess} 
+        onClose={() => setShowVerificationSuccess(false)} 
+        role={profile?.role || 'builder'}
+      />
     </motion.div>
   );
 }
