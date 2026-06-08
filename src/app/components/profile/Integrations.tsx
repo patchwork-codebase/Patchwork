@@ -93,66 +93,68 @@ export default function Integrations({ userId }: { userId: string }) {
       
       <div className="flex flex-col gap-4">
         {/* GitHub Integration */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl gap-4 sm:gap-0">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-[#24292e] text-white rounded-xl flex items-center justify-center shrink-0">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04] transition-colors rounded-2xl gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-[#24292e] text-white rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(36,41,46,0.5)]">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
             </div>
-            <div>
-              <h3 className="text-[15px] font-bold text-white mb-1">GitHub</h3>
-              <p className="text-[13px] text-slate-400 font-medium">Link repositories to sync commits as draft updates.</p>
+            <div className="flex flex-col">
+              <h3 className="text-[15px] font-bold text-white mb-0.5">GitHub</h3>
+              <p className="text-[13px] text-slate-400 font-medium leading-relaxed">Link repositories to sync commits as draft updates.</p>
+              {githubAccount && (
+                <span className="text-[13px] font-bold text-slate-300 mt-1.5 flex items-center gap-1.5">
+                  @{githubAccount.github_username}
+                </span>
+              )}
             </div>
           </div>
 
-          {githubAccount ? (
-            <div className="flex items-center gap-3">
-              <span className="text-[13px] font-bold text-slate-300">
-                @{githubAccount.github_username}
+          <div className="flex sm:shrink-0 mt-2 sm:mt-0">
+            {githubAccount ? (
+              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20">
+                <Check className="w-3.5 h-3.5" /> Connected
               </span>
-              <span className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
-                <Check className="w-3 h-3" /> Connected
-              </span>
-            </div>
-          ) : (
-            <button
-              onClick={handleConnectGithub}
-              disabled={connecting !== null}
-              className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shrink-0"
-            >
-              {connecting === 'github' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
-              Connect GitHub
-            </button>
-          )}
+            ) : (
+              <button
+                onClick={handleConnectGithub}
+                disabled={connecting !== null}
+                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-white/5 text-white text-[13px] font-bold rounded-full border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+              >
+                {connecting === 'github' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                Connect
+              </button>
+            )}
+          </div>
         </div>
 
         {/* LinkedIn Integration */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl gap-4 sm:gap-0">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-[#0077b5] text-white rounded-xl flex items-center justify-center shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04] transition-colors rounded-2xl gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-[#0077b5] text-white rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(0,119,181,0.5)]">
               <Linkedin className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-[15px] font-bold text-white mb-1">LinkedIn</h3>
-              <p className="text-[13px] text-slate-400 font-medium">Share your Build Log milestones directly to LinkedIn.</p>
+            <div className="flex flex-col">
+              <h3 className="text-[15px] font-bold text-white mb-0.5">LinkedIn</h3>
+              <p className="text-[13px] text-slate-400 font-medium leading-relaxed">Share your Build Log milestones directly to LinkedIn.</p>
             </div>
           </div>
 
-          {linkedinAccount ? (
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
-                <Check className="w-3 h-3" /> Connected
+          <div className="flex sm:shrink-0 mt-2 sm:mt-0">
+            {linkedinAccount ? (
+              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20">
+                <Check className="w-3.5 h-3.5" /> Connected
               </span>
-            </div>
-          ) : (
-            <button
-              onClick={handleConnectLinkedin}
-              disabled={connecting !== null}
-              className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shrink-0"
-            >
-              {connecting === 'linkedin' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
-              Connect LinkedIn
-            </button>
-          )}
+            ) : (
+              <button
+                onClick={handleConnectLinkedin}
+                disabled={connecting !== null}
+                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-white/5 text-white text-[13px] font-bold rounded-full border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+              >
+                {connecting === 'linkedin' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                Connect
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
