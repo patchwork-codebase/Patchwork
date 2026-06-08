@@ -140,6 +140,14 @@ interface Profile {
   gender?: string;
   phone_country_code?: string;
   phone_number?: string;
+  website?: string;
+  twitter?: string;
+  github_url?: string;
+  linkedin_url?: string;
+  skills?: string[];
+  followerCount?: number;
+  followingCount?: number;
+  isFollowing?: boolean;
 }
 
 interface SignInResult {
