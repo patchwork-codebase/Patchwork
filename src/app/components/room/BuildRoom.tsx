@@ -92,7 +92,7 @@ function timeAgo(iso: string) {
 
 export default function BuildRoom() {
   const { id } = useParams<{ id: string }>();
-  const [isJoined, setIsJoined] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const { user, profile, session } = useAuth();
   const queryClient = useQueryClient();
