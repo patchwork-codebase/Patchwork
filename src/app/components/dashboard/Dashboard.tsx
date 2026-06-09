@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router";
 import { useAuth, supabase, sendVerificationEmailDirect } from "../auth/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { AlertCircle, X, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { WelcomeTour } from "./WelcomeTour";
 import VerificationSuccessModal from "./VerificationSuccessModal";
@@ -27,7 +27,7 @@ const IconPlus = () => (
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 
 export default function Dashboard() {
-  const { user, profile } = useAuth();
+  const { user, profile, withVerification, refreshProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -65,6 +65,7 @@ export default function Dashboard() {
 
   const [fabActionSheetOpen, setFabActionSheetOpen] = useState(false);
   const [composerSheetOpen, setComposerSheetOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const { data: recentEventsData } = useRecentActivity(user?.id);
   const recentEvents = recentEventsData || [];
@@ -77,6 +78,43 @@ export default function Dashboard() {
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
+
+  async function handleResendVerification() {
+    if (resendCooldown > 0 || resending || !user) return;
+    setResending(true);
+    try {
+      await sendVerificationEmailDirect(
+        user.id,
+        profile?.email || user.email || '',
+        profile?.name || ''
+      );
+      toast.success('Verification email sent! Check your inbox.');
+      setResendCooldown(60);
+      localStorage.setItem('lastVerificationSent', Date.now().toString());
+    } catch (err: any) {
+      toast.error('Failed to send email. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  }
+
+  // Restore cooldown on mount from localStorage
+  useEffect(() => {
+    const lastSent = localStorage.getItem('lastVerificationSent');
+    if (lastSent) {
+      const elapsed = Math.floor((Date.now() - parseInt(lastSent)) / 1000);
+      if (elapsed < 60) setResendCooldown(60 - elapsed);
+    }
+  }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown(prev => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     if (searchParams.get("verified") === "true") {
@@ -85,8 +123,14 @@ export default function Dashboard() {
         params.delete("verified");
         return params;
       }, { replace: true });
+      // Immediately re-load the profile from DB so the verification banner
+      // disappears without needing a manual page refresh.
+      refreshProfile();
     }
   }, [searchParams, setSearchParams]);
+
+
+
 
   const loading = roomsLoading || myRoomsLoading || dbUpdatesLoading;
 
@@ -99,72 +143,74 @@ export default function Dashboard() {
   const isPostingRef = useRef(false);
 
   const handlePostUpdate = async () => {
-    if (isPostingRef.current) return;
-    if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
-    
-    isPostingRef.current = true;
-    setPosting(true);
-    try {
-      const { data: room, error: roomError } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('id', selectedRoomId)
-        .single();
+    withVerification(async () => {
+      if (isPostingRef.current) return;
+      if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
+      
+      isPostingRef.current = true;
+      setPosting(true);
+      try {
+        const { data: room, error: roomError } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('id', selectedRoomId)
+          .single();
 
-      if (roomError || !room) {
-        throw new Error(roomError?.message || "Room not found");
+        if (roomError || !room) {
+          throw new Error(roomError?.message || "Room not found");
+        }
+
+        const updateId = window.crypto.randomUUID();
+
+        let uploadedMediaUrl = null;
+        if (mediaPreview) {
+          toast.loading("Uploading image...", { id: "upload" });
+          const { data, error } = await supabase.functions.invoke('upload-image', {
+            body: { image: mediaPreview }
+          });
+          if (error) throw error;
+          uploadedMediaUrl = data?.secure_url || null;
+          toast.dismiss("upload");
+        }
+
+        const payload = {
+          id: updateId,
+          room_id: selectedRoomId,
+          author_id: user.id,
+          author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
+          content: updateContent.trim(),
+          media_url: uploadedMediaUrl,
+          code_snippet: codeSnippet.trim() || null,
+          created_at: new Date().toISOString(),
+        };
+
+        const { error: insertError } = await supabase
+          .from('updates')
+          .insert(payload);
+
+        if (insertError) throw insertError;
+
+        await supabase
+          .from('rooms')
+          .update({
+            update_count: (room.update_count || 0) + 1,
+            last_update: updateContent.trim().slice(0, 120),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', selectedRoomId);
+
+        setUpdateContent("");
+        setCodeSnippet("");
+        setMediaPreview(null);
+        queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+        toast.success("Update posted successfully!");
+      } catch (err: any) {
+        toast.error(`Failed to post update: ${err.message}`);
+      } finally {
+        isPostingRef.current = false;
+        setPosting(false);
       }
-
-      const updateId = window.crypto.randomUUID();
-
-      let uploadedMediaUrl = null;
-      if (mediaPreview) {
-        toast.loading("Uploading image...", { id: "upload" });
-        const { data, error } = await supabase.functions.invoke('upload-image', {
-          body: { image: mediaPreview }
-        });
-        if (error) throw error;
-        uploadedMediaUrl = data?.secure_url || null;
-        toast.dismiss("upload");
-      }
-
-      const payload = {
-        id: updateId,
-        room_id: selectedRoomId,
-        author_id: user.id,
-        author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
-        content: updateContent.trim(),
-        media_url: uploadedMediaUrl,
-        code_snippet: codeSnippet.trim() || null,
-        created_at: new Date().toISOString(),
-      };
-
-      const { error: insertError } = await supabase
-        .from('updates')
-        .insert(payload);
-
-      if (insertError) throw insertError;
-
-      await supabase
-        .from('rooms')
-        .update({
-          update_count: (room.update_count || 0) + 1,
-          last_update: updateContent.trim().slice(0, 120),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedRoomId);
-
-      setUpdateContent("");
-      setCodeSnippet("");
-      setMediaPreview(null);
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-      toast.success("Update posted successfully!");
-    } catch (err: any) {
-      toast.error(`Failed to post update: ${err.message}`);
-    } finally {
-      isPostingRef.current = false;
-      setPosting(false);
-    }
+    });
   };
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
@@ -189,8 +235,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
 
+    const channelName = 'dashboard-stats-sync';
+
+    // Remove any stale channel with the same name before subscribing.
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) supabase.removeChannel(existing);
+
     const channel = supabase
-      .channel('dashboard-stats-sync')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions' },
@@ -223,36 +275,6 @@ export default function Dashboard() {
     };
   }, [user, queryClient]);
 
-  // Handle countdown timer
-  useEffect(() => {
-    if (cooldownSeconds > 0) {
-      cooldownTimerRef.current = setInterval(() => {
-        setCooldownSeconds(prev => prev - 1);
-      }, 1000);
-    } else if (cooldownSeconds === 0 && cooldownTimerRef.current) {
-      clearInterval(cooldownTimerRef.current);
-    }
-
-    return () => {
-      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
-    };
-  }, [cooldownSeconds]);
-
-  const handleResendVerification = async () => {
-    if (cooldownSeconds > 0) return;
-    try {
-      await sendVerificationEmailDirect(
-        user?.id || '',
-        profile?.email || user?.email || '',
-        profile?.name || ''
-      );
-      toast.success("Verification email resent! Check your inbox.");
-      setCooldownSeconds(60);
-    } catch (err: any) {
-      toast.error("Failed to resend verification email");
-    }
-  };
-
   const selectedRoom = myRooms.find(r => r.id === selectedRoomId);
   const selectedRoomTitle = selectedRoom?.title || 'Active Room';
 
@@ -271,29 +293,45 @@ export default function Dashboard() {
       className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8"
     >
 
+      {/* ── EMAIL VERIFICATION BANNER ─── shown until email is verified */}
+      {profile && !profile.emailVerified && (
+        <div className="mb-6 rounded-[20px] border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 overflow-hidden">
+          <div className="p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                <ShieldAlert className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15px] font-extrabold text-white mb-1">Verify your email to unlock Patchwork</h3>
+                <p className="text-[13px] text-slate-400 leading-relaxed mb-4">
+                  You won't be able to <strong className="text-slate-200">post updates</strong>, <strong className="text-slate-200">create rooms</strong>, or <strong className="text-slate-200">react to builds</strong> until your email is confirmed.
+                  We sent a link to <span className="text-amber-300 font-semibold">{profile?.email || user?.email}</span>.
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resendCooldown > 0 || resending}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/40 disabled:cursor-not-allowed text-black disabled:text-black/50 rounded-xl text-[13px] font-bold transition-all active:scale-95"
+                  >
+                    {resending
+                      ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Sending...</>
+                      : resendCooldown > 0
+                        ? <><Mail className="w-3.5 h-3.5" /> Resend in {resendCooldown}s</>
+                        : <><Mail className="w-3.5 h-3.5" /> Resend verification email</>
+                    }
+                  </button>
+                  <p className="text-[12px] text-slate-500">Check your spam folder if you don't see it.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="h-1 bg-gradient-to-r from-amber-500/50 via-orange-400/50 to-amber-500/50" />
+        </div>
+      )}
+
       {/* Welcome Tour — shown once to new users */}
       {user && profile && (
         <WelcomeTour userId={user.id} userName={profile.name} />
-      )}
-
-      {/* Email Verification Banner */}
-      {!profile?.emailVerified && (
-        <div className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-[16px] p-4 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-            <AlertCircle className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-[14px] font-bold text-amber-100">Verify your email address</h3>
-            <p className="text-[13px] text-amber-200/70 mt-1">We sent a verification link to your email. Please verify to unlock all features.</p>
-          </div>
-          <button
-            onClick={handleResendVerification}
-            disabled={cooldownSeconds > 0}
-            className="px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/20 rounded-full text-[12px] font-bold text-amber-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-          >
-            {cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : "Resend"}
-          </button>
-        </div>
       )}
 
       {/* Onboarding Checklist */}

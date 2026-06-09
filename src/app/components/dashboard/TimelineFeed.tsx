@@ -6,7 +6,7 @@ import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { 
   Heart, MessageCircle, Share2, ShieldAlert, Sparkles, X, 
   Send, Hammer, ArrowRight, BookOpen, ImageIcon, Code, CheckCircle, Trash2,
-  Bold, Italic, ListOrdered, List, Link as LinkIcon, Quote, AtSign
+  Bold, Italic, ListOrdered, List, Link as LinkIcon, Quote, AtSign, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
@@ -96,7 +96,7 @@ export function TimelineFeed({
   queryClient,
   loading,
 }: TimelineFeedProps) {
-  const { session } = useAuth();
+  const { session, withVerification } = useAuth();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
@@ -166,7 +166,9 @@ export function TimelineFeed({
 
   const handleReplyClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setReplyingTo(id);
+    withVerification(() => {
+      setReplyingTo(id);
+    });
   };
 
   const handleOverlayClick = () => {
@@ -181,30 +183,32 @@ export function TimelineFeed({
   };
 
   const submitReply = async () => {
-    if (!replyText.trim() || !user || !replyingTo) return;
-    const update = dbUpdates.find(u => u.id === replyingTo);
-    if (!update) return;
+    withVerification(async () => {
+      if (!replyText.trim() || !user || !replyingTo) return;
+      const update = dbUpdates.find(u => u.id === replyingTo);
+      if (!update) return;
 
-    try {
-      const payload = {
-        id: `${update.roomId}-reaction-reply-${user.id}-${Date.now()}`,
-        room_id: update.roomId,
-        update_id: replyingTo,
-        observer_id: user.id,
-        observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
-        type: 'reply',
-        text: replyText.trim(),
-        created_at: new Date().toISOString(),
-      };
-      await supabase.from('reactions').insert(payload);
-      toast.success("Reply posted successfully!");
-      setExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
-      setReplyingTo(null);
-      setReplyText("");
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-    } catch (err: any) {
-      toast.error(`Failed to post reply: ${err.message}`);
-    }
+      try {
+        const payload = {
+          id: `${update.roomId}-reaction-reply-${user.id}-${Date.now()}`,
+          room_id: update.roomId,
+          update_id: replyingTo,
+          observer_id: user.id,
+          observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
+          type: 'reply',
+          text: replyText.trim(),
+          created_at: new Date().toISOString(),
+        };
+        await supabase.from('reactions').insert(payload);
+        toast.success("Reply posted successfully!");
+        setExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
+        setReplyingTo(null);
+        setReplyText("");
+        queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      } catch (err: any) {
+        toast.error(`Failed to post reply: ${err.message}`);
+      }
+    });
   };
 
   const handleFollowRoom = async (roomId: string, e: React.MouseEvent) => {
@@ -226,43 +230,44 @@ export function TimelineFeed({
     type: 'sharp' | 'pushback' | 'tellmemore',
     currentReactions: any[]
   ) => {
-    if (!user) return;
-    const key = `${updateId}-${type}`;
-    const existing = currentReactions?.find(r => r.type === type && r.observerId === user.id);
-    
-    // Optimistic state toggle
-    setOptimisticToggles(prev => ({
-      ...prev,
-      [key]: !existing
-    }));
-
-    try {
-      if (existing) {
-        await supabase.from('reactions').delete().eq('id', existing.id);
-        toast.success(`Removed ${type === 'tellmemore' ? 'More' : type} reaction`);
-      } else {
-        const payload = {
-          id: `${roomId}-reaction-${type}-${user.id}-${Date.now()}`,
-          room_id: roomId,
-          update_id: updateId,
-          observer_id: user.id,
-          observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
-          type,
-          text: '',
-          created_at: new Date().toISOString(),
-        };
-        await supabase.from('reactions').insert(payload);
-        toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction!`);
-      }
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-    } catch (err: any) {
-      // Revert optimistic update on error
+    withVerification(async () => {
+      if (!user) return;
+      const key = `${updateId}-${type}`;
+      const existing = currentReactions?.find(r => r.type === type && r.observerId === user.id);
+      
+      // Optimistic state toggle
       setOptimisticToggles(prev => ({
         ...prev,
-        [key]: !!existing
+        [key]: !existing
       }));
-      toast.error(`Reaction failed: ${err.message}`);
-    }
+
+      try {
+        if (existing) {
+          await supabase.from('reactions').delete().eq('id', existing.id);
+          toast.success(`Removed ${type === 'tellmemore' ? 'More' : type} reaction`);
+        } else {
+          const payload = {
+            id: `${roomId}-reaction-${type}-${user.id}-${Date.now()}`,
+            room_id: roomId,
+            update_id: updateId,
+            observer_id: user.id,
+            observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
+            type,
+            created_at: new Date().toISOString(),
+          };
+          await supabase.from('reactions').insert(payload);
+          toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
+        }
+        queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      } catch (err: any) {
+        // Revert optimistic toggle on failure
+        setOptimisticToggles(prev => ({
+          ...prev,
+          [key]: !!existing
+        }));
+        toast.error(`Failed to update reaction: ${err.message}`);
+      }
+    });
   };
 
   const renderReactionButton = (
@@ -303,6 +308,7 @@ export function TimelineFeed({
       >
         <span>{icon}</span>
         <span>{label}</span>
+        {(!profile || !profile.emailVerified) && <Lock className="w-3 h-3 opacity-60 ml-0.5" />}
         <span className="opacity-40">·</span>
         <span>{count}</span>
       </button>
@@ -349,8 +355,7 @@ export function TimelineFeed({
             <textarea 
               value={updateContent}
               onChange={(e) => setUpdateContent(e.target.value)}
-              disabled={!profile?.emailVerified}
-              placeholder={profile?.emailVerified ? "What are you building right now?" : "Please verify your email address to post updates."}
+              placeholder="What are you building right now?"
               aria-label="New update content"
               className="w-full bg-transparent border-none outline-none text-white text-[16px] sm:text-[14px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
             />
@@ -380,9 +385,7 @@ export function TimelineFeed({
 
             <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 mt-2">
               <div className="flex items-center gap-1 sm:gap-2">
-                {!profile?.emailVerified ? (
-                  <span className="text-[12px] font-bold text-amber-400">⚠️ Verification required.</span>
-                ) : myRooms && myRooms.length > 0 ? (
+                {myRooms && myRooms.length > 0 ? (
                   <>
                     <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/[0.06] text-slate-400 hover:text-white rounded-full cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
                       <ImageIcon className="w-[18px] h-[18px]" />
@@ -467,9 +470,10 @@ export function TimelineFeed({
 
               <button 
                 onClick={handlePostUpdate}
-                disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !profile?.emailVerified}
-                className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-[13px] sm:text-[14px] transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shrink-0 ml-2"
+                disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId}
+                className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-[13px] sm:text-[14px] transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shrink-0 ml-2 flex items-center justify-center gap-1.5"
               >
+                {(!profile || !profile.emailVerified) && <Lock className="w-3.5 h-3.5" />}
                 {posting ? "Posting..." : "Post"}
               </button>
             </div>
@@ -836,6 +840,7 @@ export function TimelineFeed({
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                           Add a reply
+                          {(!profile || !profile.emailVerified) && <Lock className="w-3 h-3 ml-0.5 opacity-70" />}
                         </button>
                       </div>
                     )}

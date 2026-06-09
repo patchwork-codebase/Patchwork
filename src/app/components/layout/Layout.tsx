@@ -234,7 +234,30 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* ── MOBILE BOTTOM NAVIGATION ─────────────────────── */}
+      {/* ── UNVERIFIED EMAIL BANNER ───────────────────────── */}
+      {profile && !profile.emailVerified && (
+        <div className="w-full bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between gap-3 z-40">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="text-amber-400 shrink-0" aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </span>
+            <p className="text-[12px] sm:text-[13px] text-amber-300 font-medium leading-snug truncate">
+              <strong className="font-bold">Verify your email</strong> to post updates, create rooms, and react to builds.
+            </p>
+          </div>
+          <a
+            href="/verify-email"
+            className="shrink-0 text-[11px] sm:text-[12px] font-bold text-amber-400 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
+          >
+            Verify now →
+          </a>
+        </div>
+      )}
+
       <div className="fixed bottom-0 left-0 right-0 h-[70px] bg-[#0A0910]/90 backdrop-blur-xl border-t border-white/[0.08] flex items-center justify-center px-1 sm:px-2 z-50 lg:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
         <nav className="flex items-center justify-between gap-1 w-full max-w-md mx-auto px-1 pb-1">
           <Link

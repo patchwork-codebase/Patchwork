@@ -17,8 +17,14 @@ export function useProfile(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
+    const channelName = `user-profile-${userId}`;
+
+    // Remove any stale channel before (re-)subscribing.
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) supabase.removeChannel(existing);
+
     const channel = supabase
-      .channel(`user-profile-${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users', filter: `id=eq.${userId}` },
