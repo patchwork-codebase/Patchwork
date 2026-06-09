@@ -221,6 +221,7 @@ export default function AuthPage() {
     try {
       const name = `${signup.fname} ${signup.lname}`.trim() || 'Anonymous Builder';
       const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '', signup.gender, signup.phoneCountryCode, signup.phoneNumber);
+      toast.success("Welcome to Patchwork! We've sent a verification link to your email.");
       redirectForRole(profile?.role || signup.role);
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');

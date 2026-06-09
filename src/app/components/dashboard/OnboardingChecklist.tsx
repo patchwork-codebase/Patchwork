@@ -36,7 +36,7 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     // Check domain / interests set
     const { data: userRow } = await supabase
       .from('users')
-      .select('domain, interests, onboarding_call_scheduled, signup_completed_at')
+      .select('domain, interests, onboarding_call_scheduled, signup_completed_at, observer_room_step_done')
       .eq('id', userId)
       .single();
 
@@ -48,13 +48,19 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     state.call = !!userRow?.onboarding_call_scheduled;
     state.alreadyCompleted = !!userRow?.signup_completed_at;
 
-    // Check room created
-    const { data: rooms } = await supabase
-      .from('rooms')
-      .select('id')
-      .eq('builder_id', userId)
-      .limit(1);
-    state.room = !!(rooms && rooms.length > 0);
+    // Check room step — for builders: has created a room; for observers: persisted flag OR has followed a room
+    if (role === 'builder') {
+      const { data: rooms } = await supabase
+        .from('rooms')
+        .select('id')
+        .eq('builder_id', userId)
+        .limit(1);
+      state.room = !!(rooms && rooms.length > 0);
+    } else {
+      // Observer: check the persisted flag first — DB column OR localStorage fallback
+      const localFlag = localStorage.getItem(`observer_room_step_${userId}`) === 'true';
+      state.room = !!userRow?.observer_room_step_done || localFlag;
+    }
 
     // Check first update posted (builder) or feed_focus set (observer)
     if (role === 'builder' && state.room && rooms?.[0]) {
@@ -123,8 +129,13 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
           tags: [selectedDomain],
         });
         if (e) throw e;
+      } else if (stepId === 'room' && role === 'observer') {
+        // Observer "Got it" — persist flag to DB AND localStorage as fallback
+        try {
+          await supabase.from('users').update({ observer_room_step_done: true }).eq('id', userId);
+        } catch (_) { /* column may not exist yet, localStorage fallback handles it */ }
+        localStorage.setItem(`observer_room_step_${userId}`, 'true');
       } else if (stepId === 'update' && role === 'builder') {
-        // Find the user's first room to post update
         const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', userId).limit(1);
         if (rooms && rooms.length > 0) {
           const { error: e } = await supabase.from('room_updates').insert({

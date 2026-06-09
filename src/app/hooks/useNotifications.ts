@@ -68,8 +68,18 @@ export function useNotifications(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
+    const channelName = `notifications-${userId}`;
+
+    // Remove any stale channel with the same name before subscribing.
+    // This prevents the "cannot add postgres_changes callbacks after subscribe()" error
+    // that occurs in React StrictMode or when the effect re-fires before cleanup runs.
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) {
+      supabase.removeChannel(existing);
+    }
+
     const channel = supabase
-      .channel(`notifications-${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

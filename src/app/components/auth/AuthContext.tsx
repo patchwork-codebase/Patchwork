@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { createClient, User, Session } from "@supabase/supabase-js";
 import { projectId, publicAnonKey } from "/utils/supabase/info";
+import { toast } from "sonner";
 
 const supabase = createClient(
   `https://${projectId}.supabase.co`,
@@ -166,6 +167,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   ensureValidSession: () => Promise<Session>;
+  withVerification: (action: () => void) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -175,8 +177,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-
   const token = session?.access_token || null;
+
+  const withVerification = (action: () => void) => {
+    if (profile && !profile.emailVerified) {
+      toast.error("Please verify your email address to perform this action.");
+    } else {
+      action();
+    }
+  };
 
   async function ensureProfileRow(user: User, authToken: string | null) {
     const metadata = (user as any).user_metadata || {};
@@ -208,15 +217,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadProfile(userId: string) {
     try {
       const p = await apiCall(`/users/${userId}`);
-      
-      // Query server directly to get fresh email confirmation status
+
+      // Determine verification status.
+      // Strategy: try our custom column first; if it doesn't exist (400/column error)
+      // fall back to Supabase's built-in email_confirmed_at. Either being true = verified.
       let isConfirmed = false;
       try {
+        // Always fetch the auth user — this is the reliable fallback
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        isConfirmed = !!authUser?.email_confirmed_at;
+
+        // Try our custom column (only exists after the SQL migration is run)
+        const { data: userRow, error: colError } = await supabase
+          .from('users')
+          .select('email_verified')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (colError) {
+          // Column doesn't exist yet — use Supabase's native signal only
+          isConfirmed = !!authUser?.email_confirmed_at;
+        } else {
+          // Column exists — either signal being true counts
+          isConfirmed = !!userRow?.email_verified || !!authUser?.email_confirmed_at;
+        }
       } catch (e) {
-        console.error("Failed to query auth status:", e);
-        isConfirmed = !!session?.user?.email_confirmed_at;
+        console.error('Failed to check email verification status:', e);
       }
 
       if (!p || !p.name || p.name === 'Anonymous Builder') {
@@ -429,7 +454,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, token, signUp, signIn, signOut, refreshProfile, ensureValidSession }}>
+    <AuthContext.Provider value={{ 
+      user, session, profile, loading, token, 
+      signUp, signIn, signOut, refreshProfile, ensureValidSession,
+      withVerification
+    }}>
       {children}
     </AuthContext.Provider>
   );

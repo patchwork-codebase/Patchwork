@@ -55,8 +55,15 @@ export function useFeedUpdates() {
   });
 
   useEffect(() => {
+    const channelName = 'feed-updates-live';
+
+    // Remove any stale channel before (re-)subscribing.
+    // Prevents "cannot add postgres_changes callbacks after subscribe()" crash.
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) supabase.removeChannel(existing);
+
     const channel = supabase
-      .channel('feed-updates-live')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates' },
