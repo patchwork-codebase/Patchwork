@@ -4,6 +4,14 @@ import { supabase, apiCall } from '../components/auth/AuthContext';
 
 import { normalizeRow } from "../utils/helpers";
 
+/** Helper: remove any existing Supabase channel with this name before (re-)subscribing.
+ *  Prevents the "cannot add postgres_changes callbacks after subscribe()" crash
+ *  that occurs in React StrictMode or when an effect re-fires before cleanup. */
+function removeStaleChannel(name: string) {
+  const existing = supabase.getChannels().find(c => c.topic === `realtime:${name}`);
+  if (existing) supabase.removeChannel(existing);
+}
+
 export function useRooms() {
   const queryClient = useQueryClient();
 
@@ -30,8 +38,11 @@ export function useRooms() {
   });
 
   useEffect(() => {
+    const channelName = 'public-rooms';
+    removeStaleChannel(channelName);
+
     const channel = supabase
-      .channel('public-rooms')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms' },
@@ -80,8 +91,11 @@ export function useUserRooms(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
+    const channelName = `user-rooms-${userId}`;
+    removeStaleChannel(channelName);
+
     const channel = supabase
-      .channel(`user-rooms-${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `builder_id=eq.${userId}` },
@@ -139,8 +153,11 @@ export function useObservedRooms(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
+    const channelName = `observed-rooms-${userId}`;
+    removeStaleChannel(channelName);
+
     const channel = supabase
-      .channel(`observed-rooms-${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_observers', filter: `observer_id=eq.${userId}` },
