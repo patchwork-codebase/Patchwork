@@ -25,6 +25,7 @@ import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import { DraftUpdates } from "./DraftUpdates";
 import { LinkedInShareModal } from "../ui/LinkedInShareModal";
 import { ReadMoreText } from "../ui/ReadMoreText";
+import { IntegrationsBar } from "./IntegrationsBar";
 
 interface Update {
   id: string;
@@ -603,6 +604,14 @@ export default function BuildRoom() {
             </div>
           </div>
         </div>
+
+        {/* ── Integrations Bar ─────────────────────────────────────────── */}
+        {/* Visible to everyone; builder sees the + Add button */}
+        <IntegrationsBar
+          roomId={id!}
+          builderId={room.builderId}
+          isOwner={!!(user && user.id === room.builderId)}
+        />
 
         {/* Draft Updates (builder only) */}
         {isBuilder && room.status === 'active' && (
