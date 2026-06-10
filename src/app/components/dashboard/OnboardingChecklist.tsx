@@ -316,7 +316,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
     }, 800);
   }
 
-  const completedCount = Object.values(completion).filter(Boolean).length;
+  const completedCount = (['domain', 'room', 'update', 'call'] as const).filter(k => completion[k]).length;
   const allDone = completedCount === steps.length;
 
   useEffect(() => {
