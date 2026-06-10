@@ -1,3 +1,11 @@
+export const STORAGE_KEYS = {
+  cookieConsent: "cookieConsent",
+  lastVerificationSent: "lastVerificationSent",
+  welcomeTourSeen: (userId: string) => `welcome_tour_seen_${userId}`,
+  observerRoomStep: (userId: string) => `observer_room_step_${userId}`,
+  checklistDismissed: (userId: string) => `checklist_dismissed_${userId}`,
+};
+
 export function toCamelCase(key: string) {
   if (key === 'onboarding_call_scheduled' || key === 'signup_completed_at') return key;
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
