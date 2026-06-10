@@ -71,13 +71,6 @@ export function useFeedUpdates() {
           queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
         }
       )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'reactions' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-        }
-      )
       .subscribe();
 
     return () => {

@@ -188,24 +188,71 @@ export function TimelineFeed({
       const update = dbUpdates.find(u => u.id === replyingTo);
       if (!update) return;
 
-      try {
-        const payload = {
-          id: `${update.roomId}-reaction-reply-${user.id}-${Date.now()}`,
-          room_id: update.roomId,
-          update_id: replyingTo,
-          observer_id: user.id,
-          observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
-          type: 'reply',
-          text: replyText.trim(),
-          created_at: new Date().toISOString(),
+      const newReply = {
+        id: `${update.roomId}-reaction-reply-${user.id}-${Date.now()}`,
+        roomId: update.roomId,
+        updateId: replyingTo,
+        observerId: user.id,
+        observerName: profile?.name || user.email?.split('@')[0] || 'Observer',
+        type: 'reply',
+        text: replyText.trim(),
+        createdAt: new Date().toISOString(),
+      };
+
+      // Optimistic update — inject the reply into the cache immediately
+      // Do NOT call invalidateQueries after this: a full refetch on an infinite
+      // query only re-fetches page 0, which would wipe reactions on updates that
+      // are on later pages and make the reply disappear.
+      queryClient.setQueryData(['feed-updates'], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any[]) =>
+            page.map((u: any) =>
+              u.id === replyingTo
+                ? { ...u, reactions: [...(u.reactions || []), newReply] }
+                : u
+            )
+          ),
         };
-        await supabase.from('reactions').insert(payload);
-        toast.success("Reply posted successfully!");
-        setExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
-        setReplyingTo(null);
-        setReplyText("");
-        queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      });
+
+      // Open + fully expand comments section so the new reply is visible
+      setExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
+      setFullyExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
+      setReplyingTo(null);
+      setReplyText("");
+
+      try {
+        const dbPayload = {
+          id: newReply.id,
+          room_id: newReply.roomId,
+          update_id: newReply.updateId,
+          observer_id: newReply.observerId,
+          observer_name: newReply.observerName,
+          type: 'reply',
+          text: newReply.text,
+          created_at: newReply.createdAt,
+        };
+        await supabase.from('reactions').insert(dbPayload);
+        toast.success("Reply posted!");
+        // No invalidateQueries here — the real-time subscription will handle
+        // syncing new data from other users. Our own reply is already in the cache.
       } catch (err: any) {
+        // Rollback optimistic update on failure
+        queryClient.setQueryData(['feed-updates'], (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any[]) =>
+              page.map((u: any) =>
+                u.id === replyingTo
+                  ? { ...u, reactions: (u.reactions || []).filter((r: any) => r.id !== newReply.id) }
+                  : u
+              )
+            ),
+          };
+        });
         toast.error(`Failed to post reply: ${err.message}`);
       }
     });
@@ -243,7 +290,8 @@ export function TimelineFeed({
 
       try {
         if (existing) {
-          await supabase.from('reactions').delete().eq('id', existing.id);
+          const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+          if (error) throw error;
           toast.success(`Removed ${type === 'tellmemore' ? 'More' : type} reaction`);
         } else {
           const payload = {
@@ -253,12 +301,14 @@ export function TimelineFeed({
             observer_id: user.id,
             observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
             type,
+            text: type, // Schema requires text NOT NULL
             created_at: new Date().toISOString(),
           };
-          await supabase.from('reactions').insert(payload);
+          const { error } = await supabase.from('reactions').insert(payload);
+          if (error) throw error;
           toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
         }
-        queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+        await queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
       } catch (err: any) {
         // Revert optimistic toggle on failure
         setOptimisticToggles(prev => ({
@@ -573,7 +623,7 @@ export function TimelineFeed({
             const updateAvatarUrl = getAvatarUrl(update.authorId || builderName);
             const timeString = timeAgo(update.createdAt);
             const roomTitle = fullRoom?.title || update.rooms?.title || 'Unknown Room';
-            const comments = update.reactions?.filter((r: any) => r.type === 'reply' || r.text) || [];
+            const comments = update.reactions?.filter((r: any) => r.type === 'reply') || [];
             
             const isFollowing = observedRooms.some(r => r.id === update.roomId);
             const isLaunch = fullRoom?.updateCount === 1;

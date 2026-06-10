@@ -67,6 +67,18 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     } else if (role === 'observer') {
       state.update = !!userRow?.feed_focus;
     }
+
+    // If all 4 steps are done but signup_completed_at was never written
+    // (e.g. user completed steps outside the modal, or the write previously failed),
+    // persist it now so dismissal is DB-backed and survives across devices/browsers.
+    const allStepsDone = state.domain && state.room && state.update && state.call;
+    if (allStepsDone && !state.alreadyCompleted) {
+      supabase.from('users')
+        .update({ signup_completed_at: new Date().toISOString() })
+        .eq('id', userId)
+        .catch(() => { /* best-effort */ });
+      state.alreadyCompleted = true;
+    }
   } catch (e) {
     console.error('[Checklist] Error loading completion:', e);
   }
@@ -290,8 +302,12 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
     loadCompletion(userId, role).then(state => {
       if (!cancelled) {
         setCompletion(state);
-        if (state.alreadyCompleted) {
+        // Dismiss if already marked complete in DB, OR if all 4 steps are now done
+        // (loadCompletion will have written signup_completed_at in that case)
+        const allStepsDone = state.domain && state.room && state.update && state.call;
+        if (state.alreadyCompleted || allStepsDone) {
           setDismissed(true);
+          try { localStorage.setItem(`checklist_dismissed_${userId}`, 'true'); } catch (_) { }
         }
         setLoading(false);
       }
