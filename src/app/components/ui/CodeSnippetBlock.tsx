@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+const SyntaxHighlighter = React.lazy(() => 
+  import('react-syntax-highlighter').then(m => ({ default: m.Prism }))
+);
 
 export function CodeSnippetBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
@@ -34,23 +37,25 @@ export function CodeSnippetBlock({ code }: { code: string }) {
         </button>
       </div>
       <div className="p-4 overflow-x-auto text-[13px]">
-        <SyntaxHighlighter
-          language="typescript"
-          style={vscDarkPlus}
-          customStyle={{
-            margin: 0,
-            padding: 0,
-            background: 'transparent',
-            fontSize: '13px',
-            lineHeight: '1.6',
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-          }}
-          codeTagProps={{
-            style: { fontFamily: 'inherit' }
-          }}
-        >
-          {code}
-        </SyntaxHighlighter>
+        <Suspense fallback={<pre className="m-0 text-slate-300 font-mono whitespace-pre-wrap">{code}</pre>}>
+          <SyntaxHighlighter
+            language="typescript"
+            style={vscDarkPlus}
+            customStyle={{
+              margin: 0,
+              padding: 0,
+              background: 'transparent',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+            }}
+            codeTagProps={{
+              style: { fontFamily: 'inherit' }
+            }}
+          >
+            {code}
+          </SyntaxHighlighter>
+        </Suspense>
       </div>
     </div>
   );

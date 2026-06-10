@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { motion } from "motion/react";
+import { FolderGit2 } from "lucide-react";
 
 interface Room {
   id: string;
@@ -69,8 +70,21 @@ export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps
           ))}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="bg-white/[0.02] p-6 rounded-[20px] border border-white/[0.06] text-slate-400 text-[13px] text-center">
-          No active rooms. <Link to="/dashboard/create" className="text-[#8B7CF8] hover:underline font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8B7CF8]">Create one</Link> to start building.
+        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[24px] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-lg">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.01] rounded-full blur-[30px] pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-4 text-[#8B7CF8] shadow-inner">
+            <FolderGit2 className="w-6 h-6 animate-pulse" />
+          </div>
+          <h3 className="text-white text-[15px] font-bold mb-1">No Active Build Rooms</h3>
+          <p className="text-slate-400 text-[12px] max-w-[280px] leading-relaxed mb-5">
+            Initialize a room to document your project, sync git updates, and invite observers.
+          </p>
+          <Link
+            to="/dashboard/create"
+            className="inline-flex items-center justify-center px-5 py-2 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 shadow-md"
+          >
+            Create your first room
+          </Link>
         </div>
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">

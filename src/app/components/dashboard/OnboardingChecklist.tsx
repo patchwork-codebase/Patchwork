@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, X, ChevronRight, Loader2 } from "lucide-react";
 import { supabase, apiCall } from "../auth/AuthContext";
+import { STORAGE_KEYS } from "../../utils/helpers";
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface CompletionState {
@@ -52,7 +53,7 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
       state.room = hasCreatedRoom;
     } else {
       // Observer: check the persisted flag first — DB column OR localStorage fallback
-      const localFlag = localStorage.getItem(`observer_room_step_${userId}`) === 'true';
+      const localFlag = localStorage.getItem(STORAGE_KEYS.observerRoomStep(userId)) === 'true';
       state.room = !!userRow?.observer_room_step_done || localFlag;
     }
 
@@ -138,7 +139,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         try {
           await supabase.from('users').update({ observer_room_step_done: true }).eq('id', userId);
         } catch (_) { /* column may not exist yet, localStorage fallback handles it */ }
-        localStorage.setItem(`observer_room_step_${userId}`, 'true');
+        localStorage.setItem(STORAGE_KEYS.observerRoomStep(userId), 'true');
       } else if (stepId === 'update' && role === 'builder') {
         const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', userId).limit(1);
         if (rooms && rooms.length > 0) {
@@ -283,7 +284,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
   // Sync dismissed state from localStorage on mount/userId change
   useEffect(() => {
     try {
-      const isDismissed = localStorage.getItem(`checklist_dismissed_${userId}`) === "true";
+      const isDismissed = localStorage.getItem(STORAGE_KEYS.checklistDismissed(userId)) === "true";
       setDismissed(isDismissed);
     } catch (e) {
       console.error('[Checklist] Error reading from localStorage:', e);
@@ -293,7 +294,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
   function handleDismiss() {
     setDismissed(true);
     try {
-      localStorage.setItem(`checklist_dismissed_${userId}`, "true");
+      localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), "true");
     } catch (e) {
       console.error('[Checklist] Error saving to localStorage:', e);
     }
@@ -310,7 +311,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
         const allStepsDone = state.domain && state.room && state.update && state.call;
         if (state.alreadyCompleted || allStepsDone) {
           setDismissed(true);
-          try { localStorage.setItem(`checklist_dismissed_${userId}`, 'true'); } catch (_) { }
+          try { localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), 'true'); } catch (_) { }
         }
         setLoading(false);
       }

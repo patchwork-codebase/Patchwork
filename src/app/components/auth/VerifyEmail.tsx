@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router";
 import { CheckCircle, XCircle, Loader2, ArrowRight, Mail, RefreshCw } from "lucide-react";
 import { supabase, sendVerificationEmailDirect } from "./AuthContext";
 import { toast } from "sonner";
+import { STORAGE_KEYS } from "../../utils/helpers";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -18,9 +19,8 @@ export default function VerifyEmail() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendSent, setResendSent] = useState(false);
 
-  // Restore cooldown from localStorage
   useEffect(() => {
-    const lastSent = localStorage.getItem("lastVerificationSent");
+    const lastSent = localStorage.getItem(STORAGE_KEYS.lastVerificationSent);
     if (lastSent) {
       const elapsed = Math.floor((Date.now() - parseInt(lastSent)) / 1000);
       if (elapsed < 60) setResendCooldown(60 - elapsed);
@@ -111,7 +111,7 @@ export default function VerifyEmail() {
       await sendVerificationEmailDirect(userId, resendEmail.trim(), name);
       setResendSent(true);
       setResendCooldown(60);
-      localStorage.setItem("lastVerificationSent", Date.now().toString());
+      localStorage.setItem(STORAGE_KEYS.lastVerificationSent, Date.now().toString());
       toast.success("Verification email sent! Check your inbox.");
     } catch (err: any) {
       toast.error(err.message || "Failed to send. Please try from your dashboard.");

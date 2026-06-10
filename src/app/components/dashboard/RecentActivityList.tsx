@@ -1,4 +1,5 @@
 import { getAvatarUrl } from "../../utils/helpers";
+import { Sparkles, Users } from "lucide-react";
 
 interface RecentEvent {
   name: string;
@@ -53,7 +54,13 @@ export function RecentActivityList({
               </div>
             ))
           ) : (
-            <p className="text-[12px] text-slate-500 p-3 m-0">No recent activity</p>
+            <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+              <Sparkles className="w-5 h-5 text-slate-600 mb-2 animate-pulse" />
+              <p className="text-[12px] font-semibold text-slate-400 m-0">All quiet for now</p>
+              <p className="text-[10px] text-slate-500 mt-1 max-w-[200px] leading-relaxed">
+                Activity from observers and reactions to your builds will stream in here.
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -87,7 +94,13 @@ export function RecentActivityList({
               </div>
             ))
           ) : (
-            <p className="text-[12px] text-slate-500 p-2 m-0">No active observers</p>
+            <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+              <Users className="w-5 h-5 text-slate-600 mb-2 animate-pulse" />
+              <p className="text-[12px] font-semibold text-slate-400 m-0">No Observers Yet</p>
+              <p className="text-[10px] text-slate-500 mt-1 max-w-[200px] leading-relaxed">
+                When observers follow this build room, they'll appear here.
+              </p>
+            </div>
           )}
         </div>
       </div>
