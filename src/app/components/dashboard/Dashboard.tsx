@@ -497,7 +497,7 @@ export default function Dashboard() {
       )}
 
       {/* MOBILE FAB */}
-      <div className="fixed bottom-[86px] right-4 z-[40] sm:hidden">
+      <div className="fixed bottom-[110px] right-4 z-[40] sm:hidden">
         <button
           onClick={() => {
             if (!profile?.emailVerified) {
