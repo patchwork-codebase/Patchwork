@@ -73,10 +73,13 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     // persist it now so dismissal is DB-backed and survives across devices/browsers.
     const allStepsDone = state.domain && state.room && state.update && state.call;
     if (allStepsDone && !state.alreadyCompleted) {
-      supabase.from('users')
-        .update({ signup_completed_at: new Date().toISOString() })
-        .eq('id', userId)
-        .catch(() => { /* best-effort */ });
+      try {
+        await supabase.from('users')
+          .update({ signup_completed_at: new Date().toISOString() })
+          .eq('id', userId);
+      } catch (dbErr) {
+        console.error('[Checklist] Error updating signup_completed_at:', dbErr);
+      }
       state.alreadyCompleted = true;
     }
   } catch (e) {
