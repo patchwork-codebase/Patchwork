@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowRight, Hammer, Rss, Compass, UserCircle } from "lucide-react";
 
+import { STORAGE_KEYS } from "../../utils/helpers";
+
 /* ─── Slide definitions ─────────────────────────────────────────── */
 interface Slide {
   icon: React.ReactNode;
@@ -52,7 +54,7 @@ const SLIDES: Slide[] = [
 ];
 
 /* ─── Storage key ────────────────────────────────────────────────── */
-const tourSeenKey = (userId: string) => `patchwork_tour_seen_${userId}`;
+const tourSeenKey = (userId: string) => STORAGE_KEYS.welcomeTourSeen(userId);
 
 /* ─── Component ─────────────────────────────────────────────────── */
 interface WelcomeTourProps {

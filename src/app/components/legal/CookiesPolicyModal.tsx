@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Cookie, X } from "lucide-react";
 import { Button } from "../ui/button";
+import { STORAGE_KEYS } from "../../utils/helpers";
 
 export default function CookiesPolicyModal() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Check if user has already accepted or declined cookies
-    const cookieConsent = localStorage.getItem("cookieConsent");
+    const cookieConsent = localStorage.getItem(STORAGE_KEYS.cookieConsent);
     if (!cookieConsent) {
       // Small delay for better UX
       const timer = setTimeout(() => setIsVisible(true), 1500);
@@ -17,12 +18,12 @@ export default function CookiesPolicyModal() {
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem("cookieConsent", "accepted");
+    localStorage.setItem(STORAGE_KEYS.cookieConsent, "accepted");
     setIsVisible(false);
   };
 
   const handleDecline = () => {
-    localStorage.setItem("cookieConsent", "declined");
+    localStorage.setItem(STORAGE_KEYS.cookieConsent, "declined");
     setIsVisible(false);
   };
 

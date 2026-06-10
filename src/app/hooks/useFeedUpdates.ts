@@ -50,7 +50,7 @@ export function useFeedUpdates() {
       return (data || []).map(normalizeRow);
     },
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === 10 ? allPages.length : undefined;
+      return lastPage.length > 0 ? allPages.length : undefined;
     },
   });
 

@@ -24,7 +24,7 @@ const IconPlus = () => (
   </svg>
 );
 
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo, getAvatarUrl, STORAGE_KEYS } from "../../utils/helpers";
 
 export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
@@ -92,7 +92,7 @@ export default function Dashboard() {
       );
       toast.success('Verification email sent! Check your inbox.');
       setResendCooldown(60);
-      localStorage.setItem('lastVerificationSent', Date.now().toString());
+      localStorage.setItem(STORAGE_KEYS.lastVerificationSent, Date.now().toString());
     } catch (err: any) {
       toast.error('Failed to send email. Please try again.');
     } finally {
@@ -102,7 +102,7 @@ export default function Dashboard() {
 
   // Restore cooldown on mount from localStorage
   useEffect(() => {
-    const lastSent = localStorage.getItem('lastVerificationSent');
+    const lastSent = localStorage.getItem(STORAGE_KEYS.lastVerificationSent);
     if (lastSent) {
       const elapsed = Math.floor((Date.now() - parseInt(lastSent)) / 1000);
       if (elapsed < 60) setResendCooldown(60 - elapsed);
@@ -249,7 +249,6 @@ export default function Dashboard() {
         () => {
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
           queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
         }
       )
       .on(
@@ -259,13 +258,6 @@ export default function Dashboard() {
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
           queryClient.invalidateQueries({ queryKey: ['room-observers'] });
           queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'updates' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
         }
       )
       .subscribe();
@@ -427,33 +419,36 @@ export default function Dashboard() {
       </div>
 
       {/* INLINE TEXT TABS */}
-      <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-white/[0.08] relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
-        {[
-          { key: 'overview' as const, label: 'Overview' },
-          { key: 'mine' as const, label: 'My rooms' },
-          { key: 'feed' as const, label: 'Global timeline' },
-        ].map(tab => {
-          const isCurrent = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setTab(tab.key)}
-              className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] whitespace-nowrap snap-start active:scale-95 ${isCurrent
-                  ? 'text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-white/[0.03] rounded-t-lg'
-                }`}
-            >
-              {tab.label}
-              {isCurrent && (
-                <motion.div
-                  layoutId="tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-1 bg-[#8B7CF8] rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-          );
-        })}
+      <div className="relative">
+        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-white/[0.08] relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+          {[
+            { key: 'overview' as const, label: 'Overview' },
+            { key: 'mine' as const, label: 'My rooms' },
+            { key: 'feed' as const, label: 'Global timeline' },
+          ].map(tab => {
+            const isCurrent = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setTab(tab.key)}
+                className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] whitespace-nowrap snap-start active:scale-95 ${isCurrent
+                    ? 'text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.03] rounded-t-lg'
+                  }`}
+              >
+                {tab.label}
+                {isCurrent && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-[#8B7CF8] rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-[#0E0C15] to-transparent pointer-events-none sm:hidden" />
       </div>
 
       {/* MAIN COLUMNS GRID */}
