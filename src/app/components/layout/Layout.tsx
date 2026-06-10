@@ -304,7 +304,7 @@ export default function Layout() {
           <nav className="flex items-center justify-between gap-1">
             <Link
               to="/dashboard"
-              className="relative flex-1 flex items-center justify-center py-2"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
             >
               <AnimatePresence mode="wait">
                 {activeSection === 'overview' ? (
@@ -313,7 +313,7 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-1 inset-y-0 bg-white/20 rounded-full"
+                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
@@ -334,7 +334,7 @@ export default function Layout() {
             </Link>
             <Link
               to="/dashboard?tab=feed"
-              className="relative flex-1 flex items-center justify-center py-2"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
             >
               <AnimatePresence mode="wait">
                 {activeSection === 'feed' ? (
@@ -343,7 +343,7 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-1 inset-y-0 bg-white/10 rounded-full"
+                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
@@ -365,7 +365,7 @@ export default function Layout() {
             </Link>
             <Link
               to="/dashboard/build-logs"
-              className="relative flex-1 flex items-center justify-center py-2"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
             >
               <AnimatePresence mode="wait">
                 {activeSection === 'logs' ? (
@@ -374,7 +374,7 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-1 inset-y-0 bg-white/10 rounded-full"
+                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
@@ -401,7 +401,7 @@ export default function Layout() {
             </Link>
             <Link
               to="/dashboard/explore"
-              className="relative flex-1 flex items-center justify-center py-2"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
             >
               <AnimatePresence mode="wait">
                 {activeSection === 'explore' ? (
@@ -410,7 +410,7 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-1 inset-y-0 bg-white/10 rounded-full"
+                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
@@ -431,10 +431,10 @@ export default function Layout() {
             </Link>
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="relative flex-1 flex items-center justify-center py-2"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
             >
               <motion.div
-                className="w-9 h-9 rounded-full overflow-hidden border border-white/20"
+                className="w-10 h-10 rounded-full overflow-hidden border border-white/20"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
