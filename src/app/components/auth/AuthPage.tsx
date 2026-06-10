@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { Country, State, City } from "country-state-city";
 import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
-import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff, Linkedin } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 
@@ -127,9 +127,9 @@ function TestimonialSlider() {
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.35, ease: "easeInOut" }}
           className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 backdrop-blur-sm shadow-xl"
         >
@@ -141,6 +141,57 @@ function TestimonialSlider() {
   );
 }
 
+/* ─── Social Auth Component ───────────────────────────────────── */
+function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, onLinkedin: () => void, loading: boolean }) {
+  return (
+    <div className="flex flex-col gap-3 mt-2">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-[1px] bg-white/[0.08]" />
+        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">or continue with</span>
+        <div className="flex-1 h-[1px] bg-white/[0.08]" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          disabled={loading}
+          onClick={onGoogle}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] rounded-xl text-[13px] text-white font-bold transition-all disabled:opacity-50"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" className="shrink-0">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c3.15 0 5.8-1.05 7.73-2.85l-3.57-2.77c-1.08.73-2.43 1.17-4.16 1.17-3.2 0-5.91-2.16-6.87-5.06H1.54v2.87C3.51 21.14 7.45 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.13 14.48c-.25-.73-.38-1.51-.38-2.31s.13-1.58.38-2.31V7.01H1.54C.56 8.97 0 11.17 0 13.5s.56 4.53 1.54 6.49l3.59-2.87c-.1-.73-.13-1.5-.13-2.14z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.75c1.71 0 3.25.59 4.45 1.73l3.33-3.33C17.79 1.19 15.15 0 12 0 7.45 0 3.51 1.86 1.54 5.12l3.59 2.87c.96-2.9 3.67-5.06 6.87-5.06z"
+            />
+          </svg>
+          Google
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={onLinkedin}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] rounded-xl text-[13px] text-white font-bold transition-all disabled:opacity-50"
+        >
+          <Linkedin className="w-4 h-4 text-[#0A66C2] fill-[#0A66C2]" />
+          LinkedIn
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AuthPage() {
   const location = useLocation();
   const defaultTab = location.pathname === '/login' ? 'login' : 'signup';
@@ -148,7 +199,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, profile } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile } = useAuth();
   const navigate = useNavigate();
 
   const ALLOWED_PHONE_COUNTRIES = [
@@ -226,6 +277,28 @@ export default function AuthPage() {
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleAuth() {
+    setError('');
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      setError(err.message || 'Google authentication failed.');
+      setLoading(false);
+    }
+  }
+
+  async function handleLinkedinAuth() {
+    setError('');
+    setLoading(true);
+    try {
+      await signInWithLinkedin();
+    } catch (err: any) {
+      setError(err.message || 'LinkedIn authentication failed.');
       setLoading(false);
     }
   }
@@ -350,9 +423,9 @@ export default function AuthPage() {
             {tab === 'login' && (
               <motion.form
                 key="login"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
                 onSubmit={handleLogin}
                 className="flex flex-col gap-4"
@@ -361,6 +434,12 @@ export default function AuthPage() {
                   <h2 className="text-[28px] font-extrabold text-white tracking-tight">Welcome back</h2>
                   <p className="text-[14px] text-slate-400 mt-1">Sign in to your Patchwork account</p>
                 </div>
+
+                <SocialAuth 
+                  onGoogle={handleGoogleAuth} 
+                  onLinkedin={handleLinkedinAuth} 
+                  loading={loading} 
+                />
 
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
@@ -430,6 +509,12 @@ export default function AuthPage() {
                   <h2 className="text-[28px] font-extrabold text-white tracking-tight">Create your account</h2>
                   <p className="text-[14px] text-slate-400 mt-1">Join the founding cohort. Takes 30 seconds.</p>
                 </div>
+
+                <SocialAuth 
+                  onGoogle={handleGoogleAuth} 
+                  onLinkedin={handleLinkedinAuth} 
+                  loading={loading} 
+                />
 
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
