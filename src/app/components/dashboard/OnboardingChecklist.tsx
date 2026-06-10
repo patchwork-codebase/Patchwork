@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, X, ChevronRight, Loader2 } from "lucide-react";
-import { supabase } from "../auth/AuthContext";
+import { supabase, apiCall } from "../auth/AuthContext";
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface CompletionState {
@@ -34,11 +34,7 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
   const state = { ...EMPTY };
   try {
     // Check domain / interests set
-    const { data: userRow } = await supabase
-      .from('users')
-      .select('domain, interests, onboarding_call_scheduled, signup_completed_at, observer_room_step_done')
-      .eq('id', userId)
-      .single();
+    const userRow = await apiCall(`/users/${userId}`);
 
     if (role === 'builder') {
       state.domain = !!userRow?.domain;
@@ -49,13 +45,11 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     state.alreadyCompleted = !!userRow?.signup_completed_at;
 
     // Check room step — for builders: has created a room; for observers: persisted flag OR has followed a room
+    let hasCreatedRoom = false;
     if (role === 'builder') {
-      const { data: rooms } = await supabase
-        .from('rooms')
-        .select('id')
-        .eq('builder_id', userId)
-        .limit(1);
-      state.room = !!(rooms && rooms.length > 0);
+      const rooms = await apiCall(`/users/${userId}/rooms`);
+      hasCreatedRoom = !!(rooms && rooms.length > 0);
+      state.room = hasCreatedRoom;
     } else {
       // Observer: check the persisted flag first — DB column OR localStorage fallback
       const localFlag = localStorage.getItem(`observer_room_step_${userId}`) === 'true';
@@ -63,20 +57,15 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     }
 
     // Check first update posted (builder) or feed_focus set (observer)
-    if (role === 'builder' && state.room && rooms?.[0]) {
+    if (role === 'builder' && hasCreatedRoom) {
       const { data: updates } = await supabase
-        .from('room_updates')
+        .from('updates')
         .select('id')
         .eq('author_id', userId)
         .limit(1);
       state.update = !!(updates && updates.length > 0);
     } else if (role === 'observer') {
-      const { data: feedRow } = await supabase
-        .from('users')
-        .select('feed_focus')
-        .eq('id', userId)
-        .single();
-      state.update = !!feedRow?.feed_focus;
+      state.update = !!userRow?.feed_focus;
     }
   } catch (e) {
     console.error('[Checklist] Error loading completion:', e);
