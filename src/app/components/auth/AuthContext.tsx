@@ -165,6 +165,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string, role: string, city: string, domain: string, gender: string, phone_country_code?: string, phone_number?: string) => Promise<SignInResult>;
   signIn: (email: string, password: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithLinkedin: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   ensureValidSession: () => Promise<Session>;
   withVerification: (action: () => void) => void;
@@ -453,11 +455,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   }
 
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      }
+    });
+    if (error) throw error;
+  }
+
+  async function signInWithLinkedin() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+        scopes: 'openid profile email w_member_social',
+      }
+    });
+    if (error) throw error;
+  }
+
   return (
     <AuthContext.Provider value={{ 
       user, session, profile, loading, token, 
       signUp, signIn, signOut, refreshProfile, ensureValidSession,
-      withVerification
+      withVerification,
+      signInWithGoogle,
+      signInWithLinkedin
     }}>
       {children}
     </AuthContext.Provider>

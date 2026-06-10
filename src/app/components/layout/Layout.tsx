@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-router";
 import { useAuth } from "../auth/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNotifications } from "../../hooks/useNotifications";
 import { getAvatarUrl } from "../../utils/helpers";
@@ -96,6 +96,39 @@ export default function Layout() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isNavExpanded, setIsNavExpanded] = useState(true);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    let ticking = false;
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const scrollDiff = currentScrollY - lastScrollYRef.current;
+          
+          if (scrollDiff > 5 && currentScrollY > 80) {
+            // Scrolling down significantly
+            setIsNavExpanded(false);
+          } else if (scrollDiff < -5) {
+            // Scrolling up significantly
+            setIsNavExpanded(true);
+          }
+          
+          lastScrollYRef.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const { data: notificationsData, markAllAsRead } = useNotifications(user?.id);
   const notifications = notificationsData || [];
@@ -258,55 +291,159 @@ export default function Layout() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 h-[70px] bg-[#0A0910]/90 backdrop-blur-xl border-t border-white/[0.08] flex items-center justify-center px-1 sm:px-2 z-50 lg:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <nav className="flex items-center justify-between gap-1 w-full max-w-md mx-auto px-1 pb-1">
-          <Link
-            to="/dashboard"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'overview' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'overview' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <DashboardIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Home</span>
-          </Link>
-          <Link
-            to="/dashboard?tab=feed"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'feed' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'feed' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <SearchIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Feed</span>
-          </Link>
-          <Link
-            to="/dashboard/build-logs"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'logs' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'logs' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <ZapIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Logs</span>
-          </Link>
-          <Link
-            to="/dashboard/observer"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'observer' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'observer' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <ZapIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Observer</span>
-          </Link>
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-white/10`}>
-               <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Profile</span>
-          </button>
-        </nav>
-      </div>
+      <motion.div
+        className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-4 py-3 z-50 lg:hidden pb-[calc(12px+env(safe-area-inset-bottom))]"
+        animate={{ scale: isNavExpanded ? 1 : 0.92, y: isNavExpanded ? 0 : 8 }}
+        transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        <motion.div
+          className="w-full max-w-md bg-black/80 backdrop-blur-2xl rounded-full border border-white/10 shadow-2xl"
+          animate={{ padding: isNavExpanded ? "12px" : "10px" }}
+          transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <nav className="flex items-center justify-between gap-1">
+            <Link
+              to="/dashboard"
+              className="relative flex-1 flex items-center justify-center py-2"
+            >
+              <AnimatePresence mode="wait">
+                {activeSection === 'overview' ? (
+                  <motion.div
+                    key="active-home"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    className="absolute inset-x-1 inset-y-0 bg-white/20 rounded-full"
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  />
+                ) : null}
+              </AnimatePresence>
+              <motion.div
+                animate={{ 
+                  color: activeSection === 'overview' ? '#fff' : '#94a3b8',
+                  scale: activeSection === 'overview' ? 1.1 : 1
+                }}
+                transition={{ duration: 0.2 }}
+                className="relative z-10"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </motion.div>
+            </Link>
+            <Link
+              to="/dashboard?tab=feed"
+              className="relative flex-1 flex items-center justify-center py-2"
+            >
+              <AnimatePresence mode="wait">
+                {activeSection === 'feed' ? (
+                  <motion.div
+                    key="active-feed"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    className="absolute inset-x-1 inset-y-0 bg-white/10 rounded-full"
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  />
+                ) : null}
+              </AnimatePresence>
+              <motion.div
+                animate={{ 
+                  color: activeSection === 'feed' ? '#fff' : '#94a3b8',
+                  scale: activeSection === 'feed' ? 1.1 : 1
+                }}
+                transition={{ duration: 0.2 }}
+                className="relative z-10"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+              </motion.div>
+            </Link>
+            <Link
+              to="/dashboard/build-logs"
+              className="relative flex-1 flex items-center justify-center py-2"
+            >
+              <AnimatePresence mode="wait">
+                {activeSection === 'logs' ? (
+                  <motion.div
+                    key="active-logs"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    className="absolute inset-x-1 inset-y-0 bg-white/10 rounded-full"
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  />
+                ) : null}
+              </AnimatePresence>
+              <motion.div
+                animate={{ 
+                  color: activeSection === 'logs' ? '#fff' : '#94a3b8',
+                  scale: activeSection === 'logs' ? 1.1 : 1
+                }}
+                transition={{ duration: 0.2 }}
+                className="relative z-10"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                {activeSection === 'logs' && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-0.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full"
+                  />
+                )}
+              </motion.div>
+            </Link>
+            <Link
+              to="/dashboard/explore"
+              className="relative flex-1 flex items-center justify-center py-2"
+            >
+              <AnimatePresence mode="wait">
+                {activeSection === 'explore' ? (
+                  <motion.div
+                    key="active-explore"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    className="absolute inset-x-1 inset-y-0 bg-white/10 rounded-full"
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  />
+                ) : null}
+              </AnimatePresence>
+              <motion.div
+                animate={{ 
+                  color: activeSection === 'explore' ? '#fff' : '#94a3b8',
+                  scale: activeSection === 'explore' ? 1.1 : 1
+                }}
+                transition={{ duration: 0.2 }}
+                className="relative z-10"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.35-4.35"/>
+                </svg>
+              </motion.div>
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="relative flex-1 flex items-center justify-center py-2"
+            >
+              <motion.div
+                className="w-9 h-9 rounded-full overflow-hidden border border-white/20"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+              </motion.div>
+            </button>
+          </nav>
+        </motion.div>
+      </motion.div>
 
       {/* MOBILE PROFILE BOTTOM SHEET */}
       <AnimatePresence>
