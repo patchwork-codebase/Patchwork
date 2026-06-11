@@ -199,7 +199,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile, user } = useAuth();
   const navigate = useNavigate();
 
   const ALLOWED_PHONE_COUNTRIES = [
@@ -221,12 +221,17 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
-    if (profile) {
-      navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
+    if (user) {
+      if (profile) {
+        navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
+      } else {
+        // If user exists but profile is still loading, go to dashboard anyway
+        navigate('/dashboard');
+      }
     } else if (DEV_AUTH_BYPASS) {
       navigate('/dashboard');
     }
-  }, [navigate, profile]);
+  }, [navigate, user, profile]);
 
   // Login form
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
