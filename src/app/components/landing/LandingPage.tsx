@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { useAuth } from "../auth/AuthContext";
 import {
   Sparkles,
   ArrowRight,
@@ -307,7 +308,19 @@ const faqs = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, profile } = useAuth();
   const [screen, setScreen] = useState<"landing" | "onboarding" | "dashboard">("landing");
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (user && location.pathname === "/") {
+      if (profile) {
+        navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, profile, navigate, location.pathname]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [fname, setFname] = useState("");
