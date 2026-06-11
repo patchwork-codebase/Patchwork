@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { Country, State, City } from "country-state-city";
 import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
+import { AuthRedirectGuard } from "./AuthRedirectGuard";
 import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff, Linkedin } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -199,7 +200,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile, user } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const ALLOWED_PHONE_COUNTRIES = [
@@ -221,17 +222,19 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
-    if (user) {
-      if (profile) {
-        navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
-      } else {
-        // If user exists but profile is still loading, go to dashboard anyway
+    if (!authLoading) {
+      if (user) {
+        if (profile) {
+          navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
+        } else {
+          // If user exists but profile is still loading, go to dashboard anyway
+          navigate('/dashboard');
+        }
+      } else if (DEV_AUTH_BYPASS) {
         navigate('/dashboard');
       }
-    } else if (DEV_AUTH_BYPASS) {
-      navigate('/dashboard');
     }
-  }, [navigate, user, profile]);
+  }, [navigate, user, profile, authLoading]);
 
   // Login form
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -312,6 +315,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
+      <AuthRedirectGuard />
       {/* Background ambient */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-[#6C5CE7]/8 rounded-full blur-[180px] pointer-events-none z-0" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#8B7CF8]/5 rounded-full blur-[120px] pointer-events-none z-0" />

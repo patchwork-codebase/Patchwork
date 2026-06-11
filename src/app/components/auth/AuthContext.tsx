@@ -272,6 +272,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    console.log("[AuthContext] Current URL:", window.location.href);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const queryParams = new URLSearchParams(window.location.search);
+    
+    if (hashParams.has('error') || queryParams.has('error')) {
+      const errorMsg = hashParams.get('error_description') || queryParams.get('error_description') || 'Authentication failed';
+      console.error("[AuthContext] OAuth Error detected:", errorMsg);
+      
+      // Handle the "Multiple accounts with the same email" error specifically
+      if (errorMsg.includes('Multiple accounts with the same email')) {
+        toast.error("An account with this email already exists. Please sign in with your password or ensure 'Account Linking' is enabled in Supabase.");
+      } else {
+        toast.error(decodeURIComponent(errorMsg).replace(/\+/g, ' '));
+      }
+    }
+
     const channel = new BroadcastChannel('patchwork_auth_sync');
 
     channel.onmessage = (event) => {
@@ -291,6 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+      console.log("Initial session loaded:", initialSession);
       let currentSession = initialSession;
       if (initialSession) {
         try {
@@ -308,8 +325,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
+        console.log("Loading profile for user:", currentSession.user.id);
         await loadProfile(currentSession.user.id);
       }
+      console.log("Auth loading complete");
       setLoading(false);
     });
 
@@ -332,7 +351,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener('visibilitychange', handleVisibilityChange);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -341,7 +361,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
       } else if (event === 'SIGNED_IN') {
         channel.postMessage('SESSION_LOGIN');
-        if (session?.user) loadProfile(session.user.id);
+        if (session?.user) {
+          await loadProfile(session.user.id);
+        }
       } else if (event === 'TOKEN_REFRESHED') {
         channel.postMessage('SESSION_REFRESH');
         if (session?.user) loadProfile(session.user.id);
@@ -456,20 +478,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle() {
+    console.log("Starting Google OAuth...");
+    const redirectUrl = window.location.origin;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: redirectUrl,
       }
     });
     if (error) throw error;
   }
 
   async function signInWithLinkedin() {
+    console.log("Starting LinkedIn OAuth...");
+    const redirectUrl = window.location.origin;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: redirectUrl,
         scopes: 'openid profile email w_member_social',
       }
     });

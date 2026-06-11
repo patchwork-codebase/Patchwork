@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../auth/AuthContext";
+import { AuthRedirectGuard } from "../auth/AuthRedirectGuard";
 import {
   Sparkles,
   ArrowRight,
@@ -308,19 +309,21 @@ const faqs = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [screen, setScreen] = useState<"landing" | "onboarding" | "dashboard">("landing");
 
   // Auto-redirect if already logged in
   useEffect(() => {
-    if (user && location.pathname === "/") {
-      if (profile) {
-        navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
-      } else {
-        navigate('/dashboard');
+    if (!loading) {
+      if (user && (location.pathname === "/" || location.pathname === "/login" || location.pathname === "/onboarding")) {
+        if (profile) {
+          navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }
     }
-  }, [user, profile, navigate, location.pathname]);
+  }, [user, profile, loading, navigate, location.pathname]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [fname, setFname] = useState("");
@@ -475,6 +478,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen text-white font-sans bg-[#08070D] antialiased selection:bg-[#6C5CE7]/30 selection:text-white">
+      <AuthRedirectGuard />
       {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#08070D]/95 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.18)]">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-6 sm:py-4">
