@@ -155,11 +155,10 @@ function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, o
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          disabled={loading}
-          onClick={onGoogle}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] rounded-xl text-[13px] text-white font-bold transition-all disabled:opacity-50"
+          disabled={true}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.02] border border-white/[0.04] text-slate-600 rounded-xl text-[13px] font-bold transition-all cursor-not-allowed"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" className="shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" className="shrink-0 opacity-50">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -177,7 +176,12 @@ function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, o
               d="M12 4.75c1.71 0 3.25.59 4.45 1.73l3.33-3.33C17.79 1.19 15.15 0 12 0 7.45 0 3.51 1.86 1.54 5.12l3.59 2.87c.96-2.9 3.67-5.06 6.87-5.06z"
             />
           </svg>
-          Google
+          <span className="relative">
+            Google
+            <span className="absolute -top-3 -right-10 text-[10px] text-yellow-400 font-bold bg-yellow-400/10 px-1.5 py-0.5 rounded-full border border-yellow-400/30">
+              Coming Soon
+            </span>
+          </span>
         </button>
         <button
           type="button"
