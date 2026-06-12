@@ -297,8 +297,8 @@ export default function Layout() {
         transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <motion.div
-          className="w-full max-w-md bg-black/80 backdrop-blur-2xl rounded-full border border-white/10 shadow-2xl"
-          animate={{ padding: isNavExpanded ? "12px" : "10px" }}
+          className="w-full max-w-md bg-[#0A0910]/90 backdrop-blur-3xl rounded-full border border-white/[0.12] shadow-[0_20px_60px_rgba(0,0,0,0.8)] px-2"
+          animate={{ paddingBottom: isNavExpanded ? "8px" : "4px", paddingTop: isNavExpanded ? "8px" : "4px" }}
           transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         >
           <nav className="flex items-center justify-between gap-1">
@@ -313,15 +313,15 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
+                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
               </AnimatePresence>
               <motion.div
                 animate={{ 
-                  color: activeSection === 'overview' ? '#fff' : '#94a3b8',
-                  scale: activeSection === 'overview' ? 1.1 : 1
+                  color: activeSection === 'overview' ? '#8B7CF8' : '#64748b',
+                  scale: activeSection === 'overview' ? 1.05 : 1
                 }}
                 transition={{ duration: 0.2 }}
                 className="relative z-10"
@@ -343,15 +343,15 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
+                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
               </AnimatePresence>
               <motion.div
                 animate={{ 
-                  color: activeSection === 'feed' ? '#fff' : '#94a3b8',
-                  scale: activeSection === 'feed' ? 1.1 : 1
+                  color: activeSection === 'feed' ? '#8B7CF8' : '#64748b',
+                  scale: activeSection === 'feed' ? 1.05 : 1
                 }}
                 transition={{ duration: 0.2 }}
                 className="relative z-10"
@@ -374,15 +374,15 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
+                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
               </AnimatePresence>
               <motion.div
                 animate={{ 
-                  color: activeSection === 'logs' ? '#fff' : '#94a3b8',
-                  scale: activeSection === 'logs' ? 1.1 : 1
+                  color: activeSection === 'logs' ? '#8B7CF8' : '#64748b',
+                  scale: activeSection === 'logs' ? 1.05 : 1
                 }}
                 transition={{ duration: 0.2 }}
                 className="relative z-10"
@@ -410,15 +410,15 @@ export default function Layout() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-x-2 inset-y-0 bg-white/20 rounded-full"
+                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 ) : null}
               </AnimatePresence>
               <motion.div
                 animate={{ 
-                  color: activeSection === 'explore' ? '#fff' : '#94a3b8',
-                  scale: activeSection === 'explore' ? 1.1 : 1
+                  color: activeSection === 'explore' ? '#8B7CF8' : '#64748b',
+                  scale: activeSection === 'explore' ? 1.05 : 1
                 }}
                 transition={{ duration: 0.2 }}
                 className="relative z-10"
@@ -434,8 +434,10 @@ export default function Layout() {
               className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
             >
               <motion.div
-                className="w-10 h-10 rounded-full overflow-hidden border border-white/20"
-                whileHover={{ scale: 1.1 }}
+                className={`w-[34px] h-[34px] rounded-full overflow-hidden transition-all ${
+                  mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-[#0A0910]' : 'border-2 border-slate-600'
+                }`}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />

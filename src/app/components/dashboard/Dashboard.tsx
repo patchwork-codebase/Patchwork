@@ -17,6 +17,8 @@ import { StatsStrip } from "./StatsStrip";
 import { ActiveRoomsList } from "./ActiveRoomsList";
 import { RecentActivityList } from "./RecentActivityList";
 import { TimelineFeed } from "./TimelineFeed";
+import { ActiveRoomPanel } from "./ActiveRoomPanel";
+import { OverviewInsights } from "./OverviewInsights";
 
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -221,11 +223,16 @@ export default function Dashboard() {
 
   function getDomainStyle(domain?: string) {
     switch (domain?.toLowerCase()) {
-      case 'design': return { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' };
+      case 'product-designer':
+      case 'design': return { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-500/20' };
+      case 'engineer':
       case 'engineering': return { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' };
-      case 'growth': return { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' };
-      case 'writing': return { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-500/20' };
-      case 'research': return { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' };
+      case 'growth': return { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' };
+      case 'writer':
+      case 'writing': return { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' };
+      case 'research': return { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' };
+      case 'founder': return { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' };
+      case 'product-manager': return { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' };
       default: return { bg: 'bg-[#6C5CE7]/10', text: 'text-[#8B7CF8]', border: 'border-[#6C5CE7]/20' };
     }
   }
@@ -468,6 +475,25 @@ export default function Dashboard() {
             selectedRoomTitle={selectedRoomTitle}
           />
         </div>
+      ) : activeTab === 'overview' ? (
+        <div>
+          <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.55fr] gap-8 xl:gap-12">
+            <ActiveRoomsList
+              rooms={myRooms}
+              loading={myRoomsLoading}
+              setTab={setTab}
+              selectedRoomId={selectedRoomId}
+              setSelectedRoomId={setSelectedRoomId}
+            />
+            <ActiveRoomPanel
+              user={user}
+              room={myRooms.find(r => r.id === selectedRoomId) || myRooms[0]}
+              reactions={reactions}
+              queryClient={queryClient}
+            />
+          </div>
+          <OverviewInsights />
+        </div>
       ) : (
         /* TIMELINE FEED FOR MY ROOMS / LIVE FEED TABS */
         <TimelineFeed
@@ -528,7 +554,7 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-6 pb-[env(safe-area-inset-bottom)]"
+              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
@@ -582,7 +608,7 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-6 pb-[env(safe-area-inset-bottom)]"
+              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">

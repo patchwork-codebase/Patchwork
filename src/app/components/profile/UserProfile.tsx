@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
-import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users } from "lucide-react";
+import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users, ChevronDown } from "lucide-react";
 import { getAvatarUrl } from "../../utils/helpers";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ interface Profile {
   name: string;
   email: string;
   role: string;
+  domain?: string;
   reputation: number;
   bio: string;
   avatar: string;
@@ -39,6 +40,59 @@ import { useUserRooms } from "../../hooks/useRooms";
 import { useQueryClient } from "@tanstack/react-query";
 import Integrations from "./Integrations";
 
+function CustomSelect({ value, onChange, options, label }: { value: string, onChange: (v: string) => void, options: {value: string, label: string}[], label: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(o => o.value === value);
+
+  return (
+    <div className="relative" ref={ref}>
+      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{label}</label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full px-4 py-2.5 bg-[#0A0910]/50 border ${isOpen ? 'border-[#6C5CE7]/50 ring-1 ring-[#6C5CE7]/50' : 'border-white/[0.08]'} rounded-xl text-[14px] text-white focus:outline-none transition-all font-medium flex items-center justify-between`}
+      >
+        <span>{selectedOption ? selectedOption.label : 'Select User Type'}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-2 bg-[#1A1825] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden py-1 max-h-[250px] overflow-y-auto">
+          {options.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
+                value === option.value 
+                  ? 'bg-[#6C5CE7]/20 text-[#8B7CF8] font-bold' 
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white font-medium'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const { user, token, refreshProfile } = useAuth();
@@ -60,6 +114,7 @@ export default function UserProfile() {
     name: '', 
     bio: '', 
     role: '',
+    domain: '',
     website: '',
     twitter: '',
     github_url: '',
@@ -81,6 +136,7 @@ export default function UserProfile() {
         name: profile.name || '', 
         bio: profile.bio || '', 
         role: profile.role || '',
+        domain: profile.domain || '',
         website: profile.website || '',
         twitter: profile.twitter || '',
         github_url: profile.github_url || '',
@@ -153,15 +209,15 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="max-w-[900px] mx-auto px-6 py-10 relative">
+    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group">
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-6 sm:mb-8 transition-colors group">
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
       </Link>
 
       {/* Profile card */}
-      <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 mb-8 backdrop-blur-md shadow-xl relative overflow-hidden">
+      <div className="bg-white/[0.02] border border-white/[0.06] rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-10 mb-8 backdrop-blur-md shadow-xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6C5CE7]/50 to-transparent opacity-50" />
         
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 flex-wrap relative z-10">
@@ -223,6 +279,26 @@ export default function UserProfile() {
                       ))}
                     </div>
                   </div>
+
+                  {editForm.role === 'builder' && (
+                    <div className="relative z-50">
+                      <CustomSelect
+                        label="User Type"
+                        value={editForm.domain}
+                        onChange={val => setEditForm(f => ({ ...f, domain: val }))}
+                        options={[
+                          { value: "product-manager", label: "📋 Product Manager" },
+                          { value: "engineer", label: "⚙️ Engineer" },
+                          { value: "product-designer", label: "🎨 Product Designer" },
+                          { value: "founder", label: "🚀 Founder" },
+                          { value: "writer", label: "✍️ Writer" },
+                          { value: "growth", label: "📈 Growth" },
+                          { value: "research", label: "🔬 Research" },
+                          { value: "other", label: "✦ Other" },
+                        ]}
+                      />
+                    </div>
+                  )}
 
                   {/* Social Links Form */}
                   <div className="pt-4 border-t border-white/[0.08] space-y-4">
@@ -323,7 +399,7 @@ export default function UserProfile() {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3">
                     <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#8B7CF8] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-3 py-1.5 rounded-full capitalize tracking-wide">
                       {profile.role === 'builder' ? <Hammer className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      {profile.role}
+                      {profile.role} {profile.domain && profile.role === 'builder' ? ` • ${profile.domain.replace('-', ' ')}` : ''}
                     </span>
                     <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full tracking-wide">
                       <Zap className="w-3 h-3" /> {profile.reputation} rep

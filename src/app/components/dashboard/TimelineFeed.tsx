@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { Link } from 'react-router-dom';
+import { Virtuoso } from "react-virtuoso";
 import { apiCall, useAuth } from '../auth/AuthContext';
 import { motion, AnimatePresence } from "motion/react";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { getAvatarUrl } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
+import { FigmaEmbed } from "../ui/FigmaEmbed";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -345,15 +347,17 @@ export function TimelineFeed({
     }
 
     return (
-      <button
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.95 }}
         onClick={(e) => {
           e.stopPropagation();
           handleToggleReaction(updateId, roomId, type, serverReactions);
         }}
-        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-all border active:scale-95 flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-colors border flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
           isActive 
             ? activeClass
-            : "bg-white/[0.02] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.04]"
+            : "bg-white/[0.02] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.04] hover:border-white/[0.15]"
         }`}
       >
         <span>{icon}</span>
@@ -361,7 +365,7 @@ export function TimelineFeed({
         {(!profile || !profile.emailVerified) && <Lock className="w-3 h-3 opacity-60 ml-0.5" />}
         <span className="opacity-40">·</span>
         <span>{count}</span>
-      </button>
+      </motion.button>
     );
   };
 
@@ -396,7 +400,7 @@ export function TimelineFeed({
   return (
     <div className="max-w-[700px] w-full mx-auto">
       {/* INLINE COMPOSER */}
-      {profile?.role === 'builder' && activeTab === 'overview' && (
+      {profile?.role === 'builder' && (
         <div className="hidden sm:flex bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
@@ -614,8 +618,10 @@ export function TimelineFeed({
             No updates posted yet.
           </motion.div>
         ) : (
-          <AnimatePresence initial={false}>
-            {filteredUpdates.map((update, idx) => {
+          <Virtuoso
+            useWindowScroll
+            data={filteredUpdates}
+            itemContent={(idx, update) => {
             const fullRoom = rooms?.find(r => r.id === update.roomId);
             const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
             const tStyle = tagStyle(tag);
@@ -734,10 +740,14 @@ export function TimelineFeed({
                 </div>
 
                 {update.content && (
-                  <ReadMoreText 
-                    content={update.content} 
-                    className="text-[14px] sm:text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap break-words" 
-                  />
+                  update.content.includes("figma.com/") ? (
+                    <FigmaEmbed content={update.content} />
+                  ) : (
+                    <ReadMoreText 
+                      content={update.content} 
+                      className="text-[14px] sm:text-[15px] text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap break-words" 
+                    />
+                  )
                 )}
 
                 {update.mediaUrl && (
@@ -898,8 +908,8 @@ export function TimelineFeed({
                 );})()}
               </motion.div>
             );
-          })
-          }</AnimatePresence>
+          }}
+        />
         )}
 
         {hasNextUpdates && (
