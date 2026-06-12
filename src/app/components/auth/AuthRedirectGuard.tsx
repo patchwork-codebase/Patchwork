@@ -8,19 +8,17 @@ export function AuthRedirectGuard() {
   const location = useLocation();
 
   useEffect(() => {
-    console.log('[AuthRedirectGuard] Checking auth state:', { 
-      user: !!user, 
-      profile: !!profile, 
-      loading, 
-      pathname: location.pathname,
-      hash: !!window.location.hash,
-      search: !!window.location.search
-    });
-    
     if (!loading && user) {
-      console.log('[AuthRedirectGuard] User is authenticated, redirecting to dashboard...');
-      const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';
-      navigate(targetRoute, { replace: true });
+      if (location.pathname === '/onboarding') return;
+
+      const needsOnboarding = profile?.role === 'builder' ? !profile.domain : !(profile?.interests?.length);
+      
+      if (needsOnboarding) {
+        navigate('/onboarding', { replace: true });
+      } else {
+        const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';
+        navigate(targetRoute, { replace: true });
+      }
     }
   }, [user, profile, loading, navigate, location.pathname]);
 

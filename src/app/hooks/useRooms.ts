@@ -101,6 +101,7 @@ export function useRooms() {
       const { data, error } = await supabase
         .from('rooms')
         .select('*')
+        .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .range(from, to);
 

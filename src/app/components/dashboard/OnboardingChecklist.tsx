@@ -6,25 +6,22 @@ import { STORAGE_KEYS } from "../../utils/helpers";
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface CompletionState {
-  domain: boolean;
   room: boolean;
   update: boolean;
   call: boolean;
   alreadyCompleted?: boolean;
 }
 
-const EMPTY: CompletionState = { domain: false, room: false, update: false, call: false };
+const EMPTY: CompletionState = { room: false, update: false, call: false };
 
 /* ─── Step definitions ───────────────────────────────────── */
 const BUILDER_STEPS = [
-  { id: 'domain', emoji: '🎯', title: 'Set your domain', description: 'What space are you building in? Product, Design, Engineering...' },
   { id: 'room', emoji: '🚪', title: 'Open your first room', description: 'Give your build a name and open it for observers to follow.' },
   { id: 'update', emoji: '📝', title: 'Post your first update', description: "What's happening right now? Share the messy truth." },
   { id: 'call', emoji: '📅', title: 'Schedule intro call', description: '20 minutes with the team to frame your build room.' },
 ];
 
 const OBSERVER_STEPS = [
-  { id: 'domain', emoji: '🎯', title: 'Set your interests', description: 'What domains do you want to follow — Product, Design...' },
   { id: 'room', emoji: '🚪', title: 'Follow your first room', description: 'Find a builder whose work you want to watch unfold.' },
   { id: 'update', emoji: '📡', title: 'Tune your feed', description: 'Tell us what kinds of updates matter most to you.' },
   { id: 'call', emoji: '📅', title: 'Schedule intro call', description: '20 minutes to get the most out of Patchwork as an observer.' },
@@ -34,14 +31,8 @@ const OBSERVER_STEPS = [
 async function loadCompletion(userId: string, role: string): Promise<CompletionState> {
   const state = { ...EMPTY };
   try {
-    // Check domain / interests set
     const userRow = await apiCall(`/users/${userId}`);
 
-    if (role === 'builder') {
-      state.domain = !!userRow?.domain;
-    } else {
-      state.domain = !!(userRow?.interests?.length);
-    }
     state.call = !!userRow?.onboarding_call_scheduled;
     state.alreadyCompleted = !!userRow?.signup_completed_at;
 
@@ -72,7 +63,7 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     // If all 4 steps are done but signup_completed_at was never written
     // (e.g. user completed steps outside the modal, or the write previously failed),
     // persist it now so dismissal is DB-backed and survives across devices/browsers.
-    const allStepsDone = state.domain && state.room && state.update && state.call;
+    const allStepsDone = state.room && state.update && state.call;
     if (allStepsDone && !state.alreadyCompleted) {
       try {
         await supabase.from('users')
@@ -106,27 +97,16 @@ const DOMAINS = ['product', 'design', 'engineering', 'growth', 'writing', 'resea
 function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, onClose }: StepModalProps) {
   const [saving, setSaving] = useState(false);
   const [text, setText] = useState('');
-  const [selectedDomain, setSelectedDomain] = useState('product');
   const [error, setError] = useState('');
 
   async function handleSave() {
     setSaving(true);
     setError('');
     try {
-      if (stepId === 'domain') {
-        if (role === 'builder') {
-          const { error: e } = await supabase.from('users').update({ domain: selectedDomain }).eq('id', userId);
-          if (e) throw e;
-        } else {
-          const interests = text.split(',').map(s => s.trim()).filter(Boolean);
-          if (!interests.length) { setError('Enter at least one interest'); setSaving(false); return; }
-          const { error: e } = await supabase.from('users').update({ interests }).eq('id', userId);
-          if (e) throw e;
-        }
-      } else if (stepId === 'room' && role === 'builder') {
+      if (stepId === 'room' && role === 'builder') {
         if (!text.trim()) { setError('Room name is required'); setSaving(false); return; }
         const { error: e } = await supabase.from('rooms').insert({
-          id: window.crypto.randomUUID(),
+          id: window.crypto?.randomUUID?.() || `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           builder_id: userId,
           builder_name: userName || 'Builder',
           title: text.trim(),
@@ -197,28 +177,8 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
           </div>
         )}
 
-        {/* Domain selector for domain/interests step */}
-        {stepId === 'domain' && role === 'builder' && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {DOMAINS.map(d => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setSelectedDomain(d)}
-                className={`px-4 py-2 rounded-full text-[13px] font-bold capitalize transition-all border ${selectedDomain === d
-                    ? 'bg-[#6C5CE7] border-[#6C5CE7] text-white'
-                    : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-                  }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-        )}
-
         {/* Text inputs */}
-        {((stepId === 'domain' && role === 'observer') ||
-          (stepId === 'room' && role === 'builder') ||
+        {((stepId === 'room' && role === 'builder') ||
           (stepId === 'update' && role === 'builder') ||
           (stepId === 'update' && role === 'observer')) && (
             <textarea
@@ -226,7 +186,6 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder={
-                stepId === 'domain' ? 'e.g. Product, Design, Growth' :
                   stepId === 'room' ? 'e.g. MoniFlow — Fintech redesign' :
                     stepId === 'update' && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
                       'e.g. I want updates about early-stage product decisions and launch pivots.'
@@ -308,7 +267,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
         setCompletion(state);
         // Dismiss if already marked complete in DB, OR if all 4 steps are now done
         // (loadCompletion will have written signup_completed_at in that case)
-        const allStepsDone = state.domain && state.room && state.update && state.call;
+        const allStepsDone = state.room && state.update && state.call;
         if (state.alreadyCompleted || allStepsDone) {
           setDismissed(true);
           try { localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), 'true'); } catch (_) { }
@@ -328,7 +287,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       const fresh = await loadCompletion(userId, role);
       setCompletion(fresh);
       // If all done, mark signup_completed_at
-      if (fresh.domain && fresh.room && fresh.update && fresh.call) {
+      if (fresh.room && fresh.update && fresh.call) {
         supabase.from('users').update({
           signup_completed_at: new Date().toISOString()
         }).eq('id', userId).catch(() => { });
@@ -336,7 +295,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
     }, 800);
   }
 
-  const completedCount = (['domain', 'room', 'update', 'call'] as const).filter(k => completion[k]).length;
+  const completedCount = (['room', 'update', 'call'] as const).filter(k => completion[k]).length;
   const allDone = completedCount === steps.length;
 
   useEffect(() => {

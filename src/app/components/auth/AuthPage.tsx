@@ -208,12 +208,7 @@ export default function AuthPage() {
   const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const ALLOWED_PHONE_COUNTRIES = [
-    { iso: 'NG', code: '+234', name: 'Nigeria' },
-    { iso: 'KE', code: '+254', name: 'Kenya' },
-    { iso: 'RW', code: '+250', name: 'Rwanda' },
-    { iso: 'GH', code: '+233', name: 'Ghana' }
-  ];
+
 
   const calculatePasswordStrength = (pass: string) => {
     if (!pass) return 0;
@@ -227,33 +222,13 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
-    if (!authLoading) {
-      if (user) {
-        if (profile) {
-          navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
-        } else {
-          // If user exists but profile is still loading, go to dashboard anyway
-          navigate('/dashboard');
-        }
-      } else if (DEV_AUTH_BYPASS) {
-        navigate('/dashboard');
-      }
+    if (!authLoading && !user && DEV_AUTH_BYPASS) {
+      navigate('/dashboard');
     }
-  }, [navigate, user, profile, authLoading]);
+  }, [navigate, user, authLoading]);
 
   // Login form
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-
-  const BUILDER_TYPES = [
-    { value: 'product-manager', label: '📋 Product Manager' },
-    { value: 'engineer', label: '⚙️ Engineer' },
-    { value: 'product-designer', label: '🎨 Product Designer' },
-    { value: 'founder', label: '🚀 Founder' },
-    { value: 'writer', label: '✍️ Writer' },
-    { value: 'growth', label: '📈 Growth' },
-    { value: 'research', label: '🔬 Research' },
-    { value: 'other', label: '✦ Other' },
-  ];
 
   // Signup form — minimal, just what's needed to create the account
   const [signup, setSignup] = useState({
@@ -261,15 +236,7 @@ export default function AuthPage() {
     lname: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    countryIso: '',
-    stateIso: '',
-    city: '',
-    gender: '',
-    phoneCountryCode: '+234',
-    phoneNumber: '',
     role: 'builder' as 'builder' | 'observer',
-    builderType: '',
   });
 
   function redirectForRole(role?: string) {
@@ -296,10 +263,9 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const name = `${signup.fname} ${signup.lname}`.trim() || 'Anonymous Builder';
-      const domain = signup.role === 'builder' ? signup.builderType : '';
-      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, domain, signup.gender, signup.phoneCountryCode, signup.phoneNumber);
+      await signUp(signup.email, signup.password, name, signup.role, '', '', '', '', '');
       toast.success("Welcome to Patchwork! We've sent a verification link to your email.");
-      redirectForRole(profile?.role || signup.role);
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
@@ -329,7 +295,7 @@ export default function AuthPage() {
     }
   }
 
-  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.password === signup.confirmPassword && signup.countryIso && signup.stateIso && signup.city && signup.gender && (signup.role !== 'builder' || signup.builderType);
+  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8;
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
@@ -570,33 +536,8 @@ export default function AuthPage() {
                   ))}
                 </div>
 
-                {/* Builder Type — shown only when Builder is selected */}
-                {signup.role === 'builder' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative z-30"
-                  >
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-0.5">
-                      What kind of builder are you? <span className="text-rose-400">*</span>
-                    </label>
-                    <SearchableSelect
-                      label="Select your builder type"
-                      value={signup.builderType}
-                      onChange={val => setSignup(s => ({ ...s, builderType: val }))}
-                      searchable={false}
-                      options={BUILDER_TYPES}
-                    />
-                    {!signup.builderType && (
-                      <p className="text-[11px] text-slate-600 mt-1.5 ml-0.5">Required to personalise your dashboard</p>
-                    )}
-                  </motion.div>
-                )}
-
                 {/* Name row */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 mt-1">
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                     <input
@@ -614,22 +555,6 @@ export default function AuthPage() {
                     value={signup.lname}
                     onChange={e => setSignup(s => ({ ...s, lname: e.target.value }))}
                     className="w-full px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
-                  />
-                </div>
-
-                {/* Gender */}
-                <div className="relative z-20">
-                  <SearchableSelect
-                    label="Gender"
-                    value={signup.gender}
-                    onChange={val => setSignup(s => ({ ...s, gender: val }))}
-                    searchable={false}
-                    options={[
-                      { value: "male", label: "Male" },
-                      { value: "female", label: "Female" },
-                      { value: "non-binary", label: "Non-binary" },
-                      { value: "prefer-not-to-say", label: "Prefer not to say" }
-                    ]}
                   />
                 </div>
 
@@ -678,93 +603,6 @@ export default function AuthPage() {
                       })}
                     </div>
                   )}
-                  {signup.password && (
-                    <p className="text-[11px] text-slate-500 mt-1.5 font-medium">
-                      {calculatePasswordStrength(signup.password) <= 2 && "Weak: Use 8+ characters, mix letters, numbers & symbols."}
-                      {calculatePasswordStrength(signup.password) === 3 && "Fair: Add special characters or numbers to make it stronger."}
-                      {calculatePasswordStrength(signup.password) >= 4 && "Strong password."}
-                    </p>
-                  )}
-                </div>
-
-                {/* Confirm Password */}
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Confirm password"
-                    value={signup.confirmPassword}
-                    onChange={e => setSignup(s => ({ ...s, confirmPassword: e.target.value }))}
-                    required
-                    className={`w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:ring-1 transition-all ${
-                      signup.confirmPassword && signup.password !== signup.confirmPassword
-                        ? 'border-rose-500/50 focus:border-rose-500/50 focus:ring-rose-500/30'
-                        : 'border-white/[0.08] focus:border-[#8B7CF8]/50 focus:ring-[#8B7CF8]/30'
-                    }`}
-                  />
-                </div>
-
-                {/* Phone (optional) */}
-                <div className="flex gap-2">
-                  <div className="w-[140px] shrink-0 relative z-20">
-                    <SearchableSelect
-                      label="Code"
-                      value={signup.phoneCountryCode}
-                      onChange={val => {
-                        const matched = ALLOWED_PHONE_COUNTRIES.find(c => c.code === val);
-                        setSignup(s => ({ 
-                          ...s, 
-                          phoneCountryCode: val,
-                          ...(matched ? { countryIso: matched.iso, stateIso: '', city: '' } : {})
-                        }));
-                      }}
-                      options={ALLOWED_PHONE_COUNTRIES.map(c => ({ value: c.code, label: `${c.iso} (${c.code})` }))}
-                    />
-                  </div>
-                  <div className="flex-1 relative">
-                    <input
-                      type="tel"
-                      placeholder="Phone (optional)"
-                      value={signup.phoneNumber}
-                      onChange={e => setSignup(s => ({ ...s, phoneNumber: e.target.value }))}
-                      className="w-full px-4 py-[13px] bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Location (mandatory) */}
-                <div className="grid grid-cols-3 gap-2">
-                  <SearchableSelect
-                    label="Country"
-                    value={signup.countryIso}
-                    onChange={val => {
-                      const matched = ALLOWED_PHONE_COUNTRIES.find(c => c.iso === val);
-                      setSignup(s => ({ 
-                        ...s, 
-                        countryIso: val, 
-                        stateIso: '', 
-                        city: '',
-                        ...(matched ? { phoneCountryCode: matched.code } : { phoneCountryCode: '' })
-                      }));
-                    }}
-                    options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
-                  />
-
-                  <SearchableSelect
-                    label="State"
-                    value={signup.stateIso}
-                    onChange={val => setSignup(s => ({ ...s, stateIso: val, city: '' }))}
-                    disabled={!signup.countryIso}
-                    options={signup.countryIso ? State.getStatesOfCountry(signup.countryIso).map(s => ({ value: s.isoCode, label: s.name })) : []}
-                  />
-
-                  <SearchableSelect
-                    label="City"
-                    value={signup.city}
-                    onChange={val => setSignup(s => ({ ...s, city: val }))}
-                    disabled={!signup.stateIso}
-                    options={signup.stateIso ? City.getCitiesOfState(signup.countryIso, signup.stateIso).map(c => ({ value: c.name, label: c.name })) : []}
-                  />
                 </div>
 
                 <motion.button

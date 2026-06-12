@@ -550,7 +550,7 @@ export function TimelineFeed({
         {activeTab === 'feed' && (
           <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
             <div className="flex overflow-x-auto custom-scrollbar items-center gap-2 pb-2 sm:pb-0 snap-x">
-              {['All', 'Design', 'Engineering', 'Product', 'Research', 'Dev', 'Writing'].map(domain => (
+              {['All', 'Product', 'Engineering', 'Design'].map(domain => (
                 <button
                   key={domain}
                   onClick={() => setActiveDomainFilter(domain)}

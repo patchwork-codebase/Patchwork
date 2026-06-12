@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle } from "lucide-react";
+import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2 } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import {
@@ -13,6 +13,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { EditRoomModal } from "./EditRoomModal";
+import { useState } from "react";
 
 export function RoomHeader({ 
   room, 
@@ -23,6 +25,8 @@ export function RoomHeader({
   handleCloseRoom,
   copyLogLink
 }: any) {
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
   return (
     <div className={`bg-white/[0.02] border border-white/[0.06] rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
       {room.coverImage && (
@@ -99,6 +103,17 @@ export function RoomHeader({
           >
             <Share2 className="w-5 h-5" />
           </button>
+          
+          {isBuilder && (room.status === 'active' || room.status === 'draft') && (
+            <button
+              onClick={() => setEditModalOpen(true)}
+              title="Edit Room"
+              aria-label="Edit Room"
+              className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] rounded-xl text-slate-300 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+            >
+              <Edit2 className="w-5 h-5" />
+            </button>
+          )}
           {room.status === 'completed' && (
             <>
               <Link
@@ -162,6 +177,7 @@ export function RoomHeader({
           )}
         </div>
       </div>
+      <EditRoomModal open={editModalOpen} onClose={() => setEditModalOpen(false)} room={room} />
     </div>
   );
 }

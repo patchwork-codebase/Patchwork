@@ -39,7 +39,7 @@ export default function BuildRoom() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [postingUpdate, setPostingUpdate] = useState(false);
   const [reactionModal, setReactionModal] = useState<{ open: boolean; updateId: string | null }>({ open: false, updateId: null });
-  const [activeTab, setActiveTab] = useState<'overview' | 'updates' | 'reactions'>('updates');
+  const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
   const [linkedinShareOpen, setLinkedinShareOpen] = useState(false);
   const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
@@ -89,6 +89,7 @@ export default function BuildRoom() {
       }
 
       const updatePayload = {
+        id: window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         room_id: id,
         author_id: user.id,
         author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
@@ -232,15 +233,10 @@ export default function BuildRoom() {
           copyLogLink={copyLogLink} 
         />
 
-        <IntegrationsBar
-          roomId={id!}
-          builderId={room.builderId}
-          isOwner={!!(user && user.id === room.builderId)}
-        />
-
-        <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px">
+        <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4">
           {[
             { key: 'overview', label: 'Overview', count: null },
+            { key: 'workspace', label: 'Product Workspace', count: null },
             { key: 'updates', label: 'Updates', count: room.updates.length },
             { key: 'reactions', label: 'Reactions', count: room.reactions.length },
           ].map(tab => (
@@ -267,6 +263,24 @@ export default function BuildRoom() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-2">
             <DecisionLogCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
             <MilestoneTrackerCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
+          </div>
+        )}
+
+        {activeTab === 'workspace' && (
+          <div className="mb-8 p-8 bg-[#0D0B14] border border-white/[0.08] rounded-[24px]">
+            <div className="text-center mb-8">
+              <h3 className="text-[18px] font-bold text-white mb-2">Product Workspace</h3>
+              <p className="text-[14px] text-slate-400 max-w-[400px] mx-auto">
+                Connect your Notion PRDs, Linear Roadmaps, and GitHub repos to maintain a single source of truth.
+              </p>
+            </div>
+            <div className="max-w-[500px] mx-auto bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6">
+              <h4 className="text-[14px] font-semibold text-white mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#8B7CF8]"></span>
+                Linked Artifacts
+              </h4>
+              <IntegrationsBar roomId={id!} builderId={room.builderId} isOwner={!!(user && user.id === room.builderId)} />
+            </div>
           </div>
         )}
 

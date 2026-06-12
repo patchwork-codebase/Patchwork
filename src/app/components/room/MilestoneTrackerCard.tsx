@@ -93,20 +93,11 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.access_token) throw new Error("Not authenticated");
-
-      const res = await fetch(`${process.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321'}/functions/v1/linear-sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.session.access_token}`
-        },
-        body: JSON.stringify({ roomId })
+      const { data, error } = await supabase.functions.invoke('linear-sync', {
+        body: { roomId }
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to sync');
+      if (error) throw new Error(error.message || 'Failed to sync');
       
       toast.success(`Successfully synced ${data.count} issues from Linear!`);
       queryClient.invalidateQueries({ queryKey: ['linear-issues', roomId] });
@@ -173,25 +164,27 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   return (
     <div className={isNested ? "flex flex-col h-full" : "bg-white/[0.02] backdrop-blur-sm rounded-[24px] border border-white/[0.08] overflow-hidden flex flex-col h-[500px]"}>
       {!isNested && (
-        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shrink-0">
           <div>
             <h3 className="text-[16px] font-extrabold text-white leading-tight">
               Milestone tracker
             </h3>
             <span className="text-[12px] text-slate-400 font-medium">Synced with Linear</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={handleSync}
               disabled={isSyncing}
-              className="bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-white px-3.5 py-1.5 rounded-full font-bold text-[12px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+              className="bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-white px-3 sm:px-3.5 py-1.5 rounded-full font-bold text-[11px] sm:text-[12px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} strokeWidth="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg>
-              {isSyncing ? 'Syncing...' : 'Sync Linear'}
+              <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync Linear'}</span>
+              <span className="sm:hidden">{isSyncing ? 'Syncing...' : 'Sync'}</span>
             </button>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              LINEAR SYNC
+              <span className="hidden sm:inline">Linear Sync</span>
+              <span className="sm:hidden">Synced</span>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router";
 import { useAuth, supabase, sendVerificationEmailDirect } from "../auth/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw } from "lucide-react";
+import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw, Bell } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { WelcomeTour } from "./WelcomeTour";
 import VerificationSuccessModal from "./VerificationSuccessModal";
@@ -11,6 +11,7 @@ import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDashboardStats, useRecentActivity, useRoomObservers } from "../../hooks/useDashboardStats";
+import { useNotifications } from "../../hooks/useNotifications";
 
 // Subcomponents
 import { StatsStrip } from "./StatsStrip";
@@ -32,6 +33,9 @@ export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+
+  const { data: notificationsData } = useNotifications(user?.id);
+  const unreadCount = notificationsData?.filter(n => !n.read).length || 0;
 
   const {
     data: roomsData,
@@ -162,7 +166,7 @@ export default function Dashboard() {
           throw new Error(roomError?.message || "Room not found");
         }
 
-        const updateId = window.crypto.randomUUID();
+        const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         let uploadedMediaUrl = null;
         if (mediaPreview) {
@@ -381,12 +385,23 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Link
-          to="/dashboard/create"
-          className="hidden sm:inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
-        >
-          <IconPlus /> New room
-        </Link>
+        <div className="hidden sm:flex items-center gap-3 w-full sm:w-auto">
+          <Link
+            to="/dashboard/notifications"
+            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] rounded-full text-slate-300 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+          >
+            <Bell className="w-[18px] h-[18px]" />
+            {unreadCount > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-[#0E0C15]" />
+            )}
+          </Link>
+          <Link
+            to="/dashboard/create"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+          >
+            <IconPlus /> New room
+          </Link>
+        </div>
       </div>
 
       {/* PROFILE CARD & STATS */}
@@ -624,7 +639,7 @@ export default function Dashboard() {
               <textarea 
                 value={updateContent}
                 onChange={(e) => setUpdateContent(e.target.value)}
-                placeholder="What are you building right now?"
+                placeholder="What feature did you ship today? Or what product decision did you make?"
                 className="w-full bg-white/[0.03] border border-white/[0.08] text-white text-[16px] sm:text-[15px] resize-none placeholder:text-slate-500 min-h-[100px] focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-xl p-4 mb-4"
               />
 
