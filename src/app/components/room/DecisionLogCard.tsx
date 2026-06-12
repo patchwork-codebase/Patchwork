@@ -141,21 +141,21 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   return (
     <div className={isNested ? "flex flex-col h-full" : "bg-white/[0.02] backdrop-blur-sm rounded-[24px] border border-white/[0.08] overflow-hidden flex flex-col h-[500px]"}>
       {!isNested ? (
-        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shrink-0">
           <div>
             <h3 className="text-[16px] font-extrabold text-white leading-tight flex items-center gap-2">
               Decision log
             </h3>
             <span className="text-[12px] text-slate-400 font-medium">12 decisions · day 1-12</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white px-4 py-2 rounded-full font-bold text-[13px] transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-[12px] sm:text-[13px] transition-colors flex items-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <span>+</span> Log a decision
+              <span>+</span> <span className="hidden sm:inline">Log a decision</span><span className="sm:hidden">Log</span>
             </button>
-            <button className="text-[12px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider">
+            <button className="text-[11px] sm:text-[12px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider shrink-0 whitespace-nowrap">
               View All
             </button>
           </div>

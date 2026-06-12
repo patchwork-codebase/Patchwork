@@ -85,13 +85,13 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
           </div>
           <h3 className="text-white text-[15px] font-bold mb-1">No Active Build Rooms</h3>
           <p className="text-slate-400 text-[12px] max-w-[280px] leading-relaxed mb-5">
-            Initialize a room to document your project, sync git updates, and invite observers.
+            Start a feature rollout room, link your PRD, and document your product decisions.
           </p>
           <Link
             to="/dashboard/create"
             className="inline-flex items-center justify-center px-5 py-2 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 shadow-md"
           >
-            Create your first room
+            Start a feature rollout room
           </Link>
         </div>
       ) : (
@@ -135,7 +135,9 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                     <div className="flex justify-between items-end mt-1">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
-                          <span className="capitalize">{isPaused ? 'Paused' : 'Live'}</span>
+                          <span className="capitalize">
+                            {room.status === 'draft' ? <span className="text-amber-400">Draft</span> : isPaused ? 'Paused' : 'Live'}
+                          </span>
                           <span className="text-slate-600 opacity-50">·</span>
                           <span className="text-white/80 font-bold">Day {room.updateCount + 4}</span>
                           <span className="text-slate-600 opacity-50">·</span>

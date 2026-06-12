@@ -57,7 +57,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/onboarding",
-        lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
+        lazy: () => import("./components/auth/OnboardingWizard").then(m => ({ Component: m.default })),
       },
       {
         path: "/onbaording",

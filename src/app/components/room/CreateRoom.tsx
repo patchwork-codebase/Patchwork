@@ -75,6 +75,7 @@ export default function CreateRoom() {
   const [tags, setTags] = useState<string[]>([]);
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'active' | 'draft'>('active');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (profile?.role !== 'builder') {
@@ -129,7 +130,7 @@ export default function CreateRoom() {
 
       setLoading(true);
       try {
-        const roomId = window.crypto.randomUUID();
+        const roomId = window.crypto?.randomUUID?.() || `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const now = new Date().toISOString();
         
         let coverImageUrl = null;
@@ -180,7 +181,7 @@ export default function CreateRoom() {
           title: form.title.trim(),
           description: form.description.trim(),
           tags,
-          status: 'active',
+          status: submitStatus,
           update_count: 0,
           observer_count: 0,
           last_update: '',
@@ -412,18 +413,28 @@ export default function CreateRoom() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-white/[0.06]">
-            <div className="flex gap-3 ml-auto">
+            <div className="flex gap-3 ml-auto items-center">
               <Link
                 to="/dashboard"
-                className="px-6 py-3 border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-full text-[14px] font-bold transition-colors"
+                className="px-6 py-3 text-slate-400 hover:text-white rounded-full text-[14px] font-bold transition-colors"
               >
                 Cancel
               </Link>
               <button
-                type="submit" disabled={loading || !form.title.trim()}
+                type="submit"
+                onClick={() => setSubmitStatus('draft')}
+                disabled={loading || !form.title.trim()}
+                className="px-6 py-3 border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-full text-[14px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading && submitStatus === 'draft' ? 'Saving...' : 'Save as Draft'}
+              </button>
+              <button
+                type="submit"
+                onClick={() => setSubmitStatus('active')}
+                disabled={loading || !form.title.trim()}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : <>{(!profile || !profile.emailVerified) && <Lock className="w-4 h-4 opacity-70" />}<ArrowRight className="w-4 h-4" /> Initialize Room</>}
+                {loading && submitStatus === 'active' ? 'Creating...' : <>{(!profile || !profile.emailVerified) && <Lock className="w-4 h-4 opacity-70" />}<ArrowRight className="w-4 h-4" /> Publish Room</>}
               </button>
             </div>
           </div>
