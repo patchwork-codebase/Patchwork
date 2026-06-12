@@ -11,7 +11,7 @@ export function useDashboardStats(userId?: string) {
       const [reactionsRes, observersRes] = await Promise.all([
         supabase
           .from('reactions')
-          .select('id, created_at, rooms!inner(builder_id)')
+          .select('*, rooms!inner(builder_id)')
           .eq('rooms.builder_id', userId),
         supabase
           .from('room_observers')

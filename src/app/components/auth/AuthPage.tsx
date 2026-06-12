@@ -5,6 +5,7 @@ import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
 import { AuthRedirectGuard } from "./AuthRedirectGuard";
 import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff, Linkedin } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 
 
 /* ─── Searchable Custom Select Component ──────────────────────── */
@@ -243,6 +244,17 @@ export default function AuthPage() {
   // Login form
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
 
+  const BUILDER_TYPES = [
+    { value: 'product-manager', label: '📋 Product Manager' },
+    { value: 'engineer', label: '⚙️ Engineer' },
+    { value: 'product-designer', label: '🎨 Product Designer' },
+    { value: 'founder', label: '🚀 Founder' },
+    { value: 'writer', label: '✍️ Writer' },
+    { value: 'growth', label: '📈 Growth' },
+    { value: 'research', label: '🔬 Research' },
+    { value: 'other', label: '✦ Other' },
+  ];
+
   // Signup form — minimal, just what's needed to create the account
   const [signup, setSignup] = useState({
     fname: '',
@@ -257,6 +269,7 @@ export default function AuthPage() {
     phoneCountryCode: '+234',
     phoneNumber: '',
     role: 'builder' as 'builder' | 'observer',
+    builderType: '',
   });
 
   function redirectForRole(role?: string) {
@@ -283,7 +296,8 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const name = `${signup.fname} ${signup.lname}`.trim() || 'Anonymous Builder';
-      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '', signup.gender, signup.phoneCountryCode, signup.phoneNumber);
+      const domain = signup.role === 'builder' ? signup.builderType : '';
+      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, domain, signup.gender, signup.phoneCountryCode, signup.phoneNumber);
       toast.success("Welcome to Patchwork! We've sent a verification link to your email.");
       redirectForRole(profile?.role || signup.role);
     } catch (err: any) {
@@ -315,7 +329,7 @@ export default function AuthPage() {
     }
   }
 
-  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.password === signup.confirmPassword && signup.countryIso && signup.stateIso && signup.city && signup.gender;
+  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.password === signup.confirmPassword && signup.countryIso && signup.stateIso && signup.city && signup.gender && (signup.role !== 'builder' || signup.builderType);
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
@@ -542,7 +556,7 @@ export default function AuthPage() {
                     <button
                       key={r}
                       type="button"
-                      onClick={() => setSignup(s => ({ ...s, role: r }))}
+                      onClick={() => setSignup(s => ({ ...s, role: r, builderType: '' }))}
                       className={`flex-1 py-2 rounded-lg text-[13px] font-bold transition-all capitalize ${
                         signup.role === r
                           ? r === 'builder'
@@ -555,6 +569,31 @@ export default function AuthPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Builder Type — shown only when Builder is selected */}
+                {signup.role === 'builder' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative z-30"
+                  >
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-0.5">
+                      What kind of builder are you? <span className="text-rose-400">*</span>
+                    </label>
+                    <SearchableSelect
+                      label="Select your builder type"
+                      value={signup.builderType}
+                      onChange={val => setSignup(s => ({ ...s, builderType: val }))}
+                      searchable={false}
+                      options={BUILDER_TYPES}
+                    />
+                    {!signup.builderType && (
+                      <p className="text-[11px] text-slate-600 mt-1.5 ml-0.5">Required to personalise your dashboard</p>
+                    )}
+                  </motion.div>
+                )}
 
                 {/* Name row */}
                 <div className="grid grid-cols-2 gap-3">

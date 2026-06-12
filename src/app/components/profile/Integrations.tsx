@@ -2,13 +2,18 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../auth/AuthContext';
 import { useGithubAccount } from '../../hooks/useGithub';
 import { useLinkedinAccount } from '../../hooks/useLinkedin';
-import { Link as LinkIcon, Check, Loader2, Linkedin } from 'lucide-react';
+import { useLinearAccount } from '../../hooks/useLinear';
+import { useNotionAccount } from '../../hooks/useNotion';
+import { Link as LinkIcon, Check, Loader2, Linkedin, Zap, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Integrations({ userId }: { userId: string }) {
   const { data: githubAccount, isLoading: githubLoading, refetch: refetchGithub } = useGithubAccount(userId);
   const { data: linkedinAccount, isLoading: linkedinLoading, refetch: refetchLinkedin } = useLinkedinAccount(userId);
+  const { data: linearAccount, isLoading: linearLoading, refetch: refetchLinear } = useLinearAccount(userId);
+  const { data: notionAccount, isLoading: notionLoading, refetch: refetchNotion } = useNotionAccount(userId);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [linearPAT, setLinearPAT] = useState('');
 
   useEffect(() => {
     const handleOAuthRedirect = async () => {
@@ -44,6 +49,22 @@ export default function Integrations({ userId }: { userId: string }) {
             refetchLinkedin();
           } catch (err: any) {
             console.error("Failed to store linkedin account", err);
+          }
+        }
+
+        const notionIdentity = session.user.identities?.find(i => i.provider === 'notion');
+        if (notionIdentity && !notionAccount) {
+          try {
+            await supabase.from('notion_accounts').upsert({
+              user_id: session.user.id,
+              access_token: session.provider_token,
+              workspace_name: 'Notion Workspace', // Default, would ideally fetch from API
+            }, { onConflict: 'user_id' });
+            
+            toast.success("Notion account connected successfully!");
+            refetchNotion();
+          } catch (err: any) {
+            console.error("Failed to store notion account", err);
           }
         }
       }
@@ -85,7 +106,43 @@ export default function Integrations({ userId }: { userId: string }) {
     }
   };
 
-  if (githubLoading || linkedinLoading) return null;
+  const handleConnectNotion = async () => {
+    setConnecting('notion');
+    try {
+      const { error } = await supabase.auth.linkIdentity({
+        provider: 'notion',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard/profile/${userId}`,
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(`Failed to connect Notion: ${err.message}`);
+      setConnecting(null);
+    }
+  };
+
+  const handleSaveLinear = async () => {
+    if (!linearPAT.trim()) return;
+    setConnecting('linear');
+    try {
+      const { error } = await supabase.from('linear_accounts').upsert({
+        user_id: userId,
+        access_token: linearPAT.trim()
+      }, { onConflict: 'user_id' });
+      
+      if (error) throw error;
+      toast.success("Linear Personal Access Token saved!");
+      refetchLinear();
+      setLinearPAT('');
+    } catch (err: any) {
+      toast.error(`Failed to save Linear token: ${err.message}`);
+    } finally {
+      setConnecting(null);
+    }
+  };
+
+  if (githubLoading || linkedinLoading || linearLoading || notionLoading) return null;
 
   return (
     <div className="mb-10 bg-white/[0.02] border border-white/[0.06] rounded-[24px] p-6 backdrop-blur-sm">
@@ -151,6 +208,81 @@ export default function Integrations({ userId }: { userId: string }) {
                 className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-white/5 text-white text-[13px] font-bold rounded-full border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
               >
                 {connecting === 'linkedin' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                Connect
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Linear Integration */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04] transition-colors rounded-2xl gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-[#5E6AD2] text-white rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(94,106,210,0.5)]">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-[15px] font-bold text-white mb-0.5">Linear</h3>
+              <p className="text-[13px] text-slate-400 font-medium leading-relaxed mb-2">Sync your issues directly as room milestones.</p>
+              
+              {!linearAccount && (
+                <div className="flex items-center gap-2 max-w-[300px]">
+                  <input
+                    type="password"
+                    value={linearPAT}
+                    onChange={(e) => setLinearPAT(e.target.value)}
+                    placeholder="Personal Access Token"
+                    className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-3 py-1.5 text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-[#5E6AD2] transition-colors"
+                  />
+                  <button
+                    onClick={handleSaveLinear}
+                    disabled={connecting === 'linear' || !linearPAT.trim()}
+                    className="px-3 py-1.5 bg-[#5E6AD2] hover:bg-[#4d57ba] disabled:opacity-50 text-white text-[12px] font-bold rounded-xl transition-colors shrink-0"
+                  >
+                    {connecting === 'linear' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex sm:shrink-0 mt-2 sm:mt-0 items-start">
+            {linearAccount && (
+              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20">
+                <Check className="w-3.5 h-3.5" /> Connected
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Notion Integration */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04] transition-colors rounded-2xl gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-white text-black rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-[15px] font-bold text-white mb-0.5">Notion</h3>
+              <p className="text-[13px] text-slate-400 font-medium leading-relaxed">Link your workspace to attach live documents to rooms.</p>
+              {notionAccount && (
+                <span className="text-[13px] font-bold text-slate-300 mt-1.5 flex items-center gap-1.5">
+                  {notionAccount.workspace_name || 'Workspace Connected'}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex sm:shrink-0 mt-2 sm:mt-0">
+            {notionAccount ? (
+              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20">
+                <Check className="w-3.5 h-3.5" /> Connected
+              </span>
+            ) : (
+              <button
+                onClick={handleConnectNotion}
+                disabled={connecting !== null}
+                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 bg-white/5 text-white text-[13px] font-bold rounded-full border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+              >
+                {connecting === 'notion' ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
                 Connect
               </button>
             )}

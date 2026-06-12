@@ -42,12 +42,30 @@ export function useFeedUpdates() {
 
       const { data, error } = await supabase
         .from('updates')
-        .select('*, rooms:room_id(title, tags), reactions(*)')
+        .select('*, rooms(title, tags)')
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+
+      const updateIds = (data || []).map(u => u.id);
+      let reactionsData: any[] = [];
+      
+      if (updateIds.length > 0) {
+        const { data: rData } = await supabase
+          .from('reactions')
+          .select('*')
+          .in('update_id', updateIds);
+        reactionsData = rData || [];
+      }
+
+      return (data || []).map(row => {
+        const normalized = normalizeRow(row);
+        normalized.reactions = reactionsData
+          .filter(r => r.update_id === row.id)
+          .map(normalizeRow);
+        return normalized;
+      });
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length > 0 ? allPages.length : undefined;

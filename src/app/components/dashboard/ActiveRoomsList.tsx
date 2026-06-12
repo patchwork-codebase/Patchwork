@@ -1,6 +1,12 @@
 import { Link } from "react-router";
 import { motion } from "motion/react";
-import { FolderGit2 } from "lucide-react";
+import { FolderGit2, Figma, Github } from "lucide-react";
+
+const NotionIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M4.459 4.208c-.746.06-1.126.31-1.126 1.054v13.475c0 .744.38 1.054 1.126 1.115v.148h6.251v-.148c-.744-.06-1.126-.371-1.126-1.115V8.167l7.854 10.603h1.839V4.208h-.149c-.06.744-.371 1.054-1.115 1.115v13.595L9.932 8.016v10.72c0 .744.381 1.054 1.126 1.115v.148H4.459v-.148z"/>
+  </svg>
+);
 
 interface Room {
   id: string;
@@ -18,9 +24,11 @@ interface Room {
 }
 
 interface ActiveRoomsListProps {
-  rooms: Room[];
-  loading: boolean;
+  rooms: any[];
+  loading?: boolean;
   setTab: (tab: 'overview' | 'feed' | 'mine') => void;
+  selectedRoomId?: string | null;
+  setSelectedRoomId?: (id: string) => void;
 }
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
@@ -36,7 +44,7 @@ function tagStyle(tag: string) {
   return TAG_PALETTE[tag.toLowerCase()] || { bg: 'bg-white/5', color: 'text-slate-400' };
 }
 
-export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps) {
+export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSelectedRoomId }: ActiveRoomsListProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4 px-1">
@@ -91,18 +99,23 @@ export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps
           {rooms.slice(0, 3).map((room, idx) => {
             const tag = (room.tags && room.tags[0]) ? room.tags[0] : 'product';
             const tStyle = tagStyle(tag);
-            const isPaused = idx === 2; // Mocking a paused state for visual matching
+            const isPaused = room.status === 'paused';
             
             return (
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
                 key={room.id}
+                onMouseEnter={() => setSelectedRoomId && setSelectedRoomId(room.id)}
               >
                 <Link
                   to={`/dashboard/room/${room.id}`}
-                  className="block bg-[#0A0910]/80 sm:bg-[#0D0B14] border border-white/[0.08] rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 hover:bg-white/[0.03] hover:border-white/[0.12] active:scale-95 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm relative overflow-hidden"
+                  className={`block border rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 active:scale-95 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm relative overflow-hidden cursor-pointer ${
+                    selectedRoomId === room.id 
+                      ? 'bg-[#1A1825] border-[#8B7CF8]/50 shadow-[0_0_20px_rgba(139,124,248,0.1)]' 
+                      : 'bg-[#0A0910]/80 sm:bg-[#0D0B14] border-white/[0.08] hover:bg-white/[0.03] hover:border-white/[0.12]'
+                  }`}
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-white/[0.02] transition-colors" />
                   
@@ -110,7 +123,7 @@ export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                        <div className="text-[15px] sm:text-[16px] font-extrabold text-white group-hover:text-[#8B7CF8] transition-colors font-display truncate">
+                        <div className={`text-[15px] sm:text-[16px] font-extrabold transition-colors font-display truncate group-hover:underline ${selectedRoomId === room.id ? 'text-white' : 'text-slate-300 group-hover:text-[#8B7CF8]'}`}>
                           {room.title}
                         </div>
                       </div>
@@ -119,18 +132,28 @@ export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps
                       </span>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
-                      <span className="capitalize">{isPaused ? 'Paused' : 'Live'}</span>
-                      <span className="text-slate-600 opacity-50">·</span>
-                      <span className="text-white/80 font-bold">Day {room.updateCount + 4}</span>
-                      <span className="text-slate-600 opacity-50">·</span>
-                      <span>{room.updateCount} updates</span>
-                      <span className="text-slate-600 opacity-50 hidden sm:inline">·</span>
-                      <span className="hidden sm:inline">{room.updateCount * 3 + 11} reactions</span>
-                    </div>
+                    <div className="flex justify-between items-end mt-1">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
+                          <span className="capitalize">{isPaused ? 'Paused' : 'Live'}</span>
+                          <span className="text-slate-600 opacity-50">·</span>
+                          <span className="text-white/80 font-bold">Day {room.updateCount + 4}</span>
+                          <span className="text-slate-600 opacity-50">·</span>
+                          <span>{room.updateCount} updates</span>
+                          <span className="text-slate-600 opacity-50 hidden sm:inline">·</span>
+                          <span className="hidden sm:inline">{room.updateCount * 3 + 11} reactions</span>
+                        </div>
 
-                    <div className="sm:hidden mt-1 inline-flex w-fit items-center gap-1.5 text-[11px] text-slate-500 font-bold uppercase tracking-widest bg-white/[0.03] px-2 py-1 rounded-md">
-                      {room.updateCount * 3 + 11} reactions
+                        <div className="sm:hidden mt-1 inline-flex w-fit items-center gap-1.5 text-[11px] text-slate-500 font-bold uppercase tracking-widest bg-white/[0.03] px-2 py-1 rounded-md">
+                          {room.updateCount * 3 + 11} reactions
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 sm:gap-3 text-slate-500 bg-[#1A1825]/50 px-2.5 py-1.5 rounded-lg border border-white/[0.03] shadow-inner">
+                        <Figma className="w-3.5 h-3.5 hover:text-purple-400 transition-colors" />
+                        <NotionIcon className="w-3.5 h-3.5 hover:text-white transition-colors" />
+                        <Github className="w-3.5 h-3.5 hover:text-white transition-colors" />
+                      </div>
                     </div>
                   </div>
                 </Link>
