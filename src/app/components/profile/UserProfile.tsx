@@ -1,9 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { useAuth, apiCall } from "../auth/AuthContext";
-import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users, ChevronDown } from "lucide-react";
+import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users, ChevronDown, ShieldCheck, Star, Clock, CheckCircle, TrendingUp } from "lucide-react";
+import { VerifiedTick } from "../ui/VerifiedTick";
 import { getAvatarUrl } from "../../utils/helpers";
 import { toast } from "sonner";
+import { ExpertBadge } from "./ExpertBadge";
+import { useExpertApplication } from "../../../hooks/useExpertApplication";
 
 interface Profile {
   id: string;
@@ -98,6 +101,7 @@ export default function UserProfile() {
   const { user, token, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { data: expertApp } = useExpertApplication(user?.id);
   
   const { data: profile, isLoading: profileLoading } = useProfile(id);
   const { 
@@ -418,7 +422,15 @@ export default function UserProfile() {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-[28px] sm:text-[32px] font-extrabold text-white font-display tracking-tight leading-tight sm:leading-none mb-3 break-words">{profile.name}</h1>
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2">
+                    <h1 className="text-[28px] sm:text-[32px] font-extrabold text-white font-display tracking-tight leading-tight sm:leading-none break-words flex items-center gap-2">
+                      {profile.name}
+                      <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6" />
+                    </h1>
+                    {(profile as any).isVerifiedExpert && (
+                      <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="md" />
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3">
                     <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#8B7CF8] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-3 py-1.5 rounded-full capitalize tracking-wide">
                       {profile.role === 'builder' ? <Hammer className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -490,6 +502,19 @@ export default function UserProfile() {
             >
               <Share className="w-4 h-4" /> Share
             </button>
+            {isOwn && !(profile as any).isVerifiedExpert && !expertApp && (
+              <Link
+                to="/dashboard/expert-apply"
+                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-[#8B7CF8]/30 bg-[#6C5CE7]/10 hover:bg-[#6C5CE7]/20 rounded-full text-[13px] font-bold text-[#8B7CF8] transition-colors"
+              >
+                <ShieldCheck className="w-4 h-4" /> Become Verified Expert
+              </Link>
+            )}
+            {isOwn && expertApp?.status === "pending" && (
+              <span className="flex items-center gap-2 px-5 py-2.5 border border-amber-500/20 bg-amber-500/5 rounded-full text-[13px] font-bold text-amber-400">
+                <Clock className="w-4 h-4" /> Application under review
+              </span>
+            )}
             {isOwn ? (
               editing ? (
                 <>
@@ -541,6 +566,47 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+
+      {/* Expert card */}
+      {(profile as any).isVerifiedExpert && (
+        <div className="mb-8 bg-gradient-to-br from-[#6C5CE7]/10 to-[#8B7CF8]/5 border border-[#6C5CE7]/20 rounded-[24px] p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="lg" />
+            <div className="ml-auto flex items-center gap-2">
+              {(profile as any).expertAvailable ? (
+                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Available
+                </span>
+              ) : (
+                <span className="text-[11px] font-bold text-slate-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full">Unavailable</span>
+              )}
+            </div>
+          </div>
+          {(profile as any).expertDomains?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-5">
+              {((profile as any).expertDomains as string[]).map((d: string) => (
+                <span key={d} className="px-2.5 py-1 rounded-full bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[11px] font-bold">{d}</span>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {[
+              { icon: Star, label: "Review score", value: (profile as any).expertReviewScore ? `${(profile as any).expertReviewScore}/5.0` : "—" },
+              { icon: CheckCircle, label: "Reviews done", value: (profile as any).expertReviewsCompleted || 0 },
+              { icon: TrendingUp, label: "Acceptance rate", value: (profile as any).expertAcceptanceRate ? `${(profile as any).expertAcceptanceRate}%` : "—" },
+              { icon: Clock, label: "Avg. response", value: (profile as any).expertAvgResponseHours ? `${(profile as any).expertAvgResponseHours}h` : "—" },
+              { icon: ShieldCheck, label: "Open slots", value: (profile as any).expertOpenSlots ?? 3 },
+              { icon: Users, label: "Followers", value: profile.followerCount || 0 },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-center">
+                <Icon className="w-4 h-4 text-[#8B7CF8] mx-auto mb-1" />
+                <div className="text-[16px] font-extrabold text-white">{value}</div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">

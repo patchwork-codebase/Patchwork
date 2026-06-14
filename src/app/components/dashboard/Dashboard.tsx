@@ -19,6 +19,7 @@ import { RecentActivityList } from "./RecentActivityList";
 import { TimelineFeed } from "./TimelineFeed";
 import { ActiveRoomPanel } from "./ActiveRoomPanel";
 import { OverviewInsights } from "./OverviewInsights";
+import { VerifiedTick } from "../ui/VerifiedTick";
 
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -343,8 +344,10 @@ export default function Dashboard() {
           </div>
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <h1 className="font-bold text-[20px] sm:text-[28px] text-white leading-tight tracking-tight m-0">
-                {greeting}, <span className="text-[#8B7CF8] whitespace-nowrap">{firstName} 👋</span>
+              <h1 className="font-bold text-[20px] sm:text-[28px] text-white leading-tight tracking-tight m-0 flex items-center gap-2 flex-wrap">
+                {greeting}, <span className="text-[#8B7CF8] whitespace-nowrap">{firstName}</span>
+                <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-6 h-6" />
+                <span className="text-[#8B7CF8]">👋</span>
               </h1>
               <div className="flex flex-wrap items-center gap-2">
                 {profile?.domain && (
@@ -402,7 +405,10 @@ export default function Dashboard() {
               <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-[16px] truncate">{profile?.name}</h3>
+              <h3 className="font-bold text-white text-[16px] truncate flex items-center gap-1.5">
+                {profile?.name}
+                <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-4 h-4" />
+              </h3>
               <p className="text-[13px] text-slate-400 mt-0.5">{handle}</p>
             </div>
           </div>

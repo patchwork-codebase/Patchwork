@@ -22,7 +22,7 @@ export function useRoomDetails(roomId?: string) {
 
       const { data: roomData, error: roomError } = await supabase
         .from('rooms')
-        .select('*')
+        .select('*, users!builder_id(is_verified_expert)')
         .eq('id', roomId)
         .maybeSingle();
 
@@ -47,6 +47,7 @@ export function useRoomDetails(roomId?: string) {
 
       return {
         ...normalizeRow(roomData),
+        builderIsVerifiedExpert: !!(roomData.users?.is_verified_expert),
         updates: (updatesData || []).map(normalizeRow),
         reactions: (reactionsData || []).map(normalizeRow)
       };
@@ -100,13 +101,16 @@ export function useRooms() {
 
       const { data, error } = await supabase
         .from('rooms')
-        .select('*')
+        .select('*, users!builder_id(is_verified_expert)')
         .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+      return (data || []).map(row => ({
+        ...normalizeRow(row),
+        builderIsVerifiedExpert: !!(row.users?.is_verified_expert),
+      }));
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 12 ? allPages.length : undefined;

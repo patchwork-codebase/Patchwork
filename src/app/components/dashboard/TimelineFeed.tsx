@@ -14,6 +14,7 @@ import { supabase } from "../auth/AuthContext";
 import { getAvatarUrl } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
+import { VerifiedTick } from "../ui/VerifiedTick";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -663,7 +664,10 @@ export function TimelineFeed({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <div className="font-extrabold text-[13px] sm:text-[16px] text-white leading-tight font-display hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{builderName}</div>
+                        <div className="font-extrabold text-[13px] sm:text-[16px] text-white leading-tight font-display hover:underline truncate max-w-full flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          {builderName}
+                          <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4" />
+                        </div>
                         {isLaunch && (
                           <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-[#8B7CF8]/20 text-[#8B7CF8] px-2 py-0.5 rounded-full shrink-0">Launched</span>
                         )}
@@ -814,7 +818,10 @@ export function TimelineFeed({
                           </div>
                           <div className="flex-1 bg-white/[0.02] rounded-xl p-3 border border-white/[0.04]">
                             <div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5 mb-1">
-                              <span className="font-bold text-[13px] text-white hover:underline whitespace-nowrap truncate max-w-[150px] sm:max-w-[250px]">{comment.observerName}</span>
+                              <span className="font-bold text-[13px] text-white hover:underline whitespace-nowrap truncate max-w-[150px] sm:max-w-[250px] flex items-center gap-1">
+                                {comment.observerName}
+                                <VerifiedTick userId={comment.observerId} className="w-3 h-3" />
+                              </span>
                               <span className="text-[12px] text-slate-500 truncate max-w-[100px] sm:max-w-[180px]">{commentHandle}</span>
                               <span className="text-[12px] text-slate-500 shrink-0">·</span>
                               <span className="text-[12px] text-slate-500 shrink-0">{commentTime}</span>

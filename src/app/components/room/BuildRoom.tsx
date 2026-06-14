@@ -15,6 +15,7 @@ import { RoomHeader } from "./RoomHeader";
 import { RoomFeed } from "./RoomFeed";
 import { useRoomDetails } from "../../hooks/useRooms";
 import { timeAgo } from "../../utils/helpers";
+import { VerifiedTick } from "../ui/VerifiedTick";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20', desc: 'Incisive, direct critique' },
@@ -438,7 +439,10 @@ export default function BuildRoom() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                        <span className="text-[12px] font-bold text-slate-300">{r.observerName}</span>
+                        <span className="text-[12px] font-bold text-slate-300 flex items-center gap-1">
+                          {r.observerName}
+                          <VerifiedTick userId={r.observerId} className="w-3.5 h-3.5" />
+                        </span>
                         <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
                       </div>
                       <p className="text-[14px] leading-relaxed font-medium text-slate-200 mb-2">{r.text}</p>

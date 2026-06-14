@@ -97,6 +97,7 @@ export const router = createBrowserRouter([
           { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },
           { path: "build-logs", lazy: () => import("./components/dashboard/BuildLogs").then(m => ({ Component: m.default })) },
           { path: "notifications", lazy: () => import("./components/dashboard/Notifications").then(m => ({ Component: m.default })) },
+          { path: "expert-apply", lazy: () => import("./components/profile/VerifiedExpertApplication").then(m => ({ Component: m.default })) },
         ],
       },
     ]

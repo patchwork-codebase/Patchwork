@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2 } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
+import { VerifiedTick } from "../ui/VerifiedTick";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import {
   AlertDialog,
@@ -72,7 +73,7 @@ export function RoomHeader({
           </div>
 
           <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-400 flex-wrap font-medium mt-1">
-            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-[#8B7CF8]" /></div>{room.builderName}</span>
+            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-[#8B7CF8]" /></div>{room.builderName} <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" /></span>
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Users className="w-3 h-3" /></div>{room.observerCount}</span>
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Clock className="w-3 h-3" /></div>{timeAgo(room.updatedAt)}</span>
           </div>

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { Compass, Users, Clock, Hammer } from "lucide-react";
 import { useRooms } from "../../hooks/useRooms";
 import { timeAgo } from "../../utils/helpers";
+import { VerifiedTick } from "../ui/VerifiedTick";
 
 export default function ExplorePage() {
   const { data, isLoading } = useRooms();
@@ -81,7 +82,10 @@ export default function ExplorePage() {
                     )}
                     <div className="min-w-0">
                       <h3 className="text-white font-bold text-lg group-hover:text-[#8B7CF8] transition-colors line-clamp-1">{room.title}</h3>
-                      <p className="text-slate-400 text-xs">by {room.builderName}</p>
+                      <p className="text-slate-400 text-xs flex items-center gap-1">
+                        by {room.builderName}
+                        <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3 h-3" />
+                      </p>
                     </div>
                   </div>
                 </div>

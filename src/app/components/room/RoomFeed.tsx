@@ -5,6 +5,7 @@ import { timeAgo } from "../../utils/helpers";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
+import { VerifiedTick } from "../ui/VerifiedTick";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,7 +74,10 @@ export function RoomFeed({
                   {update.authorName[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <div className="text-[15px] font-extrabold text-white font-display">{update.authorName}</div>
+                  <div className="text-[15px] font-extrabold text-white font-display flex items-center gap-1.5">
+                    {update.authorName}
+                    <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-4 h-4" />
+                  </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide">{timeAgo(update.createdAt)}</div>
                     {update.authorId === user?.id && (
@@ -184,7 +188,10 @@ export function RoomFeed({
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                                <span className="text-[11px] font-bold text-slate-300">{r.observerName}</span>
+                                <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                                  {r.observerName}
+                                  <VerifiedTick userId={r.observerId} className="w-3 h-3" />
+                                </span>
                                 <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
                                 {isBuilder && r.type === 'tellmemore' && (
                                   <button 

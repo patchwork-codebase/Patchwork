@@ -7,6 +7,7 @@ export interface FeedUpdate {
   roomId: string;
   authorId: string;
   authorName: string;
+  authorIsVerifiedExpert?: boolean;
   content: string;
   mediaUrl?: string;
   codeSnippet?: string;
@@ -42,7 +43,7 @@ export function useFeedUpdates() {
 
       const { data, error } = await supabase
         .from('updates')
-        .select('*, rooms(title, tags)')
+        .select('*, rooms(title, tags), users!author_id(is_verified_expert)')
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -61,6 +62,8 @@ export function useFeedUpdates() {
 
       return (data || []).map(row => {
         const normalized = normalizeRow(row);
+        // Hoist is_verified_expert from the joined users row
+        normalized.authorIsVerifiedExpert = !!(row.users?.is_verified_expert);
         normalized.reactions = reactionsData
           .filter(r => r.update_id === row.id)
           .map(normalizeRow);
