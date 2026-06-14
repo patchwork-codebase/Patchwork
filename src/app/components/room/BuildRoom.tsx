@@ -10,6 +10,7 @@ import { LinkedInShareModal } from "../ui/LinkedInShareModal";
 import { IntegrationsBar } from "./IntegrationsBar";
 import { DecisionLogCard } from "./DecisionLogCard";
 import { MilestoneTrackerCard } from "./MilestoneTrackerCard";
+import { ProductRoomStats } from "./ProductRoomStats";
 import { RoomHeader } from "./RoomHeader";
 import { RoomFeed } from "./RoomFeed";
 import { useRoomDetails } from "../../hooks/useRooms";
@@ -216,7 +217,7 @@ export default function BuildRoom() {
 
   return (
     <>
-      <div className="max-w-[1000px] mx-auto px-6 py-10 relative">
+      <div className="max-w-[1000px] w-full mx-auto px-4 sm:px-6 py-6 md:py-10 relative">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
         <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded">
@@ -233,7 +234,7 @@ export default function BuildRoom() {
           copyLogLink={copyLogLink} 
         />
 
-        <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4">
+        <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
           {[
             { key: 'overview', label: 'Overview', count: null },
             { key: 'workspace', label: 'Product Workspace', count: null },
@@ -260,9 +261,14 @@ export default function BuildRoom() {
         </div>
 
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-2">
-            <DecisionLogCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
-            <MilestoneTrackerCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
+          <div className="mt-2">
+            {(room.tags?.includes('product') || room.tags?.includes('product-management') || room.builderDomain?.toLowerCase() === 'product') && (
+              <ProductRoomStats roomId={id!} reactionsCount={room.reactions.length} roomCreatedAt={room.created_at || room.createdAt || new Date().toISOString()} />
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-4">
+              <DecisionLogCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
+              <MilestoneTrackerCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
+            </div>
           </div>
         )}
 
@@ -274,12 +280,31 @@ export default function BuildRoom() {
                 Connect your Notion PRDs, Linear Roadmaps, and GitHub repos to maintain a single source of truth.
               </p>
             </div>
-            <div className="max-w-[500px] mx-auto bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6">
-              <h4 className="text-[14px] font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#8B7CF8]"></span>
-                Linked Artifacts
-              </h4>
-              <IntegrationsBar roomId={id!} builderId={room.builderId} isOwner={!!(user && user.id === room.builderId)} />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6">
+                <h4 className="text-[14px] font-semibold text-white mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#8B7CF8]"></span>
+                  Linked Artifacts
+                </h4>
+                <IntegrationsBar roomId={id!} builderId={room.builderId} isOwner={!!(user && user.id === room.builderId)} />
+              </div>
+
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center text-center">
+                <div className="absolute inset-0 bg-[#0A0910]/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                  <div className="px-3 py-1 bg-[#8B7CF8]/20 border border-[#8B7CF8]/30 text-[#8B7CF8] text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
+                    Coming Soon
+                  </div>
+                  <span className="text-[14px] font-semibold text-white">Native Artifacts</span>
+                  <p className="text-[12px] text-slate-400 mt-2 px-6">
+                    Create and edit PRDs and Roadmaps directly inside Patchwork.
+                  </p>
+                </div>
+                <div className="opacity-20 pointer-events-none">
+                  <div className="w-full h-8 bg-white/10 rounded-md mb-2"></div>
+                  <div className="w-3/4 h-8 bg-white/10 rounded-md"></div>
+                </div>
+              </div>
             </div>
           </div>
         )}

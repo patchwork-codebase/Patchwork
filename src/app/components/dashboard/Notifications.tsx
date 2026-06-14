@@ -44,6 +44,21 @@ export default function Notifications() {
         </div>
       </div>
 
+      <div className="bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-xl p-4 mb-6 flex items-start gap-4">
+        <div className="w-8 h-8 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center shrink-0 mt-0.5">
+          <span className="text-[16px]">🔌</span>
+        </div>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold text-white text-[14px]">GitHub & Figma Webhooks</h3>
+            <span className="px-2 py-0.5 bg-[#8B7CF8]/20 text-[#8B7CF8] text-[9px] font-bold uppercase tracking-wider rounded-md">Coming Soon</span>
+          </div>
+          <p className="text-slate-400 text-[13px] leading-relaxed">
+            Soon, you'll see automated notifications here whenever a Pull Request is merged or a Figma design changes in your linked artifacts.
+          </p>
+        </div>
+      </div>
+
       <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3">

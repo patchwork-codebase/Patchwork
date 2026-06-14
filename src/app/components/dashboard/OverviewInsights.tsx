@@ -111,13 +111,13 @@ export function OverviewInsights() {
 
   return (
     <div className="w-full mt-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Card 1: Observer reactions */}
-        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-[16px] text-white">Observer reactions</h3>
-            <span className="font-mono text-[12px] text-slate-400">{totalReactions} total · {updatesWithReactions} updates</span>
+        <div className="lg:col-span-5 bg-[#0D0B14] border border-white/[0.04] rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+          <div className="flex flex-col gap-1.5 mb-6">
+            <h3 className="font-bold text-[16px] text-white leading-tight">Observer reactions</h3>
+            <span className="font-mono text-[12px] text-slate-400 leading-tight">{totalReactions} total · {updatesWithReactions} updates</span>
           </div>
 
           {totalReactions === 0 ? (
@@ -183,10 +183,10 @@ export function OverviewInsights() {
         </div>
 
         {/* Card 2: Top observers */}
-        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-[16px] text-white">Top observers</h3>
-            <span className="font-mono text-[12px] text-slate-400">{totalFollowing} following · {uniqueDomains} domains</span>
+        <div className="lg:col-span-4 bg-[#0D0B14] border border-white/[0.04] rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+          <div className="flex flex-col gap-1.5 mb-6">
+            <h3 className="font-bold text-[16px] text-white leading-tight">Top observers</h3>
+            <span className="font-mono text-[12px] text-slate-400 leading-tight">{totalFollowing} following · {uniqueDomains} domains</span>
           </div>
 
           <div className="space-y-4 flex-1">
@@ -204,22 +204,22 @@ export function OverviewInsights() {
               
               return (
                 <div key={i} className="flex items-center justify-between group py-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     {obs.avatar ? (
-                      <img src={obs.avatar} alt={obs.name} className={`w-10 h-10 rounded-xl border ${style.border} object-cover`} />
+                      <img src={obs.avatar} alt={obs.name} className={`w-10 h-10 rounded-xl border ${style.border} object-cover shrink-0`} />
                     ) : (
-                      <div className={`w-10 h-10 rounded-xl border ${style.border} flex items-center justify-center font-bold text-[13px] ${style.bg} ${style.text}`}>
+                      <div className={`w-10 h-10 rounded-xl border ${style.border} flex items-center justify-center font-bold text-[13px] ${style.bg} ${style.text} shrink-0`}>
                         {initials}
                       </div>
                     )}
-                    <div>
-                      <div className="font-semibold text-[14px] text-white">{obs.name}</div>
-                      <div className="text-[12px] text-slate-400 font-mono mt-0.5">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <div className="font-semibold text-[14px] text-white truncate">{obs.name}</div>
+                      <div className="text-[12px] text-slate-400 font-mono mt-0.5 truncate">
                         {obs.role ? `${obs.role} · ${obs.city || 'Unknown'}` : <span className="text-amber-400 flex items-center gap-1">Observer</span>}
                       </div>
                     </div>
                   </div>
-                  <div className="font-mono text-[13px] text-[#8B7CF8] font-bold">
+                  <div className="font-mono text-[13px] text-[#8B7CF8] font-bold shrink-0 text-right">
                     {obs.score} <span className="text-slate-500 font-medium">score</span>
                   </div>
                 </div>
@@ -228,44 +228,70 @@ export function OverviewInsights() {
           </div>
         </div>
 
-        {/* Card 3: Linked docs */}
-        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-[16px] text-white">Linked docs</h3>
-            <span className="font-mono text-[12px] text-slate-400">Notion · {linkedDocs.length} connected</span>
-          </div>
+        {/* Right Column Stack: Docs & Analytics */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          
+          {/* Card 3: Linked docs */}
+          <div className="bg-[#0D0B14] border border-white/[0.04] rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] flex-1">
+            <div className="flex flex-col gap-1.5 mb-6">
+              <h3 className="font-bold text-[16px] text-white leading-tight">Linked docs</h3>
+              <span className="font-mono text-[12px] text-slate-400 leading-tight">Notion · {linkedDocs.length} connected</span>
+            </div>
 
-          <div className="space-y-3 flex-1 overflow-y-auto max-h-[300px] pr-1">
-            {linkedDocs.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-                <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div className="space-y-3 flex-1 overflow-y-auto max-h-[250px] pr-1">
+              {linkedDocs.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                  <div className="w-12 h-12 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-3">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <p className="text-[14px] font-bold text-white mb-1">No documents linked</p>
+                  <p className="text-[13px] text-slate-400 max-w-[200px]">Connect Notion or Google Docs to provide context to observers.</p>
                 </div>
-                <p className="text-[14px] font-bold text-white mb-1">No documents linked</p>
-                <p className="text-[13px] text-slate-400 max-w-[200px]">Connect Notion or Google Docs to provide context to observers.</p>
-              </div>
-            ) : linkedDocs.map((doc: any, i: number) => (
-              <a href={doc.url} target="_blank" rel="noopener noreferrer" key={i} className="block bg-white/[0.02] border border-white/[0.05] rounded-xl p-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                <div className="flex items-start gap-3">
-                  <span className="text-[16px] leading-none mt-0.5 opacity-80 group-hover:opacity-100 transition-opacity">{doc.icon || '📄'}</span>
-                  <div>
-                    <div className="font-semibold text-[13px] text-white mb-1 group-hover:text-[#8B7CF8] transition-colors">{doc.title}</div>
-                    <div className="font-mono text-[11px] text-slate-400 flex items-center gap-1">
-                      <Link2 className="w-3 h-3" /> Linked to room
+              ) : linkedDocs.map((doc: any, i: number) => (
+                <a href={doc.url} target="_blank" rel="noopener noreferrer" key={i} className="block bg-white/[0.02] border border-white/[0.05] rounded-xl p-3.5 hover:bg-white/[0.04] transition-colors cursor-pointer group">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <span className="text-[16px] leading-none mt-0.5 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">{doc.icon || '📄'}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-[13px] text-white mb-1 group-hover:text-[#8B7CF8] transition-colors truncate">{doc.title}</div>
+                      <div className="font-mono text-[11px] text-slate-400 flex items-center gap-1">
+                        <Link2 className="w-3 h-3 shrink-0" /> <span className="truncate">Linked to room</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setIsLinkModalOpen(true)}
+              className="w-full mt-4 py-2.5 rounded-xl border border-white/[0.08] text-white font-semibold text-[13px] hover:bg-white/[0.04] active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Link Notion doc
+            </button>
           </div>
 
-          <button
-            onClick={() => setIsLinkModalOpen(true)}
-            className="w-full mt-4 py-2.5 rounded-xl border border-white/[0.08] text-white font-semibold text-[13px] hover:bg-white/[0.04] active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Link Notion doc
-          </button>
+          {/* Card 4: Advanced Analytics */}
+          <div className="bg-[#0D0B14] border border-white/[0.04] rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-[#0A0910]/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center">
+              <div className="px-3 py-1 bg-[#8B7CF8]/20 border border-[#8B7CF8]/30 text-[#8B7CF8] text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
+                Coming Soon
+              </div>
+              <span className="text-[15px] font-semibold text-white">Advanced Analytics</span>
+              <p className="text-[12px] text-slate-400 mt-2 px-6">
+                Track profile views, conversion rates, and build streaks.
+              </p>
+            </div>
+            <div className="opacity-20 pointer-events-none mt-auto w-full">
+              <div className="flex flex-col gap-1.5 mb-6 text-left w-full">
+                <h3 className="font-bold text-[16px] text-white leading-tight">Advanced Analytics</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="h-12 bg-white/10 rounded-xl"></div>
+                <div className="h-12 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

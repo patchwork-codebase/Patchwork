@@ -88,47 +88,38 @@ const BellIcon = () => (
 
 import { timeAgo } from "../../utils/helpers";
 
+import VerificationRequiredModal from '../ui/VerificationRequiredModal';
+import VerificationSuccessModal from '../dashboard/VerificationSuccessModal';
+import { WelcomeTour } from '../dashboard/WelcomeTour';
+
 export default function Layout() {
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut, loading, refreshProfile } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [forceShowTour, setForceShowTour] = useState(false);
   const [isNavExpanded, setIsNavExpanded] = useState(true);
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
-    let ticking = false;
-    
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY;
-          const scrollDiff = currentScrollY - lastScrollYRef.current;
-          
-          if (scrollDiff > 5 && currentScrollY > 80) {
-            // Scrolling down significantly
-            setIsNavExpanded(false);
-          } else if (scrollDiff < -5) {
-            // Scrolling up significantly
-            setIsNavExpanded(true);
-          }
-          
-          lastScrollYRef.current = currentScrollY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+    // Check for verification success in URL
+    const hash = window.location.hash;
+    const query = window.location.search;
+    if (hash.includes('type=signup') || hash.includes('type=recovery') || query.includes('verified=true')) {
+      setShowSuccessModal(true);
+      refreshProfile(); // refresh to get the latest emailVerified status
+      
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [refreshProfile]);
+
+
 
   const { data: notificationsData, markAllAsRead } = useNotifications(user?.id);
   const notifications = notificationsData || [];
@@ -175,6 +166,20 @@ export default function Layout() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#08070D] text-white pb-[env(safe-area-inset-bottom)] lg:pb-0">
+      <VerificationRequiredModal />
+      <VerificationSuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+        role={profile?.role || 'builder'} 
+      />
+      {user && profile && (
+        <WelcomeTour 
+          userId={user.id} 
+          userName={profile.name} 
+          forceShow={forceShowTour} 
+          onClose={() => setForceShowTour(false)} 
+        />
+      )}
       
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
       <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.08] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
@@ -291,161 +296,85 @@ export default function Layout() {
         </div>
       )}
 
-      <motion.div
-        className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-4 py-3 z-50 lg:hidden pb-[calc(12px+env(safe-area-inset-bottom))]"
-        animate={{ scale: isNavExpanded ? 1 : 0.92, y: isNavExpanded ? 0 : 8 }}
-        transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      >
-        <motion.div
-          className="w-full max-w-md bg-[#0A0910]/90 backdrop-blur-3xl rounded-full border border-white/[0.12] shadow-[0_20px_60px_rgba(0,0,0,0.8)] px-2"
-          animate={{ paddingBottom: isNavExpanded ? "8px" : "4px", paddingTop: isNavExpanded ? "8px" : "4px" }}
-          transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        >
+      <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-4 py-3 z-50 lg:hidden pb-[max(12px,env(safe-area-inset-bottom))]">
+        <div className="w-full max-w-md bg-[#0A0910]/95 backdrop-blur-3xl rounded-full border border-white/[0.12] shadow-[0_20px_60px_rgba(0,0,0,0.8)] px-2 py-1.5">
           <nav className="flex items-center justify-between gap-1">
             <Link
               to="/dashboard"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
+              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
             >
-              <AnimatePresence mode="wait">
-                {activeSection === 'overview' ? (
-                  <motion.div
-                    key="active-home"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  />
-                ) : null}
-              </AnimatePresence>
-              <motion.div
-                animate={{ 
-                  color: activeSection === 'overview' ? '#8B7CF8' : '#64748b',
-                  scale: activeSection === 'overview' ? 1.05 : 1
-                }}
-                transition={{ duration: 0.2 }}
-                className="relative z-10"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {activeSection === 'overview' && (
+                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                   <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
-              </motion.div>
+              </div>
             </Link>
+            
             <Link
               to="/dashboard?tab=feed"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
+              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
             >
-              <AnimatePresence mode="wait">
-                {activeSection === 'feed' ? (
-                  <motion.div
-                    key="active-feed"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  />
-                ) : null}
-              </AnimatePresence>
-              <motion.div
-                animate={{ 
-                  color: activeSection === 'feed' ? '#8B7CF8' : '#64748b',
-                  scale: activeSection === 'feed' ? 1.05 : 1
-                }}
-                transition={{ duration: 0.2 }}
-                className="relative z-10"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {activeSection === 'feed' && (
+                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
                   <circle cx="9" cy="9" r="2"/>
                   <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
                 </svg>
-              </motion.div>
+              </div>
             </Link>
+
             <Link
               to="/dashboard/build-logs"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
+              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
             >
-              <AnimatePresence mode="wait">
-                {activeSection === 'logs' ? (
-                  <motion.div
-                    key="active-logs"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  />
-                ) : null}
-              </AnimatePresence>
-              <motion.div
-                animate={{ 
-                  color: activeSection === 'logs' ? '#8B7CF8' : '#64748b',
-                  scale: activeSection === 'logs' ? 1.05 : 1
-                }}
-                transition={{ duration: 0.2 }}
-                className="relative z-10"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {activeSection === 'logs' && (
+                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'logs' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                 </svg>
                 {activeSection === 'logs' && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-0.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full"
-                  />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
                 )}
-              </motion.div>
+              </div>
             </Link>
+
             <Link
               to="/dashboard/explore"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
+              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
             >
-              <AnimatePresence mode="wait">
-                {activeSection === 'explore' ? (
-                  <motion.div
-                    key="active-explore"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  />
-                ) : null}
-              </AnimatePresence>
-              <motion.div
-                animate={{ 
-                  color: activeSection === 'explore' ? '#8B7CF8' : '#64748b',
-                  scale: activeSection === 'explore' ? 1.05 : 1
-                }}
-                transition={{ duration: 0.2 }}
-                className="relative z-10"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {activeSection === 'explore' && (
+                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/>
                   <path d="m21 21-4.35-4.35"/>
                 </svg>
-              </motion.div>
+              </div>
             </Link>
+
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[48px]"
+              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
             >
-              <motion.div
-                className={`w-[34px] h-[34px] rounded-full overflow-hidden transition-all ${
-                  mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-[#0A0910]' : 'border-2 border-slate-600'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <div className={`w-[28px] h-[28px] rounded-full overflow-hidden transition-all duration-200 ${
+                mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-[#0A0910]' : 'border-2 border-slate-600'
+              }`}>
                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-              </motion.div>
+              </div>
             </button>
           </nav>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* MOBILE PROFILE BOTTOM SHEET */}
       <AnimatePresence>
@@ -655,6 +584,15 @@ export default function Layout() {
                       <UserIcon /> Profile
                     </Link>
                     <button
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        setForceShowTour(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/[0.04] hover:text-white transition text-left"
+                    >
+                      <CompassIcon /> Replay Tour
+                    </button>
+                    <button
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition text-left"
                     >
@@ -669,18 +607,9 @@ export default function Layout() {
         </aside>
 
         <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#08070D] pb-28">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <div className="h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

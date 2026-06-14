@@ -301,44 +301,67 @@ export default function UserProfile() {
                   )}
 
                   {/* Social Links Form */}
-                  <div className="pt-4 border-t border-white/[0.08] space-y-4">
-                    <h3 className="text-[12px] font-bold text-white uppercase tracking-widest">Social Links</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="pt-6 mt-2 border-t border-white/[0.08] space-y-5">
+                    <div>
+                      <h3 className="text-[12px] font-bold text-white uppercase tracking-widest mb-1">Social Links</h3>
+                      <p className="text-[12px] text-slate-500">Connect your profiles to build your network.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Website URL</label>
-                        <input
-                          value={editForm.website}
-                          onChange={e => setEditForm(f => ({ ...f, website: e.target.value }))}
-                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
-                          placeholder="https://..."
-                        />
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Website URL</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <Globe className="w-4 h-4 text-slate-500 group-focus-within:text-[#6C5CE7] transition-colors" />
+                          </div>
+                          <input
+                            value={editForm.website}
+                            onChange={e => setEditForm(f => ({ ...f, website: e.target.value }))}
+                            className="pl-10 pr-4 py-2.5 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all placeholder:text-slate-600 shadow-inner"
+                            placeholder="https://yourwebsite.com"
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Twitter Username</label>
-                        <input
-                          value={editForm.twitter}
-                          onChange={e => setEditForm(f => ({ ...f, twitter: e.target.value }))}
-                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
-                          placeholder="@username"
-                        />
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Twitter</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <Twitter className="w-4 h-4 text-slate-500 group-focus-within:text-[#1DA1F2] transition-colors" />
+                          </div>
+                          <input
+                            value={editForm.twitter}
+                            onChange={e => setEditForm(f => ({ ...f, twitter: e.target.value }))}
+                            className="pl-10 pr-4 py-2.5 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#1DA1F2]/50 focus:ring-1 focus:ring-[#1DA1F2]/50 transition-all placeholder:text-slate-600 shadow-inner"
+                            placeholder="@username"
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">GitHub URL</label>
-                        <input
-                          value={editForm.github_url}
-                          onChange={e => setEditForm(f => ({ ...f, github_url: e.target.value }))}
-                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
-                          placeholder="https://github.com/..."
-                        />
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">GitHub</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <Github className="w-4 h-4 text-slate-500 group-focus-within:text-white transition-colors" />
+                          </div>
+                          <input
+                            value={editForm.github_url}
+                            onChange={e => setEditForm(f => ({ ...f, github_url: e.target.value }))}
+                            className="pl-10 pr-4 py-2.5 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all placeholder:text-slate-600 shadow-inner"
+                            placeholder="https://github.com/..."
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">LinkedIn URL</label>
-                        <input
-                          value={editForm.linkedin_url}
-                          onChange={e => setEditForm(f => ({ ...f, linkedin_url: e.target.value }))}
-                          className="px-3 py-2 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50"
-                          placeholder="https://linkedin.com/in/..."
-                        />
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">LinkedIn</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <Linkedin className="w-4 h-4 text-slate-500 group-focus-within:text-[#0A66C2] transition-colors" />
+                          </div>
+                          <input
+                            value={editForm.linkedin_url}
+                            onChange={e => setEditForm(f => ({ ...f, linkedin_url: e.target.value }))}
+                            className="pl-10 pr-4 py-2.5 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#0A66C2]/50 focus:ring-1 focus:ring-[#0A66C2]/50 transition-all placeholder:text-slate-600 shadow-inner"
+                            placeholder="https://linkedin.com/in/..."
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

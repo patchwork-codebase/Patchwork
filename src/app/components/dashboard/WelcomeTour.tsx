@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowRight, Hammer, Rss, Compass, UserCircle } from "lucide-react";
 
-import { STORAGE_KEYS } from "../../utils/helpers";
+import { useAuth } from "../auth/AuthContext";
+import { supabase } from "../auth/AuthContext";
 
 /* ─── Slide definitions ─────────────────────────────────────────── */
 interface Slide {
@@ -53,34 +54,48 @@ const SLIDES: Slide[] = [
   },
 ];
 
-/* ─── Storage key ────────────────────────────────────────────────── */
-const tourSeenKey = (userId: string) => STORAGE_KEYS.welcomeTourSeen(userId);
-
 /* ─── Component ─────────────────────────────────────────────────── */
 interface WelcomeTourProps {
   userId: string;
   userName: string;
+  forceShow?: boolean;
+  onClose?: () => void;
 }
 
-export function WelcomeTour({ userId, userName }: WelcomeTourProps) {
+export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTourProps) {
+  const { user } = useAuth();
   const [visible, setVisible] = useState(false);
   const [slide, setSlide] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
 
   useEffect(() => {
-    try {
-      const seen = localStorage.getItem(tourSeenKey(userId));
-      if (!seen) setVisible(true);
-    } catch {
-      // localStorage unavailable — don't show tour
+    if (forceShow) {
+      setVisible(true);
+      setSlide(0);
+    } else {
+      // Show automatically if they haven't seen it yet according to backend user_metadata
+      const metadata = (user as any)?.user_metadata || {};
+      if (metadata.tour_seen !== true) {
+        setVisible(true);
+      }
     }
-  }, [userId]);
+  }, [user, forceShow]);
 
-  function dismiss() {
-    try {
-      localStorage.setItem(tourSeenKey(userId), "true");
-    } catch {}
+  async function dismiss() {
     setVisible(false);
+    if (onClose) onClose();
+    
+    // Save to backend if not already seen
+    const metadata = (user as any)?.user_metadata || {};
+    if (metadata.tour_seen !== true && user) {
+      try {
+        await supabase.auth.updateUser({
+          data: { tour_seen: true }
+        });
+      } catch (err) {
+        console.error("Failed to save tour_seen state:", err);
+      }
+    }
   }
 
   function goTo(next: number) {

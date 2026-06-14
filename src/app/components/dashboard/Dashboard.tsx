@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw, Bell } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
-import { WelcomeTour } from "./WelcomeTour";
 import VerificationSuccessModal from "./VerificationSuccessModal";
 import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
@@ -289,12 +288,7 @@ export default function Dashboard() {
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8"
-    >
+    <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
 
       {/* ── EMAIL VERIFICATION BANNER ─── shown until email is verified */}
       {profile && !profile.emailVerified && (
@@ -330,11 +324,6 @@ export default function Dashboard() {
           </div>
           <div className="h-1 bg-gradient-to-r from-amber-500/50 via-orange-400/50 to-amber-500/50" />
         </div>
-      )}
-
-      {/* Welcome Tour — shown once to new users */}
-      {user && profile && (
-        <WelcomeTour userId={user.id} userName={profile.name} />
       )}
 
       {/* Onboarding Checklist */}
@@ -723,6 +712,6 @@ export default function Dashboard() {
         onClose={() => setShowVerificationSuccess(false)} 
         role={profile?.role || 'builder'}
       />
-    </motion.div>
+    </div>
   );
 }

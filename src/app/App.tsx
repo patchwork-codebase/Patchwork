@@ -18,13 +18,10 @@ function AuthRedirectHandler({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    console.log("Auth state:", { user, profile, loading, pathname: location.pathname });
-    
     if (!loading && user) {
       // If we're on a public page and logged in, redirect to dashboard
       const publicRoutes = ['/', '/login', '/onboarding'];
       if (publicRoutes.includes(location.pathname)) {
-        console.log("Redirecting to dashboard...");
         const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';
         navigate(targetRoute, { replace: true });
       }

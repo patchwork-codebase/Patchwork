@@ -190,23 +190,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   async function ensureProfileRow(user: User, authToken: string | null) {
-    const metadata = (user as any).user_metadata || {};
-    const payload = {
-      id: user.id,
-      email: user.email || '',
-      name: metadata.name || metadata.full_name || user.email?.split('@')[0] || 'Anonymous Builder',
-      role: metadata.role || 'builder',
-      city: metadata.city || '',
-      domain: metadata.domain || '',
-      interests: metadata.interests || [],
-      gender: metadata.gender || '',
-      phone_country_code: metadata.phone_country_code || '',
-      phone_number: metadata.phone_number || '',
-      bio: '',
-      avatar: '',
-    };
-
     try {
+      // Fetch existing profile to prevent overwriting onboarding preferences
+      let existing: any = null;
+      try {
+        const res = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        existing = res.data;
+      } catch (e) {
+        // Ignore fetch error
+      }
+
+      const metadata = (user as any).user_metadata || {};
+      const payload = {
+        id: user.id,
+        email: user.email || '',
+        name: existing?.name || metadata.name || metadata.full_name || user.email?.split('@')[0] || 'Anonymous Builder',
+        role: existing?.role || metadata.role || 'builder',
+        city: existing?.city || metadata.city || '',
+        domain: existing?.domain || metadata.domain || '',
+        interests: existing?.interests?.length ? existing.interests : (metadata.interests || []),
+        gender: existing?.gender || metadata.gender || '',
+        phone_country_code: existing?.phone_country_code || metadata.phone_country_code || '',
+        phone_number: existing?.phone_number || metadata.phone_number || '',
+        bio: existing?.bio || '',
+        avatar: existing?.avatar || '',
+      };
+
       await apiCall('/users', {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -272,7 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    console.log("[AuthContext] Current URL:", window.location.href);
+    // Just to handle URL parameters for magic links/resets if needed
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const queryParams = new URLSearchParams(window.location.search);
     
@@ -307,7 +316,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
-      console.log("Initial session loaded:", initialSession);
+
       let currentSession = initialSession;
       if (initialSession) {
         try {
@@ -325,10 +334,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
-        console.log("Loading profile for user:", currentSession.user.id);
+        // Load profile for user
         await loadProfile(currentSession.user.id);
       }
-      console.log("Auth loading complete");
+
       setLoading(false);
     });
 
@@ -352,7 +361,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener('visibilitychange', handleVisibilityChange);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
+
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -478,7 +487,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle() {
-    console.log("Starting Google OAuth...");
+
     const redirectUrl = window.location.origin;
     
     const { error } = await supabase.auth.signInWithOAuth({
@@ -491,7 +500,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithLinkedin() {
-    console.log("Starting LinkedIn OAuth...");
+
     const redirectUrl = window.location.origin;
     
     const { error } = await supabase.auth.signInWithOAuth({

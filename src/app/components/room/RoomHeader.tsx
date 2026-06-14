@@ -41,8 +41,8 @@ export function RoomHeader({
       <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
         <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
           <div className="flex flex-col gap-2.5">
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="text-[28px] md:text-[36px] font-extrabold text-white font-display leading-tight truncate">{room.title}</h1>
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <h1 className="text-[28px] md:text-[36px] font-extrabold text-white font-display leading-tight truncate flex-1 min-w-0">{room.title}</h1>
               <span className={`shrink-0 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider ${
                 room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_8px_rgba(52,211,153,0.3)]' : 'bg-white/5 text-slate-400 border border-white/10'
               }`}>

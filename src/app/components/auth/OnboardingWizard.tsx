@@ -4,7 +4,7 @@ import { Country, State, City } from "country-state-city";
 import { useAuth } from "./AuthContext";
 import { AuthRedirectGuard } from "./AuthRedirectGuard";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, ArrowRight, Loader2, Check } from "lucide-react";
+import { ChevronRight, ArrowRight, Loader2, Check, Hammer, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 /* ─── Searchable Custom Select Component ──────────────────────── */
@@ -106,18 +106,19 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
 
 const BUILDER_TYPES = [
   { value: 'product-manager', label: '📋 Product Manager' },
-  { value: 'engineer', label: '⚙️ Engineer (Coming Soon)' },
-  { value: 'product-designer', label: '🎨 Product Designer (Coming Soon)' },
+  { value: 'engineer', label: '⚙️ Engineer (Coming Soon)', disabled: true },
+  { value: 'product-designer', label: '🎨 Product Designer (Coming Soon)', disabled: true },
 ];
 
 export default function OnboardingWizard() {
   const navigate = useNavigate();
   const { user, profile, refreshProfile, loading: authLoading } = useAuth();
   
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   
   // Form State
+  const [userRole, setUserRole] = useState(profile?.role || 'builder');
   const [builderType, setBuilderType] = useState('');
   const [interestsText, setInterestsText] = useState('');
   const [countryIso, setCountryIso] = useState('');
@@ -133,7 +134,14 @@ export default function OnboardingWizard() {
     }
   }, [user, authLoading, navigate]);
 
-  const role = profile?.role || 'builder';
+  // Sync initial userRole from profile once loaded
+  useEffect(() => {
+    if (profile?.role) {
+      setUserRole(profile.role);
+    }
+  }, [profile?.role]);
+
+  const role = userRole;
 
   const handleNext = () => setStep(s => s + 1);
 
@@ -144,6 +152,7 @@ export default function OnboardingWizard() {
       const { supabase } = await import('./AuthContext');
       
       const updates: any = {
+        role,
         gender,
         city: city ? `${city}, ${countryIso}` : '',
       };
@@ -174,6 +183,11 @@ export default function OnboardingWizard() {
       
       if (error) throw error;
 
+      // Update auth metadata to ensure consistency across the session
+      await supabase.auth.updateUser({
+        data: { role }
+      });
+
       await refreshProfile();
       toast.success("Profile setup complete!");
       
@@ -185,10 +199,6 @@ export default function OnboardingWizard() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSkip = () => {
-    navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
   };
 
   if (authLoading) return <div className="min-h-screen bg-[#0E0C16] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#8B7CF8]" /></div>;
@@ -205,7 +215,7 @@ export default function OnboardingWizard() {
       >
         {/* Progress Dots */}
         <div className="flex items-center gap-2 mb-8 justify-center">
-          {[1, 2].map(i => (
+          {[0, 1, 2].map(i => (
             <div 
               key={i} 
               className={`h-1.5 rounded-full transition-all duration-300 ${step >= i ? 'w-8 bg-[#8B7CF8]' : 'w-4 bg-white/[0.1]'}`} 
@@ -214,6 +224,58 @@ export default function OnboardingWizard() {
         </div>
 
         <AnimatePresence mode="wait">
+          {/* STEP 0: User Type Selection */}
+          {step === 0 && (
+            <motion.div
+              key="step0"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col h-full"
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-[28px] font-extrabold text-white tracking-tight mb-2">
+                  Welcome to Patchwork
+                </h2>
+                <p className="text-[15px] text-slate-400 leading-relaxed">
+                  How do you plan to use the platform?
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <button
+                  onClick={() => setUserRole('builder')}
+                  className={`p-6 rounded-2xl border text-left transition-all ${userRole === 'builder' ? 'bg-[#6C5CE7]/10 border-[#8B7CF8] shadow-[0_0_20px_rgba(108,92,231,0.2)]' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]'}`}
+                >
+                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'builder' ? 'bg-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+                    <Hammer className={`w-6 h-6 ${userRole === 'builder' ? 'text-white' : 'text-slate-400'}`} />
+                  </div>
+                  <h3 className="text-[18px] font-bold text-white mb-2">Builder</h3>
+                  <p className="text-[13px] text-slate-400">I want to share my work and build in public.</p>
+                </button>
+                <button
+                  onClick={() => setUserRole('observer')}
+                  className={`p-6 rounded-2xl border text-left transition-all ${userRole === 'observer' ? 'bg-[#6C5CE7]/10 border-[#8B7CF8] shadow-[0_0_20px_rgba(108,92,231,0.2)]' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]'}`}
+                >
+                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'observer' ? 'bg-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+                    <Eye className={`w-6 h-6 ${userRole === 'observer' ? 'text-white' : 'text-slate-400'}`} />
+                  </div>
+                  <h3 className="text-[18px] font-bold text-white mb-2">Observer</h3>
+                  <p className="text-[13px] text-slate-400">I want to discover and follow other builders.</p>
+                </button>
+              </div>
+
+              <div className="mt-auto pt-4 flex gap-3">
+                <button
+                  onClick={handleNext}
+                  className="flex-1 py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                >
+                  Continue <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
           {/* STEP 1: Professional Identity */}
           {step === 1 && (
             <motion.div
