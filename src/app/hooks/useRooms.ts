@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase, apiCall } from '../components/auth/AuthContext';
+import { supabase } from '../components/auth/AuthContext';
 
 import { normalizeRow } from "../utils/helpers";
 

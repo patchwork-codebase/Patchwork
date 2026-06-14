@@ -15,115 +15,7 @@ export const DEV_AUTH_BYPASS = false;
 
 const API_BASE = window.location.origin + "/api/v1";
 
-export class ApiError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
-
 import { normalizeRow } from "../../utils/helpers";
-
-export async function apiCall(path: string, opts: RequestInit = {}, token?: string) {
-  try {
-    // Intercept database-related user paths to bypass the broken edge function
-    const cleanPath = path.split('?')[0];
-    const parts = cleanPath.split('/').filter(Boolean);
-
-    if (parts[0] === 'users') {
-      // 1. GET /users/:id/rooms -> rooms table
-      if (parts[2] === 'rooms') {
-        const userId = parts[1];
-        const { data, error } = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('builder_id', userId)
-          .order('created_at', { ascending: false });
-        if (error) throw new ApiError(error.message, 500);
-        return (data || []).map(normalizeRow);
-      }
-
-      // 2. GET /users/:id -> users table
-      if (opts.method === 'GET' || !opts.method) {
-        if (parts.length === 2) {
-          const userId = parts[1];
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .maybeSingle();
-          if (error) throw new ApiError(error.message, 500);
-          return data ? normalizeRow(data) : null;
-        }
-      }
-
-      // 3. POST /users -> users table upsert
-      if (opts.method === 'POST') {
-        const body = opts.body ? JSON.parse(opts.body as string) : {};
-        const { data, error } = await supabase
-          .from('users')
-          .upsert(body, { onConflict: 'id' })
-          .select()
-          .maybeSingle();
-        if (error) throw new ApiError(error.message, 500);
-        return data ? normalizeRow(data) : null;
-      }
-
-      // 4. PUT /users/:id -> users table update
-      if (opts.method === 'PUT') {
-        const targetUserId = parts[1];
-        const body = opts.body ? JSON.parse(opts.body as string) : {};
-        const updates: Record<string, any> = {};
-        ['name', 'bio', 'role', 'city', 'domain', 'website', 'twitter', 'github_url', 'linkedin_url', 'expert_available', 'expert_open_slots', 'expert_avg_response_hours'].forEach(key => {
-          if (body[key] !== undefined) updates[key] = body[key];
-        });
-        if (body.interests !== undefined) updates.interests = body.interests;
-        if (body.skills !== undefined) updates.skills = body.skills;
-
-        const { data, error } = await supabase
-          .from('users')
-          .update(updates)
-          .eq('id', targetUserId)
-          .select()
-          .maybeSingle();
-        if (error) throw new ApiError(error.message, 500);
-        return data ? normalizeRow(data) : null;
-      }
-    }
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token || publicAnonKey}`,
-      ...(opts.headers as Record<string, string> || {}),
-    };
-    const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
-    
-    let data;
-    try {
-      data = await res.json();
-    } catch (parseError) {
-      data = { error: `Failed to parse response (HTTP ${res.status})` };
-    }
-
-    if (!res.ok) {
-      const errorMessage = data.error || data.message || `Request failed (HTTP ${res.status})`;
-      throw new ApiError(errorMessage, res.status);
-    }
-
-    return data;
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(
-      error instanceof Error ? error.message : "An unexpected error occurred",
-      500
-    );
-  }
-}
-
 
 interface Profile {
   id: string;
@@ -217,10 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar: existing?.avatar || '',
       };
 
-      await apiCall('/users', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }, authToken || undefined);
+      const { error } = await supabase
+        .from('users')
+        .upsert(payload, { onConflict: 'id' });
+      if (error) throw error;
     } catch (err) {
       console.log('Could not create or update profile row:', err);
     }
@@ -228,7 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadProfile(userId: string) {
     try {
-      const p = await apiCall(`/users/${userId}`);
+      const { data, error: fetchErr } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+      if (fetchErr) throw fetchErr;
+      const p = data ? normalizeRow(data) : null;
 
       // Determine verification status.
       // Strategy: try our custom column first; if it doesn't exist (400/column error)
@@ -259,7 +153,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!p || !p.name || p.name === 'Anonymous Builder') {
         if (session?.user?.id === userId && session.user) {
           await ensureProfileRow(session.user, token);
-          const retry = await apiCall(`/users/${userId}`);
+          const { data: retryData } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+          const retry = retryData ? normalizeRow(retryData) : null;
           if (retry) {
             const profile = { ...(retry as Profile), emailVerified: isConfirmed };
             setProfile(profile);

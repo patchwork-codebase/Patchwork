@@ -139,15 +139,11 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                             {room.status === 'draft' ? <span className="text-amber-400">Draft</span> : isPaused ? 'Paused' : 'Live'}
                           </span>
                           <span className="text-slate-600 opacity-50">·</span>
-                          <span className="text-white/80 font-bold">Day {room.updateCount + 4}</span>
+                          <span className="text-white/80 font-bold">
+                            Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                          </span>
                           <span className="text-slate-600 opacity-50">·</span>
-                          <span>{room.updateCount} updates</span>
-                          <span className="text-slate-600 opacity-50 hidden sm:inline">·</span>
-                          <span className="hidden sm:inline">{room.updateCount * 3 + 11} reactions</span>
-                        </div>
-
-                        <div className="sm:hidden mt-1 inline-flex w-fit items-center gap-1.5 text-[11px] text-slate-500 font-bold uppercase tracking-widest bg-white/[0.03] px-2 py-1 rounded-md">
-                          {room.updateCount * 3 + 11} reactions
+                          <span>{room.updateCount || 0} updates</span>
                         </div>
                       </div>
 

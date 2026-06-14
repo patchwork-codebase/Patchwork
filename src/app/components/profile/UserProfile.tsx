@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { useAuth, apiCall } from "../auth/AuthContext";
+import { useAuth, supabase } from "../auth/AuthContext";
+import { apiCall } from "../../../utils/api";
 import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users, ChevronDown, ShieldCheck, Star, Clock, CheckCircle, TrendingUp } from "lucide-react";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { getAvatarUrl } from "../../utils/helpers";
@@ -182,10 +183,8 @@ export default function UserProfile() {
     if (!id || !token) return;
     setSaving(true);
     try {
-      const updated = await apiCall(`/users/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(editForm),
-      }, token);
+      const { error } = await supabase.from('users').update(editForm).eq('id', id);
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['profile', id] });
       setEditing(false);
       await refreshProfile();

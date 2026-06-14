@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Linkedin, Loader2, Check } from 'lucide-react';
-import { supabase, apiCall } from '../auth/AuthContext';
+import { supabase } from '../auth/AuthContext';
+import { apiCall } from '../../../utils/api';
 import { toast } from 'sonner';
 import { useLinkedinAccount } from '../../hooks/useLinkedin';
 

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase, apiCall } from '../components/auth/AuthContext';
+import { supabase } from '../components/auth/AuthContext';
+import { normalizeRow } from '../utils/helpers';
 
 export function useProfile(userId?: string) {
   const queryClient = useQueryClient();
@@ -8,8 +9,9 @@ export function useProfile(userId?: string) {
   const query = useQuery({
     queryKey: ['profile', userId],
     queryFn: async () => {
-      if (!userId) return null;
-      return apiCall(`/users/${userId}`);
+      const { data, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+      if (error) throw error;
+      return data ? normalizeRow(data) : null;
     },
     enabled: !!userId,
   });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth, apiCall, supabase } from "../auth/AuthContext";
+import { useAuth, supabase } from "../auth/AuthContext";
 import { normalizeRow } from "../../utils/helpers";
 
 const topics = [

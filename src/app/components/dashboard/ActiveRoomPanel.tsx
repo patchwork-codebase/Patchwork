@@ -35,19 +35,14 @@ export function ActiveRoomPanel({
 
   return (
     <div className="bg-[#0D0B14] border border-white/[0.08] rounded-3xl overflow-hidden flex flex-col h-[600px] shadow-2xl">
-      <div className="p-5 border-b border-white/[0.08] flex items-center justify-between shrink-0 bg-white/[0.01]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B7CF8]/20 to-[#6C5CE7]/10 border border-[#8B7CF8]/20 flex items-center justify-center shrink-0">
-            <Layers className="w-5 h-5 text-[#8B7CF8]" />
-          </div>
-          <div>
-            <h3 className="text-[16px] font-extrabold text-white leading-tight">{room.title}</h3>
-            <span className="text-[12px] text-[#8B7CF8] font-bold">Active Workspace</span>
-          </div>
+      <div className="p-5 border-b border-white/[0.08] flex items-center justify-between shrink-0 bg-white/[0.01] gap-4">
+        <div className="flex flex-col min-w-0">
+          <h3 className="text-[16px] sm:text-[18px] font-extrabold text-white leading-tight mb-0.5 line-clamp-2">{room.title}</h3>
+          <span className="text-[12px] text-[#8B7CF8] font-bold">Active Workspace</span>
         </div>
         <a 
           href={`/dashboard/room/${room.id}`}
-          className="text-[11px] uppercase tracking-widest font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-full border border-white/[0.08] hover:bg-white/[0.04] transition-all"
+          className="text-[11px] uppercase tracking-widest font-bold text-slate-400 hover:text-white px-4 py-2 rounded-full border border-white/[0.08] hover:bg-white/[0.04] transition-all shrink-0 whitespace-nowrap shadow-sm"
         >
           View Full Room
         </a>

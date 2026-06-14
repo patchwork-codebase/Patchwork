@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, X, ChevronRight, Loader2 } from "lucide-react";
-import { supabase, apiCall } from "../auth/AuthContext";
+import { supabase } from "../auth/AuthContext";
 import { STORAGE_KEYS } from "../../utils/helpers";
 
 /* ─── Types ─────────────────────────────────────────────── */
@@ -31,7 +31,7 @@ const OBSERVER_STEPS = [
 async function loadCompletion(userId: string, role: string): Promise<CompletionState> {
   const state = { ...EMPTY };
   try {
-    const userRow = await apiCall(`/users/${userId}`);
+    const { data: userRow } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
 
     state.call = !!userRow?.onboarding_call_scheduled;
     state.alreadyCompleted = !!userRow?.signup_completed_at;
@@ -39,7 +39,7 @@ async function loadCompletion(userId: string, role: string): Promise<CompletionS
     // Check room step — for builders: has created a room; for observers: persisted flag OR has followed a room
     let hasCreatedRoom = false;
     if (role === 'builder') {
-      const rooms = await apiCall(`/users/${userId}/rooms`);
+      const { data: rooms } = await supabase.from('rooms').select('*').eq('builder_id', userId);
       hasCreatedRoom = !!(rooms && rooms.length > 0);
       state.room = hasCreatedRoom;
     } else {

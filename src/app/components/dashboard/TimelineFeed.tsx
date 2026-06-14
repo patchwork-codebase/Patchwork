@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef } from "react";
 import { Link } from 'react-router-dom';
 import { Virtuoso } from "react-virtuoso";
-import { apiCall, useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth/AuthContext';
+import { apiCall } from '../../../utils/api';
 import { motion, AnimatePresence } from "motion/react";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { 
@@ -656,11 +657,7 @@ export function TimelineFeed({
                 <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
                   <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
                     <div className={`w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-white/[0.03] border border-white/[0.08] shadow-inner'}`}>
-                      {isLaunch ? (
-                        <div className="w-full h-full bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[14px] sm:text-[18px]">🚀</div>
-                      ) : (
-                        <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-                      )}
+                      <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
