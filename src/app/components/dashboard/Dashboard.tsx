@@ -327,7 +327,7 @@ export default function Dashboard() {
       )}
 
       {/* Onboarding Checklist */}
-      {user && profile && !profile.signup_completed_at && (
+      {user && profile && !profile.signup_completed_at && !(profile as any).signupCompletedAt && localStorage.getItem(STORAGE_KEYS.checklistDismissed(user.id)) !== 'true' && (
         <OnboardingChecklist
           role={(profile.role as 'builder' | 'observer') || 'builder'}
           userId={user.id}

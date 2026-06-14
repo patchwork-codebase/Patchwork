@@ -123,7 +123,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
       } else if (stepId === 'update' && role === 'builder') {
         const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', userId).limit(1);
         if (rooms && rooms.length > 0) {
-          const { error: e } = await supabase.from('room_updates').insert({
+          const { error: e } = await supabase.from('updates').insert({
             room_id: rooms[0].id,
             author_id: userId,
             content: text.trim() || 'Just got started.',
@@ -288,9 +288,12 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       setCompletion(fresh);
       // If all done, mark signup_completed_at
       if (fresh.room && fresh.update && fresh.call) {
-        supabase.from('users').update({
+        await supabase.from('users').update({
           signup_completed_at: new Date().toISOString()
-        }).eq('id', userId).catch(() => { });
+        }).eq('id', userId);
+        
+        // Also update AuthContext profile by dispatching an event or relying on loadProfile next time
+        localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), 'true');
       }
     }, 800);
   }
