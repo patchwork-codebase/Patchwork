@@ -123,10 +123,14 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
       } else if (stepId === 'update' && role === 'builder') {
         const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', userId).limit(1);
         if (rooms && rooms.length > 0) {
+          const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           const { error: e } = await supabase.from('updates').insert({
+            id: updateId,
             room_id: rooms[0].id,
             author_id: userId,
+            author_name: userName || 'Builder',
             content: text.trim() || 'Just got started.',
+            created_at: new Date().toISOString(),
           });
           if (e) throw e;
         }
