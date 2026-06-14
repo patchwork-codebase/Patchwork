@@ -1,0 +1,1 @@
+import{u as e}from"./useQuery-C6SgF7Tv.js";import{s as t}from"./index-CmWusqyW.js";function c(n){return e({queryKey:["notion-account",n],queryFn:async()=>{if(!n)return null;const{data:r,error:o}=await t.from("notion_accounts").select("*").eq("user_id",n).maybeSingle();return o?(console.error("Error fetching Notion account:",o),null):r},enabled:!!n})}export{c as u};
