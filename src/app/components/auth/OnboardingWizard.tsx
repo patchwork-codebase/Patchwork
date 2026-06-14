@@ -164,6 +164,9 @@ export default function OnboardingWizard() {
         updates.interests = interestsArr;
       }
 
+      // Mark signup as completed in localStorage to prevent loops
+      localStorage.setItem(`signup_completed_${user?.id}`, 'true');
+
       // Fetch current user data to do an upsert (POST) instead of update (PATCH)
       // This bypasses strict antivirus/adblock network rules that close PATCH connections
       const { data: currentUser, error: fetchError } = await supabase

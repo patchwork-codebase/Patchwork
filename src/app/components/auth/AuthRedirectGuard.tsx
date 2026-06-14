@@ -11,7 +11,10 @@ export function AuthRedirectGuard() {
     if (!loading && user) {
       if (location.pathname === '/onboarding') return;
 
-      const needsOnboarding = profile?.role === 'builder' ? !profile.domain : !(profile?.interests?.length);
+      const localSignupComplete = localStorage.getItem(`signup_completed_${user.id}`) === 'true';
+      const needsOnboarding = (profile?.signup_completed_at 
+        ? false 
+        : (profile?.role === 'builder' ? !profile.domain : !(profile?.interests?.length))) && !localSignupComplete;
       
       if (needsOnboarding) {
         navigate('/onboarding', { replace: true });
