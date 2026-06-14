@@ -136,7 +136,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
       } else if (stepId === 'call') {
         const { error: e } = await supabase.from('users').update({ onboarding_call_scheduled: true }).eq('id', userId);
         if (e) throw e;
-        window.open('https://cal.com/patchwork/intro', '_blank');
+        window.open('https://cal.com/patchwork-qzq15c/15min', '_blank');
       }
       onComplete(stepId);
     } catch (err: any) {
