@@ -76,7 +76,7 @@ export async function apiCall(path: string, opts: RequestInit = {}, token?: stri
         const targetUserId = parts[1];
         const body = opts.body ? JSON.parse(opts.body as string) : {};
         const updates: Record<string, any> = {};
-        ['name', 'bio', 'role', 'city', 'domain', 'website', 'twitter', 'github_url', 'linkedin_url'].forEach(key => {
+        ['name', 'bio', 'role', 'city', 'domain', 'website', 'twitter', 'github_url', 'linkedin_url', 'expert_available', 'expert_open_slots', 'expert_avg_response_hours'].forEach(key => {
           if (body[key] !== undefined) updates[key] = body[key];
         });
         if (body.interests !== undefined) updates.interests = body.interests;

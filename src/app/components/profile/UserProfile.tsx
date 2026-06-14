@@ -123,7 +123,10 @@ export default function UserProfile() {
     twitter: '',
     github_url: '',
     linkedin_url: '',
-    skills: [] as string[]
+    skills: [] as string[],
+    expert_available: true,
+    expert_open_slots: 3,
+    expert_avg_response_hours: 48
   });
   const [skillInput, setSkillInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -145,7 +148,10 @@ export default function UserProfile() {
         twitter: profile.twitter || '',
         github_url: profile.github_url || '',
         linkedin_url: profile.linkedin_url || '',
-        skills: profile.skills || []
+        skills: profile.skills || [],
+        expert_available: (profile as any).expertAvailable ?? true,
+        expert_open_slots: (profile as any).expertOpenSlots ?? 3,
+        expert_avg_response_hours: (profile as any).expertAvgResponseHours ?? 48
       });
     }
   }, [profile]);
@@ -370,6 +376,54 @@ export default function UserProfile() {
                     </div>
                   </div>
 
+                  {/* Expert Settings Form */}
+                  {(profile as any).isVerifiedExpert && (
+                    <div className="pt-6 mt-2 border-t border-white/[0.08] space-y-5">
+                      <div>
+                        <h3 className="text-[12px] font-bold text-white uppercase tracking-widest mb-1">Expert Availability</h3>
+                        <p className="text-[12px] text-slate-500">Manage your review capacity and response times.</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 mb-2">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={editForm.expert_available}
+                            onChange={(e) => setEditForm(f => ({ ...f, expert_available: e.target.checked }))}
+                          />
+                          <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                        <span className="text-[13px] font-bold text-white">{editForm.expert_available ? 'Available for requests' : 'Currently unavailable'}</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Open Slots (Active)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="20"
+                            value={editForm.expert_open_slots}
+                            onChange={e => setEditForm(f => ({ ...f, expert_open_slots: parseInt(e.target.value) || 0 }))}
+                            className="px-4 py-2.5 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all shadow-inner"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Avg Response Time (Hours)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="168"
+                            value={editForm.expert_avg_response_hours}
+                            onChange={e => setEditForm(f => ({ ...f, expert_avg_response_hours: parseInt(e.target.value) || 24 }))}
+                            className="px-4 py-2.5 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] text-white w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all shadow-inner"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Skills Form */}
                   <div className="pt-4 border-t border-white/[0.08]">
                     <h3 className="text-[12px] font-bold text-white uppercase tracking-widest mb-3">Tech Stack / Skills</h3>
@@ -423,9 +477,11 @@ export default function UserProfile() {
               ) : (
                 <>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2">
-                    <h1 className="text-[28px] sm:text-[32px] font-extrabold text-white font-display tracking-tight leading-tight sm:leading-none break-words flex items-center gap-2">
+                    <h1 className="text-[28px] sm:text-[32px] font-extrabold text-white font-display tracking-tight leading-tight sm:leading-none break-words">
                       {profile.name}
-                      <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6" />
+                      <span className="inline-block ml-2 align-middle">
+                        <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6" />
+                      </span>
                     </h1>
                     {(profile as any).isVerifiedExpert && (
                       <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="md" />

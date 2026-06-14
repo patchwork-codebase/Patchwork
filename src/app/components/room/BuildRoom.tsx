@@ -16,6 +16,7 @@ import { RoomFeed } from "./RoomFeed";
 import { useRoomDetails } from "../../hooks/useRooms";
 import { timeAgo } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { RequestExpertReviewModal } from "./RequestExpertReviewModal";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20', desc: 'Incisive, direct critique' },
@@ -44,6 +45,7 @@ export default function BuildRoom() {
   const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
   const [linkedinShareOpen, setLinkedinShareOpen] = useState(false);
+  const [requestExpertModalOpen, setRequestExpertModalOpen] = useState(false);
   const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const quickUpdateMode = searchParams.get('action') === 'post';
@@ -232,7 +234,8 @@ export default function BuildRoom() {
           user={user} 
           setLinkedinShareOpen={setLinkedinShareOpen} 
           handleCloseRoom={handleCloseRoom} 
-          copyLogLink={copyLogLink} 
+          copyLogLink={copyLogLink}
+          setRequestExpertModalOpen={setRequestExpertModalOpen}
         />
 
         <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
@@ -468,6 +471,11 @@ export default function BuildRoom() {
         roomId={id!}
         userId={user?.id!}
         roomTitle={room?.title || ''}
+      />
+      <RequestExpertReviewModal
+        open={requestExpertModalOpen}
+        onClose={() => setRequestExpertModalOpen(false)}
+        roomId={id!}
       />
     </>
   );

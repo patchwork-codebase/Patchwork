@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2 } from "lucide-react";
+import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Sparkles } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
@@ -24,7 +24,8 @@ export function RoomHeader({
   user,
   setLinkedinShareOpen,
   handleCloseRoom,
-  copyLogLink
+  copyLogLink,
+  setRequestExpertModalOpen
 }: any) {
   const [editModalOpen, setEditModalOpen] = useState(false);
 
@@ -104,6 +105,17 @@ export function RoomHeader({
           >
             <Share2 className="w-5 h-5" />
           </button>
+          
+          {isBuilder && room.status === 'active' && (
+            <button
+              onClick={() => setRequestExpertModalOpen(true)}
+              title="Request Expert Review"
+              className="flex items-center justify-center gap-2 w-11 sm:w-auto h-11 px-0 sm:px-4 bg-gradient-to-r from-primary to-[#5a48d0] hover:opacity-90 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-95"
+            >
+              <Sparkles className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline">Expert Review</span>
+            </button>
+          )}
           
           {isBuilder && (room.status === 'active' || room.status === 'draft') && (
             <button

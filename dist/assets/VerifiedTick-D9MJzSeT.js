@@ -1,6 +1,0 @@
-import{c,e as l,r as u,s as r,v as f,j as p}from"./index-DowOzHyK.js";import{u as h}from"./useQuery-BTZky8iG.js";/**
- * @license lucide-react v0.487.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */const m=[["path",{d:"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z",key:"3c2336"}],["path",{d:"m9 12 2 2 4-4",key:"dzmm74"}]],y=c("badge-check",m);function d(e){const n=l(),t=h({queryKey:["profile",e],queryFn:async()=>e?f(`/users/${e}`):null,enabled:!!e});return u.useEffect(()=>{if(!e)return;const i=`user-profile-${e}`,a=r.getChannels().find(o=>o.topic===`realtime:${i}`);a&&r.removeChannel(a);const s=r.channel(i).on("postgres_changes",{event:"*",schema:"public",table:"users",filter:`id=eq.${e}`},()=>{n.invalidateQueries({queryKey:["profile",e]})}).subscribe();return()=>{r.removeChannel(s)}},[e,n]),t}function x({userId:e,isVerified:n,className:t="w-4 h-4"}){const{data:i}=d(n!==void 0?void 0:e);return n??(i?!!i.isVerifiedExpert:!1)?p.jsx(y,{className:`inline-block shrink-0 ${t}`,style:{fill:"#1D9BF0",color:"white"},title:"Verified Expert on Patchwork","aria-label":"Verified Expert"}):null}export{x as V,d as u};
