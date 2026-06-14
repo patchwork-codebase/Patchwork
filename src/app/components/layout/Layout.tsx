@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-r
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useNotifications } from "../../hooks/useNotifications";
+
 import { getAvatarUrl } from "../../utils/helpers";
 
 /* ─── tiny inline SVGs ─────────────────────────────────────────── */
@@ -77,12 +77,7 @@ const ZapIcon = () => (
   </svg>
 );
 
-const BellIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
+
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 
@@ -99,7 +94,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [forceShowTour, setForceShowTour] = useState(false);
   const [isNavExpanded, setIsNavExpanded] = useState(true);
@@ -110,6 +105,7 @@ export default function Layout() {
     const hash = window.location.hash;
     const query = window.location.search;
     if (hash.includes('type=signup') || hash.includes('type=recovery') || query.includes('verified=true')) {
+      if (user?.id) localStorage.setItem(`email_verified_failsafe_${user.id}`, 'true');
       setShowSuccessModal(true);
       refreshProfile(); // refresh to get the latest emailVerified status
       
@@ -121,9 +117,7 @@ export default function Layout() {
 
 
 
-  const { data: notificationsData, markAllAsRead } = useNotifications(user?.id);
-  const notifications = notificationsData || [];
-  const unreadCount = notifications.filter(n => !n.read).length;
+
 
   const activeTab = searchParams.get('tab') || 'overview';
   const activeSection = location.pathname.startsWith('/dashboard/explore')
@@ -190,85 +184,6 @@ export default function Layout() {
           </Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Notifications Toggle */}
-          <div className="relative">
-            <button
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2.5 text-slate-300 hover:text-white transition-colors rounded-full hover:bg-white/[0.05]"
-            >
-              <BellIcon />
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#08070D]" />
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            <AnimatePresence>
-            {notificationsOpen && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 sm:-right-4 mt-2 w-[320px] bg-[#0A0910]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50"
-              >
-                <div className="p-4 border-b border-white/[0.08] flex justify-between items-center">
-                  <span className="text-[14px] font-bold text-white font-display">Notifications</span>
-                  {unreadCount > 0 && (
-                    <button onClick={() => markAllAsRead.mutate()} className="text-[11px] font-bold text-[#8B7CF8] hover:text-white transition-colors">Mark all read</button>
-                  )}
-                </div>
-                <div className="max-h-[340px] overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500 text-[13px]">No notifications yet.</div>
-                  ) : (
-                    notifications.map(n => {
-                      const isReaction = n.type === 'reaction';
-                      const actorName = n.actor?.name || 'Someone';
-                      
-                      let text = '';
-                      let icon = '';
-                      let bg = '';
-                      let color = '';
-                      
-                      if (isReaction) {
-                        const isLike = n.metadata?.reaction_type === 'like';
-                        text = isLike ? 'reacted "Like" to your update' : 'replied to your update';
-                        icon = isLike ? '⚡' : '🔄';
-                        bg = 'bg-[#8B7CF8]/10';
-                        color = 'text-[#8B7CF8]';
-                      } else {
-                        const roomTitle = n.metadata?.room_title || 'your room';
-                        text = `started following "${roomTitle}"`;
-                        icon = '👀';
-                        bg = 'bg-emerald-500/10';
-                        color = 'text-emerald-400';
-                      }
-
-                      return (
-                        <div key={n.id} className="p-4 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors cursor-pointer flex gap-3 relative">
-                          {!n.read && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-rose-500" />}
-                          <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center shrink-0`}>
-                            <span className="text-[16px]">{icon}</span>
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-slate-300 leading-snug">
-                              <strong className="text-white">{actorName}</strong> {text}
-                            </div>
-                            <div className="text-[11px] text-slate-500 mt-1.5 font-mono font-medium">{timeAgo(n.created_at)}</div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-                <Link to="/dashboard/notifications" onClick={() => setNotificationsOpen(false)} className="block p-3 text-center text-[12px] font-bold text-slate-400 hover:text-white bg-white/[0.01] hover:bg-white/[0.04] transition-colors">
-                  View all activity
-                </Link>
-              </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
         </div>
       </header>
 

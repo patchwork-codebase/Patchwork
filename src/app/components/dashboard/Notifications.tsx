@@ -2,6 +2,8 @@ import { motion } from "motion/react";
 import { useAuth } from "../auth/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useEffect } from "react";
+import { Link } from "react-router";
+import { ArrowLeft } from "lucide-react";
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -33,6 +35,10 @@ export default function Notifications() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full max-w-[800px] mx-auto px-5 sm:px-6 py-8"
     >
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-6 sm:mb-8 transition-colors group">
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
+      </Link>
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-bold text-2xl sm:text-[28px] text-white leading-tight tracking-tight m-0">

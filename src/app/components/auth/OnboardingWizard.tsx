@@ -155,6 +155,7 @@ export default function OnboardingWizard() {
         role,
         gender,
         city: city ? `${city}, ${countryIso}` : '',
+        signup_completed_at: new Date().toISOString(),
       };
 
       if (role === 'builder') {

@@ -58,6 +58,11 @@ function normalizeProfile(profile: any) {
     bio: profile.bio,
     avatar: profile.avatar,
     interests: profile.interests || [],
+    website: profile.website || '',
+    twitter: profile.twitter || '',
+    github_url: profile.github_url || '',
+    linkedin_url: profile.linkedin_url || '',
+    skills: profile.skills || [],
     createdAt: profile.created_at,
     updatedAt: profile.updated_at,
   };
@@ -217,7 +222,7 @@ app.put("/make-server-30db7d9e/users/:id", async (c) => {
     if (updates.role !== undefined && updates.role !== 'builder' && updates.role !== 'observer') {
       return c.json({ error: "Role must be either builder or observer" }, 400);
     }
-    const allowed = ['name', 'bio', 'avatar', 'role', 'interests', 'domain', 'building_desc', 'feed_focus', 'city', 'signup_completed_at', 'onboarding_call_scheduled'];
+    const allowed = ['name', 'bio', 'avatar', 'role', 'interests', 'domain', 'building_desc', 'feed_focus', 'city', 'signup_completed_at', 'onboarding_call_scheduled', 'website', 'twitter', 'github_url', 'linkedin_url', 'skills'];
     const payload: Record<string, any> = { updated_at: new Date().toISOString() };
     for (const key of allowed) {
       if (updates[key] !== undefined) payload[key] = updates[key];

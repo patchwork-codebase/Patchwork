@@ -7,7 +7,7 @@ export const STORAGE_KEYS = {
 };
 
 export function toCamelCase(key: string) {
-  if (key === 'onboarding_call_scheduled' || key === 'signup_completed_at') return key;
+  if (key === 'onboarding_call_scheduled' || key === 'signup_completed_at' || key === 'github_url' || key === 'linkedin_url') return key;
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 

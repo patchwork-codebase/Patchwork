@@ -76,10 +76,11 @@ export async function apiCall(path: string, opts: RequestInit = {}, token?: stri
         const targetUserId = parts[1];
         const body = opts.body ? JSON.parse(opts.body as string) : {};
         const updates: Record<string, any> = {};
-        ['name', 'bio', 'role', 'city', 'domain'].forEach(key => {
+        ['name', 'bio', 'role', 'city', 'domain', 'website', 'twitter', 'github_url', 'linkedin_url'].forEach(key => {
           if (body[key] !== undefined) updates[key] = body[key];
         });
         if (body.interests !== undefined) updates.interests = body.interests;
+        if (body.skills !== undefined) updates.skills = body.skills;
 
         const { data, error } = await supabase
           .from('users')

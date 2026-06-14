@@ -9,7 +9,7 @@ export function AuthRedirectGuard() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (location.pathname === '/onboarding') return;
+      if (!profile) return;
 
       const localSignupComplete = localStorage.getItem(`signup_completed_${user.id}`) === 'true';
       const needsOnboarding = (profile?.signup_completed_at 
@@ -17,7 +17,9 @@ export function AuthRedirectGuard() {
         : (profile?.role === 'builder' ? !profile.domain : !(profile?.interests?.length))) && !localSignupComplete;
       
       if (needsOnboarding) {
-        navigate('/onboarding', { replace: true });
+        if (location.pathname !== '/onboarding') {
+          navigate('/onboarding', { replace: true });
+        }
       } else {
         const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';
         navigate(targetRoute, { replace: true });

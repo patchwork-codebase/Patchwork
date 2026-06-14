@@ -8,8 +8,9 @@ export default function VerificationRequiredModal() {
   const { user, profile, signOut } = useAuth();
   const [resending, setResending] = useState(false);
 
-  // If verified, don't show the modal
-  if (!profile || profile.emailVerified) return null;
+  // If verified in DB or failsafe is present in localStorage, don't show the modal
+  const localVerified = localStorage.getItem(`email_verified_failsafe_${user?.id}`) === 'true';
+  if (!profile || profile.emailVerified || localVerified) return null;
 
   const handleResend = async () => {
     if (!user) return;
