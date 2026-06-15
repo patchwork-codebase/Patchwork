@@ -5,6 +5,7 @@ import { timeAgo } from "../../utils/helpers";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
+import { SmartArtifactCard } from "../ui/SmartArtifactCard";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import {
   AlertDialog,
@@ -142,6 +143,18 @@ export function RoomFeed({
                 className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-[#8B7CF8]/40 pl-4 sm:pl-5 mb-4 relative z-10" 
               />
             )}
+
+            {/* Smart Artifact Parsing */}
+            {(() => {
+              const urlRegex = /(https?:\/\/(?:www\.)?(?:github\.com|linear\.app)[^\s]+)/gi;
+              const urls = update.content.match(urlRegex) || [];
+              const uniqueUrls = Array.from(new Set(urls));
+              return uniqueUrls.map((url, i) => (
+                <div key={i} className="mb-4 relative z-10">
+                  <SmartArtifactCard url={url} />
+                </div>
+              ));
+            })()}
 
             {update.mediaUrl && (
               <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">

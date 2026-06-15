@@ -62,18 +62,18 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
 
   return (
     <div className="relative" ref={ref}>
-      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{label}</label>
+      <label className="block text-[13px] font-bold text-slate-700 mb-2">{label}</label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-4 py-2.5 bg-[#0A0910]/50 border ${isOpen ? 'border-[#6C5CE7]/50 ring-1 ring-[#6C5CE7]/50' : 'border-white/[0.08]'} rounded-xl text-[14px] text-white focus:outline-none transition-all font-medium flex items-center justify-between`}
+        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-[#8B7CF8]/50 ring-1 ring-[#8B7CF8]/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
       >
-        <span>{selectedOption ? selectedOption.label : 'Select User Type'}</span>
+        <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-[#1A1825] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden py-1 max-h-[250px] overflow-y-auto">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
           {options.map(option => (
             <button
               key={option.value}
@@ -84,8 +84,8 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
               }}
               className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
                 value === option.value 
-                  ? 'bg-[#6C5CE7]/20 text-[#8B7CF8] font-bold' 
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white font-medium'
+                  ? 'bg-slate-50 text-[#8B7CF8] font-bold' 
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
               }`}
             >
               {option.label}

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { FolderGit2, Figma, Github } from "lucide-react";
 
@@ -45,6 +45,7 @@ function tagStyle(tag: string) {
 }
 
 export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSelectedRoomId }: ActiveRoomsListProps) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4 px-1">
@@ -107,10 +108,20 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
                 key={room.id}
-                onMouseEnter={() => setSelectedRoomId && setSelectedRoomId(room.id)}
               >
-                <Link
-                  to={`/dashboard/room/${room.id}`}
+                <div
+                  onClick={() => {
+                    if (setSelectedRoomId && selectedRoomId !== room.id) {
+                      setSelectedRoomId(room.id);
+                    } else {
+                      navigate(`/dashboard/room/${room.id}`);
+                    }
+                  }}
+                  onMouseEnter={() => {
+                    if (window.matchMedia('(hover: hover)').matches && setSelectedRoomId) {
+                      setSelectedRoomId(room.id);
+                    }
+                  }}
                   className={`block border rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 active:scale-95 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm relative overflow-hidden cursor-pointer ${
                     selectedRoomId === room.id 
                       ? 'bg-slate-50 border-[#8B7CF8]/50 shadow-sm' 
@@ -154,7 +165,7 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               </motion.div>
             );
           })}

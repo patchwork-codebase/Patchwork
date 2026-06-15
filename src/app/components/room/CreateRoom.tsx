@@ -24,18 +24,18 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
 
   return (
     <div className="relative" ref={ref}>
-      <label className="block text-[13px] font-bold text-slate-300 mb-2">{label}</label>
+      <label className="block text-[13px] font-bold text-slate-700 mb-2">{label}</label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-5 py-4 bg-[#0A0910]/50 border ${isOpen ? 'border-[#6C5CE7]/50 ring-1 ring-[#6C5CE7]/50' : 'border-white/[0.08]'} rounded-xl text-[15px] text-white focus:outline-none transition-all font-medium flex items-center justify-between`}
+        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-[#8B7CF8]/50 ring-1 ring-[#8B7CF8]/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
       >
         <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-[#1A1825] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden py-1">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
           {options.map(option => (
             <button
               key={option.value}
@@ -46,8 +46,8 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
               }}
               className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
                 value === option.value 
-                  ? 'bg-[#6C5CE7]/20 text-[#8B7CF8] font-bold' 
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white font-medium'
+                  ? 'bg-slate-50 text-[#8B7CF8] font-bold' 
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
               }`}
             >
               {option.label}
@@ -211,31 +211,30 @@ export default function CreateRoom() {
 
   return (
     <div className="max-w-[800px] mx-auto px-6 py-12 relative">
-      <div className="absolute top-20 left-0 w-96 h-96 bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-20 left-0 w-96 h-96 bg-[#8B7CF8]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group">
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 hover:text-slate-900 mb-8 transition-colors group">
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
       </Link>
 
       <div className="mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 rounded-full mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-full mb-4">
           <Sparkles className="w-3.5 h-3.5 text-[#8B7CF8]" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B7CF8]">New Project</span>
         </div>
-        <h1 className="text-[40px] font-extrabold text-white font-display tracking-tight leading-tight mb-2">Create a Build Room</h1>
-        <p className="text-[15px] text-slate-400 font-medium">Initialize a dedicated space to share your work-in-progress.</p>
+        <h1 className="text-[40px] font-extrabold text-slate-900 font-display tracking-tight leading-tight mb-2">Create a Build Room</h1>
+        <p className="text-[15px] text-slate-600 font-medium">Initialize a dedicated space to share your work-in-progress.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 shadow-xl backdrop-blur-md relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
         
         <div className="space-y-8 relative z-10">
           {/* Cover Image Upload */}
           <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-2">Cover Image (Optional)</label>
+            <label className="block text-[13px] font-bold text-slate-700 mb-2">Cover Image (Optional)</label>
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-[#6C5CE7]/50 bg-[#0A0910]/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+              className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#8B7CF8]/50 bg-slate-50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
             >
               {form.coverImage ? (
                 <>
@@ -247,9 +246,9 @@ export default function CreateRoom() {
                   </div>
                 </>
               ) : (
-                <div className="text-slate-500 flex flex-col items-center gap-2">
+                <div className="text-slate-400 flex flex-col items-center gap-2">
                   <ImageIcon className="w-8 h-8 opacity-50" />
-                  <span className="text-[13px] font-medium">Click to upload cover image</span>
+                  <span className="text-[13px] font-medium text-slate-500">Click to upload cover image</span>
                 </div>
               )}
             </div>
@@ -264,8 +263,8 @@ export default function CreateRoom() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[13px] font-bold text-slate-300 mb-2">
-                Room title <span className="text-rose-400">*</span>
+              <label className="block text-[13px] font-bold text-slate-700 mb-2">
+                Room title <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text" required
@@ -278,19 +277,19 @@ export default function CreateRoom() {
                 }}
                 placeholder="e.g. Redesigning merchant onboarding flow"
                 maxLength={100}
-                className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 transition-all font-medium"
               />
               <div className="flex justify-end mt-1.5">
-                <span className="text-[11px] font-mono text-slate-500">{form.title.length}/100</span>
+                <span className="text-[11px] font-mono text-slate-400">{form.title.length}/100</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-slate-300 mb-2">
-                URL Slug <span className="text-rose-400">*</span>
+              <label className="block text-[13px] font-bold text-slate-700 mb-2">
+                URL Slug <span className="text-rose-500">*</span>
               </label>
               <div className="flex items-center">
-                <span className="px-4 py-4 bg-white/5 border border-r-0 border-white/[0.08] rounded-l-xl text-slate-500 text-[14px] font-mono">patchwork.sh/</span>
+                <span className="px-4 py-4 bg-slate-100 border border-r-0 border-slate-200 rounded-l-xl text-slate-500 text-[14px] font-mono">patchwork.sh/</span>
                 <input
                   type="text" required
                   value={form.slug}
@@ -300,42 +299,42 @@ export default function CreateRoom() {
                   }}
                   placeholder="room-slug"
                   maxLength={50}
-                  className={`w-full px-4 py-4 bg-[#0A0910]/50 border rounded-r-xl text-[14px] font-mono text-white placeholder-slate-600 focus:outline-none transition-all ${
-                    slugError ? 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-white/[0.08] focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50'
+                  className={`w-full px-4 py-4 bg-slate-50 border rounded-r-xl text-[14px] font-mono text-slate-900 placeholder-slate-400 focus:outline-none transition-all ${
+                    slugError ? 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-200 focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50'
                   }`}
                 />
               </div>
               {slugError ? (
-                <div className="mt-1.5 text-[12px] font-bold text-rose-400">{slugError}</div>
+                <div className="mt-1.5 text-[12px] font-bold text-rose-500">{slugError}</div>
               ) : (
-                <div className="mt-1.5 text-[12px] font-medium text-slate-500">Must be unique to you</div>
+                <div className="mt-1.5 text-[12px] font-medium text-slate-400">Must be unique to you</div>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-2">Description</label>
+            <label className="block text-[13px] font-bold text-slate-700 mb-2">Description</label>
             <textarea
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               placeholder="What are you building? Give observers context."
               rows={4}
               maxLength={500}
-              className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all resize-none font-medium leading-relaxed"
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 transition-all resize-none font-medium leading-relaxed"
             />
             <div className="flex justify-end mt-1.5">
-              <span className="text-[11px] font-mono text-slate-500">{form.description.length}/500</span>
+              <span className="text-[11px] font-mono text-slate-400">{form.description.length}/500</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-2">Primary Link (Optional)</label>
+            <label className="block text-[13px] font-bold text-slate-700 mb-2">Primary Link (Optional)</label>
             <input
               type="text"
               value={form.primaryLink}
               onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
               placeholder="https://github.com/your/repo or your live site"
-              className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 transition-all font-medium"
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 transition-all font-medium"
             />
           </div>
 
@@ -364,15 +363,15 @@ export default function CreateRoom() {
           </div>
 
           <div>
-            <label className="block text-[13px] font-bold text-slate-300 mb-3">
+            <label className="block text-[13px] font-bold text-slate-700 mb-3">
               Tags <span className="text-slate-500 font-normal ml-1">(up to 5)</span>
             </label>
             
             <div className="flex flex-wrap gap-2 mb-4">
               {tags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1.5 bg-[#6C5CE7]/15 border border-[#6C5CE7]/30 text-[#8B7CF8] text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
+                <span key={tag} className="inline-flex items-center gap-1.5 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
                   {tag}
-                  <button type="button" onClick={() => removeTag(tag)} className="hover:text-white transition-colors">
+                  <button type="button" onClick={() => removeTag(tag)} className="hover:text-slate-900 transition-colors">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
@@ -386,13 +385,13 @@ export default function CreateRoom() {
                 onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(form.tagInput); } }}
                 placeholder="Add a tag..."
-                className="flex-1 px-5 py-3.5 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 transition-all font-medium"
+                className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 transition-all font-medium"
               />
               <button
                 type="button"
                 onClick={() => addTag(form.tagInput)}
                 disabled={!form.tagInput.trim() || tags.length >= 5}
-                className="px-5 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                className="px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <Plus className="w-5 h-5" />
               </button>
@@ -404,7 +403,7 @@ export default function CreateRoom() {
                   key={tag} type="button"
                   onClick={() => addTag(tag)}
                   disabled={tags.length >= 5}
-                  className="text-[11px] px-3 py-1.5 border border-dashed border-white/20 rounded-md text-slate-400 hover:border-white/40 hover:text-white transition-colors disabled:opacity-30 uppercase tracking-wider font-bold font-mono"
+                  className="text-[11px] px-3 py-1.5 border border-dashed border-slate-300 rounded-md text-slate-500 hover:border-slate-400 hover:text-slate-700 transition-colors disabled:opacity-30 uppercase tracking-wider font-bold font-mono"
                 >
                   + {tag}
                 </button>
@@ -412,11 +411,11 @@ export default function CreateRoom() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-white/[0.06]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-200">
             <div className="flex flex-col-reverse sm:flex-row gap-3 sm:ml-auto items-stretch sm:items-center w-full sm:w-auto">
               <Link
                 to="/dashboard"
-                className="px-6 py-3 text-slate-400 hover:text-white rounded-full text-[14px] font-bold transition-colors text-center"
+                className="px-6 py-3 text-slate-500 hover:text-slate-900 rounded-full text-[14px] font-bold transition-colors text-center"
               >
                 Cancel
               </Link>
@@ -424,7 +423,7 @@ export default function CreateRoom() {
                 type="submit"
                 onClick={() => setSubmitStatus('draft')}
                 disabled={loading || !form.title.trim()}
-                className="px-6 py-3 border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-full text-[14px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-center"
+                className="px-6 py-3 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-full text-[14px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-center"
               >
                 {loading && submitStatus === 'draft' ? 'Saving...' : 'Save as Draft'}
               </button>
@@ -432,7 +431,7 @@ export default function CreateRoom() {
                 type="submit"
                 onClick={() => setSubmitStatus('active')}
                 disabled={loading || !form.title.trim()}
-                className="flex justify-center items-center gap-2 px-6 py-3 bg-white text-[#0A0910] rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex justify-center items-center gap-2 px-6 py-3 bg-[#8B7CF8] text-white rounded-full text-[14px] font-bold hover:bg-[#7a6aeb] transition-colors shadow-sm hover:shadow-[#8B7CF8]/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {loading && submitStatus === 'active' ? 'Creating...' : <>{(!profile || !profile.emailVerified) && <Lock className="w-4 h-4 opacity-70" />}<ArrowRight className="w-4 h-4" /> Publish Room</>}
               </button>

@@ -92,6 +92,19 @@ export default function RoomLogPage() {
     enabled: !!roomId,
   });
 
+  // Fetch AI sentiment insights
+  const { data: aiInsights, isLoading: aiLoading } = useQuery({
+    queryKey: ['ai-sentiment', roomId],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('analyze-sentiment', {
+        body: { roomId }
+      });
+      if (error) { console.error(error); return null; }
+      return data?.success ? data.insights : null;
+    },
+    enabled: !!roomId,
+  });
+
   if (isLoading) {
     return (
       <div className="max-w-[860px] mx-auto px-4 sm:px-6 py-12 animate-pulse space-y-6">
@@ -363,8 +376,39 @@ export default function RoomLogPage() {
       )}
 
       {activeSection === 'reactions' && (
-        <div className="space-y-3">
-          {reactions.filter((r: any) => r.text?.trim()).length === 0 ? (
+        <div className="space-y-4">
+          {/* AI Feedback Insights Section */}
+          {aiInsights && aiInsights.themes?.length > 0 && (
+            <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-5 sm:p-6 mb-8 relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#8B7CF8] to-transparent opacity-30" />
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-[#8B7CF8]/10 flex items-center justify-center shrink-0">
+                  <Zap className="w-5 h-5 text-[#8B7CF8]" />
+                </div>
+                <div>
+                  <h3 className="text-[16px] font-bold text-slate-900 font-display">AI Feedback Insights</h3>
+                  <p className="text-[13px] text-slate-600 font-medium">{aiInsights.summary}</p>
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {aiInsights.themes.map((theme: any, i: number) => (
+                  <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`w-2 h-2 rounded-full ${
+                        theme.sentiment === 'positive' ? 'bg-emerald-400' :
+                        theme.sentiment === 'negative' ? 'bg-rose-400' : 'bg-slate-400'
+                      }`} />
+                      <span className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">{theme.name}</span>
+                    </div>
+                    <p className="text-[12px] text-slate-600 font-medium leading-relaxed">{theme.summary}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {reactions.filter((r: any) => r.text?.trim()).length === 0 ? (
             <div className="text-center py-16 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
               <MessageCircle className="w-10 h-10 mx-auto mb-3 text-slate-300" />
               <p className="text-[14px] font-bold text-slate-400">No text reactions were left in this room</p>
@@ -388,6 +432,7 @@ export default function RoomLogPage() {
               );
             })
           )}
+          </div>
         </div>
       )}
 

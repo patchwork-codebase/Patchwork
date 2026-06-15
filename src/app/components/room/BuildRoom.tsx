@@ -47,6 +47,8 @@ export default function BuildRoom() {
   const [linkedinShareOpen, setLinkedinShareOpen] = useState(false);
   const [requestExpertModalOpen, setRequestExpertModalOpen] = useState(false);
   const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
+  const [suggestedDecision, setSuggestedDecision] = useState<{ isDecision: boolean; extractedText: string | null } | null>(null);
+  const [loggingDecision, setLoggingDecision] = useState(false);
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const quickUpdateMode = searchParams.get('action') === 'post';
   const isPostingRef = useRef(false);
@@ -117,11 +119,42 @@ export default function BuildRoom() {
       setCodeSnippet('');
       setShowCodeInput(false);
       toast.success('Update posted!');
+
+      // Analyze update for technical decisions in background
+      supabase.functions.invoke('analyze-update', {
+        body: { updateText: updatePayload.content }
+      }).then(({ data, error }) => {
+        if (!error && data?.success && data?.result?.isDecision && data?.result?.extractedText) {
+          setSuggestedDecision(data.result);
+        }
+      });
     } catch (err: any) {
       toast.error(`Failed to post update: ${err.message}`);
     } finally {
       isPostingRef.current = false;
       setPostingUpdate(false);
+    }
+  };
+
+  const handleLogDecision = async () => {
+    if (!id || !user || !suggestedDecision?.extractedText) return;
+    setLoggingDecision(true);
+    try {
+      const payload = {
+        room_id: id,
+        title: suggestedDecision.extractedText.slice(0, 50) + (suggestedDecision.extractedText.length > 50 ? '...' : ''),
+        description: suggestedDecision.extractedText,
+        impact: 'Medium',
+        created_at: new Date().toISOString()
+      };
+      const { error } = await supabase.from('room_decisions').insert(payload);
+      if (error) throw error;
+      toast.success('Decision automatically logged!');
+      setSuggestedDecision(null);
+    } catch (err: any) {
+      toast.error(`Failed to log decision: ${err.message}`);
+    } finally {
+      setLoggingDecision(false);
     }
   };
 
@@ -320,16 +353,42 @@ export default function BuildRoom() {
             )}
 
             {isBuilder && room.status === 'active' && (
-              <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#8B7CF8]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 bg-[#8B7CF8]/10 rounded-lg flex items-center justify-center">
-                    <Hammer className="w-4 h-4 text-[#8B7CF8]" />
+              <>
+                {suggestedDecision && (
+                  <div className="bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-2xl p-5 mb-6 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
+                    <div className="bg-[#8B7CF8]/20 p-2 rounded-xl shrink-0">
+                      <Sparkles className="w-5 h-5 text-[#8B7CF8]" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-slate-900 mb-1">AI spotted a decision</h4>
+                      <p className="text-sm text-slate-600 mb-3">"{suggestedDecision.extractedText}"</p>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={handleLogDecision}
+                          disabled={loggingDecision}
+                          className="bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white text-xs font-bold px-4 py-2 rounded-lg transition"
+                        >
+                          {loggingDecision ? 'Logging...' : 'Add to Decision Log'}
+                        </button>
+                        <button 
+                          onClick={() => setSuggestedDecision(null)}
+                          className="text-slate-500 hover:text-slate-700 text-xs font-medium transition"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[14px] font-extrabold text-[#8B7CF8] font-display">Post an update</span>
-                </div>
-                <textarea
-                  ref={updateTextAreaRef}
+                )}
+                <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden group">
+                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#8B7CF8]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-[#8B7CF8]/10 rounded-lg flex items-center justify-center">
+                      <Hammer className="w-4 h-4 text-[#8B7CF8]" />
+                    </div>
+                    <span className="text-[14px] font-extrabold text-[#8B7CF8] font-display">Post an update</span>
+                  </div>
+                  <textarea
                   value={newUpdate}
                   onChange={e => setNewUpdate(e.target.value)}
                   placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
@@ -393,6 +452,7 @@ export default function BuildRoom() {
                   </button>
                 </div>
               </form>
+            </>
             )}
 
             {!isBuilder && room.status === 'active' && (
