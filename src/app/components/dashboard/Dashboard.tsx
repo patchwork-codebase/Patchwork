@@ -469,7 +469,7 @@ export default function Dashboard() {
             );
           })}
         </div>
-        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-[#0E0C15] to-transparent pointer-events-none sm:hidden" />
+        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none sm:hidden" />
       </div>
 
       {/* MAIN COLUMNS GRID */}

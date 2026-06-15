@@ -340,6 +340,45 @@ export default function BuildLogs() {
           </Link>
         </div>
       )}
+
+      {/* ── EMPTY STATE ── */}
+      {(() => {
+        let hasVisibleRooms = false;
+        
+        if (buildLogFilter === "all") {
+          hasVisibleRooms = myRooms.length > 0;
+        } else if (buildLogFilter === "active") {
+          hasVisibleRooms = activeRooms.length > 0;
+        } else if (buildLogFilter === "shipped") {
+          hasVisibleRooms = shippedRooms.length > 0;
+        } else if (buildLogFilter === "completed") {
+          hasVisibleRooms = completedRooms.length > 0;
+        } else if (buildLogFilter === "stalled") {
+          hasVisibleRooms = stalledRooms.length > 0;
+        } else {
+          hasVisibleRooms = myRooms.some(r => r.tags?.[0] === buildLogFilter);
+        }
+
+        if (!hasVisibleRooms) {
+          return (
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center border-2 border-dashed border-slate-200 rounded-[24px] mt-8 bg-white/50">
+              <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center mb-5 shadow-sm">
+                <Archive className="w-8 h-8 text-slate-300" />
+              </div>
+              <h3 className="text-[18px] font-extrabold text-slate-900 mb-2 font-display">No logs found</h3>
+              <p className="text-[14px] text-slate-500 max-w-[280px] mb-8 font-medium">
+                {buildLogFilter === 'all' 
+                  ? "You haven't opened any build rooms yet." 
+                  : `You don't have any ${buildLogFilter} build logs right now.`}
+              </p>
+              <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
+                <Sparkles size={16} /> Open a new room
+              </Link>
+            </div>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 }

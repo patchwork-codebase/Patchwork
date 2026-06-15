@@ -211,18 +211,18 @@ export default function Layout() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-4 py-3 z-50 lg:hidden pb-[max(12px,env(safe-area-inset-bottom))]">
-        <div className="w-full max-w-md bg-white/95 backdrop-blur-3xl rounded-full border border-slate-200 shadow-[0_10px_40px_rgba(0,0,0,0.1)] px-2 py-1.5">
-          <nav className="flex items-center justify-between gap-1">
+      <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-5 py-4 z-50 lg:hidden pb-[max(16px,env(safe-area-inset-bottom))]">
+        <div className="w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-[2rem] border border-slate-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.1)] px-2 py-2">
+          <nav className="flex items-center justify-between gap-2">
             <Link
               to="/dashboard"
-              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
               {activeSection === 'overview' && (
-                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                   <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
@@ -231,13 +231,13 @@ export default function Layout() {
             
             <Link
               to="/dashboard?tab=feed"
-              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
               {activeSection === 'feed' && (
-                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
                   <circle cx="9" cy="9" r="2"/>
                   <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
@@ -247,30 +247,30 @@ export default function Layout() {
 
             <Link
               to="/dashboard/build-logs"
-              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
               {activeSection === 'logs' && (
-                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'logs' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'logs' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                 </svg>
                 {activeSection === 'logs' && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
                 )}
               </div>
             </Link>
 
             <Link
               to="/dashboard/explore"
-              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
               {activeSection === 'explore' && (
-                <div className="absolute inset-1 bg-[#8B7CF8]/15 border border-[#8B7CF8]/20 rounded-full" />
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#8B7CF8]' : 'text-slate-500'}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/>
                   <path d="m21 21-4.35-4.35"/>
                 </svg>
@@ -279,12 +279,12 @@ export default function Layout() {
 
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="relative flex-1 flex items-center justify-center py-2.5 min-h-[44px]"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
-              <div className={`w-[28px] h-[28px] rounded-full overflow-hidden transition-all duration-200 ${
-                mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-[#0A0910]' : 'border-2 border-slate-600'
+              <div className={`w-[32px] h-[32px] rounded-full overflow-hidden transition-all duration-200 shadow-sm ${
+                mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-white' : 'border border-slate-300'
               }`}>
-                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover scale-110" />
               </div>
             </button>
           </nav>
