@@ -136,8 +136,8 @@ export default function Layout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#08070D] flex items-center justify-center">
-        <div className="flex items-center gap-2.5 text-slate-400 font-mono text-[13px]">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex items-center gap-2.5 text-slate-600 font-mono text-[13px]">
           <div className="w-4.5 h-4.5 rounded-full border-2 border-[#6C5CE7]/20 border-t-[#6C5CE7] animate-spin" />
           Loading Patchwork…
         </div>
@@ -159,7 +159,7 @@ export default function Layout() {
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#08070D] text-white pb-[env(safe-area-inset-bottom)] lg:pb-0">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
       <VerificationRequiredModal />
       <VerificationSuccessModal 
         isOpen={showSuccessModal} 
@@ -176,9 +176,9 @@ export default function Layout() {
       )}
       
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
-      <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.08] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
+      <header className="relative h-[60px] bg-white/85 backdrop-blur-xl border-b border-slate-200 flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition group">
+          <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-slate-900 hover:opacity-80 transition group">
             <span>patch<span className="inline-block text-[#8B7CF8] group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
             <span className="rounded bg-[#8B7CF8]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8B7CF8]">Beta</span>
           </Link>
@@ -212,7 +212,7 @@ export default function Layout() {
       )}
 
       <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-4 py-3 z-50 lg:hidden pb-[max(12px,env(safe-area-inset-bottom))]">
-        <div className="w-full max-w-md bg-[#0A0910]/95 backdrop-blur-3xl rounded-full border border-white/[0.12] shadow-[0_20px_60px_rgba(0,0,0,0.8)] px-2 py-1.5">
+        <div className="w-full max-w-md bg-white/95 backdrop-blur-3xl rounded-full border border-slate-200 shadow-[0_10px_40px_rgba(0,0,0,0.1)] px-2 py-1.5">
           <nav className="flex items-center justify-between gap-1">
             <Link
               to="/dashboard"
@@ -307,18 +307,18 @@ export default function Layout() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#0E0C16] z-[70] lg:hidden rounded-t-3xl border-t border-white/[0.08] pb-[env(safe-area-inset-bottom)]"
+            className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
           >
-            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-5" />
+            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
             
             <div className="px-5 pb-5">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
                   <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base font-bold text-white truncate">{userDisplayName}</div>
-                  <div className="text-xs text-slate-400 font-mono truncate">{profile?.email || user.email}</div>
+                  <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>
+                  <div className="text-xs text-slate-500 font-mono truncate">{profile?.email || user.email}</div>
                 </div>
               </div>
 
@@ -326,22 +326,22 @@ export default function Layout() {
                 <Link
                   to={`/dashboard/profile/${user.id}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-200 hover:bg-white/[0.04] rounded-xl transition"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                 >
                   <UserIcon /> My Profile
                 </Link>
                 <Link
                   to="/dashboard/explore"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-200 hover:bg-white/[0.04] rounded-xl transition"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                 >
                   <CompassIcon /> Explore Builders
                 </Link>
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
-                <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Privacy Policy</Link>
-                <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Terms of Service</Link>
+              <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
+                <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Privacy Policy</Link>
+                <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Terms of Service</Link>
               </div>
 
               <button
@@ -362,7 +362,7 @@ export default function Layout() {
       <div className="flex flex-col lg:flex-row flex-1 pb-[70px] lg:pb-0">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0A0910] border-r border-white/[0.08] flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
+        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
 
           <nav className="p-5 flex-1">
             
@@ -373,7 +373,7 @@ export default function Layout() {
 
             <Link
               to="/dashboard"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <DashboardIcon />
               Dashboard
@@ -381,20 +381,20 @@ export default function Layout() {
 
             <Link
               to="/dashboard?tab=mine"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'mine' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'mine' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <HammerIcon />
                 My rooms
               </div>
-              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'mine' ? 'bg-[#6C5CE7] text-white' : 'bg-white/10 text-slate-300'}`}>
+              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'mine' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
                 3
               </span>
             </Link>
 
             <Link
               to="/dashboard/build-logs"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <ZapIcon />
               Build logs
@@ -407,65 +407,65 @@ export default function Layout() {
 
             <Link
               to="/dashboard?tab=feed"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <ActivityIcon />
                 Global timeline
               </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'feed' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-300'}`}>
+              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'feed' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                 12
               </span>
             </Link>
 
             <Link
               to="/dashboard/observer"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <EyeIcon />
                 Observer hub
               </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'observer' ? 'bg-[#6C5CE7] text-white' : 'bg-white/10 text-slate-300'}`}>
+              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'observer' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
                 3
               </span>
             </Link>
 
             <Link
               to="/dashboard/explore"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <CompassIcon />
               Explore builders
             </Link>
 
             <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
-              <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+              <Link to="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
               <span>·</span>
-              <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
+              <Link to="/terms" className="hover:text-slate-900 transition">Terms of Service</Link>
             </div>
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-white/[0.08] p-4 bg-white/[0.01]">
+          <div className="border-t border-slate-200 p-4 bg-slate-50/50">
             <div className="relative">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}
                 className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                   <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-white truncate">
+                  <div className="text-[13px] font-bold text-slate-900 truncate">
                     {userDisplayName}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className="text-[10px] text-slate-500 mt-0.5">
                     product · Lagos
                   </div>
                 </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-500 group-hover:text-white transition">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-slate-700 transition">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
@@ -483,18 +483,18 @@ export default function Layout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute bottom-full left-0 right-0 mb-2 bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
+                    className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
                   >
-                    <div className="p-3 border-b border-white/[0.08]">
-                      <div className="text-[12px] font-bold text-white">{profile?.name}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">
+                    <div className="p-3 border-b border-slate-100">
+                      <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
                         {profile?.email || user.email}
                       </div>
                     </div>
                     <Link
                       to={`/dashboard/profile/${user.id}`}
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/[0.04] hover:text-white transition"
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
                     >
                       <UserIcon /> Profile
                     </Link>
@@ -503,13 +503,13 @@ export default function Layout() {
                         setProfileMenuOpen(false);
                         setForceShowTour(true);
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/[0.04] hover:text-white transition text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
                     >
                       <CompassIcon /> Replay Tour
                     </button>
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
                     >
                       <LogOutIcon /> Sign out
                     </button>
@@ -521,7 +521,7 @@ export default function Layout() {
           </div>
         </aside>
 
-        <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#08070D] pb-28">
+        <main className="flex-1 min-h-[calc(100vh-60px)] bg-slate-50 pb-28">
           <div className="h-full">
             <Outlet />
           </div>

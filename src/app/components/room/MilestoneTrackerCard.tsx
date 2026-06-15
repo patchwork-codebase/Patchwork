@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle, ArrowRight, Clock, AlertCircle, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const navigate = useNavigate();
 
   const { data: dbMilestones = [] } = useQuery({
     queryKey: ['linear-issues', roomId],
@@ -262,7 +264,16 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                       >
                         {itemReplies.map((reply: any) => (
                           <div key={reply.id} className="flex items-start gap-3 p-3 bg-white/[0.02] border border-white/[0.05] rounded-2xl">
-                            <img src={getAvatarUrl(reply.observer_id || reply.observerId)} className="w-6 h-6 rounded-full shrink-0" alt="avatar" />
+                            <img 
+                              src={getAvatarUrl(reply.observer_id || reply.observerId)} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const uid = reply.observer_id || reply.observerId;
+                                if (uid) navigate(`/dashboard/profile/${uid}`);
+                              }}
+                              className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all" 
+                              alt="avatar" 
+                            />
                             <div>
                               <div className="flex items-center gap-2 mb-0.5">
                                 <span className="text-[12px] font-bold text-white">Observer</span>

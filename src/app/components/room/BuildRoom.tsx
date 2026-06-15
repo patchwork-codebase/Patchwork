@@ -250,8 +250,8 @@ export default function BuildRoom() {
               onClick={() => setActiveTab(tab.key as any)}
               className={`px-5 py-3 text-[14px] font-bold border-b-2 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
                 activeTab === tab.key
-                  ? 'border-[#8B7CF8] text-white'
-                  : 'border-transparent text-slate-400 hover:text-white hover:border-white/20'
+                  ? 'border-[#8B7CF8] text-[#8B7CF8]'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
               }`}
             >
               {tab.label}
@@ -277,36 +277,36 @@ export default function BuildRoom() {
         )}
 
         {activeTab === 'workspace' && (
-          <div className="mb-8 p-8 bg-[#0D0B14] border border-white/[0.08] rounded-[24px]">
+          <div className="mb-8 p-8 bg-white border border-slate-200 rounded-[24px] shadow-sm">
             <div className="text-center mb-8">
-              <h3 className="text-[18px] font-bold text-white mb-2">Product Workspace</h3>
-              <p className="text-[14px] text-slate-400 max-w-[400px] mx-auto">
+              <h3 className="text-[18px] font-bold text-slate-900 mb-2">Product Workspace</h3>
+              <p className="text-[14px] text-slate-500 max-w-[400px] mx-auto">
                 Connect your Notion PRDs, Linear Roadmaps, and GitHub repos to maintain a single source of truth.
               </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6">
-                <h4 className="text-[14px] font-semibold text-white mb-4 flex items-center gap-2">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                <h4 className="text-[14px] font-semibold text-slate-900 mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#8B7CF8]"></span>
                   Linked Artifacts
                 </h4>
                 <IntegrationsBar roomId={id!} builderId={room.builderId} isOwner={!!(user && user.id === room.builderId)} />
               </div>
 
-              <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center text-center">
-                <div className="absolute inset-0 bg-[#0A0910]/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                  <div className="px-3 py-1 bg-[#8B7CF8]/20 border border-[#8B7CF8]/30 text-[#8B7CF8] text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center text-center">
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center">
+                  <div className="px-3 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
                     Coming Soon
                   </div>
-                  <span className="text-[14px] font-semibold text-white">Native Artifacts</span>
-                  <p className="text-[12px] text-slate-400 mt-2 px-6">
+                  <span className="text-[14px] font-semibold text-slate-900">Native Artifacts</span>
+                  <p className="text-[12px] text-slate-500 mt-2 px-6 font-medium">
                     Create and edit PRDs and Roadmaps directly inside Patchwork.
                   </p>
                 </div>
-                <div className="opacity-20 pointer-events-none">
-                  <div className="w-full h-8 bg-white/10 rounded-md mb-2"></div>
-                  <div className="w-3/4 h-8 bg-white/10 rounded-md"></div>
+                <div className="opacity-40 pointer-events-none w-full">
+                  <div className="w-full h-8 bg-slate-200 rounded-md mb-2"></div>
+                  <div className="w-3/4 h-8 bg-slate-200 rounded-md mx-auto"></div>
                 </div>
               </div>
             </div>
@@ -320,13 +320,13 @@ export default function BuildRoom() {
             )}
 
             {isBuilder && room.status === 'active' && (
-              <form onSubmit={handlePostUpdate} className="bg-white/[0.02] border border-white/[0.06] rounded-[24px] p-6 mb-8 shadow-sm backdrop-blur-sm relative overflow-hidden group">
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#8B7CF8]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 bg-[#8B7CF8]/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#8B7CF8]/10 rounded-lg flex items-center justify-center">
                     <Hammer className="w-4 h-4 text-[#8B7CF8]" />
                   </div>
-                  <span className="text-[14px] font-extrabold text-white font-display">Post an update</span>
+                  <span className="text-[14px] font-extrabold text-[#8B7CF8] font-display">Post an update</span>
                 </div>
                 <textarea
                   ref={updateTextAreaRef}
@@ -334,12 +334,12 @@ export default function BuildRoom() {
                   onChange={e => setNewUpdate(e.target.value)}
                   placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
                   rows={3}
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-4 text-white placeholder-slate-600 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-4 text-slate-900 placeholder-slate-500 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 />
                 
                 {mediaPreview && (
                   <div className="relative w-fit mb-4 group/preview">
-                    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0910]">
+                    <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
                       <img src={mediaPreview} alt="Upload preview" className="max-h-[200px] object-cover" />
                     </div>
                   </div>
@@ -351,13 +351,13 @@ export default function BuildRoom() {
                     onChange={e => setCodeSnippet(e.target.value)}
                     placeholder="Paste your code snippet here..."
                     rows={5}
-                    className="w-full px-5 py-4 bg-[#0A0910] border border-white/[0.08] rounded-xl text-[13px] font-mono text-slate-300 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono text-slate-800 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                   />
                 )}
 
                 <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
                   <div className="grid grid-cols-2 sm:flex items-center gap-2">
-                    <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-white rounded-full text-[12px] font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+                    <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-full text-[12px] font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
                       <ImageIcon className="w-4 h-4 text-[#8B7CF8]" />
                       Attach visual
                       <input
@@ -377,7 +377,7 @@ export default function BuildRoom() {
                     <button
                       type="button"
                       onClick={() => setShowCodeInput(!showCodeInput)}
-                      className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-white/[0.06] text-white'} rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                      className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-slate-200 text-slate-600'} rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
                     >
                       <Code className="w-4 h-4" />
                       Code snippet
@@ -387,7 +387,7 @@ export default function BuildRoom() {
                   <button
                     type="submit"
                     disabled={postingUpdate || (!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview)}
-                    className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                    className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-white text-slate-700 border border-slate-200 text-[13px] font-bold rounded-full hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                   >
                     {postingUpdate ? 'Posting...' : <><Send className="w-4 h-4" /> Post Update</>}
                   </button>
@@ -429,26 +429,26 @@ export default function BuildRoom() {
         {activeTab === 'reactions' && (
           <div className="space-y-4">
             {room.reactions.length === 0 ? (
-              <div className="text-center py-20 bg-white/[0.01] border-2 border-dashed border-white/[0.06] rounded-[24px]">
+              <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-30 text-[#8B7CF8]" />
-                <p className="font-extrabold text-[16px] text-white font-display mb-2">No reactions yet</p>
+                <p className="font-extrabold text-[16px] text-slate-900 font-display mb-2">No reactions yet</p>
               </div>
             ) : (
               [...room.reactions].reverse().filter(r => r.text && r.text.trim().length > 0).map(r => {
                 const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                 return (
-                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
+                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
                     <div className="text-xl mt-0.5">{cfg.emoji}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                        <span className="text-[12px] font-bold text-slate-300 flex items-center gap-1">
+                        <span className="text-[12px] font-bold text-slate-900 flex items-center gap-1">
                           {r.observerName}
                           <VerifiedTick userId={r.observerId} className="w-3.5 h-3.5" />
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
                       </div>
-                      <p className="text-[14px] leading-relaxed font-medium text-slate-200 mb-2">{r.text}</p>
+                      <p className="text-[14px] leading-relaxed font-medium text-slate-700 mb-2">{r.text}</p>
                     </div>
                   </div>
                 );

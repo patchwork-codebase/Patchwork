@@ -30,12 +30,12 @@ export function RoomHeader({
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   return (
-    <div className={`bg-white/[0.02] border border-white/[0.06] rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-xl backdrop-blur-md relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
+    <div className={`bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-sm relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
       {room.coverImage && (
         <>
           <div className="absolute inset-0 z-0">
-            <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0910] via-[#0A0910]/80 to-transparent" />
+            <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover opacity-[0.15]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
           </div>
         </>
       )}
@@ -44,39 +44,39 @@ export function RoomHeader({
         <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
           <div className="flex flex-col gap-2.5">
             <div className="flex items-start justify-between gap-3 min-w-0">
-              <h1 className="text-[28px] md:text-[36px] font-extrabold text-white font-display leading-tight truncate flex-1 min-w-0">{room.title}</h1>
+              <h1 className="text-[28px] md:text-[36px] font-extrabold text-slate-900 font-display leading-tight truncate flex-1 min-w-0">{room.title}</h1>
               <span className={`shrink-0 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider ${
-                room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_8px_rgba(52,211,153,0.3)]' : 'bg-white/5 text-slate-400 border border-white/10'
+                room.status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
               }`}>
                 {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
                 {room.status}
               </span>
             </div>
-            {room.description && <p className="text-slate-400 text-[14px] md:text-[15px] leading-relaxed max-w-2xl font-medium">{room.description}</p>}
+            {room.description && <p className="text-slate-600 text-[14px] md:text-[15px] leading-relaxed max-w-2xl font-medium">{room.description}</p>}
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto md:overflow-visible md:flex-wrap scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0 py-1">
             {room.projectStage && (
-              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 snap-start">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 snap-start">
                 Stage: {room.projectStage}
               </span>
             )}
             
             {room.primaryGoal && (
-              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 snap-start">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 snap-start">
                 Goal: {room.primaryGoal}
               </span>
             )}
 
             {room.tags?.map((tag: string) => (
-              <span key={tag} className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-white/[0.03] text-[#8B7CF8] border border-white/[0.06] snap-start">{tag}</span>
+              <span key={tag} className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-slate-50 text-[#8B7CF8] border border-slate-200 snap-start">{tag}</span>
             ))}
           </div>
 
-          <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-400 flex-wrap font-medium mt-1">
+          <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-600 flex-wrap font-medium mt-1">
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-[#8B7CF8]" /></div>{room.builderName} <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" /></span>
-            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Users className="w-3 h-3" /></div>{room.observerCount}</span>
-            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"><Clock className="w-3 h-3" /></div>{timeAgo(room.updatedAt)}</span>
+            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Users className="w-3 h-3 text-slate-500" /></div>{room.observerCount}</span>
+            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Clock className="w-3 h-3 text-slate-500" /></div>{timeAgo(room.updatedAt)}</span>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export function RoomHeader({
               rel="noopener noreferrer"
               title="Open Project"
               aria-label="Open Project"
-              className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.05] hover:bg-white/[0.1] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
+              className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 active:scale-95"
             >
               <ExternalLink className="w-5 h-5" />
             </a>
@@ -101,7 +101,7 @@ export function RoomHeader({
             }}
             title="Share Room"
             aria-label="Share Room"
-            className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-xl text-slate-300 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] active:scale-95"
+            className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-xl text-slate-600 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] active:scale-95"
           >
             <Share2 className="w-5 h-5" />
           </button>
@@ -122,7 +122,7 @@ export function RoomHeader({
               onClick={() => setEditModalOpen(true)}
               title="Edit Room"
               aria-label="Edit Room"
-              className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.08] rounded-xl text-slate-300 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+              className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
             >
               <Edit2 className="w-5 h-5" />
             </button>
@@ -133,7 +133,7 @@ export function RoomHeader({
                 to={`/dashboard/build-logs`}
                 title="View Build Log"
                 aria-label="View Build Log"
-                className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+                className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
               >
                 <BookOpen className="w-5 h-5" />
               </Link>
@@ -158,20 +158,20 @@ export function RoomHeader({
                   disabled={closingRoom}
                   title={closingRoom ? 'Closing...' : 'Close Room'}
                   aria-label={closingRoom ? 'Closing...' : 'Close Room'}
-                  className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05] rounded-xl text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+                  className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
                 >
-                  {closingRoom ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                  {closingRoom ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                 </button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="bg-[#0D0B14] border-white/[0.08] text-white">
+              <AlertDialogContent className="bg-white border-slate-200 text-slate-900 shadow-xl">
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="text-white text-xl font-display">Close this room?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-slate-400">
+                  <AlertDialogTitle className="text-slate-900 text-xl font-display">Close this room?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-slate-600">
                     This will generate a permanent Build Log and prevent any further updates to this room. You cannot undo this action.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-transparent border-white/[0.08] hover:bg-white/[0.05] text-white">Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="bg-transparent border-slate-200 hover:bg-slate-50 text-slate-700">Cancel</AlertDialogCancel>
                   <AlertDialogAction onClick={handleCloseRoom} className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white font-bold">
                     Yes, Close Room
                   </AlertDialogAction>
@@ -183,7 +183,7 @@ export function RoomHeader({
           {room.status === 'completed' && (
             <button
               onClick={copyLogLink}
-              className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[44px] sm:min-h-[48px] bg-white text-[#0A0910] rounded-xl sm:rounded-full text-[13px] sm:text-[14px] font-bold hover:bg-slate-200 transition-all shadow-lg shadow-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 w-full sm:w-auto"
+              className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[44px] sm:min-h-[48px] bg-slate-900 text-white rounded-xl sm:rounded-full text-[13px] sm:text-[14px] font-bold hover:bg-slate-800 transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 w-full sm:w-auto"
             >
               <Share2 className="w-4 h-4 sm:w-5 sm:h-5" /> Share Log
             </button>

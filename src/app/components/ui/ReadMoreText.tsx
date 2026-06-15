@@ -1,17 +1,20 @@
 import { useState } from "react";
 
-export function ReadMoreText({ content, className = "" }: { content: string, className?: string }) {
+export function ReadMoreText({ content, text, maxLength = 250, className = "" }: { content?: string; text?: string; maxLength?: number; className?: string }) {
   const [expanded, setExpanded] = useState(false);
-  
+  const value = content ?? text ?? '';
+
+  if (!value) return null;
+
   // If text is relatively short, just render it normally
-  if (content.length < 250 && content.split('\n').length <= 4) {
-    return <p className={className}>{content}</p>;
+  if (value.length < maxLength && value.split('\n').length <= 4) {
+    return <p className={className}>{value}</p>;
   }
 
   return (
     <div className="relative">
       <p className={`${className} ${!expanded ? 'line-clamp-4 overflow-hidden' : ''}`}>
-        {content}
+        {value}
       </p>
       {!expanded ? (
         <button 

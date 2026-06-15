@@ -48,12 +48,12 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4 px-1">
-        <h2 className="font-extrabold text-[20px] sm:text-[24px] text-white m-0 font-display tracking-tight">
+        <h2 className="font-extrabold text-[20px] sm:text-[24px] text-slate-900 m-0 font-display tracking-tight">
           Active rooms
         </h2>
         <button 
           onClick={() => setTab('feed')} 
-          className="flex items-center justify-center min-h-[44px] px-3 bg-transparent border-none text-[13px] sm:text-[14px] text-[#8B7CF8] hover:text-[#6C5CE7] active:scale-95 font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-full hover:bg-white/[0.03]"
+          className="flex items-center justify-center min-h-[44px] px-3 bg-transparent border-none text-[13px] sm:text-[14px] text-[#8B7CF8] hover:text-[#6C5CE7] active:scale-95 font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-full hover:bg-slate-50"
         >
           View all
         </button>
@@ -62,29 +62,29 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
       {loading ? (
         <div className="flex flex-col gap-3 sm:gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] py-4 px-5 flex flex-col gap-3">
+            <div key={i} className="bg-white border border-slate-200 rounded-[20px] py-4 px-5 flex flex-col gap-3">
               <div className="flex justify-between items-center w-full">
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col gap-2">
-                    <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
-                    <div className="h-3 w-48 bg-white/5 rounded animate-pulse" />
+                    <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-48 bg-slate-100 rounded animate-pulse" />
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <div className="h-5 w-16 bg-white/5 rounded-full animate-pulse" />
+                  <div className="h-5 w-16 bg-slate-100 rounded-full animate-pulse" />
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[24px] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-lg">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.01] rounded-full blur-[30px] pointer-events-none" />
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-4 text-[#8B7CF8] shadow-inner">
+        <div className="bg-white border border-slate-200 rounded-[24px] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full blur-[30px] pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 text-[#8B7CF8]">
             <FolderGit2 className="w-6 h-6 animate-pulse" />
           </div>
-          <h3 className="text-white text-[15px] font-bold mb-1">No Active Build Rooms</h3>
-          <p className="text-slate-400 text-[12px] max-w-[280px] leading-relaxed mb-5">
+          <h3 className="text-slate-900 text-[15px] font-bold mb-1">No Active Build Rooms</h3>
+          <p className="text-slate-500 text-[12px] max-w-[280px] leading-relaxed mb-5">
             Start a feature rollout room, link your PRD, and document your product decisions.
           </p>
           <Link
@@ -113,17 +113,17 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                   to={`/dashboard/room/${room.id}`}
                   className={`block border rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 active:scale-95 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm relative overflow-hidden cursor-pointer ${
                     selectedRoomId === room.id 
-                      ? 'bg-[#1A1825] border-[#8B7CF8]/50 shadow-[0_0_20px_rgba(139,124,248,0.1)]' 
-                      : 'bg-[#0A0910]/80 sm:bg-[#0D0B14] border-white/[0.08] hover:bg-white/[0.03] hover:border-white/[0.12]'
+                      ? 'bg-slate-50 border-[#8B7CF8]/50 shadow-sm' 
+                      : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-white/[0.02] transition-colors" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-slate-100 transition-colors" />
                   
                   <div className="flex flex-col gap-3 w-full relative">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                        <div className={`text-[15px] sm:text-[16px] font-extrabold transition-colors font-display truncate group-hover:underline ${selectedRoomId === room.id ? 'text-white' : 'text-slate-300 group-hover:text-[#8B7CF8]'}`}>
+                        <div className={`text-[15px] sm:text-[16px] font-extrabold transition-colors font-display truncate group-hover:underline ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-600 group-hover:text-[#8B7CF8]'}`}>
                           {room.title}
                         </div>
                       </div>
@@ -138,8 +138,8 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                           <span className="capitalize">
                             {room.status === 'draft' ? <span className="text-amber-400">Draft</span> : isPaused ? 'Paused' : 'Live'}
                           </span>
-                          <span className="text-slate-600 opacity-50">·</span>
-                          <span className="text-white/80 font-bold">
+                          <span className="text-slate-400 opacity-50">·</span>
+                          <span className="text-slate-700 font-bold">
                             Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
                           </span>
                           <span className="text-slate-600 opacity-50">·</span>
@@ -147,10 +147,10 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 text-slate-500 bg-[#1A1825]/50 px-2.5 py-1.5 rounded-lg border border-white/[0.03] shadow-inner">
+                      <div className="flex items-center gap-2 sm:gap-3 text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-inner">
                         <Figma className="w-3.5 h-3.5 hover:text-purple-400 transition-colors" />
-                        <NotionIcon className="w-3.5 h-3.5 hover:text-white transition-colors" />
-                        <Github className="w-3.5 h-3.5 hover:text-white transition-colors" />
+                        <NotionIcon className="w-3.5 h-3.5 hover:text-slate-900 transition-colors" />
+                        <Github className="w-3.5 h-3.5 hover:text-slate-900 transition-colors" />
                       </div>
                     </div>
                   </div>

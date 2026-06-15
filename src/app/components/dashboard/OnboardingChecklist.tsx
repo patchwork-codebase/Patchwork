@@ -163,17 +163,17 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40, scale: 0.96 }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="w-full max-w-md bg-[#0D0B14] border border-white/[0.1] rounded-[24px] p-8 relative"
+        className="w-full max-w-md bg-white border border-slate-200 rounded-[24px] p-8 relative shadow-xl"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-white transition-all"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="text-4xl mb-4">{emoji}</div>
-        <h3 className="text-[22px] font-extrabold text-white mb-2">{title}</h3>
+        <h3 className="text-[22px] font-extrabold text-slate-900 mb-2">{title}</h3>
 
         {error && (
           <div className="mb-4 text-[13px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
@@ -194,12 +194,12 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
                     stepId === 'update' && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
                       'e.g. I want updates about early-stage product decisions and launch pivots.'
               }
-              className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
+              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
             />
           )}
 
         {stepId === 'room' && role === 'observer' && (
-          <p className="text-[13px] text-slate-400 mb-6 bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <p className="text-[13px] text-slate-600 mb-6 bg-slate-50 border border-slate-200 rounded-xl p-4">
             Explore the Global Timeline tab to find rooms you want to follow. Click "Follow" on any room.
           </p>
         )}
@@ -360,13 +360,13 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-5 relative overflow-hidden"
+        className="mb-6 bg-white border border-slate-200 rounded-[20px] p-5 relative overflow-hidden shadow-sm"
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent" />
 
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-[15px] font-extrabold text-white">
+            <h3 className="text-[15px] font-extrabold text-slate-900">
               Complete your setup{' '}
               <span className="text-[#8B7CF8]">({completedCount}/{steps.length})</span>
             </h3>
@@ -377,7 +377,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 bg-white/[0.06] rounded-full mb-5 overflow-hidden">
+        <div className="h-1.5 bg-slate-100 rounded-full mb-5 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(completedCount / steps.length) * 100}%` }}
@@ -398,12 +398,12 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                 transition={{ delay: idx * 0.06 }}
                 onClick={() => !done && setActiveStep(step)}
                 disabled={done}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${done ? 'opacity-50 cursor-default' : 'hover:bg-white/[0.04] cursor-pointer'
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${done ? 'opacity-50 cursor-default' : 'hover:bg-slate-50 cursor-pointer'
                   }`}
               >
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all ${done
                     ? 'bg-emerald-500/20 border-emerald-500/30'
-                    : 'bg-white/[0.04] border-white/[0.1] group-hover:border-[#8B7CF8]/40'
+                    : 'bg-white border-slate-200 group-hover:border-[#8B7CF8]/40'
                   }`}>
                   {done
                     ? <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -412,7 +412,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-bold truncate ${done ? 'line-through text-slate-500' : 'text-white'}`}>
+                  <p className={`text-[13px] font-bold truncate ${done ? 'line-through text-slate-500' : 'text-slate-900'}`}>
                     {step.emoji} {step.title}
                   </p>
                   {!done && (

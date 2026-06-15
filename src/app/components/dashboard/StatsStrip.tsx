@@ -57,24 +57,24 @@ export function StatsStrip({
       label: 'total reactions',
       value: totalReactions,
       delta: reactionsDelta,
-      deltaColor: 'text-amber-400',
-      numColor: 'text-white',
+      deltaColor: 'text-amber-500',
+      numColor: 'text-slate-900',
       loading: reactionsLoading,
     },
     {
       label: 'observers',
       value: totalObservers,
       delta: observersDelta,
-      deltaColor: 'text-emerald-400',
-      numColor: 'text-white',
+      deltaColor: 'text-emerald-500',
+      numColor: 'text-slate-900',
       loading: myRoomsLoading || observersLoading,
     },
     {
       label: 'build logs',
       value: totalBuildLogs,
       delta: buildLogsDelta,
-      deltaColor: 'text-slate-400',
-      numColor: 'text-white',
+      deltaColor: 'text-slate-500',
+      numColor: 'text-slate-900',
       loading: myRoomsLoading,
     },
   ];
@@ -87,23 +87,23 @@ export function StatsStrip({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.05 }}
           key={s.label} 
-          className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-5 flex min-h-[120px] flex-col justify-between group hover:bg-white/[0.03] transition-colors cursor-default min-w-[150px] shrink-0 snap-center sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+          className="bg-white border border-slate-200 rounded-[16px] p-5 flex min-h-[120px] flex-col justify-between group hover:bg-slate-50 transition-colors cursor-default min-w-[150px] shrink-0 snap-center sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm"
           tabIndex={0}
         >
           {s.loading ? (
             <div className="flex flex-col gap-3 w-full">
-              <div className="h-8 w-12 bg-white/5 rounded animate-pulse" />
-              <div className="text-[13px] text-slate-400 lowercase font-mono font-medium">
+              <div className="h-8 w-12 bg-slate-100 rounded animate-pulse" />
+              <div className="text-[13px] text-slate-500 lowercase font-mono font-medium">
                 {s.label}
               </div>
-              <div className="h-4 w-16 bg-white/5 rounded animate-pulse mt-1" />
+              <div className="h-4 w-16 bg-slate-100 rounded animate-pulse mt-1" />
             </div>
           ) : (
             <>
               <div className={`font-bold text-[30px] tracking-tight leading-none ${s.numColor}`}>
                 {s.value}
               </div>
-              <div className="text-[13px] text-slate-400 lowercase mt-2 font-mono font-medium">
+              <div className="text-[13px] text-slate-500 lowercase mt-2 font-mono font-medium">
                 {s.label}
               </div>
               <div className={`text-[12px] font-bold mt-2 ${s.deltaColor}`}>

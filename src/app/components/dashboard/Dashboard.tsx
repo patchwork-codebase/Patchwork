@@ -269,6 +269,7 @@ export default function Dashboard() {
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
           queryClient.invalidateQueries({ queryKey: ['room-observers'] });
           queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['my-rooms', user.id] });
         }
       )
       .subscribe();
@@ -300,10 +301,10 @@ export default function Dashboard() {
                 <ShieldAlert className="w-5 h-5 text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-[15px] font-extrabold text-white mb-1">Verify your email to unlock Patchwork</h3>
-                <p className="text-[13px] text-slate-400 leading-relaxed mb-4">
-                  You won't be able to <strong className="text-slate-200">post updates</strong>, <strong className="text-slate-200">create rooms</strong>, or <strong className="text-slate-200">react to builds</strong> until your email is confirmed.
-                  We sent a link to <span className="text-amber-300 font-semibold">{profile?.email || user?.email}</span>.
+                <h3 className="text-[15px] font-extrabold text-slate-900 mb-1">Verify your email to unlock Patchwork</h3>
+                <p className="text-[13px] text-slate-600 leading-relaxed mb-4">
+                  You won't be able to <strong className="text-slate-800">post updates</strong>, <strong className="text-slate-800">create rooms</strong>, or <strong className="text-slate-800">react to builds</strong> until your email is confirmed.
+                  We sent a link to <span className="text-amber-500 font-semibold">{profile?.email || user?.email}</span>.
                 </p>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
@@ -339,15 +340,18 @@ export default function Dashboard() {
       {/* HEADER */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-6 sm:gap-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center overflow-hidden shadow-xl shrink-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm shrink-0">
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <h1 className="font-bold text-[20px] sm:text-[28px] text-white leading-tight tracking-tight m-0 flex items-center gap-2 flex-wrap">
-                {greeting}, <span className="text-[#8B7CF8] whitespace-nowrap">{firstName}</span>
-                <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-6 h-6" />
-                <span className="text-[#8B7CF8]">👋</span>
+              <h1 className="font-bold text-[20px] sm:text-[28px] text-slate-900 leading-tight tracking-tight m-0 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>{greeting},</span>
+                <span className="text-[#8B7CF8] inline-flex items-center gap-1.5 sm:gap-2">
+                  <span className="truncate max-w-[150px] sm:max-w-none">{firstName}</span>
+                  <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                  <span className="shrink-0">👋</span>
+                </span>
               </h1>
               <div className="flex flex-wrap items-center gap-2">
                 {profile?.domain && (
@@ -363,7 +367,7 @@ export default function Dashboard() {
                 </span>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 sm:mt-2 text-[12px] sm:text-[13px] text-slate-400 font-medium">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 sm:mt-2 text-[12px] sm:text-[13px] text-slate-500 font-medium">
               <span>{handle}</span>
               {profile?.city && (
                 <>
@@ -380,7 +384,7 @@ export default function Dashboard() {
         <div className="hidden sm:flex items-center gap-3 w-full sm:w-auto">
           <Link
             to="/dashboard/notifications"
-            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] rounded-full text-slate-300 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white hover:bg-slate-50 border border-slate-200 rounded-full text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
           >
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && (
@@ -399,27 +403,27 @@ export default function Dashboard() {
       {/* PROFILE CARD & STATS */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Profile Card - hidden on mobile to prevent redundancy with header */}
-        <div className="hidden md:block xl:col-span-2 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
+        <div className="hidden md:block xl:col-span-2 bg-white border border-slate-200 rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm" tabIndex={0}>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center overflow-hidden shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
               <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-[16px] truncate flex items-center gap-1.5">
+              <h3 className="font-bold text-slate-900 text-[16px] truncate flex items-center gap-1.5">
                 {profile?.name}
                 <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-4 h-4" />
               </h3>
-              <p className="text-[13px] text-slate-400 mt-0.5">{handle}</p>
+              <p className="text-[13px] text-slate-500 mt-0.5">{handle}</p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-white/[0.05] grid grid-cols-2 gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
             <div>
               <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Reputation</p>
               <p className="text-[20px] font-bold text-[#8B7CF8] mt-1">{profile?.reputation || 0}</p>
             </div>
             <div>
               <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Member since</p>
-              <p className="text-[16px] font-semibold text-white mt-1">{joinDate}</p>
+              <p className="text-[16px] font-semibold text-slate-900 mt-1">{joinDate}</p>
             </div>
           </div>
         </div>
@@ -437,7 +441,7 @@ export default function Dashboard() {
 
       {/* INLINE TEXT TABS */}
       <div className="relative">
-        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-white/[0.08] relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-200 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
           {[
             { key: 'overview' as const, label: 'Overview' },
             { key: 'mine' as const, label: 'My rooms' },
@@ -449,8 +453,8 @@ export default function Dashboard() {
                 key={tab.key}
                 onClick={() => setTab(tab.key)}
                 className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] whitespace-nowrap snap-start active:scale-95 ${isCurrent
-                    ? 'text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.03] rounded-t-lg'
+                    ? 'text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-t-lg'
                   }`}
               >
                 {tab.label}
@@ -556,7 +560,7 @@ export default function Dashboard() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-[#08070D]/80 backdrop-blur-sm sm:hidden flex flex-col justify-end"
+            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm sm:hidden flex flex-col justify-end"
             onClick={() => setFabActionSheetOpen(false)}
           >
             <motion.div
@@ -564,36 +568,36 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
+              className="bg-white border-t border-slate-200 rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => {
                     setFabActionSheetOpen(false);
                     setComposerSheetOpen(true);
                   }}
-                  className="w-full flex items-center gap-3 p-4 bg-white/[0.03] active:bg-white/[0.06] rounded-2xl text-left border border-white/[0.05] active:scale-95 transition-all"
+                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl text-left border border-slate-100 active:scale-95 transition-all"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center text-[#8B7CF8]">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                   </div>
                   <div>
-                    <div className="text-[15px] font-bold text-white">Post an update</div>
-                    <div className="text-[12px] font-medium text-slate-400">Share what you're working on</div>
+                    <div className="text-[15px] font-bold text-slate-900">Post an update</div>
+                    <div className="text-[12px] font-medium text-slate-500">Share what you're working on</div>
                   </div>
                 </button>
                 <Link
                   to="/dashboard/create"
-                  className="w-full flex items-center gap-3 p-4 bg-white/[0.03] active:bg-white/[0.06] rounded-2xl text-left border border-white/[0.05] active:scale-95 transition-all"
+                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl text-left border border-slate-100 active:scale-95 transition-all"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center text-[#6C5CE7]">
                     <IconPlus />
                   </div>
                   <div>
-                    <div className="text-[15px] font-bold text-white">Create new room</div>
-                    <div className="text-[12px] font-medium text-slate-400">Initialize a new project space</div>
+                    <div className="text-[15px] font-bold text-slate-900">Create new room</div>
+                    <div className="text-[12px] font-medium text-slate-500">Initialize a new project space</div>
                   </div>
                 </Link>
               </div>
@@ -610,7 +614,7 @@ export default function Dashboard() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-[#08070D]/80 backdrop-blur-sm sm:hidden flex flex-col justify-end"
+            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm sm:hidden flex flex-col justify-end"
             onClick={() => setComposerSheetOpen(false)}
           >
             <motion.div
@@ -618,14 +622,14 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-[#0A0910] border-t border-white/[0.08] rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
+              className="bg-white border-t border-slate-200 rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[18px] font-bold text-white">Post an Update</h2>
+                <h2 className="text-[18px] font-bold text-slate-900">Post an Update</h2>
                 <button
                   onClick={() => setComposerSheetOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-slate-400 hover:text-white"
+                  className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -635,13 +639,13 @@ export default function Dashboard() {
                 value={updateContent}
                 onChange={(e) => setUpdateContent(e.target.value)}
                 placeholder="What feature did you ship today? Or what product decision did you make?"
-                className="w-full bg-white/[0.03] border border-white/[0.08] text-white text-[16px] sm:text-[15px] resize-none placeholder:text-slate-500 min-h-[100px] focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-xl p-4 mb-4"
+                className="w-full bg-white border border-slate-200 text-slate-900 text-[16px] sm:text-[15px] resize-none placeholder:text-slate-400 min-h-[100px] focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-xl p-4 mb-4 shadow-sm"
               />
 
               {/* Action row similar to desktop inline composer */}
-              <div className="flex items-center justify-between border-t border-white/[0.06] pt-4">
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
                 <div className="flex items-center gap-3">
-                  <label className="flex items-center justify-center w-10 h-10 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 rounded-full cursor-pointer transition-all">
+                  <label className="flex items-center justify-center w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full cursor-pointer transition-all">
                     <ImageIcon className="w-5 h-5" />
                     <input
                       type="file" accept="image/*" className="hidden"
@@ -674,7 +678,7 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 4, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                            className="absolute left-0 bottom-full mb-2 min-w-[200px] w-max bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-2xl p-1 z-50 overflow-hidden"
+                            className="absolute left-0 bottom-full mb-2 min-w-[200px] w-max bg-white border border-slate-200 rounded-xl shadow-xl p-1 z-50 overflow-hidden"
                           >
                             {myRooms.map(r => (
                               <button
@@ -684,7 +688,7 @@ export default function Dashboard() {
                                   setDropdownOpen(false);
                                 }}
                                 className={`w-full text-left px-3.5 py-2.5 rounded-lg text-[13px] font-semibold ${
-                                  selectedRoomId === r.id ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]' : 'text-slate-300 hover:bg-white/[0.04]'
+                                  selectedRoomId === r.id ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]' : 'text-slate-600 hover:bg-slate-50'
                                 }`}
                               >
                                 {r.title}

@@ -63,7 +63,8 @@ export function useRecentActivity(userId?: string) {
             text,
             time: timeAgo(re.created_at),
             color: 'bg-[#6C5CE7]',
-            date: new Date(re.created_at)
+            date: new Date(re.created_at),
+            userId: re.observer_id
           });
         });
       }
@@ -77,7 +78,8 @@ export function useRecentActivity(userId?: string) {
             text: `started following your "${roomTitle}" room`,
             time: timeAgo(ob.joined_at),
             color: 'bg-emerald-500',
-            date: new Date(ob.joined_at)
+            date: new Date(ob.joined_at),
+            userId: ob.observer_id
           });
         });
       }
@@ -109,7 +111,8 @@ export function useRoomObservers(roomId?: string) {
           name,
           visits: 'Active',
           bg: 'bg-[#6C5CE7]/20',
-          color: 'text-[#8B7CF8]'
+          color: 'text-[#8B7CF8]',
+          userId: ob.observer_id
         };
       });
     },

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -18,10 +19,10 @@ interface Decision {
 }
 
 const TYPE_STYLES = {
-  decision: { text: "text-amber-400", border: "border-amber-400/30", bg: "bg-amber-400/10", label: "DECISION" },
-  scrapped: { text: "text-rose-400", border: "border-rose-400/30", bg: "bg-rose-400/10", label: "SCRAPPED" },
-  blocker: { text: "text-purple-400", border: "border-purple-400/30", bg: "bg-purple-400/10", label: "BLOCKER" },
-  shipped: { text: "text-emerald-400", border: "border-emerald-400/30", bg: "bg-emerald-400/10", label: "SHIPPED" },
+  decision: { text: "text-amber-600", border: "border-amber-200", bg: "bg-amber-100", label: "DECISION" },
+  scrapped: { text: "text-rose-600", border: "border-rose-200", bg: "bg-rose-100", label: "SCRAPPED" },
+  blocker: { text: "text-purple-600", border: "border-purple-200", bg: "bg-purple-100", label: "BLOCKER" },
+  shipped: { text: "text-emerald-600", border: "border-emerald-200", bg: "bg-emerald-100", label: "SHIPPED" },
 };
 
 interface DecisionLogCardProps {
@@ -35,6 +36,7 @@ interface DecisionLogCardProps {
 export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false }: DecisionLogCardProps) {
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch real decisions from the database
@@ -139,14 +141,14 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   };
 
   return (
-    <div className={isNested ? "flex flex-col h-full" : "bg-white/[0.02] backdrop-blur-sm rounded-[24px] border border-white/[0.08] overflow-hidden flex flex-col h-[500px]"}>
+    <div className={isNested ? "flex flex-col h-full" : "bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[500px]"}>
       {!isNested ? (
-        <div className="p-4 sm:p-5 border-b border-white/[0.08] flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shrink-0">
           <div>
-            <h3 className="text-[16px] font-extrabold text-white leading-tight flex items-center gap-2">
+            <h3 className="text-[16px] font-extrabold text-slate-900 leading-tight flex items-center gap-2">
               Decision log
             </h3>
-            <span className="text-[12px] text-slate-400 font-medium">12 decisions · day 1-12</span>
+            <span className="text-[12px] text-slate-500 font-medium">12 decisions · day 1-12</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <button 
@@ -161,20 +163,19 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
           </div>
         </div>
       ) : (
-        <div className="px-5 py-3 border-b border-white/[0.05] flex items-center justify-between shrink-0 bg-black/20">
+        <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-100">
           <div className="flex items-center gap-2">
             <span className="flex items-center justify-center w-5 h-5 rounded bg-[#8B7CF8]/10 text-[#8B7CF8] text-[11px] font-bold border border-[#8B7CF8]/20">
               {allDecisions.length}
             </span>
-            <span className="text-[12px] text-slate-400 font-medium">decisions logged</span>
+            <span className="text-[12px] text-slate-500 font-medium">decisions logged</span>
           </div>
           <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsModalOpen(true)}
-            className="group relative overflow-hidden bg-[#0A0910] hover:bg-[#8B7CF8]/10 border border-white/[0.08] hover:border-[#8B7CF8]/30 text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
+            className="group relative overflow-hidden bg-slate-900 hover:bg-slate-800 border border-transparent text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
             <Plus className="w-3.5 h-3.5 text-[#8B7CF8]" />
             <span className="relative z-10">Log a decision</span>
           </motion.button>
@@ -200,7 +201,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
               const hasPushback = itemReactions.some(r => r.type === 'pushback' && (r.observer_id === user?.id || r.observerId === user?.id));
 
               return (
-                <div key={decision.id} className={`pb-5 ${index !== allDecisions.length - 1 ? 'border-b border-white/[0.08]' : ''}`}>
+                <div key={decision.id} className={`pb-5 ${index !== allDecisions.length - 1 ? 'border-b border-slate-200' : ''}`}>
                   <div className="flex items-start gap-3">
                     <div className={`mt-0.5 w-4 h-4 rounded-full border-2 ${style.border} flex items-center justify-center shrink-0`}>
                       {decision.type === 'shipped' ? <CheckCircle className={`w-2.5 h-2.5 ${style.text}`} /> : <div className={`w-1.5 h-1.5 rounded-full ${style.bg}`} />}
@@ -209,9 +210,9 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       <div className={`text-[10px] font-bold ${style.text} ${style.bg} px-1.5 py-0.5 rounded uppercase tracking-widest inline-block mb-1.5`}>
                         {style.label}
                       </div>
-                      <h4 className="text-[14px] font-bold text-white mb-1">{decision.title}</h4>
+                      <h4 className="text-[14px] font-bold text-slate-900 mb-1">{decision.title}</h4>
                       {decision.description && (
-                        <p className="text-[13px] text-slate-300 leading-relaxed mb-2">
+                        <p className="text-[13px] text-slate-600 leading-relaxed mb-2">
                           {decision.description}
                         </p>
                       )}
@@ -221,17 +222,16 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                         <span>{timeAgo(decision.createdAt)}</span>
                       </div>
 
-                      {/* Reaction & Reply Actions */}
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <button 
                           onClick={() => toggleReaction(decision.id, 'sharp')}
-                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-[#8B7CF8]/10 text-[#8B7CF8] border-[#8B7CF8]/30' : 'bg-transparent text-slate-400 border-white/10 hover:border-white/20 hover:text-white'}`}
+                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-[#8B7CF8]/10 text-[#8B7CF8] border-[#8B7CF8]/30' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900'}`}
                         >
                           <span>✦</span> Sharp {sharpCount > 0 && <span className="opacity-70">{sharpCount}</span>}
                         </button>
                         <button 
                           onClick={() => toggleReaction(decision.id, 'pushback')}
-                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : 'bg-transparent text-slate-400 border-white/10 hover:border-white/20 hover:text-white'}`}
+                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900'}`}
                         >
                           <span>↩</span> Push back {pushbackCount > 0 && <span className="opacity-70">{pushbackCount}</span>}
                         </button>
@@ -240,7 +240,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                         
                         <button 
                           onClick={() => setReplyingTo(replyingTo === decision.id ? null : decision.id)}
-                          className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-white transition-colors"
+                          className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 hover:text-slate-900 transition-colors"
                         >
                           <MessageCircle className="w-3.5 h-3.5" /> 
                           {itemReplies.length} {itemReplies.length === 1 ? 'Reply' : 'Replies'}
@@ -256,14 +256,23 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                             className="mt-4 space-y-3"
                           >
                             {itemReplies.map((reply: any) => (
-                              <div key={reply.id} className="flex items-start gap-3 p-3 bg-white/[0.02] border border-white/[0.05] rounded-2xl">
-                                <img src={getAvatarUrl(reply.observer_id || reply.observerId)} className="w-6 h-6 rounded-full shrink-0" alt="avatar" />
+                              <div key={reply.id} className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                                <img 
+                                  src={getAvatarUrl(reply.observer_id || reply.observerId)} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const uid = reply.observer_id || reply.observerId;
+                                    if (uid) navigate(`/dashboard/profile/${uid}`);
+                                  }}
+                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all" 
+                                  alt="avatar" 
+                                />
                                 <div>
                                   <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-[12px] font-bold text-white">Observer</span>
+                                    <span className="text-[12px] font-bold text-slate-900">Observer</span>
                                     <span className="text-[10px] text-slate-500">{timeAgo(reply.created_at || reply.createdAt)}</span>
                                   </div>
-                                  <p className="text-[13px] text-slate-300">{reply.text}</p>
+                                  <p className="text-[13px] text-slate-700">{reply.text}</p>
                                 </div>
                               </div>
                             ))}
@@ -276,14 +285,14 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="mt-4 p-3 bg-[#110F1A] border border-[#8B7CF8]/30 rounded-2xl relative"
+                            className="mt-4 p-3 bg-white border border-slate-200 shadow-sm rounded-2xl relative"
                           >
                             <textarea
                               autoFocus
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                               placeholder="Write your reply..."
-                              className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-white placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
+                              className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-slate-900 placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
                             />
                             <div className="flex justify-end mt-2">
                               <button
