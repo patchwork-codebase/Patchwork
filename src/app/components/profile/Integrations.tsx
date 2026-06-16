@@ -4,7 +4,7 @@ import { useGithubAccount } from '../../hooks/useGithub';
 import { useLinkedinAccount } from '../../hooks/useLinkedin';
 import { useLinearAccount } from '../../hooks/useLinear';
 import { useNotionAccount } from '../../hooks/useNotion';
-import { Link as LinkIcon, Check, Loader2, Linkedin, Zap, FileText } from 'lucide-react';
+import { Link as LinkIcon, Check, Loader2, Linkedin, Zap, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Integrations({ userId }: { userId: string }) {
@@ -142,6 +142,42 @@ export default function Integrations({ userId }: { userId: string }) {
     }
   };
 
+  const handleDisconnect = async (provider: 'github' | 'linkedin' | 'linear' | 'notion') => {
+    setConnecting(provider);
+    try {
+      let tableName = '';
+      if (provider === 'github') tableName = 'github_accounts';
+      else if (provider === 'linkedin') tableName = 'linkedin_accounts';
+      else if (provider === 'linear') tableName = 'linear_accounts';
+      else if (provider === 'notion') tableName = 'notion_accounts';
+
+      const { error } = await supabase.from(tableName).delete().eq('user_id', userId);
+      if (error) throw error;
+
+      if (provider !== 'linear') {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const providerStr = provider === 'linkedin' ? 'linkedin_oidc' : provider;
+          const identity = session.user.identities?.find(i => i.provider === providerStr);
+          if (identity) {
+            await supabase.auth.unlinkIdentity(identity);
+          }
+        }
+      }
+
+      toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} disconnected successfully.`);
+      
+      if (provider === 'github') refetchGithub();
+      else if (provider === 'linkedin') refetchLinkedin();
+      else if (provider === 'linear') refetchLinear();
+      else if (provider === 'notion') refetchNotion();
+    } catch (err: any) {
+      toast.error(`Failed to disconnect ${provider}: ${err.message}`);
+    } finally {
+      setConnecting(null);
+    }
+  };
+
   if (githubLoading || linkedinLoading || linearLoading || notionLoading) return null;
 
   return (
@@ -168,9 +204,22 @@ export default function Integrations({ userId }: { userId: string }) {
 
           <div className="flex sm:shrink-0 mt-2 sm:mt-0">
             {githubAccount ? (
-              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
-                <Check className="w-3.5 h-3.5" /> Connected
-              </span>
+              <button
+                onClick={() => handleDisconnect('github')}
+                disabled={connecting === 'github'}
+                className="group flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 hover:bg-rose-50 hover:text-rose-600 px-4 py-2 rounded-full border border-emerald-200 hover:border-rose-200 transition-colors disabled:opacity-50 min-w-[110px]"
+              >
+                {connecting === 'github' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 group-hover:hidden" />
+                    <X className="w-3.5 h-3.5 hidden group-hover:block" />
+                    <span className="group-hover:hidden">Connected</span>
+                    <span className="hidden group-hover:block">Disconnect</span>
+                  </>
+                )}
+              </button>
             ) : (
               <button
                 onClick={handleConnectGithub}
@@ -198,9 +247,22 @@ export default function Integrations({ userId }: { userId: string }) {
 
           <div className="flex sm:shrink-0 mt-2 sm:mt-0">
             {linkedinAccount ? (
-              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
-                <Check className="w-3.5 h-3.5" /> Connected
-              </span>
+              <button
+                onClick={() => handleDisconnect('linkedin')}
+                disabled={connecting === 'linkedin'}
+                className="group flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 hover:bg-rose-50 hover:text-rose-600 px-4 py-2 rounded-full border border-emerald-200 hover:border-rose-200 transition-colors disabled:opacity-50 min-w-[110px]"
+              >
+                {connecting === 'linkedin' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 group-hover:hidden" />
+                    <X className="w-3.5 h-3.5 hidden group-hover:block" />
+                    <span className="group-hover:hidden">Connected</span>
+                    <span className="hidden group-hover:block">Disconnect</span>
+                  </>
+                )}
+              </button>
             ) : (
               <button
                 onClick={handleConnectLinkedin}
@@ -247,9 +309,22 @@ export default function Integrations({ userId }: { userId: string }) {
 
           <div className="flex sm:shrink-0 mt-2 sm:mt-0 items-start">
             {linearAccount && (
-              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
-                <Check className="w-3.5 h-3.5" /> Connected
-              </span>
+              <button
+                onClick={() => handleDisconnect('linear')}
+                disabled={connecting === 'linear'}
+                className="group flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 hover:bg-rose-50 hover:text-rose-600 px-4 py-2 rounded-full border border-emerald-200 hover:border-rose-200 transition-colors disabled:opacity-50 min-w-[110px]"
+              >
+                {connecting === 'linear' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 group-hover:hidden" />
+                    <X className="w-3.5 h-3.5 hidden group-hover:block" />
+                    <span className="group-hover:hidden">Connected</span>
+                    <span className="hidden group-hover:block">Disconnect</span>
+                  </>
+                )}
+              </button>
             )}
           </div>
         </div>
@@ -273,9 +348,22 @@ export default function Integrations({ userId }: { userId: string }) {
 
           <div className="flex sm:shrink-0 mt-2 sm:mt-0">
             {notionAccount ? (
-              <span className="flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
-                <Check className="w-3.5 h-3.5" /> Connected
-              </span>
+              <button
+                onClick={() => handleDisconnect('notion')}
+                disabled={connecting === 'notion'}
+                className="group flex items-center justify-center w-full sm:w-auto gap-1.5 text-[12px] font-bold text-emerald-700 bg-emerald-50 hover:bg-rose-50 hover:text-rose-600 px-4 py-2 rounded-full border border-emerald-200 hover:border-rose-200 transition-colors disabled:opacity-50 min-w-[110px]"
+              >
+                {connecting === 'notion' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5 group-hover:hidden" />
+                    <X className="w-3.5 h-3.5 hidden group-hover:block" />
+                    <span className="group-hover:hidden">Connected</span>
+                    <span className="hidden group-hover:block">Disconnect</span>
+                  </>
+                )}
+              </button>
             ) : (
               <button
                 onClick={handleConnectNotion}
