@@ -98,6 +98,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
   const [saving, setSaving] = useState(false);
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const [selectedDomain, setSelectedDomain] = useState(DOMAINS[0]);
 
   async function handleSave() {
     setSaving(true);
@@ -197,6 +198,21 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
               className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
             />
           )}
+
+        {stepId === 'room' && role === 'builder' && (
+          <div className="mb-6">
+            <label className="block text-[12px] font-medium text-slate-500 mb-2">Primary Domain</label>
+            <select
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+            >
+              {DOMAINS.map(d => (
+                <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {stepId === 'room' && role === 'observer' && (
           <p className="text-[13px] text-slate-600 mb-6 bg-slate-50 border border-slate-200 rounded-xl p-4">
