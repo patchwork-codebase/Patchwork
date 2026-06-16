@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../auth/AuthContext';
 import { useGithubAccount } from '../../hooks/useGithub';
 import { useLinkedinAccount } from '../../hooks/useLinkedin';
@@ -14,9 +14,12 @@ export default function Integrations({ userId }: { userId: string }) {
   const { data: notionAccount, isLoading: notionLoading, refetch: refetchNotion } = useNotionAccount(userId);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [linearPAT, setLinearPAT] = useState('');
+  const hasProcessedOAuth = useRef(false);
 
   useEffect(() => {
     const handleOAuthRedirect = async () => {
+      if (hasProcessedOAuth.current) return;
+      hasProcessedOAuth.current = true;
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.provider_token && session.user) {
         const githubIdentity = session.user.identities?.find(i => i.provider === 'github');
@@ -151,19 +154,15 @@ export default function Integrations({ userId }: { userId: string }) {
       else if (provider === 'linear') tableName = 'linear_accounts';
       else if (provider === 'notion') tableName = 'notion_accounts';
 
-      const { error } = await supabase.from(tableName).delete().eq('user_id', userId);
+      const { error, data } = await supabase.from(tableName).delete().eq('user_id', userId).select();
       if (error) throw error;
-
-      if (provider !== 'linear') {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          const providerStr = provider === 'linkedin' ? 'linkedin_oidc' : provider;
-          const identity = session.user.identities?.find(i => i.provider === providerStr);
-          if (identity) {
-            await supabase.auth.unlinkIdentity(identity);
-          }
-        }
+      if (!data || data.length === 0) {
+        throw new Error("Account not found or permission denied to disconnect.");
       }
+
+      // We no longer call supabase.auth.unlinkIdentity here because it causes 422 errors 
+      // if it's the user's primary/only identity. Deleting the record from our database 
+      // is sufficient to disconnect the integration from the app's perspective.
 
       toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} disconnected successfully.`);
       
