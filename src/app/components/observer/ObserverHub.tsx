@@ -3,7 +3,10 @@ import { Link } from "react-router";
 import { Zap, Eye, MessagesSquare, CheckCircle2, Flame, ArrowUpRight } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { useObservedRooms, useObserverStats } from "../../hooks/useRooms";
-import { timeAgo } from "../../utils/helpers";
+import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { VerifiedTick } from "../ui/VerifiedTick";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "../auth/AuthContext";
 
 export default function ObserverHub() {
   const [filter, setFilter] = useState("all");
@@ -12,6 +15,21 @@ export default function ObserverHub() {
   const { data: roomsData, isLoading: roomsLoading } = useObservedRooms(user?.id);
   const { data: stats, isLoading: statsLoading } = useObserverStats(user?.id);
   
+  const { data: trendingBuilders, isLoading: buildersLoading } = useQuery({
+    queryKey: ['trending-builders'],
+    queryFn: async () => {
+      // Rank builders by reputation for the "Trending Builders" suggestion
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('role', 'builder')
+        .order('reputation', { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   const followedRooms = roomsData?.pages.flat() || [];
 
   return (
@@ -95,6 +113,43 @@ export default function ObserverHub() {
           </Link>
         </div>
       </div>
+
+      {/* ── TRENDING BUILDERS ── */}
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
+            Trending Builders <Flame className="w-5 h-5 text-amber-500" />
+          </h2>
+          <Link to="/dashboard/explore" className="text-[13px] font-bold text-[#8B7CF8] hover:underline">
+            View all
+          </Link>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {buildersLoading ? (
+            <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading builders...</div>
+          ) : trendingBuilders?.map((builder: any) => (
+            <Link key={builder.id} to={`/dashboard/profile/${builder.id}`} className="bg-white border border-slate-200 shadow-sm rounded-[20px] p-5 flex items-start gap-4 hover:bg-slate-50 hover:border-[#8B7CF8]/30 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0 overflow-hidden">
+                <img src={getAvatarUrl(builder.id || builder.email)} alt={builder.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-[15px] text-slate-900 flex items-center gap-1">
+                  <span className="truncate">{builder.name || builder.email?.split('@')[0]}</span>
+                  <VerifiedTick isVerified={!!builder.is_verified_expert} className="w-4 h-4 shrink-0" />
+                </h3>
+                <p className="text-[12px] text-slate-500 font-medium capitalize truncate mb-2">{builder.domain || 'Builder'}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold bg-[#8B7CF8]/10 text-[#8B7CF8] px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+                    Rep {builder.reputation || 0}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }

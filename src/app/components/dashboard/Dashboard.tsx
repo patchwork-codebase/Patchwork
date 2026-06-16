@@ -340,7 +340,7 @@ export default function Dashboard() {
       {/* HEADER */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-6 sm:gap-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm shrink-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
           <div>
@@ -384,7 +384,7 @@ export default function Dashboard() {
         <div className="hidden sm:flex items-center gap-3 w-full sm:w-auto">
           <Link
             to="/dashboard/notifications"
-            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white hover:bg-slate-50 border border-slate-200 rounded-full text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 hover:text-slate-900 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
           >
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && (
@@ -403,7 +403,7 @@ export default function Dashboard() {
       {/* PROFILE CARD & STATS */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Profile Card - hidden on mobile to prevent redundancy with header */}
-        <div className="hidden md:block xl:col-span-2 bg-white border border-slate-200 rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm" tabIndex={0}>
+        <div className="hidden md:block xl:col-span-2 bg-white border border-slate-100 rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-[0_2px_8px_rgba(0,0,0,0.04)]" tabIndex={0}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
               <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />

@@ -83,8 +83,11 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             className="bg-[#0D0B14] border border-white/[0.08] rounded-3xl w-full max-w-[500px] overflow-hidden relative z-10 shadow-2xl"
           >
-            <div className="flex items-center justify-between p-5 border-b border-white/[0.08]">
-              <h2 className="text-[18px] font-bold text-white">Log a decision</h2>
+            <div className="flex items-start justify-between p-5 border-b border-white/[0.08]">
+              <div>
+                <h2 className="text-[18px] font-bold text-white mb-1">Log a decision</h2>
+                <p className="text-[12px] text-slate-400 font-medium">Record structured architectural choices, pivots, or blockers. (For general progress, use 'Post an update')</p>
+              </div>
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-white transition-colors"

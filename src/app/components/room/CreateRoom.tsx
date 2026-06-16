@@ -138,35 +138,11 @@ export default function CreateRoom() {
           toast.loading("Uploading cover image...", { id: "upload" });
           
           try {
-            const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dfqvoc8dz/image/upload";
-            const CLOUDINARY_API_KEY = "566318394499849";
-            const CLOUDINARY_API_SECRET = "wyljhM7EMezYpd5iNFrmqNV3J_I";
-
-            const timestamp = Math.floor(Date.now() / 1000).toString();
-            const strToSign = `timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
-            
-            const encoder = new TextEncoder();
-            const data = encoder.encode(strToSign);
-            const hashBuffer = await window.crypto.subtle.digest("SHA-1", data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const signature = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-            const formData = new FormData();
-            formData.append("file", form.coverImage);
-            formData.append("api_key", CLOUDINARY_API_KEY);
-            formData.append("timestamp", timestamp);
-            formData.append("signature", signature);
-
-            const response = await fetch(CLOUDINARY_URL, {
-              method: "POST",
-              body: formData,
+            const { data, error } = await supabase.functions.invoke('upload-image', {
+              body: { image: form.coverImage }
             });
-
-            const result = await response.json();
-            if (!response.ok) {
-              throw new Error(result.error?.message || "Cloudinary upload failed");
-            }
-            coverImageUrl = result.secure_url;
+            if (error) throw error;
+            coverImageUrl = data?.secure_url || null;
             toast.dismiss("upload");
           } catch (error: any) {
             toast.dismiss("upload");

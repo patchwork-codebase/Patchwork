@@ -88,9 +88,9 @@ export function RoomHeader({
               rel="noopener noreferrer"
               title="Open Project"
               aria-label="Open Project"
-              className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 active:scale-95"
+              className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 active:scale-95"
             >
-              <ExternalLink className="w-5 h-5" />
+              <ExternalLink className="w-4 h-4" />
             </a>
           )}
           <button
@@ -101,16 +101,16 @@ export function RoomHeader({
             }}
             title="Share Room"
             aria-label="Share Room"
-            className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-xl text-slate-600 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] active:scale-95"
+            className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-xl text-slate-600 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1DA1F2] active:scale-95"
           >
-            <Share2 className="w-5 h-5" />
+            <Share2 className="w-4 h-4" />
           </button>
           
           {isBuilder && room.status === 'active' && (
             <button
               onClick={() => setRequestExpertModalOpen(true)}
               title="Request Expert Review"
-              className="flex items-center justify-center gap-2 w-11 sm:w-auto h-11 px-0 sm:px-4 bg-gradient-to-r from-primary to-[#5a48d0] hover:opacity-90 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-95"
+              className="flex items-center justify-center gap-2 w-9 sm:w-auto h-9 px-0 sm:px-4 bg-gradient-to-r from-primary to-[#5a48d0] hover:opacity-90 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-95"
             >
               <Sparkles className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
               <span className="hidden sm:inline">Expert Review</span>
@@ -122,9 +122,9 @@ export function RoomHeader({
               onClick={() => setEditModalOpen(true)}
               title="Edit Room"
               aria-label="Edit Room"
-              className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+              className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
             >
-              <Edit2 className="w-5 h-5" />
+              <Edit2 className="w-4 h-4" />
             </button>
           )}
           {room.status === 'completed' && (
@@ -133,18 +133,18 @@ export function RoomHeader({
                 to={`/dashboard/build-logs`}
                 title="View Build Log"
                 aria-label="View Build Log"
-                className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+                className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
               >
-                <BookOpen className="w-5 h-5" />
+                <BookOpen className="w-4 h-4" />
               </Link>
               {isBuilder && (
                 <button
                   onClick={() => setLinkedinShareOpen(true)}
                   title="Share to LinkedIn"
                   aria-label="Share to LinkedIn"
-                  className="flex items-center justify-center w-11 h-11 border border-[#0077b5]/30 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 rounded-xl text-[#0077b5] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5] active:scale-95"
+                  className="flex items-center justify-center w-9 h-9 border border-[#0077b5]/30 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 rounded-xl text-[#0077b5] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5] active:scale-95"
                 >
-                  <Linkedin className="w-5 h-5" />
+                  <Linkedin className="w-4 h-4" />
                 </button>
               )}
             </>
@@ -158,9 +158,9 @@ export function RoomHeader({
                   disabled={closingRoom}
                   title={closingRoom ? 'Closing...' : 'Close Room'}
                   aria-label={closingRoom ? 'Closing...' : 'Close Room'}
-                  className="flex items-center justify-center w-11 h-11 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+                  className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
                 >
-                  {closingRoom ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                  {closingRoom ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                 </button>
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-white border-slate-200 text-slate-900 shadow-xl">

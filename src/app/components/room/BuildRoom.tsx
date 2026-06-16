@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle } from "lucide-react";
+import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
 import { DraftUpdates } from "./DraftUpdates";
@@ -318,6 +318,14 @@ export default function BuildRoom() {
               </p>
             </div>
             
+            <div className="max-w-[800px] mx-auto mb-6 bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-start gap-3">
+              <Lock className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-[13px] font-bold text-slate-700 mb-1">Privacy & Security</h4>
+                <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Patchwork only stores reference URLs to your documents. We do not store your private code or PRD content. Observers can only view documents you have explicitly made public in the source application.</p>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                 <h4 className="text-[14px] font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -355,24 +363,25 @@ export default function BuildRoom() {
             {isBuilder && room.status === 'active' && (
               <>
                 {suggestedDecision && (
-                  <div className="bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-2xl p-5 mb-6 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
-                    <div className="bg-[#8B7CF8]/20 p-2 rounded-xl shrink-0">
-                      <Sparkles className="w-5 h-5 text-[#8B7CF8]" />
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-[24px] p-6 mb-8 flex items-start gap-4 shadow-[0_4px_20px_rgba(245,158,11,0.05)] animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 bg-amber-500/5 rounded-full blur-[40px] pointer-events-none" />
+                    <div className="bg-amber-500/20 p-3 rounded-2xl shrink-0">
+                      <Sparkles className="w-5 h-5 text-amber-500" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-bold text-slate-900 mb-1">AI spotted a decision</h4>
-                      <p className="text-sm text-slate-600 mb-3">"{suggestedDecision.extractedText}"</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-[16px] font-extrabold text-slate-900 mb-1 font-display">AI extracted a key decision</h4>
+                      <p className="text-[14px] font-medium text-slate-700 mb-4 bg-white/60 p-3 rounded-xl border border-amber-500/10 italic">"{suggestedDecision.extractedText}"</p>
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={handleLogDecision}
                           disabled={loggingDecision}
-                          className="bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white text-xs font-bold px-4 py-2 rounded-lg transition"
+                          className="bg-amber-500 hover:bg-amber-400 text-white text-[13px] font-bold px-5 py-2.5 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                         >
                           {loggingDecision ? 'Logging...' : 'Add to Decision Log'}
                         </button>
                         <button 
                           onClick={() => setSuggestedDecision(null)}
-                          className="text-slate-500 hover:text-slate-700 text-xs font-medium transition"
+                          className="text-slate-500 hover:text-slate-800 text-[13px] font-bold px-4 py-2.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                         >
                           Dismiss
                         </button>
@@ -382,11 +391,14 @@ export default function BuildRoom() {
                 )}
                 <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden group">
                   <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#8B7CF8]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 bg-[#8B7CF8]/10 rounded-lg flex items-center justify-center">
-                      <Hammer className="w-4 h-4 text-[#8B7CF8]" />
+                  <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-[#8B7CF8]/10 rounded-lg flex items-center justify-center">
+                        <Hammer className="w-4 h-4 text-[#8B7CF8]" />
+                      </div>
+                      <span className="text-[14px] font-extrabold text-[#8B7CF8] font-display">Post an update</span>
                     </div>
-                    <span className="text-[14px] font-extrabold text-[#8B7CF8] font-display">Post an update</span>
+                    <span className="text-[11px] text-slate-500 font-medium ml-0 sm:ml-2">For general progress and commits (Use the 'Log Decision' tab below for architectural choices)</span>
                   </div>
                   <textarea
                   value={newUpdate}

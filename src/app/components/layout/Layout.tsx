@@ -136,7 +136,7 @@ export default function Layout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
         <div className="flex items-center gap-2.5 text-slate-600 font-mono text-[13px]">
           <div className="w-4.5 h-4.5 rounded-full border-2 border-[#6C5CE7]/20 border-t-[#6C5CE7] animate-spin" />
           Loading Patchwork…
@@ -159,7 +159,7 @@ export default function Layout() {
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
       <VerificationRequiredModal />
       <VerificationSuccessModal 
         isOpen={showSuccessModal} 
@@ -521,7 +521,7 @@ export default function Layout() {
           </div>
         </aside>
 
-        <main className="flex-1 min-h-[calc(100vh-60px)] bg-slate-50 pb-28">
+        <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
           <div className="h-full">
             <Outlet />
           </div>

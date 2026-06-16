@@ -149,6 +149,11 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
                   </div>
                 </>
               )}
+              
+              <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start gap-2 text-[11px] text-slate-500 font-medium bg-white/[0.02] p-3 rounded-xl">
+                <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <span><strong>Privacy & Security:</strong> We only store a reference URL. Your PRDs, specifications, and document contents remain strictly private and secure on their original platform. Observers can only view what you make public.</span>
+              </div>
             </div>
           </motion.div>
         </div>
