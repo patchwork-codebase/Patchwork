@@ -1,4 +1,13 @@
-import { createBrowserRouter, redirect, useRouteError } from "react-router";
+import { createBrowserRouter, redirect, useRouteError, Outlet } from "react-router";
+import { AuthProvider } from "./components/auth/AuthContext";
+
+function AuthWrapper() {
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
+}
 
 const GlobalFallback = () => (
   <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -49,6 +58,7 @@ export const router = createBrowserRouter([
   {
     HydrateFallback: GlobalFallback,
     errorElement: <RouteErrorBoundary />,
+    Component: AuthWrapper,
     children: [
       // Public landing and auth
       {
