@@ -115,6 +115,9 @@ export const router = createBrowserRouter([
           { path: "notifications", lazy: () => import("./components/dashboard/Notifications").then(m => ({ Component: m.default })) },
           { path: "expert-apply", lazy: () => import("./components/profile/VerifiedExpertApplication").then(m => ({ Component: m.default })) },
           { path: "expert-hub", lazy: () => import("./components/dashboard/ExpertReviewHub").then(m => ({ Component: m.default })) },
+          { path: "roadmap", lazy: () => import("./components/dashboard/RoadmapPage").then(m => ({ Component: m.default })) },
+          { path: "milestones", lazy: () => import("./components/dashboard/MilestonesPage").then(m => ({ Component: m.default })) },
+          { path: "analytics", lazy: () => import("./components/dashboard/AnalyticsPage").then(m => ({ Component: m.default })) },
         ],
       },
     ]

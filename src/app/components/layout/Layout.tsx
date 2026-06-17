@@ -77,6 +77,31 @@ const ZapIcon = () => (
   </svg>
 );
 
+const RoadmapIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6" />
+    <line x1="8" y1="12" x2="21" y2="12" />
+    <line x1="8" y1="18" x2="21" y2="18" />
+    <line x1="3" y1="6" x2="3.01" y2="6" />
+    <line x1="3" y1="12" x2="3.01" y2="12" />
+    <line x1="3" y1="18" x2="3.01" y2="18" />
+  </svg>
+);
+
+const MilestonesIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+const AnalyticsIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
+  </svg>
+);
+
 
 
 /* ─── Layout ────────────────────────────────────────────────────── */
@@ -128,7 +153,13 @@ export default function Layout() {
         ? 'logs'
         : location.pathname.startsWith('/dashboard/observer')
           ? 'observer'
-          : activeTab;
+          : location.pathname.startsWith('/dashboard/roadmap')
+            ? 'roadmap'
+            : location.pathname.startsWith('/dashboard/milestones')
+              ? 'milestones'
+              : location.pathname.startsWith('/dashboard/analytics')
+                ? 'analytics'
+                : activeTab;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -361,7 +392,7 @@ export default function Layout() {
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
         <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
 
-          <nav className="p-5 flex-1">
+          <nav className="p-5 flex-1 overflow-y-auto">
             
             {/* workspace section */}
             <div className="mb-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
@@ -434,6 +465,40 @@ export default function Layout() {
             >
               <CompassIcon />
               Explore builders
+            </Link>
+
+            {/* product ops section */}
+            <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+              Product Ops
+            </div>
+
+            <Link
+              to="/dashboard/roadmap"
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'roadmap' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+            >
+              <RoadmapIcon />
+              Roadmap view
+            </Link>
+
+            <Link
+              to="/dashboard/milestones"
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'milestones' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+            >
+              <div className="flex items-center gap-2.5">
+                <MilestonesIcon />
+                Milestones
+              </div>
+              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'milestones' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
+                5
+              </span>
+            </Link>
+
+            <Link
+              to="/dashboard/analytics"
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'analytics' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+            >
+              <AnalyticsIcon />
+              Analytics
             </Link>
 
             <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
