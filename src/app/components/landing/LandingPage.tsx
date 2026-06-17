@@ -317,7 +317,11 @@ export default function LandingPage() {
   useEffect(() => {
     if (!loading) {
       if (user && (location.pathname === "/" || location.pathname === "/login" || location.pathname === "/onboarding")) {
-        if (profile) {
+        const returnTo = sessionStorage.getItem('oauth_return_to');
+        if (returnTo) {
+          sessionStorage.removeItem('oauth_return_to');
+          navigate(returnTo);
+        } else if (profile) {
           navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
         } else {
           navigate('/dashboard');

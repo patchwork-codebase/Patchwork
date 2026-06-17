@@ -21,8 +21,16 @@ export function AuthRedirectGuard() {
           navigate('/onboarding', { replace: true });
         }
       } else {
-        const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';
-        navigate(targetRoute, { replace: true });
+        const returnTo = sessionStorage.getItem('oauth_return_to');
+        if (returnTo) {
+          sessionStorage.removeItem('oauth_return_to');
+          navigate(returnTo, { replace: true });
+        } else {
+          const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';
+          if (location.pathname !== targetRoute && !location.pathname.startsWith('/dashboard/')) {
+            navigate(targetRoute, { replace: true });
+          }
+        }
       }
     }
   }, [user, profile, loading, navigate, location.pathname]);

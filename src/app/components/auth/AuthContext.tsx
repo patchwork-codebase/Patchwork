@@ -184,13 +184,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (hashParams.has('error') || queryParams.has('error')) {
       const errorMsg = hashParams.get('error_description') || queryParams.get('error_description') || 'Authentication failed';
       console.error("[AuthContext] OAuth Error detected:", errorMsg);
-      
-      // Handle the "Multiple accounts with the same email" error specifically
-      if (errorMsg.includes('Multiple accounts with the same email')) {
-        toast.error("An account with this email already exists. Please sign in with your password or ensure 'Account Linking' is enabled in Supabase.");
-      } else {
-        toast.error(decodeURIComponent(errorMsg).replace(/\+/g, ' '));
-      }
+            // Handle the "Multiple accounts with the same email" error specifically
+        if (errorMsg.includes('Multiple accounts with the same email')) {
+          toast.error("An account with this email already exists. Please sign in with your password or ensure 'Account Linking' is enabled in Supabase.");
+        } else if (errorMsg.includes('Identity is already linked to another user') || errorMsg.includes('already+linked')) {
+          toast.error("This account is already connected to a different Patchwork profile. Please use a different account.");
+        } else {
+          toast.error(decodeURIComponent(errorMsg).replace(/\+/g, ' '));
+        }
     }
 
     const channel = new BroadcastChannel('patchwork_auth_sync');
@@ -257,6 +258,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener('visibilitychange', handleVisibilityChange);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      
+      if (session?.provider_token) {
+        sessionStorage.setItem('oauth_provider_token', session.provider_token);
+      }
 
       setSession(session);
       setUser(session?.user ?? null);
