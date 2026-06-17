@@ -31,9 +31,10 @@ interface DecisionLogCardProps {
   reactions: any[];
   queryClient: any;
   isNested?: boolean;
+  isBuilder?: boolean;
 }
 
-export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false }: DecisionLogCardProps) {
+export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false, isBuilder = false }: DecisionLogCardProps) {
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -151,12 +152,14 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
             <span className="text-[12px] text-slate-500 font-medium">12 decisions · day 1-12</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-[12px] sm:text-[13px] transition-colors flex items-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <span>+</span> <span className="hidden sm:inline">Log a decision</span><span className="sm:hidden">Log</span>
-            </button>
+            {isBuilder && (
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-[12px] sm:text-[13px] transition-colors flex items-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <span>+</span> <span className="hidden sm:inline">Log a decision</span><span className="sm:hidden">Log</span>
+              </button>
+            )}
             <button className="text-[11px] sm:text-[12px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider shrink-0 whitespace-nowrap">
               View All
             </button>
@@ -170,15 +173,17 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
             </span>
             <span className="text-[12px] text-slate-500 font-medium">decisions logged</span>
           </div>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsModalOpen(true)}
-            className="group relative overflow-hidden bg-slate-900 hover:bg-slate-800 border border-transparent text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#8B7CF8]" />
-            <span className="relative z-10">Log a decision</span>
-          </motion.button>
+          {isBuilder && (
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsModalOpen(true)}
+              className="group relative overflow-hidden bg-slate-900 hover:bg-slate-800 border border-transparent text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#8B7CF8]" />
+              <span className="relative z-10">Log a decision</span>
+            </motion.button>
+          )}
         </div>
       )}
 

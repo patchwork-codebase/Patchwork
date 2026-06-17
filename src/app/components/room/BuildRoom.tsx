@@ -53,7 +53,7 @@ export default function BuildRoom() {
   const quickUpdateMode = searchParams.get('action') === 'post';
   const isPostingRef = useRef(false);
 
-  const isBuilder = room && profile?.role === 'builder';
+  const isBuilder = room && profile?.role === 'builder' && room.builderId === user?.id;
   const joined = room?.observerCount !== undefined; // simplified
 
   useEffect(() => {
@@ -303,7 +303,7 @@ export default function BuildRoom() {
               <ProductRoomStats roomId={id!} reactionsCount={room.reactions.length} roomCreatedAt={room.created_at || room.createdAt || new Date().toISOString()} />
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-4">
-              <DecisionLogCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
+              <DecisionLogCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} isBuilder={isBuilder} />
               <MilestoneTrackerCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
             </div>
           </div>

@@ -85,6 +85,7 @@ export function ActiveRoomPanel({
                 reactions={roomReactions} 
                 queryClient={queryClient} 
                 isNested={true}
+                isBuilder={room.builder_id === user?.id || room.builderId === user?.id}
               />
             </motion.div>
           ) : (
