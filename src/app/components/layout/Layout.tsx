@@ -122,11 +122,13 @@ export default function Layout() {
   const activeTab = searchParams.get('tab') || 'overview';
   const activeSection = location.pathname.startsWith('/dashboard/explore')
     ? 'explore'
-    : location.pathname.startsWith('/dashboard/build-logs')
-      ? 'logs'
-      : location.pathname.startsWith('/dashboard/observer')
-        ? 'observer'
-        : activeTab;
+    : location.pathname.startsWith('/dashboard/rooms')
+      ? 'rooms'
+      : location.pathname.startsWith('/dashboard/build-logs')
+        ? 'logs'
+        : location.pathname.startsWith('/dashboard/observer')
+          ? 'observer'
+          : activeTab;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -246,19 +248,14 @@ export default function Layout() {
             </Link>
 
             <Link
-              to="/dashboard/build-logs"
+              to="/dashboard/rooms"
               className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
-              {activeSection === 'logs' && (
+              {activeSection === 'rooms' && (
                 <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'logs' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-                {activeSection === 'logs' && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-                )}
+              <div className={`relative z-10 transition-colors duration-200 flex items-center justify-center w-6 h-6 ${activeSection === 'rooms' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <HammerIcon />
               </div>
             </Link>
 
@@ -380,14 +377,14 @@ export default function Layout() {
             </Link>
 
             <Link
-              to="/dashboard?tab=mine"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'mine' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+              to="/dashboard/rooms"
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'rooms' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <HammerIcon />
                 My rooms
               </div>
-              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'mine' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
+              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'rooms' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
                 3
               </span>
             </Link>

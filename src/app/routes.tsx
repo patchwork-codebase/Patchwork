@@ -106,6 +106,7 @@ export const router = createBrowserRouter([
           { index: true, lazy: () => import("./components/dashboard/Dashboard").then(m => ({ Component: m.default })) },
           { path: "create", lazy: () => import("./components/room/CreateRoom").then(m => ({ Component: m.default })) },
           { path: "room/:id", lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })) },
+          { path: "rooms", lazy: () => import("./components/dashboard/MyRoomsPage").then(m => ({ Component: m.default })) },
           { path: "profile/:id", lazy: () => import("./components/profile/UserProfile").then(m => ({ Component: m.default })) },
           { path: "observer", lazy: () => import("./components/observer/ObserverHub").then(m => ({ Component: m.default })) },
           { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },
