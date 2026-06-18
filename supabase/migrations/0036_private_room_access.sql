@@ -54,8 +54,8 @@ BEGIN
 
     -- 2. Check Domain Whitelist
     IF array_length(v_room.whitelisted_domains, 1) > 0 THEN
-        -- Get the user's email from profiles table
-        SELECT email INTO v_user_email FROM public.profiles WHERE id::uuid = auth.uid()::uuid;
+        -- Get the user's email from users table
+        SELECT email INTO v_user_email FROM public.users WHERE id::uuid = auth.uid()::uuid;
         
         IF v_user_email IS NOT NULL THEN
             -- Extract domain
@@ -78,9 +78,11 @@ $$;
 
 -- ROOMS
 DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
+DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
 CREATE POLICY "Public rooms are viewable by everyone" ON public.rooms
 FOR SELECT USING (is_private = false);
 
+DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 CREATE POLICY "Private rooms viewable by observers" ON public.rooms
 FOR SELECT USING (
@@ -93,11 +95,13 @@ FOR SELECT USING (
 
 -- UPDATES
 DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
+DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
 CREATE POLICY "Public updates are viewable by everyone" ON public.updates
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private updates viewable by observers" ON public.updates;
 DROP POLICY IF EXISTS "Private updates viewable by observers" ON public.updates;
 CREATE POLICY "Private updates viewable by observers" ON public.updates
 FOR SELECT USING (
@@ -110,11 +114,13 @@ FOR SELECT USING (
 
 -- REACTIONS
 DROP POLICY IF EXISTS "Public reactions are viewable by everyone" ON public.reactions;
+DROP POLICY IF EXISTS "Public reactions are viewable by everyone" ON public.reactions;
 CREATE POLICY "Public reactions are viewable by everyone" ON public.reactions
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private reactions viewable by observers" ON public.reactions;
 DROP POLICY IF EXISTS "Private reactions viewable by observers" ON public.reactions;
 CREATE POLICY "Private reactions viewable by observers" ON public.reactions
 FOR SELECT USING (
@@ -127,11 +133,13 @@ FOR SELECT USING (
 
 -- DECISIONS
 DROP POLICY IF EXISTS "Public decisions are viewable by everyone" ON public.room_decisions;
+DROP POLICY IF EXISTS "Public decisions are viewable by everyone" ON public.room_decisions;
 CREATE POLICY "Public decisions are viewable by everyone" ON public.room_decisions
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private decisions viewable by observers" ON public.room_decisions;
 DROP POLICY IF EXISTS "Private decisions viewable by observers" ON public.room_decisions;
 CREATE POLICY "Private decisions viewable by observers" ON public.room_decisions
 FOR SELECT USING (
@@ -144,11 +152,13 @@ FOR SELECT USING (
 
 -- NOTION DOCS
 DROP POLICY IF EXISTS "Public docs are viewable by everyone" ON public.room_notion_docs;
+DROP POLICY IF EXISTS "Public docs are viewable by everyone" ON public.room_notion_docs;
 CREATE POLICY "Public docs are viewable by everyone" ON public.room_notion_docs
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private docs viewable by observers" ON public.room_notion_docs;
 DROP POLICY IF EXISTS "Private docs viewable by observers" ON public.room_notion_docs;
 CREATE POLICY "Private docs viewable by observers" ON public.room_notion_docs
 FOR SELECT USING (

@@ -16,10 +16,12 @@ CREATE TABLE IF NOT EXISTS public.room_templates (
 ALTER TABLE public.room_templates ENABLE ROW LEVEL SECURITY;
 
 -- Everyone can view system templates and their own custom templates
+DROP POLICY IF EXISTS "Allow public read access to system templates" ON public.room_templates;
 CREATE POLICY "Allow public read access to system templates" ON public.room_templates
   FOR SELECT USING (is_system = true OR auth.uid() = author_id);
 
 -- Only authenticated users can insert custom templates
+DROP POLICY IF EXISTS "Allow users to insert custom templates" ON public.room_templates;
 CREATE POLICY "Allow users to insert custom templates" ON public.room_templates
   FOR INSERT WITH CHECK (auth.uid() = author_id);
 

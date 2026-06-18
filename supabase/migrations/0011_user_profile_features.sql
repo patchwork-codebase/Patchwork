@@ -17,13 +17,16 @@ CREATE TABLE IF NOT EXISTS public.follows (
 ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to follows
+DROP POLICY IF EXISTS "Allow public read access to follows" ON public.follows;
 CREATE POLICY "Allow public read access to follows" ON public.follows
   FOR SELECT USING (true);
 
 -- Allow authenticated users to follow/unfollow
+DROP POLICY IF EXISTS "Allow authenticated users to follow" ON public.follows;
 CREATE POLICY "Allow authenticated users to follow" ON public.follows
   FOR INSERT WITH CHECK (auth.uid() = follower_id);
 
+DROP POLICY IF EXISTS "Allow authenticated users to unfollow" ON public.follows;
 CREATE POLICY "Allow authenticated users to unfollow" ON public.follows
   FOR DELETE USING (auth.uid() = follower_id);
 

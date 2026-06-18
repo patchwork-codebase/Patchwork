@@ -36,20 +36,23 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4 px-1">
-        <h2 className="font-extrabold text-[20px] sm:text-[24px] text-slate-900 m-0 font-display tracking-tight">
-          Active rooms
-        </h2>
-        <button 
-          onClick={() => setTab('feed')} 
+        <div>
+          <h2 className="font-extrabold text-[20px] sm:text-[24px] text-slate-900 m-0 font-display tracking-tight">
+            Active rooms
+          </h2>
+          <p className="text-[11px] text-slate-400 font-mono font-medium mt-0.5">Sorted by recent activity</p>
+        </div>
+        <Link
+          to="/dashboard/rooms"
           className="flex items-center justify-center min-h-[44px] px-3 bg-transparent border-none text-[13px] sm:text-[14px] text-[#8B7CF8] hover:text-[#6C5CE7] active:scale-95 font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-full hover:bg-slate-50"
         >
           View all
-        </button>
+        </Link>
       </div>
 
       {loading ? (
         <div className="flex flex-col gap-3 sm:gap-4">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className="bg-white border border-slate-200 rounded-[20px] py-4 px-5 flex flex-col gap-3">
               <div className="flex justify-between items-center w-full">
                 <div className="flex items-center gap-3">
@@ -84,7 +87,13 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
         </div>
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
-          {rooms.slice(0, 3).map((room, idx) => {
+          {[...rooms]
+            .sort((a, b) => {
+              const aTime = new Date(a.updatedAt || (a as any).updated_at || 0).getTime();
+              const bTime = new Date(b.updatedAt || (b as any).updated_at || 0).getTime();
+              return bTime - aTime;
+            })
+            .slice(0, 4).map((room, idx) => {
             const tag = (room.tags && room.tags[0]) ? room.tags[0] : 'product';
             const tStyle = tagStyle(tag);
             const isPaused = room.status === 'paused';

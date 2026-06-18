@@ -1,4 +1,5 @@
-import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-router";
+import { Link, useLocation, useNavigate, Outlet, useSearchParams, ScrollRestoration } from "react-router";
+import { Suspense } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -615,10 +616,37 @@ export default function Layout() {
 
         <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
           <div className="h-full">
-            <Outlet />
+            <Suspense fallback={
+              <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-8">
+                {/* Page skeleton */}
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-200 animate-pulse shrink-0" />
+                  <div className="flex flex-col gap-2">
+                    <div className="h-5 w-48 bg-slate-200 animate-pulse rounded-lg" />
+                    <div className="h-4 w-32 bg-slate-100 animate-pulse rounded-lg" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-white border border-slate-100 rounded-[28px] overflow-hidden" style={{ animationDelay: `${i * 60}ms` }}>
+                      <div className="h-[140px] bg-slate-100 animate-pulse" />
+                      <div className="p-6">
+                        <div className="h-5 w-3/4 bg-slate-200 animate-pulse rounded-lg mb-3" />
+                        <div className="h-4 w-1/2 bg-slate-100 animate-pulse rounded-lg mb-6" />
+                        <div className="h-3 w-full bg-slate-100 animate-pulse rounded-lg mb-2" />
+                        <div className="h-3 w-4/5 bg-slate-100 animate-pulse rounded-lg" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            }>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>
+      <ScrollRestoration getKey={(location) => location.pathname} />
     </div>
   );
 }

@@ -31,14 +31,7 @@ interface Room {
   updatedAt: string;
 }
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
+
 
 import { useProfile } from "../../hooks/useProfile";
 import { useUserRooms } from "../../hooks/useRooms";

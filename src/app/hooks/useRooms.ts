@@ -170,10 +170,11 @@ export function useUserRooms(userId?: string) {
           builder_id, builder_name, tags, cover_image, primary_link,
           project_stage, primary_goal, observer_count, update_count,
           invite_token, whitelisted_domains,
-          created_at, updated_at
+          created_at, updated_at,
+          room_observers(observer_id)
         `)
         .eq('builder_id', userId)
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
@@ -191,7 +192,11 @@ export function useUserRooms(userId?: string) {
     const channelName = CHANNEL_NAMES.userRooms(userId);
     removeStaleChannel(channelName);
 
-    const channel = supabase
+    const updatesChannelName = `user-rooms-updates-${userId}`;
+    removeStaleChannel(updatesChannelName);
+
+    // Refetch when any of the user's rooms are updated (e.g., status change)
+    const roomsChannel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
@@ -202,8 +207,22 @@ export function useUserRooms(userId?: string) {
       )
       .subscribe();
 
+    // Refetch when a new update is posted in any of the user's rooms so the
+    // room bubbles to the top (updated_at is bumped on each post).
+    const updatesChannel = supabase
+      .channel(updatesChannelName)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'updates', filter: `author_id=eq.${userId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(userId) });
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(updatesChannel);
     };
   }, [userId, queryClient]);
 
@@ -227,7 +246,14 @@ export function useObservedRooms(userId?: string) {
         .from('room_observers')
         .select(`
           room_id,
-          rooms:rooms(*)
+          rooms:rooms(
+            id, title, description, status, is_private,
+            builder_id, builder_name, tags, cover_image, primary_link,
+            project_stage, primary_goal, observer_count, update_count,
+            created_at, updated_at,
+            users!builder_id(is_verified_expert),
+            room_observers(observer_id)
+          )
         `)
         .eq('observer_id', userId)
         .order('joined_at', { ascending: false })

@@ -27,6 +27,7 @@ ALTER TABLE public.linkedin_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.linkedin_posts ENABLE ROW LEVEL SECURITY;
 
 -- Policies for linkedin_accounts
+DROP POLICY IF EXISTS "Users can manage their own linkedin accounts" ON public.linkedin_accounts;
 CREATE POLICY "Users can manage their own linkedin accounts"
 ON public.linkedin_accounts
 FOR ALL TO authenticated
@@ -34,6 +35,7 @@ USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
 -- Policies for linkedin_posts
+DROP POLICY IF EXISTS "Users can manage their own linkedin posts" ON public.linkedin_posts;
 CREATE POLICY "Users can manage their own linkedin posts"
 ON public.linkedin_posts
 FOR ALL TO authenticated

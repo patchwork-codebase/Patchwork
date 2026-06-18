@@ -4,17 +4,23 @@
 ALTER TABLE public.room_observers ENABLE ROW LEVEL SECURITY;
 
 -- Allow anyone to read observers
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.room_observers;
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.room_observers;
 CREATE POLICY "Enable read access for all users" 
 ON public.room_observers FOR SELECT 
 USING (true);
 
 -- Allow authenticated users to insert their own observer records
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.room_observers;
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.room_observers;
 CREATE POLICY "Enable insert for authenticated users" 
 ON public.room_observers FOR INSERT 
 TO authenticated 
 WITH CHECK (auth.uid() = observer_id);
 
 -- Allow users to leave a room (delete their own record)
+DROP POLICY IF EXISTS "Enable delete for users based on observer_id" ON public.room_observers;
+DROP POLICY IF EXISTS "Enable delete for users based on observer_id" ON public.room_observers;
 CREATE POLICY "Enable delete for users based on observer_id" 
 ON public.room_observers FOR DELETE 
 TO authenticated 

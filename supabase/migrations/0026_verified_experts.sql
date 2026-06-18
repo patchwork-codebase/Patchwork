@@ -60,17 +60,21 @@ CREATE TABLE IF NOT EXISTS public.expert_applications (
 ALTER TABLE public.expert_applications ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can view their own application" ON public.expert_applications;
+DROP POLICY IF EXISTS "Users can view their own application" ON public.expert_applications;
 CREATE POLICY "Users can view their own application" ON public.expert_applications
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own application" ON public.expert_applications;
 DROP POLICY IF EXISTS "Users can insert their own application" ON public.expert_applications;
 CREATE POLICY "Users can insert their own application" ON public.expert_applications
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can update their own draft application" ON public.expert_applications;
+DROP POLICY IF EXISTS "Users can update their own draft application" ON public.expert_applications;
 CREATE POLICY "Users can update their own draft application" ON public.expert_applications
   FOR UPDATE USING (auth.uid() = user_id AND status IN ('draft', 'pending'));
 
+DROP POLICY IF EXISTS "Admins can view all applications" ON public.expert_applications;
 DROP POLICY IF EXISTS "Admins can view all applications" ON public.expert_applications;
 CREATE POLICY "Admins can view all applications" ON public.expert_applications
   FOR SELECT USING (
@@ -80,6 +84,7 @@ CREATE POLICY "Admins can view all applications" ON public.expert_applications
     )
   );
 
+DROP POLICY IF EXISTS "Admins can update all applications" ON public.expert_applications;
 DROP POLICY IF EXISTS "Admins can update all applications" ON public.expert_applications;
 CREATE POLICY "Admins can update all applications" ON public.expert_applications
   FOR UPDATE USING (
