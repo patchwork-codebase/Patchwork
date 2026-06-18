@@ -485,7 +485,7 @@ export default function LandingPage() {
     <div className="min-h-screen text-slate-900 font-sans bg-[#FAFAF9] antialiased selection:bg-[#6C5CE7]/30 selection:text-white">
       <AuthRedirectGuard />
       {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-[#FAFAF9]/95 backdrop-blur-xl shadow-[0_25px_80px_rgba(0,0,0,0.18)]">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-[#FAFAF9]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-6 sm:py-4">
           <div
             onClick={() => {
@@ -556,23 +556,24 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(open => !open)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm text-slate-900 transition hover:border-slate-300 sm:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition sm:hidden"
               aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
             </button>
           </div>
         </div>
 
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-slate-200 bg-[#FAFAF9]/95 px-5 pb-4 pt-3">
-            <div className="space-y-3">
+          <div className="sm:hidden border-t border-slate-100 bg-white px-4 pb-5 pt-4">
+            <div className="space-y-2.5">
+              {/* Primary CTA */}
               <button
                 onClick={() => {
                   showOnboarding();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full rounded-full bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_30px_rgba(108,92,231,0.22)] transition hover:opacity-95"
+                className="w-full rounded-2xl bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] px-5 py-3.5 text-sm font-bold text-white transition hover:opacity-95 active:scale-[0.98]"
               >
                 Join as a builder
               </button>
@@ -581,47 +582,56 @@ export default function LandingPage() {
                   navigate("/login");
                   setMobileMenuOpen(false);
                 }}
-                className="w-full rounded-full border border-slate-200 bg-white shadow-sm px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white shadow-sm"
+                className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
               >
                 Sign In
               </button>
-              <div className="grid gap-2 rounded-3xl border border-slate-200 bg-white shadow-sm p-3">
-                <button
-                  onClick={() => {
-                    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white shadow-sm transition"
-                >
-                  Why Patchwork
-                </button>
-                <button
-                  onClick={() => {
-                    document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" });
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white shadow-sm transition"
-                >
-                  How it works
-                </button>
-                <button
-                  onClick={() => {
-                    document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" });
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white shadow-sm transition"
-                >
-                  Showcase
-                </button>
-                <button
-                  onClick={() => {
-                    document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" });
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white shadow-sm transition"
-                >
-                  FAQ
-                </button>
+
+              {/* Nav links — clean, no box */}
+              <div className="pt-1">
+                <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Explore</p>
+                <div className="space-y-0.5">
+                  <button
+                    onClick={() => {
+                      document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
+                  >
+                    Why Patchwork
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" });
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
+                  >
+                    How it works
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" });
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
+                  >
+                    Showcase
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" });
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
+                  >
+                    FAQ
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -650,11 +660,6 @@ export default function LandingPage() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="lg:col-span-6 text-left space-y-6"
                   >
-                    <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#8B7CF8] uppercase">
-                      <span className="block h-2 w-2 rounded-full bg-[#00B37E] animate-pulse" />
-                      47 builders streaming proof-of-work live
-                    </div>
-
                     <h1 className="text-4xl sm:text-6xl font-extrabold leading-[1.08] tracking-[-0.04em] text-slate-900">
                       Build in the open.<br />
                       <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#8B7CF8] to-[#DDD8FF]">
@@ -682,18 +687,29 @@ export default function LandingPage() {
                       </button>
                     </div>
 
-                    <div className="pt-6 grid grid-cols-2 gap-3 border-t border-slate-200 sm:grid-cols-3 sm:max-w-none">
-                      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white shadow-sm p-3 sm:p-4">
-                        <div className="text-xl sm:text-3xl font-extrabold text-slate-900">312+</div>
-                        <div className="text-[11px] sm:text-sm text-slate-600 font-medium mt-1">Raw updates streamed</div>
+                    <div className="pt-8 grid grid-cols-2 gap-4 border-t border-slate-200/60 sm:grid-cols-3 sm:max-w-none">
+                      <div className="relative group rounded-2xl sm:rounded-3xl bg-[#0A0910] p-[1px] overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[0_8px_30px_rgba(108,92,231,0.2)] hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#6C5CE7]/40 via-[#8B7CF8]/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="relative h-full rounded-[23px] sm:rounded-[31px] bg-[#0E0C15]/90 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-center">
+                          <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">312+</div>
+                          <div className="text-[11px] sm:text-[13px] text-[#8B7CF8] font-bold mt-1.5 uppercase tracking-wider">Updates streamed</div>
+                        </div>
                       </div>
-                      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white shadow-sm p-3 sm:p-4">
-                        <div className="text-xl sm:text-3xl font-extrabold text-slate-900">68%</div>
-                        <div className="text-[11px] sm:text-sm text-slate-600 font-medium mt-1">Week-2 retention</div>
+
+                      <div className="relative group rounded-2xl sm:rounded-3xl bg-[#0A0910] p-[1px] overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[0_8px_30px_rgba(108,92,231,0.2)] hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#8B7CF8]/40 via-[#6C5CE7]/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="relative h-full rounded-[23px] sm:rounded-[31px] bg-[#0E0C15]/90 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-center">
+                          <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">68%</div>
+                          <div className="text-[11px] sm:text-[13px] text-[#8B7CF8] font-bold mt-1.5 uppercase tracking-wider">Wk-2 Retention</div>
+                        </div>
                       </div>
-                      <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white shadow-sm p-3 sm:p-4 col-span-2 sm:col-span-1">
-                        <div className="text-xl sm:text-3xl font-extrabold text-slate-900">4.9★</div>
-                        <div className="text-[11px] sm:text-sm text-slate-600 font-medium mt-1">Builder rating</div>
+
+                      <div className="relative group rounded-2xl sm:rounded-3xl bg-[#0A0910] p-[1px] overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[0_8px_30px_rgba(108,92,231,0.2)] hover:-translate-y-1 col-span-2 sm:col-span-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#a78bfa]/40 via-[#8B7CF8]/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="relative h-full rounded-[23px] sm:rounded-[31px] bg-[#0E0C15]/90 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-center">
+                          <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-1">4.9<span className="text-[#FBBF24]">★</span></div>
+                          <div className="text-[11px] sm:text-[13px] text-[#8B7CF8] font-bold mt-1.5 uppercase tracking-wider">Builder rating</div>
+                        </div>
                       </div>
                     </div>
                   </motion.div>

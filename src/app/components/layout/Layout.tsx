@@ -32,21 +32,21 @@ const SearchIcon = () => (
 
 const ActivityIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
   </svg>
 );
 
 const EyeIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-    <circle cx="12" cy="12" r="3"/>
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
 const CompassIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/>
-    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+    <circle cx="12" cy="12" r="10" />
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
   </svg>
 );
 
@@ -133,7 +133,7 @@ export default function Layout() {
       if (user?.id) localStorage.setItem(`email_verified_failsafe_${user.id}`, 'true');
       setShowSuccessModal(true);
       refreshProfile(); // refresh to get the latest emailVerified status
-      
+
       // Clean up URL
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
@@ -147,6 +147,8 @@ export default function Layout() {
   const activeTab = searchParams.get('tab') || 'overview';
   const activeSection = location.pathname.startsWith('/dashboard/explore')
     ? 'explore'
+    : location.pathname.startsWith('/learning-hub')
+      ? 'learning-hub'
     : location.pathname.startsWith('/dashboard/rooms')
       ? 'rooms'
       : location.pathname.startsWith('/dashboard/build-logs')
@@ -194,20 +196,20 @@ export default function Layout() {
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAF9] text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
       <VerificationRequiredModal />
-      <VerificationSuccessModal 
-        isOpen={showSuccessModal} 
-        onClose={() => setShowSuccessModal(false)} 
-        role={profile?.role || 'builder'} 
+      <VerificationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        role={profile?.role || 'builder'}
       />
       {user && profile && (
-        <WelcomeTour 
-          userId={user.id} 
-          userName={profile.name} 
-          forceShow={forceShowTour} 
-          onClose={() => setForceShowTour(false)} 
+        <WelcomeTour
+          userId={user.id}
+          userName={profile.name}
+          forceShow={forceShowTour}
+          onClose={() => setForceShowTour(false)}
         />
       )}
-      
+
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
       <header className="relative h-[60px] bg-white/85 backdrop-blur-xl border-b border-slate-200 flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -226,9 +228,9 @@ export default function Layout() {
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-amber-400 shrink-0" aria-hidden>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </span>
             <p className="text-[12px] sm:text-[13px] text-amber-300 font-medium leading-snug truncate">
@@ -256,12 +258,12 @@ export default function Layout() {
               )}
               <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
               </div>
             </Link>
-            
+
             <Link
               to="/dashboard?tab=feed"
               className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
@@ -271,9 +273,9 @@ export default function Layout() {
               )}
               <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-                  <circle cx="9" cy="9" r="2"/>
-                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <circle cx="9" cy="9" r="2" />
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                 </svg>
               </div>
             </Link>
@@ -299,8 +301,8 @@ export default function Layout() {
               )}
               <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"/>
-                  <path d="m21 21-4.35-4.35"/>
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
                 </svg>
               </div>
             </Link>
@@ -309,9 +311,8 @@ export default function Layout() {
               onClick={() => setMobileMenuOpen(true)}
               className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
             >
-              <div className={`w-[32px] h-[32px] rounded-full overflow-hidden transition-all duration-200 shadow-sm ${
-                mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-white' : 'border border-slate-300'
-              }`}>
+              <div className={`w-[32px] h-[32px] rounded-full overflow-hidden transition-all duration-200 shadow-sm ${mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-white' : 'border border-slate-300'
+                }`}>
                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover scale-110" />
               </div>
             </button>
@@ -321,70 +322,77 @@ export default function Layout() {
 
       {/* MOBILE PROFILE BOTTOM SHEET */}
       <AnimatePresence>
-      {mobileMenuOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <motion.div 
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
-          >
-            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
-            
-            <div className="px-5 pb-5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
+            >
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
+
+              <div className="px-5 pb-5">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>
+                    <div className="text-xs text-slate-500 font-mono truncate">{profile?.email || user.email}</div>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>
-                  <div className="text-xs text-slate-500 font-mono truncate">{profile?.email || user.email}</div>
+
+                <div className="space-y-1 mb-6">
+                  <Link
+                    to={`/dashboard/profile/${user.id}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                  >
+                    <UserIcon /> My Profile
+                  </Link>
+                  <Link 
+                    to="/dashboard/explore"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeSection === 'explore' ? 'bg-[#8B7CF8]/10 text-[#8B7CF8]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                  >
+                    <CompassIcon /> Explore Builders
+                  </Link>
+                  {/* <Link 
+                    to="/learning-hub"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeSection === 'learning-hub' ? 'bg-[#8B7CF8]/10 text-[#8B7CF8]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                  >
+                    <CompassIcon /> Learning Hub
+                  </Link> */}
                 </div>
-              </div>
 
-              <div className="space-y-1 mb-6">
-                <Link
-                  to={`/dashboard/profile/${user.id}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
+                  <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Privacy Policy</Link>
+                  <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Terms of Service</Link>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"
                 >
-                  <UserIcon /> My Profile
-                </Link>
-                <Link
-                  to="/dashboard/explore"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
-                >
-                  <CompassIcon /> Explore Builders
-                </Link>
+                  <LogOutIcon /> Sign out
+                </button>
               </div>
-
-              <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
-                <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Privacy Policy</Link>
-                <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Terms of Service</Link>
-              </div>
-
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleSignOut();
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"
-              >
-                <LogOutIcon /> Sign out
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
+            </motion.div>
+          </>
+        )}
       </AnimatePresence>
 
       <div className="flex flex-col lg:flex-row flex-1 pb-[70px] lg:pb-0">
@@ -393,7 +401,7 @@ export default function Layout() {
         <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
 
           <nav className="p-5 flex-1 overflow-y-auto">
-            
+
             {/* workspace section */}
             <div className="mb-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
               Primary
@@ -467,6 +475,14 @@ export default function Layout() {
               Explore builders
             </Link>
 
+            {/* <Link
+              to="/learning-hub"
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'learning-hub' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+            >
+              <CompassIcon />
+              Learning Hub
+            </Link> */}
+
             {/* product ops section */}
             <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
               Product Ops
@@ -534,50 +550,50 @@ export default function Layout() {
 
               {/* Profile dropdown menu */}
               <AnimatePresence>
-              {profileMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setProfileMenuOpen(false)}
-                  />
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
-                  >
-                    <div className="p-3 border-b border-slate-100">
-                      <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
-                        {profile?.email || user.email}
-                      </div>
-                    </div>
-                    <Link
-                      to={`/dashboard/profile/${user.id}`}
+                {profileMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
                     >
-                      <UserIcon /> Profile
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        setForceShowTour(true);
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
-                    >
-                      <CompassIcon /> Replay Tour
-                    </button>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
-                    >
-                      <LogOutIcon /> Sign out
-                    </button>
-                  </motion.div>
-                </>
-              )}
+                      <div className="p-3 border-b border-slate-100">
+                        <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
+                          {profile?.email || user.email}
+                        </div>
+                      </div>
+                      <Link
+                        to={`/dashboard/profile/${user.id}`}
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                      >
+                        <UserIcon /> Profile
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          setForceShowTour(true);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
+                      >
+                        <CompassIcon /> Replay Tour
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
+                      >
+                        <LogOutIcon /> Sign out
+                      </button>
+                    </motion.div>
+                  </>
+                )}
               </AnimatePresence>
             </div>
           </div>

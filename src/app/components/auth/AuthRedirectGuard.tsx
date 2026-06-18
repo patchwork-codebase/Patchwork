@@ -21,9 +21,10 @@ export function AuthRedirectGuard() {
           navigate('/onboarding', { replace: true });
         }
       } else {
-        const returnTo = sessionStorage.getItem('oauth_return_to');
+        const returnTo = sessionStorage.getItem('oauth_return_to') || localStorage.getItem('authRedirectUrl');
         if (returnTo) {
           sessionStorage.removeItem('oauth_return_to');
+          localStorage.removeItem('authRedirectUrl');
           navigate(returnTo, { replace: true });
         } else {
           const targetRoute = profile?.role === 'observer' ? '/dashboard/observer' : '/dashboard';

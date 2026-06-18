@@ -1,5 +1,6 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
+import { useSearchParams } from "react-router";
 import { Hammer, MessageCircle, Trash2 } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
@@ -19,6 +20,16 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 
+const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
+  decision: { label: 'Decision', color: 'bg-[#8B7CF8]/10 text-[#6C5CE7] border-[#8B7CF8]/30', icon: '⚡' },
+  scrap: { label: 'Scrap', color: 'bg-rose-50 text-rose-600 border-rose-200', icon: '🗑' },
+  pivot: { label: 'Pivot', color: 'bg-orange-50 text-orange-600 border-orange-200', icon: '🔄' },
+  blocker: { label: 'Blocker', color: 'bg-red-50 text-red-600 border-red-200', icon: '🚧' },
+  insight: { label: 'Insight', color: 'bg-amber-50 text-amber-600 border-amber-200', icon: '💡' },
+  open_question: { label: 'Open question', color: 'bg-blue-50 text-blue-600 border-blue-200', icon: '❓' },
+  shipped: { label: 'Shipped', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: '🚀' }
+};
+
 export function RoomFeed({ 
   room, 
   user, 
@@ -33,6 +44,9 @@ export function RoomFeed({
   updateTextAreaRef,
   REACTION_CONFIG
 }: any) {
+  const [searchParams] = useSearchParams();
+  const updateIdToScroll = searchParams.get('updateId');
+
   if (room.updates.length === 0) {
     return (
       <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
@@ -56,17 +70,25 @@ export function RoomFeed({
   }
 
   const sortedUpdates = [...room.updates].reverse();
+  const initialTopMostItemIndex = updateIdToScroll 
+    ? Math.max(0, sortedUpdates.findIndex((u: any) => u.id === updateIdToScroll)) 
+    : 0;
 
   return (
     <Virtuoso
       useWindowScroll
+      initialTopMostItemIndex={initialTopMostItemIndex}
       data={sortedUpdates}
       itemContent={(index, update) => {
         const updateReactions = reactionsByUpdate[update.id] || [];
         const isFigmaUrl = update.content.includes("figma.com/");
+        const isTarget = update.id === updateIdToScroll;
 
         return (
-          <div key={update.id} className="bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 shadow-sm relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] mb-6" tabIndex={0}>
+          <div key={update.id} id={`update-${update.id}`} className={`bg-white border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] mb-6 transition-all duration-700 ${isTarget ? 'border-[#8B7CF8] shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-[#8B7CF8]' : 'border-slate-200 shadow-sm'}`} tabIndex={0}>
+            {isTarget && (
+              <div className="absolute inset-0 bg-[#8B7CF8]/5 pointer-events-none animate-pulse" />
+            )}
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
@@ -81,6 +103,15 @@ export function RoomFeed({
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide">{timeAgo(update.createdAt)}</div>
+                    {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType] && (
+                      <>
+                        <span className="text-slate-300">•</span>
+                        <div className={`px-2 py-0.5 rounded text-[10px] font-bold border ${UPDATE_TYPE_UI[update.updateType].color} flex items-center gap-1`}>
+                          <span>{UPDATE_TYPE_UI[update.updateType].icon}</span>
+                          {UPDATE_TYPE_UI[update.updateType].label}
+                        </div>
+                      </>
+                    )}
                     {update.authorId === user?.id && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

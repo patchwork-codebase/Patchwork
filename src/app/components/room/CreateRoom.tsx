@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Plus, X, ArrowRight, Sparkles, Image as ImageIcon, ChevronDown, Lock } from "lucide-react";
+import { ArrowLeft, Plus, X, ArrowRight, Sparkles, Image as ImageIcon, ChevronDown, Lock, FileText, Users, Rocket, LayoutTemplate, Crosshair, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const SUGGESTED_TAGS = ['design', 'engineering', 'product', 'research', 'writing', 'growth'];
@@ -70,13 +70,32 @@ export default function CreateRoom() {
     coverImage: null as string | null,
     primaryLink: '',
     projectStage: 'Ideation',
-    primaryGoal: 'Just sharing my journey'
+    primaryGoal: 'Just sharing my journey',
+    isPrivate: false
   });
   const [tags, setTags] = useState<string[]>([]);
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'active' | 'draft'>('active');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const { data, error } = await supabase.from('room_templates').select('*').order('created_at', { ascending: true });
+        if (!error && data) setTemplates(data);
+      } catch (e) {
+        console.error("Failed to load templates", e);
+      } finally {
+        setLoadingTemplates(false);
+      }
+    }
+    loadTemplates();
+  }, []);
 
   if (profile?.role !== 'builder') {
     return (
@@ -166,7 +185,8 @@ export default function CreateRoom() {
           cover_image: coverImageUrl,
           primary_link: form.primaryLink.trim() || null,
           project_stage: form.projectStage,
-          primary_goal: form.primaryGoal
+          primary_goal: form.primaryGoal,
+          is_private: form.isPrivate
         };
 
         const { error } = await supabase
@@ -194,10 +214,7 @@ export default function CreateRoom() {
       </Link>
 
       <div className="mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-full mb-4">
-          <Sparkles className="w-3.5 h-3.5 text-[#8B7CF8]" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B7CF8]">New Project</span>
-        </div>
+
         <h1 className="text-[40px] font-extrabold text-slate-900 font-display tracking-tight leading-tight mb-2">Create a Build Room</h1>
         <p className="text-[15px] text-slate-600 font-medium">Initialize a dedicated space to share your work-in-progress.</p>
       </div>
@@ -205,6 +222,53 @@ export default function CreateRoom() {
       <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
         
         <div className="space-y-8 relative z-10">
+
+          {/* Templates Section */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+            <h3 className="text-[14px] font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#8B7CF8]" /> Start from a template
+            </h3>
+            {loadingTemplates ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {templates.map(tpl => {
+                  const IconMatch = {
+                    FileText: FileText,
+                    Users: Users,
+                    Rocket: Rocket,
+                    Sparkles: Sparkles,
+                    LayoutTemplate: LayoutTemplate,
+                    Crosshair: Crosshair
+                  }[tpl.icon as string] || FileText;
+                  
+                  const isSelected = selectedTemplate === tpl.id;
+                  return (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTemplate(tpl.id);
+                        setForm(f => ({ ...f, description: tpl.template_context.replace(/\\n/g, '\n') }));
+                        setTags(tpl.recommended_tags || []);
+                        toast.success(`Applied ${tpl.name} template!`);
+                      }}
+                      className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-[#8B7CF8] bg-[#8B7CF8]/5 ring-1 ring-[#8B7CF8]' : 'border-slate-200 bg-white hover:border-[#8B7CF8]/50 hover:shadow-sm'}`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconMatch className={`w-4 h-4 ${isSelected ? 'text-[#8B7CF8]' : 'text-slate-500'}`} />
+                        <span className={`text-[13px] font-bold ${isSelected ? 'text-[#8B7CF8]' : 'text-slate-900'}`}>{tpl.name}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed font-medium line-clamp-2">{tpl.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Cover Image Upload */}
           <div>
             <label className="block text-[13px] font-bold text-slate-700 mb-2">Cover Image (Optional)</label>
@@ -312,6 +376,37 @@ export default function CreateRoom() {
               placeholder="https://github.com/your/repo or your live site"
               className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 transition-all font-medium"
             />
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-4 transition-all">
+            <div className="flex-1">
+              <h4 className="text-[14px] font-bold text-slate-900 mb-1 flex items-center gap-2">
+                Room Visibility
+                {form.isPrivate ? (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-600">Private</span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">Public</span>
+                )}
+              </h4>
+              <p className="text-[13px] text-slate-500 font-medium">
+                {form.isPrivate 
+                  ? "Only people with the direct link can view this room." 
+                  : "This room will appear in the global Patchwork feed for anyone to discover."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#8B7CF8] focus:ring-offset-2 ${form.isPrivate ? 'bg-slate-800' : 'bg-emerald-500'}`}
+              role="switch"
+              aria-checked={form.isPrivate}
+            >
+              <span className="sr-only">Toggle visibility</span>
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.isPrivate ? 'translate-x-5' : 'translate-x-0'}`}
+              />
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

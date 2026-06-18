@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp, Archive } from "lucide-react";
-import { useAuth } from "../auth/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useAuth, supabase } from "../auth/AuthContext";
 import { useUserRooms } from "../../hooks/useRooms";
 
 function timeAgoDays(iso: string) {
@@ -20,6 +22,22 @@ export default function BuildLogs() {
   const { user } = useAuth();
   const { data: myRoomsData, isLoading } = useUserRooms(user?.id);
   const myRooms = myRoomsData?.pages.flat() || [];
+  const queryClient = useQueryClient();
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+
+  const handleArchiveRoom = async (roomId: string) => {
+    setArchivingId(roomId);
+    try {
+      const { error } = await supabase.from('rooms').update({ status: 'archived' }).eq('id', roomId);
+      if (error) throw error;
+      toast.success('Room archived successfully');
+      queryClient.invalidateQueries({ queryKey: ['user-rooms'] });
+    } catch (err: any) {
+      toast.error('Failed to archive room: ' + err.message);
+    } finally {
+      setArchivingId(null);
+    }
+  };
 
   const activeRooms = myRooms.filter(r => r.status === 'active' || !r.status);
   const shippedRooms = myRooms.filter(r => r.status === 'shipped');
@@ -318,10 +336,12 @@ export default function BuildLogs() {
                     <Edit3 size={18} />
                   </Link>
                   <button
+                    onClick={() => handleArchiveRoom(room.id)}
+                    disabled={archivingId === room.id}
                     title="Archive room"
                     aria-label="Archive room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-                    <Archive size={18} />
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] disabled:opacity-50">
+                    {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
                   </button>
                 </div>
               </div>

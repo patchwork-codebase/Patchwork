@@ -240,7 +240,13 @@ export default function AuthPage() {
   });
 
   function redirectForRole(role?: string) {
-    navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
+    const returnTo = localStorage.getItem('authRedirectUrl');
+    if (returnTo) {
+      localStorage.removeItem('authRedirectUrl');
+      navigate(returnTo);
+    } else {
+      navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
+    }
   }
 
   async function handleLogin(e: React.FormEvent) {

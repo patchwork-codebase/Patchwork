@@ -83,12 +83,14 @@ export default function Notifications() {
           <div className="divide-y divide-slate-100">
             {notifications.map(n => {
               const isReaction = n.type === 'reaction';
+              const isDecision = n.type === 'decision';
               const actorName = n.actor?.name || 'Someone';
               
               let text = '';
               let icon = '';
               let bg = '';
               let color = '';
+              let linkTo = null;
               
               if (isReaction) {
                 const isLike = n.metadata?.reaction_type === 'like';
@@ -96,6 +98,13 @@ export default function Notifications() {
                 icon = isLike ? '⚡' : '🔄';
                 bg = 'bg-[#8B7CF8]/10';
                 color = 'text-[#8B7CF8]';
+              } else if (isDecision) {
+                const roomTitle = n.metadata?.room_title || 'a room';
+                text = `published a new Decision Log in "${roomTitle}"`;
+                icon = '📝';
+                bg = 'bg-[#8B7CF8]/10';
+                color = 'text-[#8B7CF8]';
+                linkTo = `/build-room/${n.metadata?.room_id}/decision/${n.reference_id}`;
               } else {
                 const roomTitle = n.metadata?.room_title || 'your room';
                 text = `started following "${roomTitle}"`;
@@ -104,8 +113,8 @@ export default function Notifications() {
                 color = 'text-emerald-400';
               }
 
-              return (
-                <div key={n.id} className={`p-5 flex items-start gap-4 transition-colors hover:bg-slate-50/50 ${!n.read ? 'bg-slate-50' : ''}`}>
+              const InnerContent = (
+                <div className={`p-5 flex items-start gap-4 transition-colors hover:bg-slate-50/50 ${!n.read ? 'bg-slate-50' : ''}`}>
                   <div className={`w-10 h-10 rounded-full ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
                     <span className="text-[18px]">{icon}</span>
                   </div>
@@ -113,6 +122,11 @@ export default function Notifications() {
                     <div className="text-[14px] text-slate-700 leading-snug">
                       <strong className="text-slate-900 font-bold">{actorName}</strong> {text}
                     </div>
+                    {isDecision && n.metadata?.decision_text && (
+                      <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl line-clamp-2">
+                        {n.metadata.decision_text}...
+                      </div>
+                    )}
                     {isReaction && n.metadata?.reaction_text && n.metadata.reaction_type !== 'like' && (
                       <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl italic">
                         "{n.metadata.reaction_text}"
@@ -128,6 +142,16 @@ export default function Notifications() {
                       )}
                     </div>
                   </div>
+                </div>
+              );
+
+              return linkTo ? (
+                <Link key={n.id} to={linkTo} className="block">
+                  {InnerContent}
+                </Link>
+              ) : (
+                <div key={n.id}>
+                  {InnerContent}
                 </div>
               );
             })}

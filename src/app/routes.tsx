@@ -89,6 +89,10 @@ export const router = createBrowserRouter([
         path: "/observer-onboarding",
         lazy: () => import("./components/observer/ObserverOnboarding").then(m => ({ Component: m.default })),
       },
+      // {
+      //   path: "/learning-hub",
+      //   lazy: () => import("./components/learning-hub/LearningHub").then(m => ({ Component: m.default })),
+      // },
       {
         path: "/terms",
         lazy: () => import("./components/legal/TermsOfService").then(m => ({ Component: m.default })),
@@ -96,6 +100,10 @@ export const router = createBrowserRouter([
       {
         path: "/privacy",
         lazy: () => import("./components/legal/PrivacyPolicy").then(m => ({ Component: m.default })),
+      },
+      {
+        path: "/build-room/:roomId/decision/:decisionId",
+        lazy: () => import("./components/room/DecisionDeepLink").then(m => ({ Component: m.default })),
       },
 
       // Authenticated dashboard shell

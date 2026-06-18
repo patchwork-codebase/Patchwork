@@ -49,6 +49,7 @@ export default function BuildRoom() {
   const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
   const [suggestedDecision, setSuggestedDecision] = useState<{ isDecision: boolean; extractedText: string | null } | null>(null);
   const [loggingDecision, setLoggingDecision] = useState(false);
+  const [updateType, setUpdateType] = useState<'general' | 'decision' | 'scrap' | 'pivot' | 'blocker' | 'insight' | 'open_question' | 'shipped'>('general');
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const quickUpdateMode = searchParams.get('action') === 'post';
   const isPostingRef = useRef(false);
@@ -102,6 +103,7 @@ export default function BuildRoom() {
         content: newUpdate.trim(),
         media_url: uploadedMediaUrl,
         code_snippet: codeSnippet.trim() || null,
+        update_type: updateType,
         created_at: new Date().toISOString()
       };
 
@@ -118,6 +120,7 @@ export default function BuildRoom() {
       setMediaPreview(null);
       setCodeSnippet('');
       setShowCodeInput(false);
+      setUpdateType('general');
       toast.success('Update posted!');
 
       // Analyze update for technical decisions in background
@@ -400,13 +403,54 @@ export default function BuildRoom() {
                     </div>
                     <span className="text-[11px] text-slate-500 font-medium ml-0 sm:ml-2">For general progress and commits (Use the 'Log Decision' tab below for architectural choices)</span>
                   </div>
+                  {/* Update type selector */}
+                  {(() => {
+                    const UPDATE_TYPES = [
+                      { value: 'general',       label: 'General',       color: 'bg-slate-100 text-slate-600 border-slate-200' },
+                      { value: 'decision',      label: '⚡ Decision',    color: 'bg-[#8B7CF8]/10 text-[#6C5CE7] border-[#8B7CF8]/30' },
+                      { value: 'scrap',         label: '🗑 Scrap',       color: 'bg-rose-50 text-rose-600 border-rose-200' },
+                      { value: 'pivot',         label: '🔄 Pivot',       color: 'bg-orange-50 text-orange-600 border-orange-200' },
+                      { value: 'blocker',       label: '🚧 Blocker',     color: 'bg-red-50 text-red-600 border-red-200' },
+                      { value: 'insight',       label: '💡 Insight',     color: 'bg-amber-50 text-amber-600 border-amber-200' },
+                      { value: 'open_question', label: '❓ Open question', color: 'bg-blue-50 text-blue-600 border-blue-200' },
+                      { value: 'shipped',       label: '🚀 Shipped',     color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+                    ] as const;
+                    return (
+                      <div className="mb-3">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Update type</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {UPDATE_TYPES.map(t => (
+                            <button
+                              key={t.value}
+                              type="button"
+                              onClick={() => setUpdateType(t.value as any)}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
+                                updateType === t.value
+                                  ? t.color + ' ring-1 ring-offset-1 ring-current'
+                                  : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                              }`}
+                            >
+                              {t.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="relative">
                   <textarea
-                  value={newUpdate}
-                  onChange={e => setNewUpdate(e.target.value)}
-                  placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
-                  rows={3}
-                  className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-4 text-slate-900 placeholder-slate-500 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
-                />
+                    ref={updateTextAreaRef}
+                    value={newUpdate}
+                    onChange={e => setNewUpdate(e.target.value.slice(0, 500))}
+                    placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
+                    rows={3}
+                    maxLength={500}
+                    className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-1 text-slate-900 placeholder-slate-500 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  />
+                  <span className={`absolute bottom-3 right-3 text-[11px] font-mono font-bold transition-colors ${
+                    newUpdate.length >= 480 ? 'text-rose-400' : 'text-slate-400'
+                  }`}>{newUpdate.length}/500</span>
+                  </div>
                 
                 {mediaPreview && (
                   <div className="relative w-fit mb-4 group/preview">
@@ -438,6 +482,11 @@ export default function BuildRoom() {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error('Image must be under 5 MB');
+                              e.target.value = '';
+                              return;
+                            }
                             const reader = new FileReader();
                             reader.onloadend = () => setMediaPreview(reader.result as string);
                             reader.readAsDataURL(file);
