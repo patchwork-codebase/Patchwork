@@ -261,76 +261,109 @@ export default function Layout() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-5 py-4 z-50 lg:hidden pb-[max(16px,env(safe-area-inset-bottom))]">
-        <div className="w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-[2rem] border border-slate-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.1)] px-2 py-2">
-          <nav className="flex items-center justify-between gap-2">
+      {/* ── MOBILE BOTTOM NAV ─────────────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+        {/* Safe-area spacer + glass bar */}
+        <div className="bg-white/95 backdrop-blur-2xl border-t border-slate-200/60 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
+          <nav className="flex items-stretch justify-around px-1 pt-1 pb-1">
+
+            {/* Home */}
             <Link
               to="/dashboard"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'overview' && (
-                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill={activeSection === 'overview' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
               </div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
+                Home
+              </span>
             </Link>
 
+            {/* Feed */}
             <Link
               to="/dashboard?tab=feed"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'feed' && (
-                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                  <circle cx="9" cy="9" r="2" />
-                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeWidth={activeSection === 'feed' ? '2.5' : '2'} />
                 </svg>
               </div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
+                Feed
+              </span>
             </Link>
 
+            {/* My Rooms */}
             <Link
               to="/dashboard/rooms"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'rooms' && (
-                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 flex items-center justify-center w-6 h-6 ${activeSection === 'rooms' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
-                <HammerIcon />
+              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'rooms' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 12L9 6l-6 6 1.5 1.5L9 9l4.5 4.5L15 12Z" strokeWidth={activeSection === 'rooms' ? '2.5' : '2'} />
+                  <path d="M15 12l4.5 4.5-1.5 1.5L13.5 13.5" />
+                  <path d="M9 6l3-3 3 3" />
+                </svg>
               </div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'rooms' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
+                Rooms
+              </span>
             </Link>
 
+            {/* Explore */}
             <Link
               to="/dashboard/explore"
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'explore' && (
-                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
               )}
-              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
               </div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
+                Explore
+              </span>
             </Link>
 
+            {/* Profile */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
-              <div className={`w-[32px] h-[32px] rounded-full overflow-hidden transition-all duration-200 shadow-sm ${mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-white' : 'border border-slate-300'
-                }`}>
-                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover scale-110" />
+              {mobileMenuOpen && (
+                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
+              )}
+              <div className="relative z-10">
+                <div className={`w-7 h-7 rounded-full overflow-hidden transition-all duration-200 ${mobileMenuOpen ? 'ring-2 ring-[#6C5CE7] ring-offset-1 ring-offset-white' : 'ring-1 ring-slate-200'}`}>
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                </div>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-1 ring-white" />
+                )}
               </div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${mobileMenuOpen ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
+                Profile
+              </span>
             </button>
+
           </nav>
         </div>
       </div>
@@ -410,7 +443,7 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col lg:flex-row flex-1 pb-[70px] lg:pb-0">
+      <div className="flex flex-col lg:flex-row flex-1 pb-[80px] lg:pb-0">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
         <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">

@@ -126,37 +126,42 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-slate-100 transition-colors" />
                   
-                  <div className="flex flex-col gap-3 w-full relative">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                        <div className={`text-[15px] sm:text-[16px] font-extrabold transition-colors font-display truncate group-hover:underline ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-600 group-hover:text-[#8B7CF8]'}`}>
+                  <div className="flex flex-col gap-2.5 w-full relative">
+                    {/* Title row — dot + title on left, tag on right but only sm+ */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
+                        <div className={`text-[14px] sm:text-[16px] font-extrabold transition-colors font-display leading-snug line-clamp-2 group-hover:underline ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-700 group-hover:text-[#8B7CF8]'}`}>
                           {room.title}
                         </div>
                       </div>
-                      <span className={`shrink-0 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color} border border-current/10`}>
+                      {/* Tag — hidden on mobile, visible sm+ */}
+                      <span className={`hidden sm:inline-flex shrink-0 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color} border border-current/10`}>
                         {tag}
                       </span>
                     </div>
-                    
-                    <div className="flex justify-between items-end mt-1">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
-                          <span className="capitalize px-2 py-1 bg-slate-100 rounded-md text-slate-600">
-                            {(room.status as any) === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
-                          </span>
-                          <span className="text-slate-400 opacity-50">·</span>
-                          <span>
-                            Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || (room as any).created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
-                          </span>
-                          <span className="text-slate-600 opacity-50">·</span>
-                          <span>{room.updateCount || 0} updates</span>
-                          <span className="text-slate-600 opacity-50">·</span>
-                          <ObserverAvatarStack room={room} />
-                        </div>
+
+                    {/* Tag on mobile — shown below title */}
+                    <span className={`sm:hidden self-start text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color} border border-current/10`}>
+                      {tag}
+                    </span>
+
+                    {/* Meta row */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12px] text-slate-400 font-mono font-medium min-w-0">
+                        <span className="capitalize px-2 py-0.5 bg-slate-100 rounded-md text-slate-600 text-[11px] font-bold">
+                          {(room.status as any) === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
+                        </span>
+                        <span className="text-slate-300">·</span>
+                        <span>Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || (room as any).created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}</span>
+                        <span className="text-slate-300">·</span>
+                        <span><span className="sm:hidden">{room.updateCount || 0} upd</span><span className="hidden sm:inline">{room.updateCount || 0} updates</span></span>
+                        <span className="text-slate-300">·</span>
+                        <ObserverAvatarStack room={room} />
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-inner">
+                      {/* Integration icons — hidden on mobile */}
+                      <div className="hidden sm:flex items-center gap-2 text-slate-400 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-inner shrink-0">
                         <Figma className="w-3.5 h-3.5 hover:text-purple-400 transition-colors" />
                         <NotionIcon className="w-3.5 h-3.5 hover:text-slate-900 transition-colors" />
                         <Github className="w-3.5 h-3.5 hover:text-slate-900 transition-colors" />
