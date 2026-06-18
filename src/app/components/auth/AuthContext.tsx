@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .upsert(payload, { onConflict: 'id' });
       if (error) throw error;
     } catch (err) {
-      console.log('Could not create or update profile row:', err);
+      console.error('Could not create or update profile row:', err);
     }
   }
 
@@ -167,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(profile);
       return profile;
     } catch (err) {
-      console.log('Could not load profile:', err);
+      console.error('Could not load profile:', err);
       return null;
     }
   }

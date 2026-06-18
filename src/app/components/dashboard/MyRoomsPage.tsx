@@ -3,7 +3,8 @@ import { useAuth } from "../auth/AuthContext";
 import { useUserRooms } from "../../hooks/useRooms";
 import { motion } from "motion/react";
 import { FolderGit2, Figma, Github, Plus } from "lucide-react";
-import { timeAgo } from "../../utils/helpers";
+import { timeAgo, getObserverCount } from "../../utils/helpers";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 
 const NotionIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -116,20 +117,20 @@ export default function MyRoomsPage() {
                       
                       <div className="flex flex-wrap items-center gap-3 mt-2 text-[13px] text-slate-500 font-mono font-medium">
                         <span className="capitalize px-2 py-1 bg-slate-100 rounded-md text-slate-600">
-                          {room.status === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
+                          {(room.status as any) === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
                         </span>
                         <span className="text-slate-300 hidden sm:inline">|</span>
                         <span>
-                          Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                          Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || (room as any).created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
                         </span>
                         <span className="text-slate-300 hidden sm:inline">|</span>
                         <span>{room.updateCount || 0} updates</span>
                         <span className="text-slate-300 hidden sm:inline">|</span>
-                        <span>{room.observerCount || 0} observers</span>
-                        {room.lastUpdate && (
+                        <ObserverAvatarStack room={room} />
+                        {room.updatedAt && (
                           <>
                             <span className="text-slate-300 hidden sm:inline">|</span>
-                            <span className="text-slate-400">Updated {timeAgo(room.lastUpdate)}</span>
+                            <span className="text-slate-400">Updated {timeAgo(room.updatedAt)}</span>
                           </>
                         )}
                       </div>

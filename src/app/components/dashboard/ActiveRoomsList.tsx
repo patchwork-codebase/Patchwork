@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { FolderGit2, Figma, Github } from "lucide-react";
+import type { Room } from "../../types";
 
 const NotionIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -8,23 +10,8 @@ const NotionIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-interface Room {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  builderId: string;
-  builderName: string;
-  status: string;
-  updateCount: number;
-  observerCount: number;
-  lastUpdate?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface ActiveRoomsListProps {
-  rooms: any[];
+  rooms: Room[];
   loading?: boolean;
   setTab: (tab: 'overview' | 'feed' | 'mine') => void;
   selectedRoomId?: string | null;
@@ -146,15 +133,17 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                     <div className="flex justify-between items-end mt-1">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
-                          <span className="capitalize">
-                            {room.status === 'draft' ? <span className="text-amber-400">Draft</span> : isPaused ? 'Paused' : 'Live'}
+                          <span className="capitalize px-2 py-1 bg-slate-100 rounded-md text-slate-600">
+                            {(room.status as any) === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
                           </span>
                           <span className="text-slate-400 opacity-50">·</span>
-                          <span className="text-slate-700 font-bold">
-                            Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                          <span>
+                            Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || (room as any).created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
                           </span>
                           <span className="text-slate-600 opacity-50">·</span>
                           <span>{room.updateCount || 0} updates</span>
+                          <span className="text-slate-600 opacity-50">·</span>
+                          <ObserverAvatarStack room={room} />
                         </div>
                       </div>
 

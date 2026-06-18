@@ -663,12 +663,12 @@ export default function LandingPage() {
                     <h1 className="text-4xl sm:text-6xl font-extrabold leading-[1.08] tracking-[-0.04em] text-slate-900">
                       Build in the open.<br />
                       <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#8B7CF8] to-[#DDD8FF]">
-                        Ship with proof.
+                        Or in private.
                       </span>
                     </h1>
 
                     <p className="max-w-xl text-base sm:text-lg text-slate-600 leading-relaxed">
-                      Stream your work-in-progress, gather structured peer reviews, and automatically generate a Build Log as living proof-of-work.
+                      Stream your work-in-progress publicly or securely to your team. Gather structured peer reviews, and automatically generate a Build Log as living proof-of-work.
                     </p>
 
                     <div className="pt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -1297,7 +1297,7 @@ export default function LandingPage() {
                     Frequently Asked Questions
                   </h2>
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    Have questions about building in the open or reputation metrics? We've got you covered.
+                    Have questions about building in the open, private rooms, or reputation metrics? We've got you covered.
                   </p>
                 </div>
 
@@ -1345,9 +1345,9 @@ export default function LandingPage() {
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_50%)] pointer-events-none" />
 
                   <div className="max-w-2xl mx-auto space-y-6 relative">
-                    <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                    <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
                       Ready to build<br />
-                      <span className="font-serif italic text-purple-200">in the open?</span>
+                      <span className="font-serif italic text-purple-200">in the open or private?</span>
                     </h2>
                     <p className="text-sm sm:text-base text-purple-100/80 max-w-md mx-auto leading-relaxed">
                       Join 47 founding builders sharing their live journey. Establish your domain credibility today.

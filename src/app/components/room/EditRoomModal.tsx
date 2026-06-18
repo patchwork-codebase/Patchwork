@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Sparkles, Image as ImageIcon, ChevronDown, Save } from "lucide-react";
+import { X, ChevronDown, Image as ImageIcon, Lock, Sparkles, Save } from "lucide-react";
+import type { Room } from "../../types";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -61,7 +62,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
 interface EditRoomModalProps {
   open: boolean;
   onClose: () => void;
-  room: any;
+  room: Room;
 }
 
 export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
@@ -73,7 +74,8 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
     coverImage: null as string | null,
     primaryLink: '',
     projectStage: '',
-    primaryGoal: ''
+    primaryGoal: '',
+    isPrivate: false
   });
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,11 +90,12 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         coverImage: room.coverImage || null,
         primaryLink: room.primaryLink || '',
         projectStage: room.projectStage || 'Ideation',
-        primaryGoal: room.primaryGoal || 'Just sharing my journey'
+        primaryGoal: room.primaryGoal || '',
+        isPrivate: room.isPrivate || false
       });
       setTags(room.tags || []);
     }
-  }, [open, room]);
+  }, [open, room?.id]);
 
   if (!open) return null;
 
@@ -167,7 +170,8 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         cover_image: coverImageUrl,
         primary_link: form.primaryLink.trim() || null,
         project_stage: form.projectStage,
-        primary_goal: form.primaryGoal
+        primary_goal: form.primaryGoal,
+        is_private: form.isPrivate
       };
 
       const { error } = await supabase.from('rooms').update(payload).eq('id', room.id);
@@ -283,6 +287,41 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                     { value: "Just sharing my journey", label: "Just sharing my journey" },
                   ]}
                 />
+              </div>
+
+              <div>
+                <div 
+                  onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
+                  className="bg-[#0A0910]/30 rounded-xl p-5 border border-white/[0.05] flex items-start justify-between gap-4 cursor-pointer hover:bg-[#0A0910]/50 transition-colors"
+                >
+                  <div>
+                    <h4 className="text-[14px] font-bold text-white mb-1 flex items-center gap-2">
+                      Room Visibility
+                      {form.isPrivate ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#6C5CE7]/20 text-[#8B7CF8]">Private</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/10 text-slate-300">Public</span>
+                      )}
+                    </h4>
+                    <p className="text-[13px] text-slate-400 font-medium">
+                      {form.isPrivate 
+                        ? "Only people with the direct link can view this room." 
+                        : "This room will appear in the global Patchwork feed for anyone to discover."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#8B7CF8] focus:ring-offset-2 ${form.isPrivate ? 'bg-[#8B7CF8]' : 'bg-slate-700'}`}
+                    role="switch"
+                    aria-checked={form.isPrivate}
+                  >
+                    <span className="sr-only">Toggle visibility</span>
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.isPrivate ? 'translate-x-5' : 'translate-x-0'}`}
+                    />
+                  </button>
+                </div>
               </div>
 
               <div>

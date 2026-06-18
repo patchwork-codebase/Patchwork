@@ -1,7 +1,8 @@
 import { Link } from "react-router";
-import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Sparkles } from "lucide-react";
-import { timeAgo } from "../../utils/helpers";
+import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Sparkles, Lock } from "lucide-react";
+import { timeAgo, getObserverCount } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import {
   AlertDialog,
@@ -15,19 +16,33 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { EditRoomModal } from "./EditRoomModal";
+import { PrivateRoomAccessModal } from "./PrivateRoomAccessModal";
 import { useState } from "react";
+import type { Room } from "../../types";
 
-export function RoomHeader({ 
-  room, 
-  isBuilder, 
-  closingRoom, 
+interface RoomHeaderProps {
+  room: Room;
+  isBuilder: boolean;
+  closingRoom: boolean;
+  user: { id: string } | null;
+  setLinkedinShareOpen: (open: boolean) => void;
+  handleCloseRoom: () => void;
+  copyLogLink: () => void;
+  setRequestExpertModalOpen: (open: boolean) => void;
+}
+
+export function RoomHeader({
+  room,
+  isBuilder,
+  closingRoom,
   user,
   setLinkedinShareOpen,
   handleCloseRoom,
   copyLogLink,
   setRequestExpertModalOpen
-}: any) {
+}: RoomHeaderProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [accessModalOpen, setAccessModalOpen] = useState(false);
 
   return (
     <div className={`bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-sm relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
@@ -51,6 +66,12 @@ export function RoomHeader({
                 {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
                 {room.status}
               </span>
+              {room.isPrivate && (
+                <span className="shrink-0 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider bg-slate-800 text-slate-100 border border-slate-700">
+                  <Lock className="w-3 h-3" />
+                  Private
+                </span>
+              )}
             </div>
             {room.description && <p className="text-slate-600 text-[14px] md:text-[15px] leading-relaxed max-w-2xl font-medium">{room.description}</p>}
           </div>
@@ -75,7 +96,7 @@ export function RoomHeader({
 
           <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-600 flex-wrap font-medium mt-1">
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-[#8B7CF8]" /></div>{room.builderName} <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" /></span>
-            <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Users className="w-3 h-3 text-slate-500" /></div>{room.observerCount}</span>
+            <ObserverAvatarStack room={room} />
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Clock className="w-3 h-3 text-slate-500" /></div>{timeAgo(room.updatedAt)}</span>
           </div>
         </div>
@@ -117,7 +138,7 @@ export function RoomHeader({
             </button>
           )}
           
-          {isBuilder && (room.status === 'active' || room.status === 'draft') && (
+          {isBuilder && (room.status === 'active' || (room.status as any) === 'draft') && (
             <button
               onClick={() => setEditModalOpen(true)}
               title="Edit Room"
@@ -127,7 +148,20 @@ export function RoomHeader({
               <Edit2 className="w-4 h-4" />
             </button>
           )}
-          {room.status === 'completed' && (
+
+          {isBuilder && room.isPrivate && (
+            <button
+              onClick={() => setAccessModalOpen(true)}
+              title="Manage Access"
+              aria-label="Manage Access"
+              className="flex items-center justify-center gap-2 px-3 h-9 border border-[#8B7CF8]/30 bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 rounded-xl text-[#8B7CF8] font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95"
+            >
+              <Lock className="w-4 h-4" />
+              <span className="hidden sm:inline text-xs">Access</span>
+            </button>
+          )}
+
+          {(room.status as any) === 'completed' && (
             <>
               <Link
                 to={`/dashboard/build-logs`}
@@ -151,7 +185,7 @@ export function RoomHeader({
           )}
           {isBuilder && room.status === 'active' && (
             <>
-              <LinkRepositoryModal roomId={room.id} userId={user.id} />
+              <LinkRepositoryModal roomId={room.id} userId={user?.id || ''} />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                 <button
@@ -180,7 +214,7 @@ export function RoomHeader({
               </AlertDialog>
             </>
           )}
-          {room.status === 'completed' && (
+          {(room.status as any) === 'completed' && (
             <button
               onClick={copyLogLink}
               className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[44px] sm:min-h-[48px] bg-slate-900 text-white rounded-xl sm:rounded-full text-[13px] sm:text-[14px] font-bold hover:bg-slate-800 transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 w-full sm:w-auto"
@@ -191,6 +225,7 @@ export function RoomHeader({
         </div>
       </div>
       <EditRoomModal open={editModalOpen} onClose={() => setEditModalOpen(false)} room={room} />
+      <PrivateRoomAccessModal open={accessModalOpen} onClose={() => setAccessModalOpen(false)} room={room} />
     </div>
   );
 }

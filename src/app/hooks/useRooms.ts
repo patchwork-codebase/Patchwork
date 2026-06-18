@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 
-import { normalizeRow } from "../utils/helpers";
+import { normalizeRow } from '../utils/helpers';
+import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
+import type { Room } from '../types';
+
 
 /** Helper: remove any existing Supabase channel with this name before (re-)subscribing.
  *  Prevents the "cannot add postgres_changes callbacks after subscribe()" crash
@@ -15,8 +18,8 @@ function removeStaleChannel(name: string) {
 export function useRoomDetails(roomId?: string) {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
-    queryKey: ['room-details', roomId],
+  const query = useQuery<Room | null, Error>({
+    queryKey: QUERY_KEYS.roomDetails(roomId ?? ''),
     queryFn: async () => {
       if (!roomId) return null;
 
@@ -58,7 +61,7 @@ export function useRoomDetails(roomId?: string) {
   useEffect(() => {
     if (!roomId) return;
 
-    const channelName = `room-details-${roomId}`;
+    const channelName = CHANNEL_NAMES.roomDetails(roomId);
     removeStaleChannel(channelName);
 
     const channel = supabase
@@ -66,17 +69,17 @@ export function useRoomDetails(roomId?: string) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['room-details', roomId] })
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(roomId) })
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates', filter: `room_id=eq.${roomId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['room-details', roomId] })
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(roomId) })
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions', filter: `room_id=eq.${roomId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['room-details', roomId] })
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(roomId) })
       )
       .subscribe();
 
@@ -91,8 +94,8 @@ export function useRoomDetails(roomId?: string) {
 export function useRooms() {
   const queryClient = useQueryClient();
 
-  const query = useInfiniteQuery<any[], Error>({
-    queryKey: ['rooms'],
+  const query = useInfiniteQuery<Room[], Error>({
+    queryKey: QUERY_KEYS.rooms,
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       const pageSize = 12;
@@ -101,15 +104,23 @@ export function useRooms() {
 
       const { data, error } = await supabase
         .from('rooms')
-        .select('*, users!builder_id(is_verified_expert)')
+        .select(`
+          id, title, description, status, is_private,
+          builder_id, builder_name, tags, cover_image, primary_link,
+          project_stage, primary_goal, observer_count, update_count,
+          created_at, updated_at,
+          users!builder_id(is_verified_expert),
+          room_observers(observer_id)
+        `)
         .eq('status', 'active')
+        .eq('is_private', false)
         .order('updated_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
       return (data || []).map(row => ({
         ...normalizeRow(row),
-        builderIsVerifiedExpert: !!(row.users?.is_verified_expert),
+        builderIsVerifiedExpert: !!((row.users as any)?.is_verified_expert || (Array.isArray(row.users) && (row.users as any)[0]?.is_verified_expert)),
       }));
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -118,7 +129,7 @@ export function useRooms() {
   });
 
   useEffect(() => {
-    const channelName = 'public-rooms';
+    const channelName = CHANNEL_NAMES.publicRooms;
     removeStaleChannel(channelName);
 
     const channel = supabase
@@ -127,7 +138,7 @@ export function useRooms() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms' },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['rooms'] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.rooms });
         }
       )
       .subscribe();
@@ -143,8 +154,8 @@ export function useRooms() {
 export function useUserRooms(userId?: string) {
   const queryClient = useQueryClient();
 
-  const query = useInfiniteQuery<any[], Error>({
-    queryKey: ['user-rooms', userId],
+  const query = useInfiniteQuery<Room[], Error>({
+    queryKey: QUERY_KEYS.userRooms(userId ?? ''),
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       if (!userId) return [];
@@ -154,7 +165,13 @@ export function useUserRooms(userId?: string) {
 
       const { data, error } = await supabase
         .from('rooms')
-        .select('*')
+        .select(`
+          id, title, description, status, is_private,
+          builder_id, builder_name, tags, cover_image, primary_link,
+          project_stage, primary_goal, observer_count, update_count,
+          invite_token, whitelisted_domains,
+          created_at, updated_at
+        `)
         .eq('builder_id', userId)
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -171,7 +188,7 @@ export function useUserRooms(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
-    const channelName = `user-rooms-${userId}`;
+    const channelName = CHANNEL_NAMES.userRooms(userId);
     removeStaleChannel(channelName);
 
     const channel = supabase
@@ -180,7 +197,7 @@ export function useUserRooms(userId?: string) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `builder_id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['user-rooms', userId] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(userId) });
         }
       )
       .subscribe();
@@ -196,8 +213,8 @@ export function useUserRooms(userId?: string) {
 export function useObservedRooms(userId?: string) {
   const queryClient = useQueryClient();
 
-  const query = useInfiniteQuery<any[], Error>({
-    queryKey: ['observed-rooms', userId],
+  const query = useInfiniteQuery<Room[], Error>({
+    queryKey: QUERY_KEYS.observedRooms(userId ?? ''),
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       if (!userId) return [];
@@ -233,7 +250,7 @@ export function useObservedRooms(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
-    const channelName = `observed-rooms-${userId}`;
+    const channelName = CHANNEL_NAMES.observedRooms(userId);
     removeStaleChannel(channelName);
 
     const channel = supabase
@@ -242,7 +259,7 @@ export function useObservedRooms(userId?: string) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_observers', filter: `observer_id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['observed-rooms', userId] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(userId) });
         }
       )
       .subscribe();
@@ -294,5 +311,51 @@ export function useObserverStats(userId?: string) {
       };
     },
     enabled: !!userId,
+  });
+}
+
+export function useRegenerateInviteToken() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (roomId: string) => {
+      const { data, error } = await supabase.rpc('regenerate_invite_token', { p_room_id: roomId });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, roomId) => {
+      queryClient.invalidateQueries({ queryKey: ['room-details', roomId] });
+    }
+  });
+}
+
+export function useUpdateRoomAccess() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ roomId, whitelistedDomains }: { roomId: string, whitelistedDomains: string[] }) => {
+      const { data, error } = await supabase.from('rooms').update({ whitelisted_domains: whitelistedDomains }).eq('id', roomId).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, { roomId }) => {
+      queryClient.invalidateQueries({ queryKey: ['room-details', roomId] });
+    }
+  });
+}
+
+export function useJoinPrivateRoom() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ roomId, inviteToken }: { roomId: string, inviteToken?: string | null }) => {
+      const { data, error } = await supabase.rpc('join_private_room', { 
+        p_room_id: roomId,
+        p_invite_token: inviteToken || null
+      });
+      if (error) throw error;
+      if (!data) throw new Error("Access denied or invalid invite token.");
+      return data;
+    },
+    onSuccess: (_, { roomId }) => {
+      queryClient.invalidateQueries({ queryKey: ['room-details', roomId] });
+    }
   });
 }

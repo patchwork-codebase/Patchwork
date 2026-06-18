@@ -27,13 +27,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import type { Room, Profile } from "../../types";
+import type { FeedUpdate } from "../../hooks/useFeedUpdates";
+import { QUERY_KEYS } from "../../constants";
+import type { QueryClient } from "@tanstack/react-query";
 
 interface TimelineFeedProps {
-  user: any;
-  profile: any;
-  myRooms: any[];
-  observedRooms: any[];
-  dbUpdates: any[];
+  user: { id: string; email?: string } | null;
+  profile: Profile | null;
+  myRooms: Room[];
+  observedRooms: Room[];
+  dbUpdates: FeedUpdate[];
   selectedRoomId: string;
   setSelectedRoomId: (id: string) => void;
   updateContent: string;
@@ -47,9 +51,9 @@ interface TimelineFeedProps {
   hasNextUpdates: boolean;
   fetchNextUpdates: () => void;
   isFetchingNextUpdates: boolean;
-  rooms: any[];
+  rooms: Room[];
   activeTab: 'overview' | 'feed' | 'mine';
-  queryClient: any;
+  queryClient: QueryClient;
   loading?: boolean;
 }
 
@@ -145,16 +149,16 @@ export function TimelineFeed({
       
       toast.success("Update deleted");
       
-      queryClient.setQueryData(['feed-updates'], (oldData: any) => {
+      queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
         if (!oldData) return oldData;
         return {
           ...oldData,
-          pages: oldData.pages.map((page: any[]) => 
-            page.filter((u: any) => u.id !== updateId)
+          pages: oldData.pages.map((page: FeedUpdate[]) => 
+            page.filter((u: FeedUpdate) => u.id !== updateId)
           )
         };
       });
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
     } catch (error: any) {
       console.error("Error deleting update:", error);
       toast.error(error.message || "Failed to delete update");
@@ -208,12 +212,12 @@ export function TimelineFeed({
       // Do NOT call invalidateQueries after this: a full refetch on an infinite
       // query only re-fetches page 0, which would wipe reactions on updates that
       // are on later pages and make the reply disappear.
-      queryClient.setQueryData(['feed-updates'], (oldData: any) => {
+      queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
         if (!oldData) return oldData;
         return {
           ...oldData,
-          pages: oldData.pages.map((page: any[]) =>
-            page.map((u: any) =>
+          pages: oldData.pages.map((page: FeedUpdate[]) =>
+            page.map((u: FeedUpdate) =>
               u.id === replyingTo
                 ? { ...u, reactions: [...(u.reactions || []), newReply] }
                 : u
@@ -245,14 +249,14 @@ export function TimelineFeed({
         // syncing new data from other users. Our own reply is already in the cache.
       } catch (err: any) {
         // Rollback optimistic update on failure
-        queryClient.setQueryData(['feed-updates'], (oldData: any) => {
+        queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
           if (!oldData) return oldData;
           return {
             ...oldData,
-            pages: oldData.pages.map((page: any[]) =>
-              page.map((u: any) =>
+            pages: oldData.pages.map((page: FeedUpdate[]) =>
+              page.map((u: FeedUpdate) =>
                 u.id === replyingTo
-                  ? { ...u, reactions: (u.reactions || []).filter((r: any) => r.id !== newReply.id) }
+                  ? { ...u, reactions: (u.reactions || []).filter((r) => r.id !== newReply.id) }
                   : u
               )
             ),
@@ -270,7 +274,7 @@ export function TimelineFeed({
       const { error } = await supabase.from('room_observers').upsert({ room_id: roomId, observer_id: user.id });
       if (error) throw error;
       toast.success("You are now observing this room!");
-      queryClient.invalidateQueries({ queryKey: ['observed-rooms', user.id] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(user.id) });
     } catch (err: any) {
       toast.error(`Failed to follow room: ${err.message}`);
     }
@@ -283,7 +287,7 @@ export function TimelineFeed({
       const { error } = await supabase.from('room_observers').delete().eq('room_id', roomId).eq('observer_id', user.id);
       if (error) throw error;
       toast.success("You are no longer observing this room.");
-      queryClient.invalidateQueries({ queryKey: ['observed-rooms', user.id] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(user.id) });
     } catch (err: any) {
       toast.error(`Failed to unfollow room: ${err.message}`);
     }
@@ -326,7 +330,7 @@ export function TimelineFeed({
           if (error) throw error;
           toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
         }
-        await queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
       } catch (err: any) {
         // Revert optimistic toggle on failure
         setOptimisticToggles(prev => ({

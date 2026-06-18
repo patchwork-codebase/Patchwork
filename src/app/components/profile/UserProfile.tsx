@@ -4,7 +4,8 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { apiCall } from "../../../utils/api";
 import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users, ChevronDown, ShieldCheck, Star, Clock, CheckCircle, TrendingUp, Check } from "lucide-react";
 import { VerifiedTick } from "../ui/VerifiedTick";
-import { getAvatarUrl } from "../../utils/helpers";
+import { getAvatarUrl, getObserverCount, timeAgo } from "../../utils/helpers";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { toast } from "sonner";
 import { ExpertBadge } from "./ExpertBadge";
 import { useExpertApplication } from "../../../hooks/useExpertApplication";
@@ -499,18 +500,38 @@ export default function UserProfile() {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3">
                     <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#8B7CF8] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full capitalize tracking-wide">
                       {profile.role === 'builder' ? <Hammer className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      {profile.role} {profile.domain && profile.role === 'builder' ? ` • ${profile.domain.replace('-', ' ')}` : ''}
+                      {profile.role} {(profile as any).domain && profile.role === 'builder' ? ` • ${(profile as any).domain.replace('-', ' ')}` : ''}
                     </span>
                     <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-500 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full tracking-wide">
                       <Zap className="w-3 h-3" /> {profile.reputation} rep
                     </span>
                     <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full tracking-wide">
-                      <Calendar className="w-3 h-3" /> Joined {timeAgo(profile.createdAt)}
+                      <Calendar className="w-3 h-3" /> Joined {timeAgo(profile.createdAt || '')}
                     </span>
                     <div className="w-px h-4 bg-slate-300 hidden sm:block mx-1"></div>
                     <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900 tracking-wide">
-                      <Users className="w-3.5 h-3.5 text-slate-500" />
-                      {profile.followerCount || 0} <span className="text-slate-600 font-medium">followers</span>
+                      {profile.followers && profile.followers.length > 0 ? (
+                        <div className="flex items-center group/followers cursor-pointer">
+                          {profile.followers.slice(0, 4).map((followerId, i) => (
+                            <div
+                              key={followerId}
+                              className="w-5 h-5 rounded-full bg-slate-200 border-2 border-white overflow-hidden transition-all duration-300 -ml-1.5 first:ml-0 group-hover/followers:-ml-0.5 group-hover/followers:shadow-sm shrink-0"
+                              style={{ zIndex: 10 - i }}
+                            >
+                              <img
+                                src={getAvatarUrl(followerId)}
+                                alt="Follower"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <Users className="w-3.5 h-3.5 text-slate-500" />
+                      )}
+                      <span className="ml-0.5">
+                        {profile.followerCount || 0} <span className="text-slate-600 font-medium">followers</span>
+                      </span>
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900 tracking-wide">
                       {profile.followingCount || 0} <span className="text-slate-600 font-medium">following</span>
@@ -722,7 +743,7 @@ export default function UserProfile() {
                       {room.status}
                     </span>
                     <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> {room.updateCount} updates</span>
-                    <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> {room.observerCount} observers</span>
+                    <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> <ObserverAvatarStack room={room as any} /></span>
                     <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> {timeAgo(room.updatedAt)}</span>
                   </div>
                 </div>

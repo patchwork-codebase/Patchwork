@@ -13,7 +13,7 @@ import { MilestoneTrackerCard } from "./MilestoneTrackerCard";
 import { ProductRoomStats } from "./ProductRoomStats";
 import { RoomHeader } from "./RoomHeader";
 import { RoomFeed } from "./RoomFeed";
-import { useRoomDetails } from "../../hooks/useRooms";
+import { useRoomDetails, useJoinPrivateRoom } from "../../hooks/useRooms";
 import { timeAgo } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { RequestExpertReviewModal } from "./RequestExpertReviewModal";
@@ -35,6 +35,9 @@ export default function BuildRoom() {
   const navigate = useNavigate();
 
   const { data: room, isLoading: loading } = useRoomDetails(id);
+  const joinPrivateRoomMutation = useJoinPrivateRoom();
+  const inviteToken = searchParams.get('invite');
+  const [hasAttemptedJoin, setHasAttemptedJoin] = useState(false);
 
   const [newUpdate, setNewUpdate] = useState('');
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -62,6 +65,13 @@ export default function BuildRoom() {
       updateTextAreaRef.current.focus();
     }
   }, [quickUpdateMode, room, profile]);
+
+  useEffect(() => {
+    if (!loading && !room && id && user && !hasAttemptedJoin && !joinPrivateRoomMutation.isPending) {
+      setHasAttemptedJoin(true);
+      joinPrivateRoomMutation.mutate({ roomId: id, inviteToken });
+    }
+  }, [loading, room, id, user, inviteToken, hasAttemptedJoin, joinPrivateRoomMutation]);
 
   const handlePostUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,12 +247,36 @@ export default function BuildRoom() {
   }
 
   if (!room) {
+    if (joinPrivateRoomMutation.isPending) {
+      return (
+        <div className="max-w-[1000px] mx-auto px-6 py-20 text-center flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-[#8B7CF8] border-t-transparent rounded-full animate-spin mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">Requesting Access...</h2>
+          <p className="text-slate-400">Verifying your invite token.</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="max-w-[1000px] mx-auto px-6 py-20 text-center text-slate-400">
-        <p className="text-lg font-bold">Room not found</p>
-        <Link to="/dashboard" className="text-[#8B7CF8] hover:text-white transition-colors text-sm mt-4 inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-          <ArrowLeft className="w-4 h-4" /> Back to dashboard
-        </Link>
+      <div className="max-w-[1000px] mx-auto px-6 py-20 text-center flex flex-col items-center justify-center">
+        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
+          <Lock className="w-10 h-10 text-slate-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-3">Private Room</h2>
+        <p className="text-slate-400 max-w-md mx-auto mb-8">
+          This room is private. You need an invite link from the builder to access it. 
+          {(!user && inviteToken) && " Please sign in or create an account to use your invite token."}
+        </p>
+        
+        {!user && inviteToken ? (
+          <Link to={`/?returnUrl=/room/${id}?invite=${inviteToken}`} className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-[#8B7CF8]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+            Sign In to Join
+          </Link>
+        ) : (
+          <Link to="/dashboard" className="text-slate-400 hover:text-white transition-colors inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white bg-white/5 px-6 py-3 rounded-xl hover:bg-white/10 font-bold">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        )}
       </div>
     );
   }

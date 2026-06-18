@@ -7,7 +7,7 @@ import {
   CheckCircle, AlertCircle, ArrowRight
 } from "lucide-react";
 import { useRoomDetails } from "../../hooks/useRooms";
-import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { useAuth, supabase } from "../auth/AuthContext";
@@ -215,7 +215,7 @@ export default function RoomLogPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {[
           { icon: TrendingUp, label: 'Updates', value: updates.length, color: 'text-[#8B7CF8]', bg: 'bg-[#8B7CF8]/10' },
-          { icon: Users, label: 'Observers', value: room.observerCount || 0, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { icon: Users, label: 'Observers', value: getObserverCount(room), color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
           { icon: Zap, label: 'Reactions', value: totalReactions, color: 'text-amber-500', bg: 'bg-amber-500/10' },
           { icon: MessageCircle, label: 'Replies', value: totalReplies, color: 'text-sky-500', bg: 'bg-sky-500/10' },
         ].map(stat => (

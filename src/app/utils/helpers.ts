@@ -40,3 +40,18 @@ export function getAvatarUrl(seed: string) {
   if (!seed) return "https://api.dicebear.com/9.x/micah/svg?seed=fallback&backgroundColor=transparent";
   return `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(seed)}&backgroundColor=transparent`;
 }
+
+/**
+ * Returns the accurate observer count for a room.
+ * The `observer_count` DB column can lag behind the actual join table,
+ * so we prefer the length of the loaded `roomObservers` array when available.
+ */
+export function getObserverCount(room: {
+  observerCount?: number | null;
+  roomObservers?: { observerId: string }[] | null;
+}): number {
+  if (room.roomObservers && room.roomObservers.length > 0) {
+    return room.roomObservers.length;
+  }
+  return room.observerCount ?? 0;
+}

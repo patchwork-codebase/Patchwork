@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { getObserverCount } from "../../utils/helpers";
 
 interface StatsStripProps {
   myRooms: any[];
@@ -34,7 +35,7 @@ export function StatsStrip({
   const reactionsDelta = reactionsTodayCount > 0 ? `↑ ${reactionsTodayCount} today` : '0 new today';
 
   // Observers calculation
-  const totalObservers = myRooms.reduce((sum, r) => sum + (r.observerCount || 0), 0);
+  const totalObservers = myRooms.reduce((sum, r) => sum + getObserverCount(r), 0);
   const observersThisWeekCount = observers.filter((ob: any) => new Date(ob.created_at) >= oneWeekAgo).length;
   const observersDelta = observersThisWeekCount > 0 ? `↑ ${observersThisWeekCount} new` : '0 new';
 

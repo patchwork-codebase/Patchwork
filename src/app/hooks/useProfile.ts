@@ -2,12 +2,14 @@ import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import { normalizeRow } from '../utils/helpers';
+import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
+import type { Profile } from '../types';
 
 export function useProfile(userId?: string) {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
-    queryKey: ['profile', userId],
+  const query = useQuery<Profile | null, Error>({
+    queryKey: QUERY_KEYS.profile(userId ?? ''),
     queryFn: async () => {
       const { data: userRow, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
       if (error) throw error;
@@ -15,8 +17,8 @@ export function useProfile(userId?: string) {
 
       const profileData = normalizeRow(userRow);
 
-      const [{ count: followerCount }, { count: followingCount }] = await Promise.all([
-        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
+      const [{ data: followersData, count: followerCount }, { count: followingCount }] = await Promise.all([
+        supabase.from('follows').select('follower_id', { count: 'exact' }).eq('following_id', userId).order('created_at', { ascending: false }).limit(5),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId)
       ]);
 
@@ -32,6 +34,7 @@ export function useProfile(userId?: string) {
       }
 
       profileData.followerCount = followerCount || 0;
+      profileData.followers = followersData?.map(f => f.follower_id) || [];
       profileData.followingCount = followingCount || 0;
       profileData.isFollowing = isFollowing;
 
@@ -43,7 +46,7 @@ export function useProfile(userId?: string) {
   useEffect(() => {
     if (!userId) return;
 
-    const channelName = `user-profile-${userId}`;
+    const channelName = CHANNEL_NAMES.userProfile(userId);
 
     // Remove any stale channel before (re-)subscribing.
     const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
@@ -55,7 +58,7 @@ export function useProfile(userId?: string) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users', filter: `id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile(userId) });
         }
       )
       .subscribe();

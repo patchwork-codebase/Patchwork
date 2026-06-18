@@ -35,4 +35,4 @@ SET metadata = n.metadata || jsonb_build_object(
 )
 FROM public.reactions r
 WHERE n.type = 'reaction'
-AND n.reference_id = r.id;
+AND n.reference_id::text = r.id::text;

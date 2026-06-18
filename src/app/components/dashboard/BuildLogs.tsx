@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { useUserRooms } from "../../hooks/useRooms";
+import { getObserverCount, timeAgo } from "../../utils/helpers";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 
 function timeAgoDays(iso: string) {
   if (!iso) return 1;
@@ -41,8 +43,8 @@ export default function BuildLogs() {
 
   const activeRooms = myRooms.filter(r => r.status === 'active' || !r.status);
   const shippedRooms = myRooms.filter(r => r.status === 'shipped');
-  const completedRooms = myRooms.filter(r => r.status === 'completed');
-  const stalledRooms = myRooms.filter(r => r.status === 'paused' || r.status === 'stalled');
+  const completedRooms = myRooms.filter(r => (r.status as any) === 'completed');
+  const stalledRooms = myRooms.filter(r => r.status === 'paused' || (r.status as any) === 'stalled');
 
   if (isLoading) {
     return <div className="p-8 text-slate-400">Loading build logs...</div>;
@@ -112,7 +114,7 @@ export default function BuildLogs() {
                         <span className="text-[9px] sm:text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-amber-200">Active</span>
                         <span className="text-[9px] sm:text-[10px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
                       </div>
-                      <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Day {daysActive} of build · {room.updateCount} updates · {room.observerCount} observers</p>
+                      <div className="flex items-center gap-2 m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Day {daysActive} of build · {room.updateCount} updates · <ObserverAvatarStack room={room} /></div>
                     </div>
                   </div>
                 </div>
@@ -139,11 +141,11 @@ export default function BuildLogs() {
                   </div>
                 </div>
 
-                {room.lastUpdate && (
+                {room.updatedAt && (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 relative">
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Latest update</div>
                     <p className="text-[13px] sm:text-[14px] text-slate-700 italic m-0 leading-relaxed font-medium line-clamp-2">
-                      "{room.lastUpdate}"
+                      Updated {timeAgo(room.updatedAt)}
                     </p>
                   </div>
                 )}
@@ -209,10 +211,10 @@ export default function BuildLogs() {
                   </div>
                 </div>
 
-                {log.lastUpdate && (
+                {log.updatedAt && (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative">
                     <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Builder's closing note</div>
-                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">"{log.lastUpdate}"</p>
+                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">Updated {timeAgo(log.updatedAt)}</p>
                   </div>
                 )}
 
@@ -274,10 +276,10 @@ export default function BuildLogs() {
                     <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Days</div>
                   </div>
                 </div>
-                {log.lastUpdate && (
+                {log.updatedAt && (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative">
                     <div className="text-[10px] font-bold text-[#8B7CF8] uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#8B7CF8]" /> Builder's closing note</div>
-                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">"{log.lastUpdate}"</p>
+                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">Updated {timeAgo(log.updatedAt)}</p>
                   </div>
                 )}
                 <div className="flex flex-row gap-2 relative mt-auto">

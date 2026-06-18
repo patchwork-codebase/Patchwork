@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { normalizeRow } from "../../utils/helpers";
+import { normalizeRow, getObserverCount } from "../../utils/helpers";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 
 const topics = [
   "Product",
@@ -172,7 +173,7 @@ export default function ObserverOnboarding() {
                           <div>
                             <div className="text-[13px] uppercase tracking-[0.2em] text-slate-500">{room.tags?.[0] || 'Product'}</div>
                             <h2 className="mt-2 text-lg font-semibold text-white">{room.title}</h2>
-                            <p className="text-sm text-slate-400 mt-1">{room.observerCount} observers · {room.updateCount} updates</p>
+                            <div className="flex items-center gap-2 text-sm text-slate-400 mt-1"><ObserverAvatarStack room={room} /> · {room.updateCount} updates</div>
                           </div>
                           <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-[#0A0910]' : 'bg-[#6C5CE7] text-white'}`}>
                             {isFollowed ? 'Following' : 'Follow'}

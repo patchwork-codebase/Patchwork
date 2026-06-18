@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import type { Room, Reaction, Update, ReactionConfig } from "../../types";
 
 const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
   decision: { label: 'Decision', color: 'bg-[#8B7CF8]/10 text-[#6C5CE7] border-[#8B7CF8]/30', icon: '⚡' },
@@ -30,20 +31,35 @@ const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: strin
   shipped: { label: 'Shipped', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: '🚀' }
 };
 
-export function RoomFeed({ 
-  room, 
-  user, 
-  isBuilder, 
-  reactionsByUpdate, 
-  expandedUpdates, 
-  setExpandedUpdates, 
-  setReactionModal, 
-  deletingUpdateId, 
+interface RoomFeedProps {
+  room: Room;
+  user: { id: string } | null;
+  isBuilder: boolean;
+  reactionsByUpdate: Record<string, Reaction[]>;
+  expandedUpdates: Record<string, boolean>;
+  setExpandedUpdates: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setReactionModal: (update: Update | null) => void;
+  deletingUpdateId: string | null;
+  handleDeleteUpdate: (updateId: string) => void;
+  setNewUpdate: (content: string) => void;
+  updateTextAreaRef: React.RefObject<HTMLTextAreaElement>;
+  REACTION_CONFIG: ReactionConfig;
+}
+
+export function RoomFeed({
+  room,
+  user,
+  isBuilder,
+  reactionsByUpdate,
+  expandedUpdates,
+  setExpandedUpdates,
+  setReactionModal,
+  deletingUpdateId,
   handleDeleteUpdate,
   setNewUpdate,
   updateTextAreaRef,
   REACTION_CONFIG
-}: any) {
+}: RoomFeedProps) {
   const [searchParams] = useSearchParams();
   const updateIdToScroll = searchParams.get('updateId');
 
@@ -196,12 +212,12 @@ export function RoomFeed({
             {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
             {updateReactions.length > 0 && (() => {
-              const reactionCounts = updateReactions.reduce((acc: any, r: any) => {
+              const reactionCounts = updateReactions.reduce((acc: Record<string, number>, r: Reaction) => {
                 acc[r.type] = (acc[r.type] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>);
               
-              const textReactions = updateReactions.filter((r: any) => r.text && r.text.trim().length > 0);
+              const textReactions = updateReactions.filter((r: Reaction) => r.text && r.text.trim().length > 0);
               const isExpanded = expandedUpdates[update.id];
               const visibleReactions = isExpanded ? textReactions : textReactions.slice(0, 3);
               const hiddenCount = textReactions.length - visibleReactions.length;
@@ -224,7 +240,7 @@ export function RoomFeed({
                   {/* Text Reactions */}
                   {visibleReactions.length > 0 && (
                     <div className="pt-4 border-t border-white/[0.06] space-y-3">
-                      {visibleReactions.map((r: any) => {
+                      {visibleReactions.map((r: Reaction) => {
                         const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                         return (
                           <div key={r.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -258,7 +274,7 @@ export function RoomFeed({
                       
                       {hiddenCount > 0 && (
                         <button
-                          onClick={() => setExpandedUpdates((prev: any) => ({ ...prev, [update.id]: true }))}
+                          onClick={() => setExpandedUpdates((prev: Record<string, boolean>) => ({ ...prev, [update.id]: true }))}
                           className="text-[12px] font-bold text-[#8B7CF8] hover:text-slate-900 transition-colors"
                         >
                           View {hiddenCount} more {hiddenCount === 1 ? 'reply' : 'replies'}...
