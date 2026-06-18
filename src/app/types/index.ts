@@ -43,7 +43,7 @@ export interface Room {
   id: string;
   title: string;
   description?: string | null;
-  status: 'active' | 'shipped' | 'paused';
+  status: 'active' | 'shipped' | 'paused' | 'completed' | 'draft' | 'stalled';
   builderId: string;
   builderName: string;
   builderIsVerifiedExpert?: boolean;
@@ -59,6 +59,9 @@ export interface Room {
   updateCount?: number;
   createdAt: string;
   updatedAt: string;
+  created_at?: string;
+  updated_at?: string;
+  retrospectiveNote?: string | null;
 
   // Joined / hydrated relations (not always present)
   updates?: Update[];

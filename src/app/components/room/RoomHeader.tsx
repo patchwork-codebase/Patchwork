@@ -127,7 +127,7 @@ export function RoomHeader({
             <Share2 className="w-4 h-4" />
           </button>
           
-          {isBuilder && room.status === 'active' && (
+          {/* isBuilder && room.status === 'active' && (
             <button
               onClick={() => setRequestExpertModalOpen(true)}
               title="Request Expert Review"
@@ -136,9 +136,9 @@ export function RoomHeader({
               <Sparkles className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
               <span className="hidden sm:inline">Expert Review</span>
             </button>
-          )}
+          ) */}
           
-          {isBuilder && (room.status === 'active' || (room.status as any) === 'draft') && (
+          {isBuilder && (room.status === 'active' || room.status === 'draft') && (
             <button
               onClick={() => setEditModalOpen(true)}
               title="Edit Room"
@@ -161,7 +161,7 @@ export function RoomHeader({
             </button>
           )}
 
-          {(room.status as any) === 'completed' && (
+          {room.status === 'completed' && (
             <>
               <Link
                 to={`/dashboard/build-logs`}
@@ -214,7 +214,7 @@ export function RoomHeader({
               </AlertDialog>
             </>
           )}
-          {(room.status as any) === 'completed' && (
+          {room.status === 'completed' && (
             <button
               onClick={copyLogLink}
               className="flex justify-center items-center gap-2 px-4 sm:px-5 min-h-[44px] sm:min-h-[48px] bg-slate-900 text-white rounded-xl sm:rounded-full text-[13px] sm:text-[14px] font-bold hover:bg-slate-800 transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 w-full sm:w-auto"

@@ -109,7 +109,6 @@ const AnalyticsIcon = () => (
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 
-import { timeAgo } from "../../utils/helpers";
 
 import VerificationRequiredModal from '../ui/VerificationRequiredModal';
 import VerificationSuccessModal from '../dashboard/VerificationSuccessModal';
@@ -465,15 +464,12 @@ export default function Layout() {
 
             <Link
               to="/dashboard/rooms"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'rooms' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'rooms' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <HammerIcon />
                 My rooms
               </div>
-              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'rooms' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                3
-              </span>
             </Link>
 
             <Link
@@ -491,28 +487,18 @@ export default function Layout() {
 
             <Link
               to="/dashboard?tab=feed"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
-              <div className="flex items-center gap-2.5">
-                <ActivityIcon />
-                Global timeline
-              </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'feed' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                12
-              </span>
+              <ActivityIcon />
+              Global timeline
             </Link>
 
             <Link
               to="/dashboard/observer"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
-              <div className="flex items-center gap-2.5">
-                <EyeIcon />
-                Observer hub
-              </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'observer' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                3
-              </span>
+              <EyeIcon />
+              Observer hub
             </Link>
 
             <Link
@@ -546,15 +532,10 @@ export default function Layout() {
 
             <Link
               to="/dashboard/milestones"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'milestones' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'milestones' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
-              <div className="flex items-center gap-2.5">
-                <MilestonesIcon />
-                Milestones
-              </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'milestones' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                5
-              </span>
+              <MilestonesIcon />
+              Milestones
             </Link>
 
             <Link
@@ -587,8 +568,8 @@ export default function Layout() {
                   <div className="text-[13px] font-bold text-slate-900 truncate">
                     {userDisplayName}
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">
-                    product · Lagos
+                <div className="text-[10px] text-slate-500 mt-0.5 truncate">
+                    {[profile?.domain, profile?.city].filter(Boolean).join(' · ') || profile?.role || 'Builder'}
                   </div>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-slate-700 transition">

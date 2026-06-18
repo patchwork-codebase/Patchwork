@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
-import { getAvatarUrl } from "../../utils/helpers";
+import { getAvatarUrl, timeAgo } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
@@ -70,15 +70,7 @@ function tagStyle(tag: string) {
   return TAG_PALETTE[tag.toLowerCase()] || { bg: 'bg-white/5', color: 'text-slate-400' };
 }
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+
 
 export function TimelineFeed({
   user,

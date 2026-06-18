@@ -11,7 +11,7 @@ interface ObserverAvatarStackProps {
 
 export function ObserverAvatarStack({ room, maxAvatars = 4, className = "", size = 'sm' }: ObserverAvatarStackProps) {
   const observers: RoomObserver[] = room.roomObservers ?? [];
-  const observerCount = getObserverCount(room as any);
+  const observerCount = getObserverCount(room);
 
   const sizeClasses = {
     sm: "w-6 h-6 -ml-2",

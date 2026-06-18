@@ -99,55 +99,58 @@ export default function MyRoomsPage() {
                 >
                   <div className="absolute top-0 right-0 w-48 h-48 bg-slate-50 rounded-full blur-[50px] -mr-24 -mt-24 pointer-events-none group-hover:bg-[#6C5CE7]/5 transition-colors duration-500" />
                   
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative">
-                    <div className="flex flex-col gap-3 flex-1 min-w-0">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2.5 h-2.5 rounded-full ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                        <h2 className="text-[18px] sm:text-[20px] font-extrabold text-slate-900 font-display truncate group-hover:text-[#6C5CE7] transition-colors">
-                          {room.title}
-                        </h2>
-                        <span className={`shrink-0 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color}`}>
-                          {tag}
-                        </span>
-                      </div>
-                      
-                      <p className="text-[14px] text-slate-500 font-medium line-clamp-2 leading-relaxed max-w-[600px]">
-                        {room.description || "No description provided for this room."}
-                      </p>
-                      
-                      <div className="flex flex-wrap items-center gap-3 mt-2 text-[13px] text-slate-500 font-mono font-medium">
-                        <span className="capitalize px-2 py-1 bg-slate-100 rounded-md text-slate-600">
-                          {(room.status as any) === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
-                        </span>
-                        <span className="text-slate-300 hidden sm:inline">|</span>
-                        <span>
-                          Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || (room as any).created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
-                        </span>
-                        <span className="text-slate-300 hidden sm:inline">|</span>
-                        <span>{room.updateCount || 0} updates</span>
-                        <span className="text-slate-300 hidden sm:inline">|</span>
-                        <ObserverAvatarStack room={room} />
-                        {room.updatedAt && (
-                          <>
-                            <span className="text-slate-300 hidden sm:inline">|</span>
-                            <span className="text-slate-400">Updated {timeAgo(room.updatedAt)}</span>
-                          </>
-                        )}
-                      </div>
+                  <div className="flex flex-col gap-3 relative">
+                    {/* Title — full width, no competing elements */}
+                    <div className="flex items-start gap-2.5">
+                      <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
+                      <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-[#6C5CE7] transition-colors leading-snug">
+                        {room.title}
+                      </h2>
                     </div>
 
-                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-4 md:gap-0 shrink-0">
-                      <div className="flex items-center gap-3 text-slate-400 bg-slate-50/80 px-3 py-2 rounded-xl border border-slate-100 mb-4 shadow-sm group-hover:bg-white transition-colors">
-                        <Figma className="w-4 h-4 hover:text-purple-500 transition-colors cursor-help" />
-                        <NotionIcon className="w-4 h-4 hover:text-slate-900 transition-colors cursor-help" />
-                        <Github className="w-4 h-4 hover:text-slate-900 transition-colors cursor-help" />
+                    {/* Tag + status badges — own row below title */}
+                    <div className="flex flex-wrap items-center gap-2 pl-5">
+                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color}`}>
+                        {tag}
+                      </span>
+                      <span className="capitalize px-2 py-0.5 bg-slate-100 rounded-md text-slate-600 text-[11px] font-bold">
+                        {room.status === 'draft' ? <span className="text-amber-500">Draft</span> : isPaused ? 'Paused' : 'Live'}
+                      </span>
+                    </div>
+                    
+                    <p className="text-[13px] sm:text-[14px] text-slate-500 font-medium line-clamp-2 leading-relaxed pl-5">
+                      {room.description || "No description provided for this room."}
+                    </p>
+                    
+                    <div className="flex flex-wrap items-center gap-2 pl-5 text-[12px] text-slate-500 font-mono font-medium">
+                      <span>
+                        Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                      </span>
+                      <span className="text-slate-300">·</span>
+                      <span>{room.updateCount || 0} updates</span>
+                      <span className="text-slate-300">·</span>
+                      <ObserverAvatarStack room={room} />
+                      {room.updatedAt && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-slate-400">{timeAgo(room.updatedAt)}</span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Actions row */}
+                    <div className="flex items-center justify-between gap-3 pl-5 pt-1">
+                      <div className="flex items-center gap-2 text-slate-400 bg-slate-50/80 px-2.5 py-1.5 rounded-xl border border-slate-100 shadow-sm group-hover:bg-white transition-colors">
+                        <Figma className="w-3.5 h-3.5 hover:text-purple-500 transition-colors cursor-help" />
+                        <NotionIcon className="w-3.5 h-3.5 hover:text-slate-900 transition-colors cursor-help" />
+                        <Github className="w-3.5 h-3.5 hover:text-slate-900 transition-colors cursor-help" />
                       </div>
-                      
-                      <button className="text-[13px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 hover:bg-[#6C5CE7]/20 px-4 py-2 rounded-lg transition-colors">
+                      <button className="text-[12px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 hover:bg-[#6C5CE7]/20 px-3 py-1.5 rounded-lg transition-colors shrink-0">
                         View Room →
                       </button>
                     </div>
                   </div>
+
                 </div>
               </motion.div>
             );

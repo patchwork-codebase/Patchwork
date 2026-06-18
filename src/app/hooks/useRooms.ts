@@ -15,6 +15,18 @@ function removeStaleChannel(name: string) {
   if (existing) supabase.removeChannel(existing);
 }
 
+const debounceTimers = new Map<string, NodeJS.Timeout>();
+function debouncedInvalidate(queryClient: any, queryKey: any[]) {
+  const keyStr = JSON.stringify(queryKey);
+  const existing = debounceTimers.get(keyStr);
+  if (existing) clearTimeout(existing);
+  
+  const timer = setTimeout(() => {
+    queryClient.invalidateQueries({ queryKey });
+    debounceTimers.delete(keyStr);
+  }, 1500); // 1.5s debounce for realtime events
+}
+
 export function useRoomDetails(roomId?: string) {
   const queryClient = useQueryClient();
 
@@ -69,17 +81,17 @@ export function useRoomDetails(roomId?: string) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(roomId) })
+        () => debouncedInvalidate(queryClient, QUERY_KEYS.roomDetails(roomId))
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates', filter: `room_id=eq.${roomId}` },
-        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(roomId) })
+        () => debouncedInvalidate(queryClient, QUERY_KEYS.roomDetails(roomId))
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions', filter: `room_id=eq.${roomId}` },
-        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(roomId) })
+        () => debouncedInvalidate(queryClient, QUERY_KEYS.roomDetails(roomId))
       )
       .subscribe();
 
@@ -138,7 +150,7 @@ export function useRooms() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms' },
         () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.rooms });
+          debouncedInvalidate(queryClient, QUERY_KEYS.rooms);
         }
       )
       .subscribe();
@@ -202,7 +214,7 @@ export function useUserRooms(userId?: string) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `builder_id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(userId) });
+          debouncedInvalidate(queryClient, QUERY_KEYS.userRooms(userId));
         }
       )
       .subscribe();
@@ -215,7 +227,7 @@ export function useUserRooms(userId?: string) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'updates', filter: `author_id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(userId) });
+          debouncedInvalidate(queryClient, QUERY_KEYS.userRooms(userId));
         }
       )
       .subscribe();
@@ -285,7 +297,7 @@ export function useObservedRooms(userId?: string) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_observers', filter: `observer_id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(userId) });
+          debouncedInvalidate(queryClient, QUERY_KEYS.observedRooms(userId));
         }
       )
       .subscribe();

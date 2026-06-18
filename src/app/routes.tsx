@@ -23,15 +23,22 @@ const RouteErrorBoundary = () => {
     error?.message?.includes("Importing a module script failed") ||
     (error?.name === "TypeError" && error?.message?.includes("fetch"))
   ) {
-    const reloadCount = parseInt(sessionStorage.getItem("chunk-reload-count") || "0", 10);
-    if (reloadCount < 2) {
-      sessionStorage.setItem("chunk-reload-count", (reloadCount + 1).toString());
-      window.location.reload();
-      return null;
+    try {
+      const reloadCount = parseInt(sessionStorage.getItem("chunk-reload-count") || "0", 10);
+      if (reloadCount < 2) {
+        sessionStorage.setItem("chunk-reload-count", (reloadCount + 1).toString());
+        window.location.reload();
+        return null;
+      }
+    } catch (e) {
+      // sessionStorage might be disabled or unavailable, skip auto-reload and show error UI
+      console.error("Failed to access sessionStorage for chunk reload:", e);
     }
   }
 
-  sessionStorage.removeItem("chunk-reload-count");
+  try {
+    sessionStorage.removeItem("chunk-reload-count");
+  } catch (e) {}
 
   return (
     <div className="min-h-screen bg-[#0E0C15] flex items-center justify-center p-4">
@@ -42,7 +49,9 @@ const RouteErrorBoundary = () => {
         </p>
         <button
           onClick={() => {
-            sessionStorage.removeItem("chunk-reload-count");
+            try {
+              sessionStorage.removeItem("chunk-reload-count");
+            } catch (e) {}
             window.location.reload();
           }}
           className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.98]"

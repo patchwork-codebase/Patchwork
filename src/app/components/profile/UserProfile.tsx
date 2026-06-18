@@ -222,7 +222,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative">
+    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative overflow-x-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 hover:text-slate-900 mb-6 sm:mb-8 transition-colors group">
@@ -726,18 +726,21 @@ export default function UserProfile() {
             {rooms.map(room => (
               <Link
                 key={room.id} to={`/dashboard/room/${room.id}`}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-[20px] p-5 hover:border-[#6C5CE7]/50 hover:bg-slate-50 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md"
+                className="flex flex-col gap-3 bg-white border border-slate-200 rounded-[20px] p-4 sm:p-5 hover:border-[#6C5CE7]/50 hover:bg-slate-50 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md min-w-0 overflow-hidden"
               >
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-extrabold text-[16px] text-slate-900 group-hover:text-[#8B7CF8] transition-colors font-display mb-2 truncate">{room.title}</h3>
-                  <div className="flex flex-wrap items-center gap-4 text-[12px] font-medium text-slate-600">
+                  <h3 className="font-extrabold text-[15px] sm:text-[16px] text-slate-900 group-hover:text-[#8B7CF8] transition-colors font-display mb-2 line-clamp-2 break-words">{room.title}</h3>
+                  <div className="flex flex-wrap items-center gap-2 text-[12px] font-medium text-slate-600">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-widest font-mono ${room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'}`}>
                       {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
                       {room.status}
                     </span>
-                    <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> {room.updateCount} updates</span>
-                    <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> <ObserverAvatarStack room={room as any} /></span>
-                    <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-slate-300"/> {timeAgo(room.updatedAt)}</span>
+                    <span className="text-slate-300">·</span>
+                    <span>{room.updateCount} updates</span>
+                    <span className="text-slate-300">·</span>
+                    <ObserverAvatarStack room={room} />
+                    <span className="text-slate-300">·</span>
+                    <span>{timeAgo(room.updatedAt)}</span>
                   </div>
                 </div>
                 {room.status !== 'active' && (
@@ -747,7 +750,7 @@ export default function UserProfile() {
                       e.stopPropagation();
                       navigate(`/dashboard/build-logs/${room.id}`);
                     }}
-                    className="shrink-0 text-[12px] font-bold px-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all whitespace-nowrap"
+                    className="self-start text-[12px] font-bold px-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all whitespace-nowrap"
                   >
                     View in Logs
                   </button>

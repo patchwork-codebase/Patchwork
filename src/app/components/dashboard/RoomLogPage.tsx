@@ -136,7 +136,7 @@ export default function RoomLogPage() {
   const totalReactions = reactions.filter((r: any) => r.type !== 'reply').length;
   const totalReplies = reactions.filter((r: any) => r.type === 'reply').length;
   const closingNote = updates[0];
-  const existingRetro = (room as any).retrospectiveNote || null;
+  const existingRetro = room.retrospectiveNote || null;
   const isOwner = user?.id === room.builderId;
 
   const observerReactionMap: Record<string, { name: string; count: number; id: string }> = {};

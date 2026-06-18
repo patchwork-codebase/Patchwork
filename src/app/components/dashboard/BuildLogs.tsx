@@ -43,8 +43,8 @@ export default function BuildLogs() {
 
   const activeRooms = myRooms.filter(r => r.status === 'active' || !r.status);
   const shippedRooms = myRooms.filter(r => r.status === 'shipped');
-  const completedRooms = myRooms.filter(r => (r.status as any) === 'completed');
-  const stalledRooms = myRooms.filter(r => r.status === 'paused' || (r.status as any) === 'stalled');
+  const completedRooms = myRooms.filter(r => r.status === 'completed');
+  const stalledRooms = myRooms.filter(r => r.status === 'paused' || r.status === 'stalled');
 
   if (isLoading) {
     return <div className="p-8 text-slate-400">Loading build logs...</div>;
@@ -109,8 +109,8 @@ export default function BuildLogs() {
                       <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{room.title}</h3>
+                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-amber-200">Active</span>
                         <span className="text-[9px] sm:text-[10px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
                       </div>
@@ -187,8 +187,8 @@ export default function BuildLogs() {
                       <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{log.title}</h3>
+                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">Shipped</span>
                       </div>
                       <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Shipped {formatDate(log.updatedAt)}</p>
@@ -253,8 +253,8 @@ export default function BuildLogs() {
                       <Archive className="w-5 h-5 sm:w-6 sm:h-6 text-[#8B7CF8]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{log.title}</h3>
+                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-[#8B7CF8]/20">Completed</span>
                         <span className="text-[9px] sm:text-[10px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
                       </div>
@@ -312,8 +312,8 @@ export default function BuildLogs() {
                     <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{room.title}</h3>
+                    <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <span className="text-[9px] sm:text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-rose-200">Stalled</span>
                     </div>
                     <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Last update {daysSinceUpdate} days ago</p>
