@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-r
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { Bell } from "lucide-react";
+import { useNotifications } from "../../hooks/useNotifications";
 
 import { getAvatarUrl } from "../../utils/helpers";
 
@@ -120,6 +122,9 @@ export default function Layout() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const { data: notificationsData } = useNotifications(user?.id);
+  const unreadCount = notificationsData?.filter(n => !n.read).length || 0;
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [forceShowTour, setForceShowTour] = useState(false);
   const [isNavExpanded, setIsNavExpanded] = useState(true);
@@ -219,6 +224,15 @@ export default function Layout() {
           </Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
+          <Link
+            to="/dashboard/notifications"
+            className="flex sm:hidden relative items-center justify-center w-[36px] h-[36px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-600 transition-colors"
+          >
+            <Bell className="w-[16px] h-[16px]" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" />
+            )}
+          </Link>
         </div>
       </header>
 

@@ -98,6 +98,10 @@ export default function Notifications() {
                 icon = isLike ? '⚡' : '🔄';
                 bg = 'bg-[#8B7CF8]/10';
                 color = 'text-[#8B7CF8]';
+                
+                if (n.metadata?.room_id && n.metadata?.update_id) {
+                  linkTo = `/dashboard/room/${n.metadata.room_id}?updateId=${n.metadata.update_id}`;
+                }
               } else if (isDecision) {
                 const roomTitle = n.metadata?.room_title || 'a room';
                 text = `published a new Decision Log in "${roomTitle}"`;
