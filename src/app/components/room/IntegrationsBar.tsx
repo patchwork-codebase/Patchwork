@@ -45,10 +45,18 @@ function IntegrationPill({
         className={`group flex items-center gap-2 px-3 py-2 rounded-xl border ${cfg.borderColor} ${cfg.bgColor} transition-all hover:scale-105 hover:shadow-lg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
       >
         <IntegrationPlatformIcon platform={integration.platform} className="w-4 h-4 text-white shrink-0" />
-        <span className="text-[12px] font-semibold text-white/90 max-w-[100px] truncate hidden sm:block">
-          {displayLabel}
-        </span>
-        <ExternalLink className="w-3 h-3 text-white/40 group-hover:text-white/70 transition-colors shrink-0 hidden sm:block" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[12px] font-semibold text-white/90 max-w-[100px] truncate hidden sm:block leading-tight">
+            {displayLabel}
+          </span>
+          {integration.platform === 'notion' && (
+            <span className="text-[9px] text-emerald-400 flex items-center gap-1 font-mono uppercase tracking-wider hidden sm:flex leading-tight opacity-90">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Synced Live
+            </span>
+          )}
+        </div>
+        <ExternalLink className="w-3 h-3 text-white/40 group-hover:text-white/70 transition-colors shrink-0 hidden sm:block ml-1" />
       </a>
 
       {/* Builder-only remove button */}

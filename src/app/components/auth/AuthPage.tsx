@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { Country, State, City } from "country-state-city";
 import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
-import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AuthRedirectGuard } from "./AuthRedirectGuard";
+import { Hammer, ArrowRight, Mail, Lock, User, MapPin, Loader2, AlertCircle, Eye, EyeOff, Linkedin } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 
 
 /* ─── Searchable Custom Select Component ──────────────────────── */
@@ -127,9 +129,9 @@ function TestimonialSlider() {
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.35, ease: "easeInOut" }}
           className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 backdrop-blur-sm shadow-xl"
         >
@@ -141,6 +143,61 @@ function TestimonialSlider() {
   );
 }
 
+/* ─── Social Auth Component ───────────────────────────────────── */
+function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, onLinkedin: () => void, loading: boolean }) {
+  return (
+    <div className="flex flex-col gap-3 mt-2">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-[1px] bg-white/[0.08]" />
+        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">or continue with</span>
+        <div className="flex-1 h-[1px] bg-white/[0.08]" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          disabled={true}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.02] border border-white/[0.04] text-slate-600 rounded-xl text-[13px] font-bold transition-all cursor-not-allowed"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" className="shrink-0 opacity-50">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c3.15 0 5.8-1.05 7.73-2.85l-3.57-2.77c-1.08.73-2.43 1.17-4.16 1.17-3.2 0-5.91-2.16-6.87-5.06H1.54v2.87C3.51 21.14 7.45 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.13 14.48c-.25-.73-.38-1.51-.38-2.31s.13-1.58.38-2.31V7.01H1.54C.56 8.97 0 11.17 0 13.5s.56 4.53 1.54 6.49l3.59-2.87c-.1-.73-.13-1.5-.13-2.14z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.75c1.71 0 3.25.59 4.45 1.73l3.33-3.33C17.79 1.19 15.15 0 12 0 7.45 0 3.51 1.86 1.54 5.12l3.59 2.87c.96-2.9 3.67-5.06 6.87-5.06z"
+            />
+          </svg>
+          <span className="relative">
+            Google
+            <span className="absolute -top-3 -right-10 text-[10px] text-yellow-400 font-bold bg-yellow-400/10 px-1.5 py-0.5 rounded-full border border-yellow-400/30">
+              Coming Soon
+            </span>
+          </span>
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={onLinkedin}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] rounded-xl text-[13px] text-white font-bold transition-all disabled:opacity-50"
+        >
+          <Linkedin className="w-4 h-4 text-[#0A66C2] fill-[#0A66C2]" />
+          LinkedIn
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AuthPage() {
   const location = useLocation();
   const defaultTab = location.pathname === '/login' ? 'login' : 'signup';
@@ -148,15 +205,10 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, profile } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const ALLOWED_PHONE_COUNTRIES = [
-    { iso: 'NG', code: '+234', name: 'Nigeria' },
-    { iso: 'KE', code: '+254', name: 'Kenya' },
-    { iso: 'RW', code: '+250', name: 'Rwanda' },
-    { iso: 'GH', code: '+233', name: 'Ghana' }
-  ];
+
 
   const calculatePasswordStrength = (pass: string) => {
     if (!pass) return 0;
@@ -170,12 +222,10 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
-    if (profile) {
-      navigate(profile.role === 'observer' ? '/dashboard/observer' : '/dashboard');
-    } else if (DEV_AUTH_BYPASS) {
+    if (!authLoading && !user && DEV_AUTH_BYPASS) {
       navigate('/dashboard');
     }
-  }, [navigate, profile]);
+  }, [navigate, user, authLoading]);
 
   // Login form
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -186,13 +236,6 @@ export default function AuthPage() {
     lname: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    countryIso: '',
-    stateIso: '',
-    city: '',
-    gender: '',
-    phoneCountryCode: '+234',
-    phoneNumber: '',
     role: 'builder' as 'builder' | 'observer',
   });
 
@@ -220,9 +263,9 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const name = `${signup.fname} ${signup.lname}`.trim() || 'Anonymous Builder';
-      const { profile } = await signUp(signup.email, signup.password, name, signup.role, signup.city, '', signup.gender, signup.phoneCountryCode, signup.phoneNumber);
+      await signUp(signup.email, signup.password, name, signup.role, '', '', '', '', '');
       toast.success("Welcome to Patchwork! We've sent a verification link to your email.");
-      redirectForRole(profile?.role || signup.role);
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
@@ -230,10 +273,33 @@ export default function AuthPage() {
     }
   }
 
-  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8 && signup.password === signup.confirmPassword && signup.countryIso && signup.stateIso && signup.city && signup.gender;
+  async function handleGoogleAuth() {
+    setError('');
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      setError(err.message || 'Google authentication failed.');
+      setLoading(false);
+    }
+  }
+
+  async function handleLinkedinAuth() {
+    setError('');
+    setLoading(true);
+    try {
+      await signInWithLinkedin();
+    } catch (err: any) {
+      setError(err.message || 'LinkedIn authentication failed.');
+      setLoading(false);
+    }
+  }
+
+  const canSubmitSignup = signup.fname && signup.email && signup.password.length >= 8;
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
+      <AuthRedirectGuard />
       {/* Background ambient */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-[#6C5CE7]/8 rounded-full blur-[180px] pointer-events-none z-0" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#8B7CF8]/5 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -350,9 +416,9 @@ export default function AuthPage() {
             {tab === 'login' && (
               <motion.form
                 key="login"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
                 onSubmit={handleLogin}
                 className="flex flex-col gap-4"
@@ -361,6 +427,12 @@ export default function AuthPage() {
                   <h2 className="text-[28px] font-extrabold text-white tracking-tight">Welcome back</h2>
                   <p className="text-[14px] text-slate-400 mt-1">Sign in to your Patchwork account</p>
                 </div>
+
+                <SocialAuth 
+                  onGoogle={handleGoogleAuth} 
+                  onLinkedin={handleLinkedinAuth} 
+                  loading={loading} 
+                />
 
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
@@ -431,6 +503,12 @@ export default function AuthPage() {
                   <p className="text-[14px] text-slate-400 mt-1">Join the founding cohort. Takes 30 seconds.</p>
                 </div>
 
+                <SocialAuth 
+                  onGoogle={handleGoogleAuth} 
+                  onLinkedin={handleLinkedinAuth} 
+                  loading={loading} 
+                />
+
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -444,7 +522,7 @@ export default function AuthPage() {
                     <button
                       key={r}
                       type="button"
-                      onClick={() => setSignup(s => ({ ...s, role: r }))}
+                      onClick={() => setSignup(s => ({ ...s, role: r, builderType: '' }))}
                       className={`flex-1 py-2 rounded-lg text-[13px] font-bold transition-all capitalize ${
                         signup.role === r
                           ? r === 'builder'
@@ -459,7 +537,7 @@ export default function AuthPage() {
                 </div>
 
                 {/* Name row */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 mt-1">
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                     <input
@@ -477,22 +555,6 @@ export default function AuthPage() {
                     value={signup.lname}
                     onChange={e => setSignup(s => ({ ...s, lname: e.target.value }))}
                     className="w-full px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
-                  />
-                </div>
-
-                {/* Gender */}
-                <div className="relative z-20">
-                  <SearchableSelect
-                    label="Gender"
-                    value={signup.gender}
-                    onChange={val => setSignup(s => ({ ...s, gender: val }))}
-                    searchable={false}
-                    options={[
-                      { value: "male", label: "Male" },
-                      { value: "female", label: "Female" },
-                      { value: "non-binary", label: "Non-binary" },
-                      { value: "prefer-not-to-say", label: "Prefer not to say" }
-                    ]}
                   />
                 </div>
 
@@ -541,93 +603,6 @@ export default function AuthPage() {
                       })}
                     </div>
                   )}
-                  {signup.password && (
-                    <p className="text-[11px] text-slate-500 mt-1.5 font-medium">
-                      {calculatePasswordStrength(signup.password) <= 2 && "Weak: Use 8+ characters, mix letters, numbers & symbols."}
-                      {calculatePasswordStrength(signup.password) === 3 && "Fair: Add special characters or numbers to make it stronger."}
-                      {calculatePasswordStrength(signup.password) >= 4 && "Strong password."}
-                    </p>
-                  )}
-                </div>
-
-                {/* Confirm Password */}
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Confirm password"
-                    value={signup.confirmPassword}
-                    onChange={e => setSignup(s => ({ ...s, confirmPassword: e.target.value }))}
-                    required
-                    className={`w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:ring-1 transition-all ${
-                      signup.confirmPassword && signup.password !== signup.confirmPassword
-                        ? 'border-rose-500/50 focus:border-rose-500/50 focus:ring-rose-500/30'
-                        : 'border-white/[0.08] focus:border-[#8B7CF8]/50 focus:ring-[#8B7CF8]/30'
-                    }`}
-                  />
-                </div>
-
-                {/* Phone (optional) */}
-                <div className="flex gap-2">
-                  <div className="w-[140px] shrink-0 relative z-20">
-                    <SearchableSelect
-                      label="Code"
-                      value={signup.phoneCountryCode}
-                      onChange={val => {
-                        const matched = ALLOWED_PHONE_COUNTRIES.find(c => c.code === val);
-                        setSignup(s => ({ 
-                          ...s, 
-                          phoneCountryCode: val,
-                          ...(matched ? { countryIso: matched.iso, stateIso: '', city: '' } : {})
-                        }));
-                      }}
-                      options={ALLOWED_PHONE_COUNTRIES.map(c => ({ value: c.code, label: `${c.iso} (${c.code})` }))}
-                    />
-                  </div>
-                  <div className="flex-1 relative">
-                    <input
-                      type="tel"
-                      placeholder="Phone (optional)"
-                      value={signup.phoneNumber}
-                      onChange={e => setSignup(s => ({ ...s, phoneNumber: e.target.value }))}
-                      className="w-full px-4 py-[13px] bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Location (mandatory) */}
-                <div className="grid grid-cols-3 gap-2">
-                  <SearchableSelect
-                    label="Country"
-                    value={signup.countryIso}
-                    onChange={val => {
-                      const matched = ALLOWED_PHONE_COUNTRIES.find(c => c.iso === val);
-                      setSignup(s => ({ 
-                        ...s, 
-                        countryIso: val, 
-                        stateIso: '', 
-                        city: '',
-                        ...(matched ? { phoneCountryCode: matched.code } : { phoneCountryCode: '' })
-                      }));
-                    }}
-                    options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
-                  />
-
-                  <SearchableSelect
-                    label="State"
-                    value={signup.stateIso}
-                    onChange={val => setSignup(s => ({ ...s, stateIso: val, city: '' }))}
-                    disabled={!signup.countryIso}
-                    options={signup.countryIso ? State.getStatesOfCountry(signup.countryIso).map(s => ({ value: s.isoCode, label: s.name })) : []}
-                  />
-
-                  <SearchableSelect
-                    label="City"
-                    value={signup.city}
-                    onChange={val => setSignup(s => ({ ...s, city: val }))}
-                    disabled={!signup.stateIso}
-                    options={signup.stateIso ? City.getCitiesOfState(signup.countryIso, signup.stateIso).map(c => ({ value: c.name, label: c.name })) : []}
-                  />
                 </div>
 
                 <motion.button

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowRight, Hammer, Rss, Compass, UserCircle } from "lucide-react";
 
+import { useAuth } from "../auth/AuthContext";
+import { supabase } from "../auth/AuthContext";
+
 /* ─── Slide definitions ─────────────────────────────────────────── */
 interface Slide {
   icon: React.ReactNode;
@@ -51,34 +54,48 @@ const SLIDES: Slide[] = [
   },
 ];
 
-/* ─── Storage key ────────────────────────────────────────────────── */
-const tourSeenKey = (userId: string) => `patchwork_tour_seen_${userId}`;
-
 /* ─── Component ─────────────────────────────────────────────────── */
 interface WelcomeTourProps {
   userId: string;
   userName: string;
+  forceShow?: boolean;
+  onClose?: () => void;
 }
 
-export function WelcomeTour({ userId, userName }: WelcomeTourProps) {
+export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTourProps) {
+  const { user } = useAuth();
   const [visible, setVisible] = useState(false);
   const [slide, setSlide] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
 
   useEffect(() => {
-    try {
-      const seen = localStorage.getItem(tourSeenKey(userId));
-      if (!seen) setVisible(true);
-    } catch {
-      // localStorage unavailable — don't show tour
+    if (forceShow) {
+      setVisible(true);
+      setSlide(0);
+    } else {
+      // Show automatically if they haven't seen it yet according to backend user_metadata
+      const metadata = (user as any)?.user_metadata || {};
+      if (metadata.tour_seen !== true) {
+        setVisible(true);
+      }
     }
-  }, [userId]);
+  }, [user, forceShow]);
 
-  function dismiss() {
-    try {
-      localStorage.setItem(tourSeenKey(userId), "true");
-    } catch {}
+  async function dismiss() {
     setVisible(false);
+    if (onClose) onClose();
+    
+    // Save to backend if not already seen
+    const metadata = (user as any)?.user_metadata || {};
+    if (metadata.tour_seen !== true && user) {
+      try {
+        await supabase.auth.updateUser({
+          data: { tour_seen: true }
+        });
+      } catch (err) {
+        console.error("Failed to save tour_seen state:", err);
+      }
+    }
   }
 
   function goTo(next: number) {
@@ -123,7 +140,7 @@ export function WelcomeTour({ userId, userName }: WelcomeTourProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 60, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            className="relative w-full sm:max-w-[480px] bg-[#0D0B14] border border-white/[0.1] rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.8)]"
+            className="relative w-full sm:max-w-[480px] bg-white border border-slate-200 rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.15)]"
           >
             {/* Accent gradient strip */}
             <motion.div
@@ -135,13 +152,13 @@ export function WelcomeTour({ userId, userName }: WelcomeTourProps) {
 
             {/* Drag handle (mobile) */}
             <div className="flex justify-center pt-3 pb-0 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-white/10" />
+              <div className="w-10 h-1 rounded-full bg-slate-200" />
             </div>
 
             {/* Close button */}
             <button
               onClick={dismiss}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-500 hover:text-white transition-all z-10"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all z-10"
               aria-label="Close tour"
             >
               <X className="w-4 h-4" />
@@ -193,16 +210,16 @@ export function WelcomeTour({ userId, userName }: WelcomeTourProps) {
                         Hey {firstName} 👋
                       </p>
                     )}
-                    <h2 className="text-[22px] sm:text-[24px] font-extrabold text-white leading-tight tracking-tight mb-3">
+                    <h2 className="text-[22px] sm:text-[24px] font-extrabold text-slate-900 leading-tight tracking-tight mb-3">
                       {current.title}
                     </h2>
-                    <p className="text-[14px] text-slate-400 leading-relaxed mb-5">
+                    <p className="text-[14px] text-slate-600 leading-relaxed mb-5">
                       {current.description}
                     </p>
 
                     {/* Tip */}
-                    <div className="mt-auto bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3">
-                      <p className="text-[12.5px] text-slate-400 leading-relaxed">{current.tip}</p>
+                    <div className="mt-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                      <p className="text-[12.5px] text-slate-600 leading-relaxed">{current.tip}</p>
                     </div>
                   </motion.div>
                 </AnimatePresence>
@@ -213,7 +230,7 @@ export function WelcomeTour({ userId, userName }: WelcomeTourProps) {
                 {/* Back or Skip */}
                 <button
                   onClick={slide === 0 ? dismiss : prev}
-                  className="text-[13px] font-bold text-slate-500 hover:text-white transition-colors px-1 py-2 min-w-[56px]"
+                  className="text-[13px] font-bold text-slate-500 hover:text-slate-900 transition-colors px-1 py-2 min-w-[56px]"
                 >
                   {slide === 0 ? "Skip" : "← Back"}
                 </button>

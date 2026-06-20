@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate, Outlet, useSearchParams } from "react-router";
 import { useAuth } from "../auth/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useNotifications } from "../../hooks/useNotifications";
+
 import { getAvatarUrl } from "../../utils/helpers";
 
 /* ─── tiny inline SVGs ─────────────────────────────────────────── */
@@ -77,29 +77,47 @@ const ZapIcon = () => (
   </svg>
 );
 
-const BellIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
+
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 
 import { timeAgo } from "../../utils/helpers";
 
+import VerificationRequiredModal from '../ui/VerificationRequiredModal';
+import VerificationSuccessModal from '../dashboard/VerificationSuccessModal';
+import { WelcomeTour } from '../dashboard/WelcomeTour';
+
 export default function Layout() {
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut, loading, refreshProfile } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const { data: notificationsData, markAllAsRead } = useNotifications(user?.id);
-  const notifications = notificationsData || [];
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [forceShowTour, setForceShowTour] = useState(false);
+  const [isNavExpanded, setIsNavExpanded] = useState(true);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    // Check for verification success in URL
+    const hash = window.location.hash;
+    const query = window.location.search;
+    if (hash.includes('type=signup') || hash.includes('type=recovery') || query.includes('verified=true')) {
+      if (user?.id) localStorage.setItem(`email_verified_failsafe_${user.id}`, 'true');
+      setShowSuccessModal(true);
+      refreshProfile(); // refresh to get the latest emailVerified status
+      
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [refreshProfile]);
+
+
+
+
 
   const activeTab = searchParams.get('tab') || 'overview';
   const activeSection = location.pathname.startsWith('/dashboard/explore')
@@ -118,8 +136,8 @@ export default function Layout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#08070D] flex items-center justify-center">
-        <div className="flex items-center gap-2.5 text-slate-400 font-mono text-[13px]">
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
+        <div className="flex items-center gap-2.5 text-slate-600 font-mono text-[13px]">
           <div className="w-4.5 h-4.5 rounded-full border-2 border-[#6C5CE7]/20 border-t-[#6C5CE7] animate-spin" />
           Loading Patchwork…
         </div>
@@ -141,96 +159,31 @@ export default function Layout() {
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#08070D] text-white pb-[env(safe-area-inset-bottom)] lg:pb-0">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
+      <VerificationRequiredModal />
+      <VerificationSuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+        role={profile?.role || 'builder'} 
+      />
+      {user && profile && (
+        <WelcomeTour 
+          userId={user.id} 
+          userName={profile.name} 
+          forceShow={forceShowTour} 
+          onClose={() => setForceShowTour(false)} 
+        />
+      )}
       
       {/* ── GLOBAL TOP HEADER ─────────────────── */}
-      <header className="relative h-[60px] bg-[#08070D]/85 backdrop-blur-xl border-b border-white/[0.08] flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
+      <header className="relative h-[60px] bg-white/85 backdrop-blur-xl border-b border-slate-200 flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition group">
+          <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-slate-900 hover:opacity-80 transition group">
             <span>patch<span className="inline-block text-[#8B7CF8] group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
             <span className="rounded bg-[#8B7CF8]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8B7CF8]">Beta</span>
           </Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Notifications Toggle */}
-          <div className="relative">
-            <button
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2.5 text-slate-300 hover:text-white transition-colors rounded-full hover:bg-white/[0.05]"
-            >
-              <BellIcon />
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#08070D]" />
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            <AnimatePresence>
-            {notificationsOpen && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 sm:-right-4 mt-2 w-[320px] bg-[#0A0910]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50"
-              >
-                <div className="p-4 border-b border-white/[0.08] flex justify-between items-center">
-                  <span className="text-[14px] font-bold text-white font-display">Notifications</span>
-                  {unreadCount > 0 && (
-                    <button onClick={() => markAllAsRead.mutate()} className="text-[11px] font-bold text-[#8B7CF8] hover:text-white transition-colors">Mark all read</button>
-                  )}
-                </div>
-                <div className="max-h-[340px] overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500 text-[13px]">No notifications yet.</div>
-                  ) : (
-                    notifications.map(n => {
-                      const isReaction = n.type === 'reaction';
-                      const actorName = n.actor?.name || 'Someone';
-                      
-                      let text = '';
-                      let icon = '';
-                      let bg = '';
-                      let color = '';
-                      
-                      if (isReaction) {
-                        const isLike = n.metadata?.reaction_type === 'like';
-                        text = isLike ? 'reacted "Like" to your update' : 'replied to your update';
-                        icon = isLike ? '⚡' : '🔄';
-                        bg = 'bg-[#8B7CF8]/10';
-                        color = 'text-[#8B7CF8]';
-                      } else {
-                        const roomTitle = n.metadata?.room_title || 'your room';
-                        text = `started following "${roomTitle}"`;
-                        icon = '👀';
-                        bg = 'bg-emerald-500/10';
-                        color = 'text-emerald-400';
-                      }
-
-                      return (
-                        <div key={n.id} className="p-4 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors cursor-pointer flex gap-3 relative">
-                          {!n.read && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-rose-500" />}
-                          <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center shrink-0`}>
-                            <span className="text-[16px]">{icon}</span>
-                          </div>
-                          <div>
-                            <div className="text-[13px] text-slate-300 leading-snug">
-                              <strong className="text-white">{actorName}</strong> {text}
-                            </div>
-                            <div className="text-[11px] text-slate-500 mt-1.5 font-mono font-medium">{timeAgo(n.created_at)}</div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-                <Link to="/dashboard/notifications" onClick={() => setNotificationsOpen(false)} className="block p-3 text-center text-[12px] font-bold text-slate-400 hover:text-white bg-white/[0.01] hover:bg-white/[0.04] transition-colors">
-                  View all activity
-                </Link>
-              </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
         </div>
       </header>
 
@@ -258,54 +211,84 @@ export default function Layout() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 h-[70px] bg-[#0A0910]/90 backdrop-blur-xl border-t border-white/[0.08] flex items-center justify-center px-1 sm:px-2 z-50 lg:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <nav className="flex items-center justify-between gap-1 w-full max-w-md mx-auto px-1 pb-1">
-          <Link
-            to="/dashboard"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'overview' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'overview' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <DashboardIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Home</span>
-          </Link>
-          <Link
-            to="/dashboard?tab=feed"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'feed' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'feed' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <SearchIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Feed</span>
-          </Link>
-          <Link
-            to="/dashboard/build-logs"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'logs' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'logs' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <ZapIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Logs</span>
-          </Link>
-          <Link
-            to="/dashboard/observer"
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 ${activeSection === 'observer' ? 'border-[#6C5CE7]/30 bg-[#6C5CE7]/10 text-[#8B7CF8]' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]'}`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-2xl ${activeSection === 'observer' ? 'bg-[#6C5CE7]/20 text-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
-              <ZapIcon />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Observer</span>
-          </Link>
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className={`flex flex-col flex-1 items-center justify-center gap-1 rounded-2xl border px-1 sm:px-2 py-2 min-w-0 border-white/[0.08] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.05]`}
-          >
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-white/10`}>
-               <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-            </div>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold truncate w-full text-center">Profile</span>
-          </button>
-        </nav>
+      <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center px-5 py-4 z-50 lg:hidden pb-[max(16px,env(safe-area-inset-bottom))]">
+        <div className="w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-[2rem] border border-slate-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.1)] px-2 py-2">
+          <nav className="flex items-center justify-between gap-2">
+            <Link
+              to="/dashboard"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+            >
+              {activeSection === 'overview' && (
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
+            </Link>
+            
+            <Link
+              to="/dashboard?tab=feed"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+            >
+              {activeSection === 'feed' && (
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+              </div>
+            </Link>
+
+            <Link
+              to="/dashboard/build-logs"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+            >
+              {activeSection === 'logs' && (
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'logs' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                {activeSection === 'logs' && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                )}
+              </div>
+            </Link>
+
+            <Link
+              to="/dashboard/explore"
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+            >
+              {activeSection === 'explore' && (
+                <div className="absolute inset-0 bg-[#8B7CF8]/15 rounded-[1.5rem]" />
+              )}
+              <div className={`relative z-10 transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7]' : 'text-slate-400 hover:text-slate-600'}`}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.35-4.35"/>
+                </svg>
+              </div>
+            </Link>
+
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="relative flex-1 flex items-center justify-center py-3 min-h-[52px] rounded-[1.5rem] transition-active active:scale-95"
+            >
+              <div className={`w-[32px] h-[32px] rounded-full overflow-hidden transition-all duration-200 shadow-sm ${
+                mobileMenuOpen ? 'ring-2 ring-[#8B7CF8] ring-offset-2 ring-offset-white' : 'border border-slate-300'
+              }`}>
+                <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover scale-110" />
+              </div>
+            </button>
+          </nav>
+        </div>
       </div>
 
       {/* MOBILE PROFILE BOTTOM SHEET */}
@@ -324,18 +307,18 @@ export default function Layout() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#0E0C16] z-[70] lg:hidden rounded-t-3xl border-t border-white/[0.08] pb-[env(safe-area-inset-bottom)]"
+            className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
           >
-            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-5" />
+            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
             
             <div className="px-5 pb-5">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
                   <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base font-bold text-white truncate">{userDisplayName}</div>
-                  <div className="text-xs text-slate-400 font-mono truncate">{profile?.email || user.email}</div>
+                  <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>
+                  <div className="text-xs text-slate-500 font-mono truncate">{profile?.email || user.email}</div>
                 </div>
               </div>
 
@@ -343,22 +326,22 @@ export default function Layout() {
                 <Link
                   to={`/dashboard/profile/${user.id}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-200 hover:bg-white/[0.04] rounded-xl transition"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                 >
                   <UserIcon /> My Profile
                 </Link>
                 <Link
                   to="/dashboard/explore"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-200 hover:bg-white/[0.04] rounded-xl transition"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                 >
                   <CompassIcon /> Explore Builders
                 </Link>
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
-                <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Privacy Policy</Link>
-                <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Terms of Service</Link>
+              <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
+                <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Privacy Policy</Link>
+                <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Terms of Service</Link>
               </div>
 
               <button
@@ -379,7 +362,7 @@ export default function Layout() {
       <div className="flex flex-col lg:flex-row flex-1 pb-[70px] lg:pb-0">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0A0910] border-r border-white/[0.08] flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
+        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
 
           <nav className="p-5 flex-1">
             
@@ -390,7 +373,7 @@ export default function Layout() {
 
             <Link
               to="/dashboard"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <DashboardIcon />
               Dashboard
@@ -398,20 +381,20 @@ export default function Layout() {
 
             <Link
               to="/dashboard?tab=mine"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'mine' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'mine' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <HammerIcon />
                 My rooms
               </div>
-              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'mine' ? 'bg-[#6C5CE7] text-white' : 'bg-white/10 text-slate-300'}`}>
+              <span className={`text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${activeSection === 'mine' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
                 3
               </span>
             </Link>
 
             <Link
               to="/dashboard/build-logs"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <ZapIcon />
               Build logs
@@ -424,65 +407,65 @@ export default function Layout() {
 
             <Link
               to="/dashboard?tab=feed"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <ActivityIcon />
                 Global timeline
               </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'feed' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-300'}`}>
+              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'feed' ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                 12
               </span>
             </Link>
 
             <Link
               to="/dashboard/observer"
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <div className="flex items-center gap-2.5">
                 <EyeIcon />
                 Observer hub
               </div>
-              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'observer' ? 'bg-[#6C5CE7] text-white' : 'bg-white/10 text-slate-300'}`}>
+              <span className={`text-[9px] font-bold rounded-full px-1.5 h-4 min-w-4 flex items-center justify-center ${activeSection === 'observer' ? 'bg-[#6C5CE7] text-white' : 'bg-slate-200 text-slate-600'}`}>
                 3
               </span>
             </Link>
 
             <Link
               to="/dashboard/explore"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-400 font-medium border-transparent hover:text-white hover:bg-white/[0.04]'}`}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <CompassIcon />
               Explore builders
             </Link>
 
             <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
-              <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+              <Link to="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
               <span>·</span>
-              <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
+              <Link to="/terms" className="hover:text-slate-900 transition">Terms of Service</Link>
             </div>
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-white/[0.08] p-4 bg-white/[0.01]">
+          <div className="border-t border-slate-200 p-4 bg-slate-50/50">
             <div className="relative">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}
                 className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                   <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-white truncate">
+                  <div className="text-[13px] font-bold text-slate-900 truncate">
                     {userDisplayName}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className="text-[10px] text-slate-500 mt-0.5">
                     product · Lagos
                   </div>
                 </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-500 group-hover:text-white transition">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-slate-700 transition">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
@@ -500,24 +483,33 @@ export default function Layout() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute bottom-full left-0 right-0 mb-2 bg-[#0E0C16] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
+                    className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
                   >
-                    <div className="p-3 border-b border-white/[0.08]">
-                      <div className="text-[12px] font-bold text-white">{profile?.name}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">
+                    <div className="p-3 border-b border-slate-100">
+                      <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
                         {profile?.email || user.email}
                       </div>
                     </div>
                     <Link
                       to={`/dashboard/profile/${user.id}`}
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/[0.04] hover:text-white transition"
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
                     >
                       <UserIcon /> Profile
                     </Link>
                     <button
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        setForceShowTour(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
+                    >
+                      <CompassIcon /> Replay Tour
+                    </button>
+                    <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
                     >
                       <LogOutIcon /> Sign out
                     </button>
@@ -529,19 +521,10 @@ export default function Layout() {
           </div>
         </aside>
 
-        <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#08070D] pb-28">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+        <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
+          <div className="h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

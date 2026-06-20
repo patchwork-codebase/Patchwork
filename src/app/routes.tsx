@@ -1,4 +1,13 @@
-import { createBrowserRouter, redirect, useRouteError } from "react-router";
+import { createBrowserRouter, redirect, useRouteError, Outlet } from "react-router";
+import { AuthProvider } from "./components/auth/AuthContext";
+
+function AuthWrapper() {
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
+}
 
 const GlobalFallback = () => (
   <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -49,6 +58,7 @@ export const router = createBrowserRouter([
   {
     HydrateFallback: GlobalFallback,
     errorElement: <RouteErrorBoundary />,
+    Component: AuthWrapper,
     children: [
       // Public landing and auth
       {
@@ -57,7 +67,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/onboarding",
-        lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
+        lazy: () => import("./components/auth/OnboardingWizard").then(m => ({ Component: m.default })),
       },
       {
         path: "/onbaording",
@@ -65,6 +75,10 @@ export const router = createBrowserRouter([
       },
       {
         path: "/login",
+        lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
+      },
+      {
+        path: "/signup",
         lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
       },
       {
@@ -96,7 +110,10 @@ export const router = createBrowserRouter([
           { path: "observer", lazy: () => import("./components/observer/ObserverHub").then(m => ({ Component: m.default })) },
           { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },
           { path: "build-logs", lazy: () => import("./components/dashboard/BuildLogs").then(m => ({ Component: m.default })) },
+          { path: "build-logs/:roomId", lazy: () => import("./components/dashboard/RoomLogPage").then(m => ({ Component: m.default })) },
           { path: "notifications", lazy: () => import("./components/dashboard/Notifications").then(m => ({ Component: m.default })) },
+          { path: "expert-apply", lazy: () => import("./components/profile/VerifiedExpertApplication").then(m => ({ Component: m.default })) },
+          { path: "expert-hub", lazy: () => import("./components/dashboard/ExpertReviewHub").then(m => ({ Component: m.default })) },
         ],
       },
     ]

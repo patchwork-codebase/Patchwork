@@ -15,114 +15,7 @@ export const DEV_AUTH_BYPASS = false;
 
 const API_BASE = window.location.origin + "/api/v1";
 
-export class ApiError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
-
 import { normalizeRow } from "../../utils/helpers";
-
-export async function apiCall(path: string, opts: RequestInit = {}, token?: string) {
-  try {
-    // Intercept database-related user paths to bypass the broken edge function
-    const cleanPath = path.split('?')[0];
-    const parts = cleanPath.split('/').filter(Boolean);
-
-    if (parts[0] === 'users') {
-      // 1. GET /users/:id/rooms -> rooms table
-      if (parts[2] === 'rooms') {
-        const userId = parts[1];
-        const { data, error } = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('builder_id', userId)
-          .order('created_at', { ascending: false });
-        if (error) throw new ApiError(error.message, 500);
-        return (data || []).map(normalizeRow);
-      }
-
-      // 2. GET /users/:id -> users table
-      if (opts.method === 'GET' || !opts.method) {
-        if (parts.length === 2) {
-          const userId = parts[1];
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .maybeSingle();
-          if (error) throw new ApiError(error.message, 500);
-          return data ? normalizeRow(data) : null;
-        }
-      }
-
-      // 3. POST /users -> users table upsert
-      if (opts.method === 'POST') {
-        const body = opts.body ? JSON.parse(opts.body as string) : {};
-        const { data, error } = await supabase
-          .from('users')
-          .upsert(body, { onConflict: 'id' })
-          .select()
-          .maybeSingle();
-        if (error) throw new ApiError(error.message, 500);
-        return data ? normalizeRow(data) : null;
-      }
-
-      // 4. PUT /users/:id -> users table update
-      if (opts.method === 'PUT') {
-        const targetUserId = parts[1];
-        const body = opts.body ? JSON.parse(opts.body as string) : {};
-        const updates: Record<string, any> = {};
-        ['name', 'bio', 'role', 'city', 'domain'].forEach(key => {
-          if (body[key] !== undefined) updates[key] = body[key];
-        });
-        if (body.interests !== undefined) updates.interests = body.interests;
-
-        const { data, error } = await supabase
-          .from('users')
-          .update(updates)
-          .eq('id', targetUserId)
-          .select()
-          .maybeSingle();
-        if (error) throw new ApiError(error.message, 500);
-        return data ? normalizeRow(data) : null;
-      }
-    }
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token || publicAnonKey}`,
-      ...(opts.headers as Record<string, string> || {}),
-    };
-    const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
-    
-    let data;
-    try {
-      data = await res.json();
-    } catch (parseError) {
-      data = { error: `Failed to parse response (HTTP ${res.status})` };
-    }
-
-    if (!res.ok) {
-      const errorMessage = data.error || data.message || `Request failed (HTTP ${res.status})`;
-      throw new ApiError(errorMessage, res.status);
-    }
-
-    return data;
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(
-      error instanceof Error ? error.message : "An unexpected error occurred",
-      500
-    );
-  }
-}
-
 
 interface Profile {
   id: string;
@@ -165,6 +58,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string, role: string, city: string, domain: string, gender: string, phone_country_code?: string, phone_number?: string) => Promise<SignInResult>;
   signIn: (email: string, password: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithLinkedin: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   ensureValidSession: () => Promise<Session>;
   withVerification: (action: () => void) => void;
@@ -188,27 +83,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   async function ensureProfileRow(user: User, authToken: string | null) {
-    const metadata = (user as any).user_metadata || {};
-    const payload = {
-      id: user.id,
-      email: user.email || '',
-      name: metadata.name || metadata.full_name || user.email?.split('@')[0] || 'Anonymous Builder',
-      role: metadata.role || 'builder',
-      city: metadata.city || '',
-      domain: metadata.domain || '',
-      interests: metadata.interests || [],
-      gender: metadata.gender || '',
-      phone_country_code: metadata.phone_country_code || '',
-      phone_number: metadata.phone_number || '',
-      bio: '',
-      avatar: '',
-    };
-
     try {
-      await apiCall('/users', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }, authToken || undefined);
+      // Fetch existing profile to prevent overwriting onboarding preferences
+      let existing: any = null;
+      try {
+        const res = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        existing = res.data;
+      } catch (e) {
+        // Ignore fetch error
+      }
+
+      const metadata = (user as any).user_metadata || {};
+      const payload = {
+        id: user.id,
+        email: user.email || '',
+        name: existing?.name || metadata.name || metadata.full_name || user.email?.split('@')[0] || 'Anonymous Builder',
+        role: existing?.role || metadata.role || 'builder',
+        city: existing?.city || metadata.city || '',
+        domain: existing?.domain || metadata.domain || '',
+        interests: existing?.interests?.length ? existing.interests : (metadata.interests || []),
+        gender: existing?.gender || metadata.gender || '',
+        phone_country_code: existing?.phone_country_code || metadata.phone_country_code || '',
+        phone_number: existing?.phone_number || metadata.phone_number || '',
+        bio: existing?.bio || '',
+        avatar: existing?.avatar || '',
+      };
+
+      const { error } = await supabase
+        .from('users')
+        .upsert(payload, { onConflict: 'id' });
+      if (error) throw error;
     } catch (err) {
       console.log('Could not create or update profile row:', err);
     }
@@ -216,7 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadProfile(userId: string) {
     try {
-      const p = await apiCall(`/users/${userId}`);
+      const { data, error: fetchErr } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+      if (fetchErr) throw fetchErr;
+      const p = data ? normalizeRow(data) : null;
 
       // Determine verification status.
       // Strategy: try our custom column first; if it doesn't exist (400/column error)
@@ -247,7 +153,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!p || !p.name || p.name === 'Anonymous Builder') {
         if (session?.user?.id === userId && session.user) {
           await ensureProfileRow(session.user, token);
-          const retry = await apiCall(`/users/${userId}`);
+          const { data: retryData } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+          const retry = retryData ? normalizeRow(retryData) : null;
           if (retry) {
             const profile = { ...(retry as Profile), emailVerified: isConfirmed };
             setProfile(profile);
@@ -270,6 +177,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Just to handle URL parameters for magic links/resets if needed
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const queryParams = new URLSearchParams(window.location.search);
+    
+    if (hashParams.has('error') || queryParams.has('error')) {
+      const errorMsg = hashParams.get('error_description') || queryParams.get('error_description') || 'Authentication failed';
+      console.error("[AuthContext] OAuth Error detected:", errorMsg);
+            // Handle the "Multiple accounts with the same email" error specifically
+        if (errorMsg.includes('Multiple accounts with the same email')) {
+          toast.error("An account with this email already exists. Please sign in with your password or ensure 'Account Linking' is enabled in Supabase.");
+        } else if (errorMsg.includes('Identity is already linked to another user') || errorMsg.includes('already+linked')) {
+          toast.error("This account is already connected to a different Patchwork profile. Please use a different account.");
+        } else {
+          toast.error(decodeURIComponent(errorMsg).replace(/\+/g, ' '));
+        }
+    }
+
     const channel = new BroadcastChannel('patchwork_auth_sync');
 
     channel.onmessage = (event) => {
@@ -289,6 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+
       let currentSession = initialSession;
       if (initialSession) {
         try {
@@ -306,8 +231,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
+        // Load profile for user
         await loadProfile(currentSession.user.id);
       }
+
       setLoading(false);
     });
 
@@ -330,7 +257,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener('visibilitychange', handleVisibilityChange);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      
+      if (session?.provider_token) {
+        sessionStorage.setItem('oauth_provider_token', session.provider_token);
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -339,7 +271,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
       } else if (event === 'SIGNED_IN') {
         channel.postMessage('SESSION_LOGIN');
-        if (session?.user) loadProfile(session.user.id);
+        if (session?.user) {
+          await loadProfile(session.user.id);
+        }
       } else if (event === 'TOKEN_REFRESHED') {
         channel.postMessage('SESSION_REFRESH');
         if (session?.user) loadProfile(session.user.id);
@@ -453,11 +387,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   }
 
+  async function signInWithGoogle() {
+
+    const redirectUrl = window.location.origin;
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+      }
+    });
+    if (error) throw error;
+  }
+
+  async function signInWithLinkedin() {
+
+    const redirectUrl = window.location.origin;
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: redirectUrl,
+        scopes: 'openid profile email w_member_social',
+      }
+    });
+    if (error) throw error;
+  }
+
   return (
     <AuthContext.Provider value={{ 
       user, session, profile, loading, token, 
       signUp, signIn, signOut, refreshProfile, ensureValidSession,
-      withVerification
+      withVerification,
+      signInWithGoogle,
+      signInWithLinkedin
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase, apiCall } from '../components/auth/AuthContext';
+import { supabase } from '../components/auth/AuthContext';
 
 import { normalizeRow } from "../utils/helpers";
 
@@ -10,6 +10,82 @@ import { normalizeRow } from "../utils/helpers";
 function removeStaleChannel(name: string) {
   const existing = supabase.getChannels().find(c => c.topic === `realtime:${name}`);
   if (existing) supabase.removeChannel(existing);
+}
+
+export function useRoomDetails(roomId?: string) {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ['room-details', roomId],
+    queryFn: async () => {
+      if (!roomId) return null;
+
+      const { data: roomData, error: roomError } = await supabase
+        .from('rooms')
+        .select('*, users!builder_id(is_verified_expert)')
+        .eq('id', roomId)
+        .maybeSingle();
+
+      if (roomError) throw roomError;
+      if (!roomData) return null;
+
+      const { data: updatesData, error: updatesError } = await supabase
+        .from('updates')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false });
+
+      if (updatesError) throw updatesError;
+
+      const { data: reactionsData, error: reactionsError } = await supabase
+        .from('reactions')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false });
+
+      if (reactionsError) throw reactionsError;
+
+      return {
+        ...normalizeRow(roomData),
+        builderIsVerifiedExpert: !!(roomData.users?.is_verified_expert),
+        updates: (updatesData || []).map(normalizeRow),
+        reactions: (reactionsData || []).map(normalizeRow)
+      };
+    },
+    enabled: !!roomId,
+  });
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    const channelName = `room-details-${roomId}`;
+    removeStaleChannel(channelName);
+
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+        () => queryClient.invalidateQueries({ queryKey: ['room-details', roomId] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'updates', filter: `room_id=eq.${roomId}` },
+        () => queryClient.invalidateQueries({ queryKey: ['room-details', roomId] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reactions', filter: `room_id=eq.${roomId}` },
+        () => queryClient.invalidateQueries({ queryKey: ['room-details', roomId] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId, queryClient]);
+
+  return query;
 }
 
 export function useRooms() {
@@ -25,12 +101,16 @@ export function useRooms() {
 
       const { data, error } = await supabase
         .from('rooms')
-        .select('*')
+        .select('*, users!builder_id(is_verified_expert)')
+        .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+      return (data || []).map(row => ({
+        ...normalizeRow(row),
+        builderIsVerifiedExpert: !!(row.users?.is_verified_expert),
+      }));
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 12 ? allPages.length : undefined;

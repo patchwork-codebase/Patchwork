@@ -7,6 +7,7 @@ export interface FeedUpdate {
   roomId: string;
   authorId: string;
   authorName: string;
+  authorIsVerifiedExpert?: boolean;
   content: string;
   mediaUrl?: string;
   codeSnippet?: string;
@@ -42,15 +43,35 @@ export function useFeedUpdates() {
 
       const { data, error } = await supabase
         .from('updates')
-        .select('*, rooms:room_id(title, tags), reactions(*)')
+        .select('*, rooms(title, tags), users!author_id(is_verified_expert)')
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+
+      const updateIds = (data || []).map(u => u.id);
+      let reactionsData: any[] = [];
+      
+      if (updateIds.length > 0) {
+        const { data: rData } = await supabase
+          .from('reactions')
+          .select('*')
+          .in('update_id', updateIds);
+        reactionsData = rData || [];
+      }
+
+      return (data || []).map(row => {
+        const normalized = normalizeRow(row);
+        // Hoist is_verified_expert from the joined users row
+        normalized.authorIsVerifiedExpert = !!(row.users?.is_verified_expert);
+        normalized.reactions = reactionsData
+          .filter(r => r.update_id === row.id)
+          .map(normalizeRow);
+        return normalized;
+      });
     },
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === 10 ? allPages.length : undefined;
+      return lastPage.length > 0 ? allPages.length : undefined;
     },
   });
 
@@ -67,13 +88,6 @@ export function useFeedUpdates() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'reactions' },
         () => {
           queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
         }

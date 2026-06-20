@@ -2,6 +2,8 @@ import { motion } from "motion/react";
 import { useAuth } from "../auth/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useEffect } from "react";
+import { Link } from "react-router";
+import { ArrowLeft } from "lucide-react";
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -33,18 +35,37 @@ export default function Notifications() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full max-w-[800px] mx-auto px-5 sm:px-6 py-8"
     >
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 hover:text-slate-900 mb-6 sm:mb-8 transition-colors group">
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
+      </Link>
+
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-bold text-2xl sm:text-[28px] text-white leading-tight tracking-tight m-0">
+          <h1 className="font-bold text-2xl sm:text-[28px] text-slate-900 leading-tight tracking-tight m-0">
             Notifications
           </h1>
-          <p className="text-slate-400 mt-1 text-[14px]">
+          <p className="text-slate-500 mt-1 text-[14px]">
             Stay updated on activity in your rooms
           </p>
         </div>
       </div>
 
-      <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] overflow-hidden">
+      <div className="bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-xl p-4 mb-6 flex items-start gap-4">
+        <div className="w-8 h-8 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center shrink-0 mt-0.5">
+          <span className="text-[16px]">🔌</span>
+        </div>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold text-slate-900 text-[14px]">GitHub & Figma Webhooks</h3>
+            <span className="px-2 py-0.5 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[9px] font-bold uppercase tracking-wider rounded-md">Coming Soon</span>
+          </div>
+          <p className="text-slate-600 text-[13px] leading-relaxed">
+            Soon, you'll see automated notifications here whenever a Pull Request is merged or a Figma design changes in your linked artifacts.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-[20px] overflow-hidden shadow-sm">
         {isLoading ? (
           <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
             <div className="w-6 h-6 rounded-full border-2 border-[#6C5CE7]/20 border-t-[#6C5CE7] animate-spin" />
@@ -52,14 +73,14 @@ export default function Notifications() {
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
-            <div className="w-16 h-16 rounded-full bg-white/[0.02] flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🔔</span>
             </div>
-            <h3 className="text-white font-bold text-[16px] mb-1">All caught up</h3>
+            <h3 className="text-slate-900 font-bold text-[16px] mb-1">All caught up</h3>
             <p className="text-[13px]">You don't have any notifications yet.</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-slate-100">
             {notifications.map(n => {
               const isReaction = n.type === 'reaction';
               const actorName = n.actor?.name || 'Someone';
@@ -84,16 +105,16 @@ export default function Notifications() {
               }
 
               return (
-                <div key={n.id} className={`p-5 flex items-start gap-4 transition-colors hover:bg-white/[0.02] ${!n.read ? 'bg-white/[0.01]' : ''}`}>
+                <div key={n.id} className={`p-5 flex items-start gap-4 transition-colors hover:bg-slate-50/50 ${!n.read ? 'bg-slate-50' : ''}`}>
                   <div className={`w-10 h-10 rounded-full ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
                     <span className="text-[18px]">{icon}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[14px] text-slate-300 leading-snug">
-                      <strong className="text-white font-bold">{actorName}</strong> {text}
+                    <div className="text-[14px] text-slate-700 leading-snug">
+                      <strong className="text-slate-900 font-bold">{actorName}</strong> {text}
                     </div>
                     {isReaction && n.metadata?.reaction_text && n.metadata.reaction_type !== 'like' && (
-                      <div className="mt-2 text-[13px] text-slate-400 bg-white/[0.02] border border-white/[0.05] p-3 rounded-xl italic">
+                      <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl italic">
                         "{n.metadata.reaction_text}"
                       </div>
                     )}

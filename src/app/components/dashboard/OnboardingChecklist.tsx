@@ -2,28 +2,26 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, X, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "../auth/AuthContext";
+import { STORAGE_KEYS } from "../../utils/helpers";
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface CompletionState {
-  domain: boolean;
   room: boolean;
   update: boolean;
   call: boolean;
   alreadyCompleted?: boolean;
 }
 
-const EMPTY: CompletionState = { domain: false, room: false, update: false, call: false };
+const EMPTY: CompletionState = { room: false, update: false, call: false };
 
 /* ─── Step definitions ───────────────────────────────────── */
 const BUILDER_STEPS = [
-  { id: 'domain', emoji: '🎯', title: 'Set your domain', description: 'What space are you building in? Product, Design, Engineering...' },
   { id: 'room', emoji: '🚪', title: 'Open your first room', description: 'Give your build a name and open it for observers to follow.' },
   { id: 'update', emoji: '📝', title: 'Post your first update', description: "What's happening right now? Share the messy truth." },
   { id: 'call', emoji: '📅', title: 'Schedule intro call', description: '20 minutes with the team to frame your build room.' },
 ];
 
 const OBSERVER_STEPS = [
-  { id: 'domain', emoji: '🎯', title: 'Set your interests', description: 'What domains do you want to follow — Product, Design...' },
   { id: 'room', emoji: '🚪', title: 'Follow your first room', description: 'Find a builder whose work you want to watch unfold.' },
   { id: 'update', emoji: '📡', title: 'Tune your feed', description: 'Tell us what kinds of updates matter most to you.' },
   { id: 'call', emoji: '📅', title: 'Schedule intro call', description: '20 minutes to get the most out of Patchwork as an observer.' },
@@ -33,50 +31,48 @@ const OBSERVER_STEPS = [
 async function loadCompletion(userId: string, role: string): Promise<CompletionState> {
   const state = { ...EMPTY };
   try {
-    // Check domain / interests set
-    const { data: userRow } = await supabase
-      .from('users')
-      .select('domain, interests, onboarding_call_scheduled, signup_completed_at, observer_room_step_done')
-      .eq('id', userId)
-      .single();
+    const { data: userRow } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
 
-    if (role === 'builder') {
-      state.domain = !!userRow?.domain;
-    } else {
-      state.domain = !!(userRow?.interests?.length);
-    }
     state.call = !!userRow?.onboarding_call_scheduled;
     state.alreadyCompleted = !!userRow?.signup_completed_at;
 
     // Check room step — for builders: has created a room; for observers: persisted flag OR has followed a room
+    let hasCreatedRoom = false;
     if (role === 'builder') {
-      const { data: rooms } = await supabase
-        .from('rooms')
-        .select('id')
-        .eq('builder_id', userId)
-        .limit(1);
-      state.room = !!(rooms && rooms.length > 0);
+      const { data: rooms } = await supabase.from('rooms').select('*').eq('builder_id', userId);
+      hasCreatedRoom = !!(rooms && rooms.length > 0);
+      state.room = hasCreatedRoom;
     } else {
       // Observer: check the persisted flag first — DB column OR localStorage fallback
-      const localFlag = localStorage.getItem(`observer_room_step_${userId}`) === 'true';
+      const localFlag = localStorage.getItem(STORAGE_KEYS.observerRoomStep(userId)) === 'true';
       state.room = !!userRow?.observer_room_step_done || localFlag;
     }
 
     // Check first update posted (builder) or feed_focus set (observer)
-    if (role === 'builder' && state.room && rooms?.[0]) {
+    if (role === 'builder' && hasCreatedRoom) {
       const { data: updates } = await supabase
-        .from('room_updates')
+        .from('updates')
         .select('id')
         .eq('author_id', userId)
         .limit(1);
       state.update = !!(updates && updates.length > 0);
     } else if (role === 'observer') {
-      const { data: feedRow } = await supabase
-        .from('users')
-        .select('feed_focus')
-        .eq('id', userId)
-        .single();
-      state.update = !!feedRow?.feed_focus;
+      state.update = !!userRow?.feed_focus;
+    }
+
+    // If all 4 steps are done but signup_completed_at was never written
+    // (e.g. user completed steps outside the modal, or the write previously failed),
+    // persist it now so dismissal is DB-backed and survives across devices/browsers.
+    const allStepsDone = state.room && state.update && state.call;
+    if (allStepsDone && !state.alreadyCompleted) {
+      try {
+        await supabase.from('users')
+          .update({ signup_completed_at: new Date().toISOString() })
+          .eq('id', userId);
+      } catch (dbErr) {
+        console.error('[Checklist] Error updating signup_completed_at:', dbErr);
+      }
+      state.alreadyCompleted = true;
     }
   } catch (e) {
     console.error('[Checklist] Error loading completion:', e);
@@ -101,27 +97,17 @@ const DOMAINS = ['product', 'design', 'engineering', 'growth', 'writing', 'resea
 function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, onClose }: StepModalProps) {
   const [saving, setSaving] = useState(false);
   const [text, setText] = useState('');
-  const [selectedDomain, setSelectedDomain] = useState('product');
   const [error, setError] = useState('');
+  const [selectedDomain, setSelectedDomain] = useState(DOMAINS[0]);
 
   async function handleSave() {
     setSaving(true);
     setError('');
     try {
-      if (stepId === 'domain') {
-        if (role === 'builder') {
-          const { error: e } = await supabase.from('users').update({ domain: selectedDomain }).eq('id', userId);
-          if (e) throw e;
-        } else {
-          const interests = text.split(',').map(s => s.trim()).filter(Boolean);
-          if (!interests.length) { setError('Enter at least one interest'); setSaving(false); return; }
-          const { error: e } = await supabase.from('users').update({ interests }).eq('id', userId);
-          if (e) throw e;
-        }
-      } else if (stepId === 'room' && role === 'builder') {
+      if (stepId === 'room' && role === 'builder') {
         if (!text.trim()) { setError('Room name is required'); setSaving(false); return; }
         const { error: e } = await supabase.from('rooms').insert({
-          id: window.crypto.randomUUID(),
+          id: window.crypto?.randomUUID?.() || `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           builder_id: userId,
           builder_name: userName || 'Builder',
           title: text.trim(),
@@ -134,14 +120,18 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         try {
           await supabase.from('users').update({ observer_room_step_done: true }).eq('id', userId);
         } catch (_) { /* column may not exist yet, localStorage fallback handles it */ }
-        localStorage.setItem(`observer_room_step_${userId}`, 'true');
+        localStorage.setItem(STORAGE_KEYS.observerRoomStep(userId), 'true');
       } else if (stepId === 'update' && role === 'builder') {
         const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', userId).limit(1);
         if (rooms && rooms.length > 0) {
-          const { error: e } = await supabase.from('room_updates').insert({
+          const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const { error: e } = await supabase.from('updates').insert({
+            id: updateId,
             room_id: rooms[0].id,
             author_id: userId,
+            author_name: userName || 'Builder',
             content: text.trim() || 'Just got started.',
+            created_at: new Date().toISOString(),
           });
           if (e) throw e;
         }
@@ -151,7 +141,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
       } else if (stepId === 'call') {
         const { error: e } = await supabase.from('users').update({ onboarding_call_scheduled: true }).eq('id', userId);
         if (e) throw e;
-        window.open('https://cal.com/patchwork/intro', '_blank');
+        window.open('https://cal.com/patchwork-qzq15c/15min', '_blank');
       }
       onComplete(stepId);
     } catch (err: any) {
@@ -174,17 +164,17 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40, scale: 0.96 }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="w-full max-w-md bg-[#0D0B14] border border-white/[0.1] rounded-[24px] p-8 relative"
+        className="w-full max-w-md bg-white border border-slate-200 rounded-[24px] p-8 relative shadow-xl"
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-white transition-all"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="text-4xl mb-4">{emoji}</div>
-        <h3 className="text-[22px] font-extrabold text-white mb-2">{title}</h3>
+        <h3 className="text-[22px] font-extrabold text-slate-900 mb-2">{title}</h3>
 
         {error && (
           <div className="mb-4 text-[13px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
@@ -192,28 +182,8 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
           </div>
         )}
 
-        {/* Domain selector for domain/interests step */}
-        {stepId === 'domain' && role === 'builder' && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {DOMAINS.map(d => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setSelectedDomain(d)}
-                className={`px-4 py-2 rounded-full text-[13px] font-bold capitalize transition-all border ${selectedDomain === d
-                    ? 'bg-[#6C5CE7] border-[#6C5CE7] text-white'
-                    : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-                  }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-        )}
-
         {/* Text inputs */}
-        {((stepId === 'domain' && role === 'observer') ||
-          (stepId === 'room' && role === 'builder') ||
+        {((stepId === 'room' && role === 'builder') ||
           (stepId === 'update' && role === 'builder') ||
           (stepId === 'update' && role === 'observer')) && (
             <textarea
@@ -221,17 +191,31 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder={
-                stepId === 'domain' ? 'e.g. Product, Design, Growth' :
                   stepId === 'room' ? 'e.g. MoniFlow — Fintech redesign' :
                     stepId === 'update' && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
                       'e.g. I want updates about early-stage product decisions and launch pivots.'
               }
-              className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
+              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
             />
           )}
 
+        {stepId === 'room' && role === 'builder' && (
+          <div className="mb-6">
+            <label className="block text-[12px] font-medium text-slate-500 mb-2">Primary Domain</label>
+            <select
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+            >
+              {DOMAINS.map(d => (
+                <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {stepId === 'room' && role === 'observer' && (
-          <p className="text-[13px] text-slate-400 mb-6 bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <p className="text-[13px] text-slate-600 mb-6 bg-slate-50 border border-slate-200 rounded-xl p-4">
             Explore the Global Timeline tab to find rooms you want to follow. Click "Follow" on any room.
           </p>
         )}
@@ -279,7 +263,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
   // Sync dismissed state from localStorage on mount/userId change
   useEffect(() => {
     try {
-      const isDismissed = localStorage.getItem(`checklist_dismissed_${userId}`) === "true";
+      const isDismissed = localStorage.getItem(STORAGE_KEYS.checklistDismissed(userId)) === "true";
       setDismissed(isDismissed);
     } catch (e) {
       console.error('[Checklist] Error reading from localStorage:', e);
@@ -289,7 +273,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
   function handleDismiss() {
     setDismissed(true);
     try {
-      localStorage.setItem(`checklist_dismissed_${userId}`, "true");
+      localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), "true");
     } catch (e) {
       console.error('[Checklist] Error saving to localStorage:', e);
     }
@@ -301,8 +285,12 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
     loadCompletion(userId, role).then(state => {
       if (!cancelled) {
         setCompletion(state);
-        if (state.alreadyCompleted) {
+        // Dismiss if already marked complete in DB, OR if all 4 steps are now done
+        // (loadCompletion will have written signup_completed_at in that case)
+        const allStepsDone = state.room && state.update && state.call;
+        if (state.alreadyCompleted || allStepsDone) {
           setDismissed(true);
+          try { localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), 'true'); } catch (_) { }
         }
         setLoading(false);
       }
@@ -319,15 +307,18 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       const fresh = await loadCompletion(userId, role);
       setCompletion(fresh);
       // If all done, mark signup_completed_at
-      if (fresh.domain && fresh.room && fresh.update && fresh.call) {
-        supabase.from('users').update({
+      if (fresh.room && fresh.update && fresh.call) {
+        await supabase.from('users').update({
           signup_completed_at: new Date().toISOString()
-        }).eq('id', userId).catch(() => { });
+        }).eq('id', userId);
+        
+        // Also update AuthContext profile by dispatching an event or relying on loadProfile next time
+        localStorage.setItem(STORAGE_KEYS.checklistDismissed(userId), 'true');
       }
     }, 800);
   }
 
-  const completedCount = Object.values(completion).filter(Boolean).length;
+  const completedCount = (['room', 'update', 'call'] as const).filter(k => completion[k]).length;
   const allDone = completedCount === steps.length;
 
   useEffect(() => {
@@ -385,13 +376,13 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6 bg-[#0D0B14] border border-white/[0.08] rounded-[20px] p-5 relative overflow-hidden"
+        className="mb-6 bg-white border border-slate-200 rounded-[20px] p-5 relative overflow-hidden shadow-sm"
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent" />
 
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-[15px] font-extrabold text-white">
+            <h3 className="text-[15px] font-extrabold text-slate-900">
               Complete your setup{' '}
               <span className="text-[#8B7CF8]">({completedCount}/{steps.length})</span>
             </h3>
@@ -402,7 +393,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 bg-white/[0.06] rounded-full mb-5 overflow-hidden">
+        <div className="h-1.5 bg-slate-100 rounded-full mb-5 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(completedCount / steps.length) * 100}%` }}
@@ -423,12 +414,12 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                 transition={{ delay: idx * 0.06 }}
                 onClick={() => !done && setActiveStep(step)}
                 disabled={done}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${done ? 'opacity-50 cursor-default' : 'hover:bg-white/[0.04] cursor-pointer'
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${done ? 'opacity-50 cursor-default' : 'hover:bg-slate-50 cursor-pointer'
                   }`}
               >
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all ${done
                     ? 'bg-emerald-500/20 border-emerald-500/30'
-                    : 'bg-white/[0.04] border-white/[0.1] group-hover:border-[#8B7CF8]/40'
+                    : 'bg-white border-slate-200 group-hover:border-[#8B7CF8]/40'
                   }`}>
                   {done
                     ? <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -437,7 +428,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-bold truncate ${done ? 'line-through text-slate-500' : 'text-white'}`}>
+                  <p className={`text-[13px] font-bold truncate ${done ? 'line-through text-slate-500' : 'text-slate-900'}`}>
                     {step.emoji} {step.title}
                   </p>
                   {!done && (

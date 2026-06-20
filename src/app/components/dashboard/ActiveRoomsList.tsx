@@ -1,5 +1,12 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
+import { FolderGit2, Figma, Github } from "lucide-react";
+
+const NotionIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M4.459 4.208c-.746.06-1.126.31-1.126 1.054v13.475c0 .744.38 1.054 1.126 1.115v.148h6.251v-.148c-.744-.06-1.126-.371-1.126-1.115V8.167l7.854 10.603h1.839V4.208h-.149c-.06.744-.371 1.054-1.115 1.115v13.595L9.932 8.016v10.72c0 .744.381 1.054 1.126 1.115v.148H4.459v-.148z"/>
+  </svg>
+);
 
 interface Room {
   id: string;
@@ -17,9 +24,11 @@ interface Room {
 }
 
 interface ActiveRoomsListProps {
-  rooms: Room[];
-  loading: boolean;
+  rooms: any[];
+  loading?: boolean;
   setTab: (tab: 'overview' | 'feed' | 'mine') => void;
+  selectedRoomId?: string | null;
+  setSelectedRoomId?: (id: string) => void;
 }
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
@@ -35,16 +44,17 @@ function tagStyle(tag: string) {
   return TAG_PALETTE[tag.toLowerCase()] || { bg: 'bg-white/5', color: 'text-slate-400' };
 }
 
-export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps) {
+export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSelectedRoomId }: ActiveRoomsListProps) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4 px-1">
-        <h2 className="font-extrabold text-[20px] sm:text-[24px] text-white m-0 font-display tracking-tight">
+        <h2 className="font-extrabold text-[20px] sm:text-[24px] text-slate-900 m-0 font-display tracking-tight">
           Active rooms
         </h2>
         <button 
           onClick={() => setTab('feed')} 
-          className="flex items-center justify-center min-h-[44px] px-3 bg-transparent border-none text-[13px] sm:text-[14px] text-[#8B7CF8] hover:text-[#6C5CE7] active:scale-95 font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-full hover:bg-white/[0.03]"
+          className="flex items-center justify-center min-h-[44px] px-3 bg-transparent border-none text-[13px] sm:text-[14px] text-[#8B7CF8] hover:text-[#6C5CE7] active:scale-95 font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-full hover:bg-slate-50"
         >
           View all
         </button>
@@ -53,50 +63,78 @@ export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps
       {loading ? (
         <div className="flex flex-col gap-3 sm:gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-[#0D0B14] border border-white/[0.08] rounded-[20px] py-4 px-5 flex flex-col gap-3">
+            <div key={i} className="bg-white border border-slate-200 rounded-[20px] py-4 px-5 flex flex-col gap-3">
               <div className="flex justify-between items-center w-full">
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col gap-2">
-                    <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
-                    <div className="h-3 w-48 bg-white/5 rounded animate-pulse" />
+                    <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-48 bg-slate-100 rounded animate-pulse" />
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <div className="h-5 w-16 bg-white/5 rounded-full animate-pulse" />
+                  <div className="h-5 w-16 bg-slate-100 rounded-full animate-pulse" />
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="bg-white/[0.02] p-6 rounded-[20px] border border-white/[0.06] text-slate-400 text-[13px] text-center">
-          No active rooms. <Link to="/dashboard/create" className="text-[#8B7CF8] hover:underline font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8B7CF8]">Create one</Link> to start building.
+        <div className="bg-white border border-slate-200 rounded-[24px] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full blur-[30px] pointer-events-none" />
+          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 text-[#8B7CF8]">
+            <FolderGit2 className="w-6 h-6 animate-pulse" />
+          </div>
+          <h3 className="text-slate-900 text-[15px] font-bold mb-1">No Active Build Rooms</h3>
+          <p className="text-slate-500 text-[12px] max-w-[280px] leading-relaxed mb-5">
+            Start a feature rollout room, link your PRD, and document your product decisions.
+          </p>
+          <Link
+            to="/dashboard/create"
+            className="inline-flex items-center justify-center px-5 py-2 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95 shadow-md"
+          >
+            Start a feature rollout room
+          </Link>
         </div>
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
           {rooms.slice(0, 3).map((room, idx) => {
             const tag = (room.tags && room.tags[0]) ? room.tags[0] : 'product';
             const tStyle = tagStyle(tag);
-            const isPaused = idx === 2; // Mocking a paused state for visual matching
+            const isPaused = room.status === 'paused';
             
             return (
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
                 key={room.id}
               >
-                <Link
-                  to={`/dashboard/room/${room.id}`}
-                  className="block bg-[#0A0910]/80 sm:bg-[#0D0B14] border border-white/[0.08] rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 hover:bg-white/[0.03] hover:border-white/[0.12] active:scale-95 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm relative overflow-hidden"
+                <div
+                  onClick={() => {
+                    if (setSelectedRoomId && selectedRoomId !== room.id) {
+                      setSelectedRoomId(room.id);
+                    } else {
+                      navigate(`/dashboard/room/${room.id}`);
+                    }
+                  }}
+                  onMouseEnter={() => {
+                    if (window.matchMedia('(hover: hover)').matches && setSelectedRoomId) {
+                      setSelectedRoomId(room.id);
+                    }
+                  }}
+                  className={`block border rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 active:scale-95 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm relative overflow-hidden cursor-pointer ${
+                    selectedRoomId === room.id 
+                      ? 'bg-slate-50 border-[#8B7CF8]/50 shadow-sm' 
+                      : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                  }`}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-white/[0.02] transition-colors" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-slate-100 transition-colors" />
                   
                   <div className="flex flex-col gap-3 w-full relative">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                        <div className="text-[15px] sm:text-[16px] font-extrabold text-white group-hover:text-[#8B7CF8] transition-colors font-display truncate">
+                        <div className={`text-[15px] sm:text-[16px] font-extrabold transition-colors font-display truncate group-hover:underline ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-600 group-hover:text-[#8B7CF8]'}`}>
                           {room.title}
                         </div>
                       </div>
@@ -105,21 +143,29 @@ export function ActiveRoomsList({ rooms, loading, setTab }: ActiveRoomsListProps
                       </span>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
-                      <span className="capitalize">{isPaused ? 'Paused' : 'Live'}</span>
-                      <span className="text-slate-600 opacity-50">·</span>
-                      <span className="text-white/80 font-bold">Day {room.updateCount + 4}</span>
-                      <span className="text-slate-600 opacity-50">·</span>
-                      <span>{room.updateCount} updates</span>
-                      <span className="text-slate-600 opacity-50 hidden sm:inline">·</span>
-                      <span className="hidden sm:inline">{room.updateCount * 3 + 11} reactions</span>
-                    </div>
+                    <div className="flex justify-between items-end mt-1">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[13px] text-slate-400 font-mono font-medium">
+                          <span className="capitalize">
+                            {room.status === 'draft' ? <span className="text-amber-400">Draft</span> : isPaused ? 'Paused' : 'Live'}
+                          </span>
+                          <span className="text-slate-400 opacity-50">·</span>
+                          <span className="text-slate-700 font-bold">
+                            Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                          </span>
+                          <span className="text-slate-600 opacity-50">·</span>
+                          <span>{room.updateCount || 0} updates</span>
+                        </div>
+                      </div>
 
-                    <div className="sm:hidden mt-1 inline-flex w-fit items-center gap-1.5 text-[11px] text-slate-500 font-bold uppercase tracking-widest bg-white/[0.03] px-2 py-1 rounded-md">
-                      {room.updateCount * 3 + 11} reactions
+                      <div className="flex items-center gap-2 sm:gap-3 text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-inner">
+                        <Figma className="w-3.5 h-3.5 hover:text-purple-400 transition-colors" />
+                        <NotionIcon className="w-3.5 h-3.5 hover:text-slate-900 transition-colors" />
+                        <Github className="w-3.5 h-3.5 hover:text-slate-900 transition-colors" />
+                      </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               </motion.div>
             );
           })}

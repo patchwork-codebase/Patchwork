@@ -1,4 +1,6 @@
 import { getAvatarUrl } from "../../utils/helpers";
+import { Sparkles, Users } from "lucide-react";
+import { useNavigate } from "react-router";
 
 interface RecentEvent {
   name: string;
@@ -13,6 +15,7 @@ interface RoomObserver {
   visits: string;
   bg: string;
   color: string;
+  userId?: string;
 }
 
 interface RecentActivityListProps {
@@ -26,10 +29,12 @@ export function RecentActivityList({
   roomObservers,
   selectedRoomTitle,
 }: RecentActivityListProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-5">
       {/* Recent activity card */}
-      <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-5 relative overflow-hidden lg:self-start w-full">
+      <div className="bg-white border border-slate-200 shadow-sm rounded-[16px] p-5 relative overflow-hidden lg:self-start w-full">
         <h3 className="m-0 mb-4 text-[12px] font-bold uppercase tracking-[0.1em] text-slate-500">
           Recent activity
         </h3>
@@ -38,13 +43,13 @@ export function RecentActivityList({
             recentEvents.map((event, idx) => (
               <div 
                 key={idx} 
-                className="flex gap-3 items-start min-w-0 p-3 hover:bg-white/[0.03] rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="flex gap-3 items-start min-w-0 p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 tabIndex={0}
               >
                 <span className={`w-2 h-2 rounded-full ${event.color} mt-1.5 shrink-0`} />
                 <div className="flex-1 min-w-0">
-                  <p className="m-0 text-[13px] text-slate-300 leading-snug">
-                    <strong className="font-semibold text-white">{event.name}</strong> {event.text}
+                  <p className="m-0 text-[13px] text-slate-600 leading-snug">
+                    <strong className="font-semibold text-slate-900">{event.name}</strong> {event.text}
                   </p>
                   <p className="m-0 mt-1 text-[11px] text-slate-500 font-mono">
                     {event.time}
@@ -53,13 +58,19 @@ export function RecentActivityList({
               </div>
             ))
           ) : (
-            <p className="text-[12px] text-slate-500 p-3 m-0">No recent activity</p>
+            <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+              <Sparkles className="w-5 h-5 text-slate-600 mb-2 animate-pulse" />
+              <p className="text-[12px] font-semibold text-slate-400 m-0">All quiet for now</p>
+              <p className="text-[10px] text-slate-500 mt-1 max-w-[200px] leading-relaxed">
+                Activity from observers and reactions to your builds will stream in here.
+              </p>
+            </div>
           )}
         </div>
       </div>
 
       {/* Observers card */}
-      <div className="bg-[#0D0B14] border border-white/[0.08] rounded-[16px] p-5 relative overflow-hidden w-full">
+      <div className="bg-white border border-slate-200 shadow-sm rounded-[16px] p-5 relative overflow-hidden w-full">
         <h3 className="m-0 mb-4 text-[12px] font-bold uppercase tracking-[0.1em] text-slate-500 relative">
           Observers on {selectedRoomTitle}
         </h3>
@@ -69,14 +80,22 @@ export function RecentActivityList({
             roomObservers.map((obs, idx) => (
               <div 
                 key={idx} 
-                className="flex items-center justify-between gap-3 p-2 hover:bg-white/[0.03] rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="flex items-center justify-between gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
                 tabIndex={0}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center font-mono overflow-hidden shadow-sm`}>
+                  <div 
+                    onClick={(e) => {
+                      if (obs.userId) {
+                        e.stopPropagation();
+                        navigate(`/dashboard/profile/${obs.userId}`);
+                      }
+                    }}
+                    className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-mono overflow-hidden shadow-sm cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all`}
+                  >
                     <img src={getAvatarUrl(obs.name)} alt="Avatar" className="w-full h-full object-cover scale-110" />
                   </div>
-                  <span className="text-[13px] font-bold text-slate-200">
+                  <span className="text-[13px] font-bold text-slate-900">
                     {obs.name}
                   </span>
                 </div>
@@ -87,7 +106,13 @@ export function RecentActivityList({
               </div>
             ))
           ) : (
-            <p className="text-[12px] text-slate-500 p-2 m-0">No active observers</p>
+            <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+              <Users className="w-5 h-5 text-slate-600 mb-2 animate-pulse" />
+              <p className="text-[12px] font-semibold text-slate-400 m-0">No Observers Yet</p>
+              <p className="text-[10px] text-slate-500 mt-1 max-w-[200px] leading-relaxed">
+                When observers follow this build room, they'll appear here.
+              </p>
+            </div>
           )}
         </div>
       </div>

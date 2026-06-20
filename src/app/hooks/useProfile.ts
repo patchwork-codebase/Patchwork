@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase, apiCall } from '../components/auth/AuthContext';
+import { supabase } from '../components/auth/AuthContext';
+import { normalizeRow } from '../utils/helpers';
 
 export function useProfile(userId?: string) {
   const queryClient = useQueryClient();
@@ -8,8 +9,33 @@ export function useProfile(userId?: string) {
   const query = useQuery({
     queryKey: ['profile', userId],
     queryFn: async () => {
-      if (!userId) return null;
-      return apiCall(`/users/${userId}`);
+      const { data: userRow, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+      if (error) throw error;
+      if (!userRow) return null;
+
+      const profileData = normalizeRow(userRow);
+
+      const [{ count: followerCount }, { count: followingCount }] = await Promise.all([
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
+        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId)
+      ]);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      let isFollowing = false;
+      if (session?.user) {
+        const { data: followData } = await supabase.from('follows')
+          .select('follower_id')
+          .eq('follower_id', session.user.id)
+          .eq('following_id', userId)
+          .maybeSingle();
+        isFollowing = !!followData;
+      }
+
+      profileData.followerCount = followerCount || 0;
+      profileData.followingCount = followingCount || 0;
+      profileData.isFollowing = isFollowing;
+
+      return profileData;
     },
     enabled: !!userId,
   });

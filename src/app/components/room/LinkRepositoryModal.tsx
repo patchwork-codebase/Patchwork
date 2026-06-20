@@ -19,6 +19,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
   const [repos, setRepos] = useState<any[]>([]);
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [linking, setLinking] = useState<string | null>(null);
+  const [unlinking, setUnlinking] = useState<string | null>(null);
 
   const roomLinkedRepo = linkedRepos?.find(r => r.linked_room_id === roomId);
 
@@ -78,6 +79,30 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
     }
   };
 
+  const handleUnlinkRepo = async (repo: any) => {
+    setUnlinking(repo.id);
+    try {
+      const { error, data } = await supabase
+        .from('repositories')
+        .delete()
+        .eq('github_repo_id', repo.id)
+        .eq('linked_room_id', roomId)
+        .select();
+
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("Repository was not linked to this room.");
+      }
+      
+      toast.success(`Repository ${repo.name} unlinked successfully!`);
+      refetchRepos();
+    } catch (err: any) {
+      toast.error(`Failed to unlink repository: ${err.message}`);
+    } finally {
+      setUnlinking(null);
+    }
+  };
+
   if (accountLoading) return null;
 
   return (
@@ -87,15 +112,15 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
            <button
              title={roomLinkedRepo.github_repo_name.split('/')[1]}
              aria-label={`Repository: ${roomLinkedRepo.github_repo_name}`}
-             className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
-             <Github className="w-5 h-5" />
+             className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
+             <Github className="w-4 h-4" />
            </button>
         ) : (
           <button
             title="Link Repository"
             aria-label="Link Repository"
-            className="flex items-center justify-center w-11 h-11 border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] rounded-xl text-white transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
-            <LinkIcon className="w-5 h-5" />
+            className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
+            <LinkIcon className="w-4 h-4" />
           </button>
         )}
       </DialogTrigger>
@@ -130,7 +155,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
               <div className="text-center py-8 text-slate-400 text-sm">No repositories found.</div>
             ) : (
               repos.map(repo => {
-                const isLinked = linkedRepos?.some(r => r.github_repo_id === repo.id);
+                const isLinked = linkedRepos?.some(r => String(r.github_repo_id) === String(repo.id) && r.linked_room_id === roomId);
                 return (
                   <div key={repo.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:border-white/[0.1] transition-colors">
                     <div>
@@ -138,9 +163,22 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
                       <p className="text-[12px] text-slate-500">{repo.full_name}</p>
                     </div>
                     {isLinked ? (
-                      <span className="flex items-center gap-1 text-[12px] font-bold text-emerald-400">
-                        <Check className="w-3 h-3" /> Linked
-                      </span>
+                      <button
+                        onClick={() => handleUnlinkRepo(repo)}
+                        disabled={unlinking === repo.id}
+                        className="group flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-rose-500/10 hover:text-rose-400 rounded-lg text-[12px] font-bold transition-colors disabled:opacity-50 min-w-[80px]"
+                      >
+                        {unlinking === repo.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <>
+                            <Check className="w-3 h-3 group-hover:hidden" />
+                            <X className="w-3 h-3 hidden group-hover:block" />
+                            <span className="group-hover:hidden">Linked</span>
+                            <span className="hidden group-hover:block">Unlink</span>
+                          </>
+                        )}
+                      </button>
                     ) : (
                       <button
                         onClick={() => handleLinkRepo(repo)}
