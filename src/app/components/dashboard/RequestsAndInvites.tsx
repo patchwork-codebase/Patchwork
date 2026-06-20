@@ -134,19 +134,19 @@ export function RequestsAndInvites() {
       
       <div className="divide-y divide-slate-100">
         {joinRequests.map(req => (
-          <div key={req.id} className="p-5 flex items-center justify-between gap-4 transition-colors hover:bg-slate-50/50">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+          <div key={req.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-slate-50/50">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 mt-1 sm:mt-0">
                 <UserPlus className="w-5 h-5 text-amber-500" />
               </div>
-              <div>
-                <p className="text-[14px] text-slate-900">
+              <div className="min-w-0">
+                <p className="text-[13px] sm:text-[14px] text-slate-900 leading-snug">
                   <span className="font-bold">{req.users?.email || 'Someone'}</span> wants to join <Link to={`/dashboard/room/${req.room_id}`} className="font-bold hover:underline">{req.rooms?.title}</Link>
                 </p>
                 <p className="text-[12px] text-slate-500 font-mono mt-1">{timeAgo(req.created_at)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0 sm:self-auto self-end">
               <button
                 onClick={() => handleReviewRequest(req.id, 'declined')}
                 disabled={actionLoading === req.id}
@@ -168,14 +168,14 @@ export function RequestsAndInvites() {
         ))}
 
         {invitations.map(inv => (
-          <div key={inv.id} className="p-5 flex items-center justify-between gap-4 transition-colors hover:bg-slate-50/50">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-primary-400/10 flex items-center justify-center shrink-0">
+          <div key={inv.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-slate-50/50">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-primary-400/10 flex items-center justify-center shrink-0 mt-1 sm:mt-0">
                 <span className="text-[18px]">💌</span>
               </div>
-              <div>
-                <p className="text-[14px] text-slate-900">
-                  <span className="font-bold">{inv.rooms?.builder_name}</span> invited you to collaborate on <span className="font-bold">{inv.rooms?.title}</span>
+              <div className="min-w-0">
+                <p className="text-[13px] sm:text-[14px] text-slate-900 leading-snug">
+                  <span className="font-bold truncate inline-block max-w-full align-bottom">{inv.rooms?.builder_name}</span> invited you to collaborate on <span className="font-bold">{inv.rooms?.title}</span>
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Role: {inv.role}</span>
@@ -183,7 +183,7 @@ export function RequestsAndInvites() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0 sm:self-auto self-end">
               <button
                 onClick={() => handleDeclineInvite(inv.id)}
                 disabled={actionLoading === inv.id}
