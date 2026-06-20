@@ -100,8 +100,8 @@ export default function ObserverOnboarding() {
       }
 
       navigate('/dashboard/observer');
-    } catch (err: any) {
-      setError(err.message || 'Unable to save observer preferences.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Unable to save observer preferences.');
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export default function ObserverOnboarding() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#6C5CE7]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#C3B5FF]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#C3B5FF]">
               Observer onboarding
             </span>
             <div className="space-y-4">
@@ -139,7 +139,7 @@ export default function ObserverOnboarding() {
                     type="button"
                     onClick={() => toggleTopic(topic)}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition ${selectedTopics.includes(topic)
-                      ? 'bg-[#6C5CE7] text-white'
+                      ? 'bg-primary-500 text-white'
                       : 'bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'
                     }`}
                   >
@@ -167,7 +167,7 @@ export default function ObserverOnboarding() {
                         key={room.id}
                         type="button"
                         onClick={() => toggleFollow(room.id)}
-                        className={`w-full rounded-3xl border px-5 py-4 text-left transition ${isFollowed ? 'border-[#8B7CF8] bg-[#8B7CF8]/10 text-white' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:bg-white/[0.05]'}`}
+                        className={`w-full rounded-3xl border px-5 py-4 text-left transition ${isFollowed ? 'border-primary-400 bg-primary-400/10 text-white' : 'border-white/[0.08] bg-white/[0.02] text-slate-300 hover:bg-white/[0.05]'}`}
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div>
@@ -175,7 +175,7 @@ export default function ObserverOnboarding() {
                             <h2 className="mt-2 text-lg font-semibold text-white">{room.title}</h2>
                             <div className="flex items-center gap-2 text-sm text-slate-400 mt-1"><ObserverAvatarStack room={room} /> · {room.updateCount} updates</div>
                           </div>
-                          <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-[#0A0910]' : 'bg-[#6C5CE7] text-white'}`}>
+                          <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-[#0A0910]' : 'bg-primary-500 text-white'}`}>
                             {isFollowed ? 'Following' : 'Follow'}
                           </div>
                         </div>
@@ -199,7 +199,7 @@ export default function ObserverOnboarding() {
                 type="button"
                 onClick={handleStartObserving}
                 disabled={loading || selectedTopics.length === 0}
-                className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition ${selectedTopics.length > 0 ? 'bg-[#6C5CE7] text-white hover:bg-[#5b4ed6]' : 'bg-white/[0.06] text-slate-400 cursor-not-allowed'}`}
+                className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition ${selectedTopics.length > 0 ? 'bg-primary-500 text-white hover:bg-[#5b4ed6]' : 'bg-white/[0.06] text-slate-400 cursor-not-allowed'}`}
               >
                 {loading ? 'Saving preferences...' : 'Start observing'}
               </button>

@@ -48,7 +48,7 @@ function Input({ value, onChange, placeholder, type = "text" }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all"
+      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all"
     />
   );
 }
@@ -62,7 +62,7 @@ function Textarea({ value, onChange, placeholder, rows = 4 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all resize-none"
+      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all resize-none"
     />
   );
 }
@@ -152,8 +152,8 @@ export default function VerifiedExpertApplication() {
       await save({ payload: buildPayload(), submit: true });
       toast.success("Application submitted! We'll review it within 3–5 business days.");
       navigate(`/dashboard/profile/${user?.id}`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to submit application. Please try again.");
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || "Failed to submit application. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +168,7 @@ export default function VerifiedExpertApplication() {
         </div>
         <h1 className="text-[28px] font-extrabold text-slate-900 mb-3">You're already verified!</h1>
         <p className="text-slate-600 mb-8">Your Verified Expert badge is active on your profile.</p>
-        <Link to={`/dashboard/profile/${user?.id}`} className="inline-flex items-center gap-2 px-6 py-3 bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white font-bold rounded-full transition-all">
+        <Link to={`/dashboard/profile/${user?.id}`} className="inline-flex items-center gap-2 px-6 py-3 bg-primary-400 hover:bg-[#7a6aeb] text-white font-bold rounded-full transition-all">
           View Profile
         </Link>
       </div>
@@ -229,8 +229,8 @@ export default function VerifiedExpertApplication() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5 text-[#8B7CF8]" />
+          <div className="w-10 h-10 rounded-xl bg-primary-400/10 border border-primary-400/20 flex items-center justify-center">
+            <ShieldCheck className="w-5 h-5 text-primary-400" />
           </div>
           <div>
             <h1 className="text-[22px] font-extrabold text-slate-900 tracking-tight">Verified Expert Program</h1>
@@ -245,8 +245,8 @@ export default function VerifiedExpertApplication() {
           <div
             key={i}
             className={`h-1 rounded-full transition-all duration-300 ${
-              i < step ? "bg-[#8B7CF8] flex-1" :
-              i === step ? "bg-[#8B7CF8] w-8" :
+              i < step ? "bg-primary-400 flex-1" :
+              i === step ? "bg-primary-400 w-8" :
               "bg-slate-200 flex-1"
             }`}
           />
@@ -282,7 +282,7 @@ export default function VerifiedExpertApplication() {
                         onClick={() => toggleDomain(d)}
                         className={`px-3.5 py-2 rounded-full text-[13px] font-bold transition-all border ${
                           sel
-                            ? "bg-[#8B7CF8]/10 border-[#8B7CF8]/50 text-[#8B7CF8] shadow-sm"
+                            ? "bg-primary-400/10 border-primary-400/50 text-primary-400 shadow-sm"
                             : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
                         } ${!sel && domains.length >= 3 ? "opacity-40 cursor-not-allowed" : ""}`}
                       >
@@ -396,7 +396,7 @@ export default function VerifiedExpertApplication() {
                     <select
                       value={timezone}
                       onChange={e => setTimezone(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 outline-none appearance-none transition-all focus:border-[#8B7CF8]/50 cursor-pointer"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 outline-none appearance-none transition-all focus:border-primary-400/50 cursor-pointer"
                     >
                       <option value="">Select your timezone</option>
                       {TIMEZONES.map(tz => (
@@ -417,7 +417,7 @@ export default function VerifiedExpertApplication() {
                           onClick={() => toggleLanguage(lang)}
                           className={`px-3 py-1.5 rounded-full text-[12px] font-bold transition-all border ${
                             sel
-                              ? "bg-[#8B7CF8]/10 border-[#8B7CF8]/40 text-[#8B7CF8]"
+                              ? "bg-primary-400/10 border-primary-400/40 text-primary-400"
                               : "bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900"
                           }`}
                         >
@@ -432,7 +432,7 @@ export default function VerifiedExpertApplication() {
                       onChange={e => setLangInput(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addCustomLang())}
                       placeholder="Add another language..."
-                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 outline-none focus:border-[#8B7CF8]/40"
+                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 outline-none focus:border-primary-400/40"
                     />
                     <button
                       type="button"
@@ -458,8 +458,8 @@ export default function VerifiedExpertApplication() {
                 <ReviewRow label="Monthly capacity" value={monthlyCapacity ? `${monthlyCapacity} reviews/mo` : "—"} />
                 <ReviewRow label="Timezone" value={timezone || "—"} />
                 <ReviewRow label="Languages" value={languages.join(", ") || "—"} />
-                <div className="mt-4 p-4 bg-[#8B7CF8]/5 border border-[#8B7CF8]/20 rounded-xl">
-                  <p className="text-[11px] font-bold text-[#8B7CF8] uppercase tracking-widest mb-1">Why you want to join</p>
+                <div className="mt-4 p-4 bg-primary-400/5 border border-primary-400/20 rounded-xl">
+                  <p className="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Why you want to join</p>
                   <p className="text-slate-700 leading-relaxed">{reason || "—"}</p>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-4">
@@ -484,7 +484,7 @@ export default function VerifiedExpertApplication() {
             <button
               onClick={handleNext}
               disabled={!canProceed()}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#8B7CF8] hover:bg-[#7a6aeb] disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl text-[14px] transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary-400 hover:bg-[#7a6aeb] disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl text-[14px] transition-all shadow-sm"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -492,7 +492,7 @@ export default function VerifiedExpertApplication() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#8B7CF8] hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-extrabold rounded-xl text-[14px] transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary-400 hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-extrabold rounded-xl text-[14px] transition-all shadow-sm"
             >
               {submitting ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>

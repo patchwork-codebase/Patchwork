@@ -68,8 +68,8 @@ export function AddIntegrationModal({
       });
       toast.success(`${INTEGRATION_CONFIG[detectedPlatform]?.label} integration added!`);
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to add integration');
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to add integration');
     }
   }
 
@@ -117,7 +117,7 @@ export function AddIntegrationModal({
                   key={p}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[12px] font-semibold transition-all ${
                     isDetected
-                      ? 'bg-[#6C5CE7]/20 border-[#6C5CE7]/40 text-[#8B7CF8]'
+                      ? 'bg-primary-500/20 border-primary-500/40 text-primary-400'
                       : 'bg-white/[0.02] border-white/[0.06] text-slate-400'
                   }`}
                 >
@@ -148,7 +148,7 @@ export function AddIntegrationModal({
                     ? 'border-rose-500/50 focus:border-rose-500/70 focus:ring-rose-500/30'
                     : detectedPlatform
                     ? 'border-emerald-500/40 focus:border-emerald-500/60 focus:ring-emerald-500/20'
-                    : 'border-white/[0.08] focus:border-[#8B7CF8]/50 focus:ring-[#8B7CF8]/20'
+                    : 'border-white/[0.08] focus:border-primary-400/50 focus:ring-primary-400/20'
                 }`}
                 autoFocus
               />
@@ -190,7 +190,7 @@ export function AddIntegrationModal({
               onChange={e => setLabel(e.target.value)}
               maxLength={40}
               placeholder="e.g. Design System, Main Repo…"
-              className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/20 transition-all"
+              className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/20 transition-all"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ export function AddIntegrationModal({
           <button
             onClick={handleAdd}
             disabled={!detectedPlatform || addIntegration.isPending}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#6C5CE7] hover:bg-[#5B4ED6] disabled:bg-[#6C5CE7]/30 disabled:cursor-not-allowed text-white font-bold text-[13px] rounded-xl transition-all shadow-lg active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary-500 hover:bg-[#5B4ED6] disabled:bg-primary-500/30 disabled:cursor-not-allowed text-white font-bold text-[13px] rounded-xl transition-all shadow-lg active:scale-95"
           >
             {addIntegration.isPending ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Adding…</>

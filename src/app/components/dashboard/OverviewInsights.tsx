@@ -14,46 +14,23 @@ export function OverviewInsights() {
     queryKey: ['overview-reactions', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', user.id);
-      if (!rooms || rooms.length === 0) return [];
-      const roomIds = rooms.map((r: any) => r.id);
+      const { data, error } = await supabase
+        .from('reactions')
+        .select('*, rooms!inner(builder_id)')
+        .eq('rooms.builder_id', user.id);
       
-      const { data } = await supabase.from('reactions').select('*').in('room_id', roomIds);
+      if (error) {
+        console.error("Error fetching overview reactions:", error);
+        return [];
+      }
       return data || [];
     },
     enabled: !!user,
   });
 
-  useEffect(() => {
-    if (!user) return;
-    
-    // Clean up existing channel if it exists
-    const existing = supabase.getChannels().find(c => c.topic === 'realtime:overview-insights-channel');
-    if (existing) supabase.removeChannel(existing);
-
-    const channel = supabase.channel('overview-insights-channel')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'reactions' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['overview-reactions', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['top-observers', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'room_notion_docs' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['linked-docs', user.id] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
+  // Removed unscalable global realtime listener for reactions and room_notion_docs.
+  // In a large production app, global listeners overwhelm the client.
+  // To retain realtime, a per-user specific channel should be implemented on the backend.
 
   const sharpCount = reactions.filter((r: any) => r.type === 'sharp').length;
   const tellMeMoreCount = reactions.filter((r: any) => r.type === 'reply').length;
@@ -84,11 +61,16 @@ export function OverviewInsights() {
     queryKey: ['linked-docs', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data: rooms } = await supabase.from('rooms').select('id').eq('builder_id', user.id);
-      if (!rooms || rooms.length === 0) return [];
-      const roomIds = rooms.map((r: any) => r.id);
-      
-      const { data } = await supabase.from('room_notion_docs').select('*').in('room_id', roomIds).order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('room_notion_docs')
+        .select('*, rooms!inner(builder_id)')
+        .eq('rooms.builder_id', user.id)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error("Error fetching linked docs:", error);
+        return [];
+      }
       return data || [];
     },
     enabled: !!user,
@@ -105,7 +87,7 @@ export function OverviewInsights() {
       case 'growth': return { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' };
       case 'product': return { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' };
       case 'engineering': return { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' };
-      default: return { bg: 'bg-[#6C5CE7]/10', text: 'text-[#8B7CF8]', border: 'border-[#6C5CE7]/20' };
+      default: return { bg: 'bg-primary-500/10', text: 'text-primary-400', border: 'border-primary-500/20' };
     }
   }
 
@@ -114,7 +96,7 @@ export function OverviewInsights() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Card 1: Observer reactions */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-ring">
           <div className="flex flex-col gap-1.5 mb-6">
             <h3 className="font-bold text-[16px] text-slate-900 leading-tight">Observer reactions</h3>
             <span className="font-mono text-[12px] text-slate-500 leading-tight">{totalReactions} total · {updatesWithReactions} updates</span>
@@ -148,12 +130,12 @@ export function OverviewInsights() {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-[13px] font-semibold text-slate-900">
-                      <span className="text-[#8B7CF8] font-bold mr-1">?</span> Tell me more
+                      <span className="text-primary-400 font-bold mr-1">?</span> Tell me more
                     </span>
-                    <span className="font-mono text-[12px] text-slate-500"><span className="text-[#8B7CF8] font-bold">{tellMeMoreCount}</span> · {tellMeMorePct}%</span>
+                    <span className="font-mono text-[12px] text-slate-500"><span className="text-primary-400 font-bold">{tellMeMoreCount}</span> · {tellMeMorePct}%</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#8B7CF8] rounded-full" style={{ width: `${tellMeMorePct}%` }} />
+                    <div className="h-full bg-primary-400 rounded-full" style={{ width: `${tellMeMorePct}%` }} />
                   </div>
                 </div>
 
@@ -172,8 +154,8 @@ export function OverviewInsights() {
                 </div>
               </div>
 
-              <div className="mt-6 bg-[#8B7CF8]/10 rounded-xl p-4 border border-[#8B7CF8]/20">
-                <h4 className="font-mono text-[11px] text-[#8B7CF8] font-bold uppercase tracking-wider mb-2">AI Insight</h4>
+              <div className="mt-6 bg-primary-400/10 rounded-xl p-4 border border-primary-400/20">
+                <h4 className="font-mono text-[11px] text-primary-400 font-bold uppercase tracking-wider mb-2">AI Insight</h4>
                 <p className="text-[13px] text-slate-600 leading-relaxed">
                   Your problem-framing updates get <strong className="text-slate-900">2x more reactions</strong> than feature announcements. Post the problem before the solution.
                 </p>
@@ -183,7 +165,7 @@ export function OverviewInsights() {
         </div>
 
         {/* Card 2: Top observers */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-ring">
           <div className="flex flex-col gap-1.5 mb-6">
             <h3 className="font-bold text-[16px] text-slate-900 leading-tight">Top observers</h3>
             <span className="font-mono text-[12px] text-slate-500 leading-tight">{totalFollowing} following · {uniqueDomains} domains</span>
@@ -219,7 +201,7 @@ export function OverviewInsights() {
                       </div>
                     </div>
                   </div>
-                  <div className="font-mono text-[13px] text-[#8B7CF8] font-bold shrink-0 text-right">
+                  <div className="font-mono text-[13px] text-primary-400 font-bold shrink-0 text-right">
                     {obs.score} <span className="text-slate-500 font-medium">score</span>
                   </div>
                 </div>
@@ -232,7 +214,7 @@ export function OverviewInsights() {
         <div className="lg:col-span-3 flex flex-col gap-6">
           
           {/* Card 3: Linked docs */}
-          <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] flex-1">
+          <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm focus-ring flex-1">
             <div className="flex flex-col gap-1.5 mb-6">
               <h3 className="font-bold text-[16px] text-slate-900 leading-tight">Linked docs</h3>
               <span className="font-mono text-[12px] text-slate-500 leading-tight">Notion · {linkedDocs.length} connected</span>
@@ -252,7 +234,7 @@ export function OverviewInsights() {
                   <div className="flex items-start gap-3 min-w-0">
                     <span className="text-[16px] leading-none mt-0.5 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">{doc.icon || '📄'}</span>
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-[13px] text-slate-900 mb-1 group-hover:text-[#8B7CF8] transition-colors truncate">{doc.title}</div>
+                      <div className="font-semibold text-[13px] text-slate-900 mb-1 group-hover:text-primary-400 transition-colors truncate">{doc.title}</div>
                       <div className="font-mono text-[11px] text-slate-500 flex items-center gap-1">
                         <Link2 className="w-3 h-3 shrink-0" /> <span className="truncate">Linked to room</span>
                       </div>
@@ -274,7 +256,7 @@ export function OverviewInsights() {
           {/* Card 4: Advanced Analytics */}
           <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 flex flex-col shadow-sm relative overflow-hidden">
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center">
-              <div className="px-3 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
+              <div className="px-3 py-1 bg-primary-400/10 border border-primary-400/20 text-primary-400 text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
                 Coming Soon
               </div>
               <span className="text-[15px] font-semibold text-slate-900">Advanced Analytics</span>

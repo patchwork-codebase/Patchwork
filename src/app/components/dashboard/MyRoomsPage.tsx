@@ -16,7 +16,7 @@ const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
   design:      { bg: 'bg-purple-500/10', color: 'text-purple-400' },
   engineering: { bg: 'bg-emerald-500/10', color: 'text-emerald-400' },
   dev:         { bg: 'bg-blue-500/10',  color: 'text-blue-400' },
-  product:     { bg: 'bg-[#6C5CE7]/10', color: 'text-[#8B7CF8]' },
+  product:     { bg: 'bg-primary-500/10', color: 'text-primary-400' },
   research:    { bg: 'bg-amber-500/10', color: 'text-amber-400' },
   writing:     { bg: 'bg-pink-500/10', color: 'text-pink-400' },
 };
@@ -46,7 +46,7 @@ export default function MyRoomsPage() {
         
         <Link
           to="/dashboard/create"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-xl text-[14px] font-bold transition-all shadow-md active:scale-95"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-xl text-[14px] font-bold transition-all shadow-md active:scale-95"
         >
           <Plus className="w-4 h-4" />
           Create Room
@@ -64,8 +64,8 @@ export default function MyRoomsPage() {
         </div>
       ) : rooms.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-[32px] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm mt-8">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#6C5CE7]/5 rounded-full blur-[40px] pointer-events-none" />
-          <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-6 text-[#8B7CF8] shadow-sm">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-[40px] pointer-events-none" />
+          <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-6 text-primary-400 shadow-sm">
             <FolderGit2 className="w-8 h-8" />
           </div>
           <h3 className="text-slate-900 text-[20px] font-bold mb-2">No Build Rooms Yet</h3>
@@ -74,7 +74,7 @@ export default function MyRoomsPage() {
           </p>
           <Link
             to="/dashboard/create"
-            className="inline-flex items-center justify-center px-6 py-3 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-xl text-[14px] font-bold transition-all active:scale-95 shadow-md"
+            className="inline-flex items-center justify-center px-6 py-3 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-xl text-[14px] font-bold transition-all active:scale-95 shadow-md"
           >
             Start a feature rollout room
           </Link>
@@ -97,13 +97,13 @@ export default function MyRoomsPage() {
                   onClick={() => navigate(`/dashboard/room/${room.id}`)}
                   className="block bg-white border border-slate-200 rounded-[24px] p-6 hover:bg-slate-50 hover:border-slate-300 hover:shadow-md transition-all group cursor-pointer relative overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-slate-50 rounded-full blur-[50px] -mr-24 -mt-24 pointer-events-none group-hover:bg-[#6C5CE7]/5 transition-colors duration-500" />
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-slate-50 rounded-full blur-[50px] -mr-24 -mt-24 pointer-events-none group-hover:bg-primary-500/5 transition-colors duration-500" />
                   
                   <div className="flex flex-col gap-3 relative">
                     {/* Title — full width, no competing elements */}
                     <div className="flex items-start gap-2.5">
                       <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                      <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-[#6C5CE7] transition-colors leading-snug">
+                      <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
                         {room.title}
                       </h2>
                     </div>
@@ -145,7 +145,7 @@ export default function MyRoomsPage() {
                         <NotionIcon className="w-3.5 h-3.5 hover:text-slate-900 transition-colors cursor-help" />
                         <Github className="w-3.5 h-3.5 hover:text-slate-900 transition-colors cursor-help" />
                       </div>
-                      <button className="text-[12px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 hover:bg-[#6C5CE7]/20 px-3 py-1.5 rounded-lg transition-colors shrink-0">
+                      <button className="text-[12px] font-bold text-primary-500 bg-primary-500/10 hover:bg-primary-500/20 px-3 py-1.5 rounded-lg transition-colors shrink-0">
                         View Room →
                       </button>
                     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, ShieldCheck, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '../auth/AuthContext';
 
 interface ReviewTemplateFormProps {
   requestId: string;
@@ -26,12 +27,24 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
     setLoading(true);
     
     try {
-      // Mocking submission to database
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { error } = await supabase.from('expert_reviews').insert({
+        request_id: requestId,
+        understanding: form.understanding,
+        what_works: form.whatWorks,
+        risks: form.risks,
+        alternative_approaches: form.alternativeApproaches,
+        recommendation: form.recommendation,
+        questions: form.questions,
+        confidence: form.confidence,
+        score: form.score
+      });
+      
+      if (error) throw error;
+      
       toast.success('Review submitted successfully!');
       onSubmitSuccess();
-    } catch (error: any) {
-      toast.error('Failed to submit review');
+    } catch (error: unknown) {
+      toast.error('Failed to submit review: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setLoading(false);
     }

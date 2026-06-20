@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------------
 
 export const QUERY_KEYS = {
-  rooms: ['rooms'] as const,
+  rooms: (search: string, category: string) => ['rooms', search, category] as const,
   roomDetails: (roomId: string) => ['room-details', roomId] as const,
   userRooms: (userId: string) => ['user-rooms', userId] as const,
   observedRooms: (userId: string) => ['observed-rooms', userId] as const,
@@ -39,3 +39,16 @@ export const CHANNEL_NAMES = {
   observedRooms: (userId: string) => `observed-rooms-${userId}`,
   userProfile: (userId: string) => `user-profile-${userId}`,
 } as const;
+
+// ---------------------------------------------------------------------------
+// Predefined Categories for Explore Builders
+// ---------------------------------------------------------------------------
+export const EXPLORE_CATEGORIES = [
+  "All",
+  "Design",
+  "Product",
+  "Engineering",
+  "Marketing",
+  "Growth",
+  "Community"
+] as const;

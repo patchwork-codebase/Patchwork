@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
+import { usePostUpdate } from "../../hooks/usePostUpdate";
 import { getAvatarUrl, timeAgo } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
@@ -40,14 +41,6 @@ interface TimelineFeedProps {
   dbUpdates: FeedUpdate[];
   selectedRoomId: string;
   setSelectedRoomId: (id: string) => void;
-  updateContent: string;
-  setUpdateContent: (content: string) => void;
-  codeSnippet: string;
-  setCodeSnippet: (content: string) => void;
-  mediaPreview: string | null;
-  setMediaPreview: (preview: string | null) => void;
-  posting: boolean;
-  handlePostUpdate: () => Promise<void>;
   hasNextUpdates: boolean;
   fetchNextUpdates: () => void;
   isFetchingNextUpdates: boolean;
@@ -61,7 +54,7 @@ const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
   design:      { bg: 'bg-purple-500/10', color: 'text-purple-400' },
   engineering: { bg: 'bg-emerald-500/10', color: 'text-emerald-400' },
   dev:         { bg: 'bg-blue-500/10',  color: 'text-blue-400' },
-  product:     { bg: 'bg-[#6C5CE7]/10', color: 'text-[#8B7CF8]' },
+  product:     { bg: 'bg-primary-500/10', color: 'text-primary-400' },
   research:    { bg: 'bg-amber-500/10', color: 'text-amber-400' },
   writing:     { bg: 'bg-pink-500/10', color: 'text-pink-400' },
 };
@@ -80,14 +73,6 @@ export function TimelineFeed({
   dbUpdates,
   selectedRoomId,
   setSelectedRoomId,
-  updateContent,
-  setUpdateContent,
-  codeSnippet,
-  setCodeSnippet,
-  mediaPreview,
-  setMediaPreview,
-  posting,
-  handlePostUpdate,
   hasNextUpdates,
   fetchNextUpdates,
   isFetchingNextUpdates,
@@ -97,6 +82,11 @@ export function TimelineFeed({
   loading,
 }: TimelineFeedProps) {
   const { session, withVerification } = useAuth();
+  
+  const [updateContent, setUpdateContent] = useState("");
+  const [codeSnippet, setCodeSnippet] = useState("");
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
@@ -111,6 +101,35 @@ export function TimelineFeed({
   const navigate = useNavigate();
 
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isPostingRef = useRef(false);
+
+  const postMutation = usePostUpdate();
+  const posting = postMutation.isPending;
+
+  const handlePostUpdate = async () => {
+    withVerification(async () => {
+      if (isPostingRef.current) return;
+      if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
+      
+      isPostingRef.current = true;
+      try {
+        await postMutation.mutateAsync({
+          selectedRoomId,
+          updateContent,
+          codeSnippet,
+          mediaPreview,
+          userId: user.id,
+          authorName: profile?.name || user.email?.split('@')[0] || 'Builder'
+        });
+        
+        setUpdateContent("");
+        setCodeSnippet("");
+        setMediaPreview(null);
+      } finally {
+        isPostingRef.current = false;
+      }
+    });
+  };
 
   const insertFormatting = (prefix: string, suffix: string = '') => {
     const textarea = replyTextareaRef.current;
@@ -151,9 +170,9 @@ export function TimelineFeed({
         };
       });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting update:", error);
-      toast.error(error.message || "Failed to delete update");
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to delete update");
     } finally {
       setDeletingUpdateId(null);
     }
@@ -239,7 +258,7 @@ export function TimelineFeed({
         toast.success("Reply posted!");
         // No invalidateQueries here — the real-time subscription will handle
         // syncing new data from other users. Our own reply is already in the cache.
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Rollback optimistic update on failure
         queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
           if (!oldData) return oldData;
@@ -254,7 +273,7 @@ export function TimelineFeed({
             ),
           };
         });
-        toast.error(`Failed to post reply: ${err.message}`);
+        toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
       }
     });
   };
@@ -267,8 +286,8 @@ export function TimelineFeed({
       if (error) throw error;
       toast.success("You are now observing this room!");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(user.id) });
-    } catch (err: any) {
-      toast.error(`Failed to follow room: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to follow room: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -280,8 +299,8 @@ export function TimelineFeed({
       if (error) throw error;
       toast.success("You are no longer observing this room.");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(user.id) });
-    } catch (err: any) {
-      toast.error(`Failed to unfollow room: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to unfollow room: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -323,13 +342,13 @@ export function TimelineFeed({
           toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
         }
         await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Revert optimistic toggle on failure
         setOptimisticToggles(prev => ({
           ...prev,
           [key]: !!existing
         }));
-        toast.error(`Failed to update reaction: ${err.message}`);
+        toast.error(`Failed to update reaction: ${(err instanceof Error ? err.message : String(err))}`);
       }
     });
   };
@@ -366,7 +385,7 @@ export function TimelineFeed({
           e.stopPropagation();
           handleToggleReaction(updateId, roomId, type, serverReactions);
         }}
-        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-colors border flex items-center gap-1 sm:gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-colors border flex items-center gap-1 sm:gap-1.5 focus-ring ${
           isActive 
             ? activeClass
             : "bg-white shadow-sm border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300"
@@ -423,7 +442,7 @@ export function TimelineFeed({
               onChange={(e) => setUpdateContent(e.target.value)}
               placeholder="What are you building right now?"
               aria-label="New update content"
-              className="w-full bg-transparent border-none outline-none text-slate-900 text-[16px] sm:text-[14px] resize-none placeholder:text-slate-400 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-md p-1"
+              className="w-full bg-transparent border-none outline-none text-slate-900 text-[16px] sm:text-[14px] resize-none placeholder:text-slate-400 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-primary-400 rounded-md p-1"
             />
 
             {mediaPreview && (
@@ -434,7 +453,7 @@ export function TimelineFeed({
                 <button
                   type="button"
                   onClick={() => setMediaPreview(null)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/preview:opacity-100 transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/preview:opacity-100 transition-all shadow-lg focus-ring"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -445,7 +464,7 @@ export function TimelineFeed({
                 value={codeSnippet}
                 onChange={e => setCodeSnippet(e.target.value)}
                 placeholder="Paste your code snippet here..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-[16px] sm:text-[14px] font-mono resize-none placeholder:text-slate-400 min-h-[100px] rounded-lg p-3 mt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-[16px] sm:text-[14px] font-mono resize-none placeholder:text-slate-400 min-h-[100px] rounded-lg p-3 mt-3 focus-ring"
               />
             )}
 
@@ -453,7 +472,7 @@ export function TimelineFeed({
               <div className="flex items-center gap-1 sm:gap-2">
                 {myRooms && myRooms.length > 0 ? (
                   <>
-                    <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+                    <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full cursor-pointer transition-all focus-ring">
                       <ImageIcon className="w-[18px] h-[18px]" />
                       <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Media</span>
                       <input
@@ -474,7 +493,7 @@ export function TimelineFeed({
                     <button
                       type="button"
                       onClick={() => setShowCodeInput(!showCodeInput)}
-                      className={`flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${showCodeInput ? 'text-[#8B7CF8] bg-[#8B7CF8]/10' : 'text-slate-500 hover:text-slate-900'}`}
+                      className={`flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 rounded-full transition-all focus-ring ${showCodeInput ? 'text-primary-400 bg-primary-400/10' : 'text-slate-500 hover:text-slate-900'}`}
                     >
                       <Code className="w-[18px] h-[18px]" />
                       <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Code</span>
@@ -486,7 +505,7 @@ export function TimelineFeed({
                       <button
                         type="button"
                         onClick={() => setDropdownOpen(!dropdownOpen)}
-                        className="flex items-center gap-1.5 bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 text-[#8B7CF8] text-[12px] sm:text-[13px] font-bold rounded-full px-3 py-1.5 focus:outline-none cursor-pointer transition-all max-w-[130px] sm:max-w-[200px]"
+                        className="flex items-center gap-1.5 bg-primary-400/10 hover:bg-primary-400/20 text-primary-400 text-[12px] sm:text-[13px] font-bold rounded-full px-3 py-1.5 focus:outline-none cursor-pointer transition-all max-w-[130px] sm:max-w-[200px]"
                       >
                         <span className="truncate">{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
                         <svg className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -516,7 +535,7 @@ export function TimelineFeed({
                                   }}
                                   className={`w-full text-left px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all block ${
                                     selectedRoomId === r.id
-                                      ? 'bg-[#8B7CF8]/10 text-[#8B7CF8]'
+                                      ? 'bg-primary-400/10 text-primary-400'
                                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                   }`}
                                 >
@@ -537,7 +556,7 @@ export function TimelineFeed({
               <button 
                 onClick={handlePostUpdate}
                 disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId}
-                className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-[13px] sm:text-[14px] transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shrink-0 ml-2 flex items-center justify-center gap-1.5"
+                className="bg-primary-400 hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-[13px] sm:text-[14px] transition-colors active:scale-95 focus-ring shrink-0 ml-2 flex items-center justify-center gap-1.5"
               >
                 {(!profile || !profile.emailVerified) && <Lock className="w-3.5 h-3.5" />}
                 {posting ? "Posting..." : "Post"}
@@ -566,9 +585,9 @@ export function TimelineFeed({
                 <button
                   key={domain}
                   onClick={() => setActiveDomainFilter(domain)}
-                  className={`px-3 py-1.5 rounded-full text-[12px] font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+                  className={`px-3 py-1.5 rounded-full text-[12px] font-bold transition-all border focus-ring ${
                     activeDomainFilter === domain
-                      ? 'bg-[#6C5CE7] border-[#6C5CE7] text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]'
+                      ? 'bg-primary-500 border-primary-500 text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]'
                       : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
@@ -655,7 +674,7 @@ export function TimelineFeed({
                 transition={{ duration: 0.3 }}
                 key={update.id} 
                 onClick={() => toggleComments(update.id)}
-                className={`bg-white border ${isLaunch ? 'border-[#8B7CF8]/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-slate-200 shadow-sm'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 hover:bg-slate-50/50 transition-all cursor-pointer relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                className={`bg-white border ${isLaunch ? 'border-primary-400/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-slate-200 shadow-sm'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 hover:bg-slate-50/50 transition-all cursor-pointer relative overflow-hidden focus-ring`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -673,7 +692,7 @@ export function TimelineFeed({
                           navigate(`/dashboard/profile/${update.authorId}`);
                         }
                       }}
-                      className={`w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-[#8B7CF8] shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-50 border border-slate-200'} cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all`}
+                      className={`w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-50 border border-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
                     >
                       <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                     </div>
@@ -684,7 +703,7 @@ export function TimelineFeed({
                           <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4" />
                         </div>
                         {isLaunch && (
-                          <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-[#8B7CF8]/10 text-[#8B7CF8] px-2 py-0.5 rounded-full shrink-0">Launched</span>
+                          <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
                         )}
                       </div>
                       <div className="text-[12px] sm:text-[13px] text-slate-500 mt-1 font-medium flex items-center flex-wrap gap-x-1.5">
@@ -754,7 +773,7 @@ export function TimelineFeed({
                       ) : (
                         <button 
                           onClick={(e) => handleFollowRoom(update.roomId, e)}
-                          className="text-[11px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 hover:bg-[#8B7CF8]/20 px-2.5 py-1 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                          className="text-[11px] font-bold text-primary-400 bg-primary-400/10 border border-primary-400/20 hover:bg-primary-400/20 px-2.5 py-1 rounded-full transition-all focus-ring"
                         >
                           + Follow
                         </button>
@@ -783,21 +802,21 @@ export function TimelineFeed({
                 {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
                 <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-slate-100">
-                  {renderReactionButton(update.id, update.roomId, 'sharp', 'Sharp', '✦', 'bg-[#8B7CF8]/10 border-[#8B7CF8]/30 text-[#8B7CF8]', update.reactions || [])}
+                  {renderReactionButton(update.id, update.roomId, 'sharp', 'Sharp', '✦', 'bg-primary-400/10 border-primary-400/30 text-primary-400', update.reactions || [])}
                   {renderReactionButton(update.id, update.roomId, 'pushback', 'Push back', '↩', 'bg-rose-50 border-rose-200 text-rose-500', update.reactions || [])}
                   {renderReactionButton(update.id, update.roomId, 'tellmemore', 'More', '?', 'bg-emerald-50 border-emerald-200 text-emerald-600', update.reactions || [])}
                   
                   {comments.length > 0 ? (
                     <button 
                       onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
-                      className="ml-auto text-[12px] font-bold text-[#8B7CF8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded px-1"
+                      className="ml-auto text-[12px] font-bold text-primary-400 hover:underline focus-ring rounded px-1"
                     >
                       {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
                     </button>
                   ) : (
                     <button 
                       onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
-                      className="ml-auto text-[12px] font-bold text-slate-500 hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded px-1"
+                      className="ml-auto text-[12px] font-bold text-slate-500 hover:text-slate-900 transition-colors focus-ring rounded px-1"
                     >
                       Reply
                     </button>
@@ -821,7 +840,7 @@ export function TimelineFeed({
                             e.stopPropagation();
                             setFullyExpandedComments(prev => [...prev, update.id]);
                           }}
-                          className="text-[12px] font-bold text-[#8B7CF8] hover:text-slate-900 transition-colors self-start mb-2 relative z-10 bg-white pr-2"
+                          className="text-[12px] font-bold text-primary-400 hover:text-slate-900 transition-colors self-start mb-2 relative z-10 bg-white pr-2"
                         >
                           View {hiddenCount} previous {hiddenCount === 1 ? 'reply' : 'replies'}...
                         </button>
@@ -840,7 +859,7 @@ export function TimelineFeed({
                                 navigate(`/dashboard/profile/${comment.observerId}`);
                               }
                             }}
-                            className="w-8 h-8 rounded-[10px] bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all"
+                            className="w-8 h-8 rounded-[10px] bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all"
                           >
                             <img src={commentAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                           </div>
@@ -870,7 +889,7 @@ export function TimelineFeed({
                                   handleReplyClick(e, update.id);
                                   setReplyText(`${commentHandle} `);
                                 }}
-                                className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-[#8B7CF8] transition-colors"
+                                className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-primary-400 transition-colors"
                               >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                 Reply
@@ -882,7 +901,7 @@ export function TimelineFeed({
                     })}
                     {replyingTo === update.id ? (
                       <div className="mt-3 flex flex-col gap-2 relative z-10" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                        <div className="w-full bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-[#6C5CE7] focus-within:ring-1 focus-within:ring-[#6C5CE7] transition-all">
+                        <div className="w-full bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 transition-all">
                           {/* Formatting Toolbar */}
                           <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-100 bg-slate-50 overflow-x-auto">
                             <button onClick={() => insertFormatting('**', '**')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Bold"><Bold className="w-4 h-4" /></button>
@@ -921,7 +940,7 @@ export function TimelineFeed({
                           <button
                             onClick={submitReply}
                             disabled={!replyText.trim()}
-                            className="px-5 py-2 rounded-full bg-[#6C5CE7] hover:bg-[#5b4cdb] text-white text-[13px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-5 py-2 rounded-full bg-primary-500 hover:bg-[#5b4cdb] text-white text-[13px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Reply
                           </button>
@@ -931,7 +950,7 @@ export function TimelineFeed({
                       <div className="flex items-center gap-3 mt-1 relative z-10 pl-2" onClick={(e) => e.stopPropagation()}>
                         <button 
                           onClick={(e) => handleReplyClick(e, update.id)}
-                          className="text-[13px] font-bold text-[#8B7CF8] hover:text-[#7b6ce8] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded px-1"
+                          className="text-[13px] font-bold text-primary-400 hover:text-[#7b6ce8] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1.5 focus-ring rounded px-1"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                           Add a reply
@@ -952,7 +971,7 @@ export function TimelineFeed({
             <button
               onClick={() => fetchNextUpdates()}
               disabled={isFetchingNextUpdates}
-              className="px-6 py-2.5 bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 active:scale-95 border border-[#8B7CF8]/20 text-[#8B7CF8] hover:text-white rounded-full text-[13px] font-bold transition-all disabled:opacity-50 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+              className="px-6 py-2.5 bg-primary-400/10 hover:bg-primary-400/20 active:scale-95 border border-primary-400/20 text-primary-400 hover:text-white rounded-full text-[13px] font-bold transition-all disabled:opacity-50 flex items-center gap-2 focus-ring"
             >
               {isFetchingNextUpdates ? (
                 <>

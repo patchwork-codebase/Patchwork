@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router";
+import { useNavigate, useLocation, Link, useSearchParams } from "react-router";
 import { Country, State, City } from "country-state-city";
 import { useAuth, DEV_AUTH_BYPASS } from "./AuthContext";
 import { AuthRedirectGuard } from "./AuthRedirectGuard";
@@ -38,7 +38,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
           setIsOpen(!isOpen);
           setSearch("");
         }}
-        className="w-full flex items-center justify-between px-3 py-3 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[13.5px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50 text-left cursor-pointer"
+        className="w-full flex items-center justify-between px-3 py-3 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[13.5px] text-white focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all disabled:opacity-50 text-left cursor-pointer"
       >
         <span className={selectedOption ? "text-white font-medium truncate" : "text-slate-500 font-medium truncate"}>
           {displayLabel}
@@ -71,7 +71,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
                   placeholder={`Search ${label.toLowerCase()}...`}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 transition-all mb-2"
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 transition-all mb-2"
                 />
               )}
               <div className="flex-1 overflow-y-auto max-h-[180px] space-y-0.5 pr-1">
@@ -88,7 +88,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
                       }}
                       className={`w-full text-left px-3 py-1.5 rounded-lg text-[12.5px] font-semibold transition-all truncate block ${
                         value === o.value
-                          ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]'
+                          ? 'bg-primary-400/20 text-primary-400'
                           : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                       }`}
                     >
@@ -136,7 +136,7 @@ function TestimonialSlider() {
           className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 backdrop-blur-sm shadow-xl"
         >
           <p className="text-[14px] text-slate-300 italic leading-relaxed min-h-[48px]">{t.quote}</p>
-          <p className="text-[12px] text-[#8B7CF8] font-mono font-bold mt-3">{t.handle}</p>
+          <p className="text-[12px] text-primary-400 font-mono font-bold mt-3">{t.handle}</p>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -207,7 +207,14 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, signUp, signInWithGoogle, signInWithLinkedin, profile, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
+  useEffect(() => {
+    const returnUrl = searchParams.get('returnUrl');
+    if (returnUrl) {
+      localStorage.setItem('authRedirectUrl', returnUrl);
+    }
+  }, [searchParams]);
 
 
   const calculatePasswordStrength = (pass: string) => {
@@ -256,8 +263,8 @@ export default function AuthPage() {
     try {
       const { profile } = await signIn(loginForm.email, loginForm.password);
       redirectForRole(profile?.role);
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -272,8 +279,8 @@ export default function AuthPage() {
       await signUp(signup.email, signup.password, name, signup.role, '', '', '', '', '');
       toast.success("Welcome to Patchwork! We've sent a verification link to your email.");
       navigate('/onboarding');
-    } catch (err: any) {
-      setError(err.message || 'Signup failed. Please try again.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -284,8 +291,8 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await signInWithGoogle();
-    } catch (err: any) {
-      setError(err.message || 'Google authentication failed.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Google authentication failed.');
       setLoading(false);
     }
   }
@@ -295,8 +302,8 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await signInWithLinkedin();
-    } catch (err: any) {
-      setError(err.message || 'LinkedIn authentication failed.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'LinkedIn authentication failed.');
       setLoading(false);
     }
   }
@@ -307,20 +314,20 @@ export default function AuthPage() {
     <div className="min-h-screen bg-[#0E0C16] flex flex-col lg:flex-row relative overflow-hidden">
       <AuthRedirectGuard />
       {/* Background ambient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-[#6C5CE7]/8 rounded-full blur-[180px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#8B7CF8]/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-primary-500/8 rounded-full blur-[180px] pointer-events-none z-0" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-primary-400/5 rounded-full blur-[120px] pointer-events-none z-0" />
 
       {/* ── LEFT PANEL ── */}
       <div className="hidden lg:flex flex-col justify-between w-[45%] p-14 relative overflow-hidden z-10">
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-16 -left-24 w-[420px] h-[420px] bg-[#8B7CF8]/20 rounded-full blur-[100px] pointer-events-none"
+          className="absolute top-16 -left-24 w-[420px] h-[420px] bg-primary-400/20 rounded-full blur-[100px] pointer-events-none"
         />
         <motion.div
           animate={{ scale: [1, 1.4, 1], opacity: [0.15, 0.35, 0.15] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-          className="absolute bottom-16 -right-24 w-[520px] h-[520px] bg-[#6C5CE7]/20 rounded-full blur-[120px] pointer-events-none"
+          className="absolute bottom-16 -right-24 w-[520px] h-[520px] bg-primary-500/20 rounded-full blur-[120px] pointer-events-none"
         />
 
         {/* Logo */}
@@ -330,7 +337,7 @@ export default function AuthPage() {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3 relative z-10"
         >
-          <div className="w-9 h-9 bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(108,92,231,0.5)]">
+          <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-400 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(108,92,231,0.5)]">
             <motion.div
               animate={{ rotate: [0, -45, 15, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
@@ -348,12 +355,12 @@ export default function AuthPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            <p className="text-[12px] font-mono font-bold text-[#8B7CF8] uppercase tracking-[0.2em] mb-6">
+            <p className="text-[12px] font-mono font-bold text-primary-400 uppercase tracking-[0.2em] mb-6">
               Build in public. For real.
             </p>
             <h1 className="text-[44px] font-extrabold text-white leading-[1.1] tracking-tight mb-6">
               Where builders<br />
-              <span className="bg-gradient-to-r from-[#8B7CF8] to-[#a78bfa] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-400 to-[#a78bfa] bg-clip-text text-transparent">
                 share the messy truth
               </span>
             </h1>
@@ -388,7 +395,7 @@ export default function AuthPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 relative z-10 min-h-screen lg:min-h-0">
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2.5 mb-8">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg flex items-center justify-center">
             <motion.div
               animate={{ rotate: [0, -45, 15, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
@@ -455,7 +462,7 @@ export default function AuthPage() {
                     value={loginForm.email}
                     onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    className="w-full pl-10 pr-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                   />
                 </div>
 
@@ -467,7 +474,7 @@ export default function AuthPage() {
                     value={loginForm.password}
                     onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    className="w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                   />
                   <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -479,14 +486,14 @@ export default function AuthPage() {
                   whileTap={{ scale: loading ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_20px_rgba(108,92,231,0.3)] transition-all"
+                  className="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_20px_rgba(108,92,231,0.3)] transition-all"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : <>Sign in <ArrowRight className="w-4 h-4" /></>}
                 </motion.button>
 
                 <p className="text-center text-[13px] text-slate-500">
                   No account?{' '}
-                  <button type="button" onClick={() => setTab('signup')} className="text-[#8B7CF8] font-bold hover:underline">
+                  <button type="button" onClick={() => setTab('signup')} className="text-primary-400 font-bold hover:underline">
                     Create one — it's free
                   </button>
                 </p>
@@ -532,7 +539,7 @@ export default function AuthPage() {
                       className={`flex-1 py-2 rounded-lg text-[13px] font-bold transition-all capitalize ${
                         signup.role === r
                           ? r === 'builder'
-                            ? 'bg-[#6C5CE7] text-white shadow-[0_0_12px_rgba(108,92,231,0.4)]'
+                            ? 'bg-primary-500 text-white shadow-[0_0_12px_rgba(108,92,231,0.4)]'
                             : 'bg-emerald-600 text-white shadow-[0_0_12px_rgba(16,185,129,0.3)]'
                           : 'text-slate-400 hover:text-white'
                       }`}
@@ -552,7 +559,7 @@ export default function AuthPage() {
                       value={signup.fname}
                       onChange={e => setSignup(s => ({ ...s, fname: e.target.value }))}
                       required
-                      className="w-full pl-9 pr-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                      className="w-full pl-9 pr-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                     />
                   </div>
                   <input
@@ -560,7 +567,7 @@ export default function AuthPage() {
                     placeholder="Last name"
                     value={signup.lname}
                     onChange={e => setSignup(s => ({ ...s, lname: e.target.value }))}
-                    className="w-full px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    className="w-full px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                   />
                 </div>
 
@@ -573,7 +580,7 @@ export default function AuthPage() {
                     value={signup.email}
                     onChange={e => setSignup(s => ({ ...s, email: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                    className="w-full pl-10 pr-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                   />
                 </div>
 
@@ -587,7 +594,7 @@ export default function AuthPage() {
                       value={signup.password}
                       onChange={e => setSignup(s => ({ ...s, password: e.target.value }))}
                       required
-                      className="w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                      className="w-full pl-10 pr-10 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                     />
                     <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -616,7 +623,7 @@ export default function AuthPage() {
                   whileTap={{ scale: (loading || !canSubmitSignup) ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading || !canSubmitSignup}
-                  className="w-full py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_20px_rgba(108,92,231,0.3)] transition-all"
+                  className="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_20px_rgba(108,92,231,0.3)] transition-all"
                 >
                   {loading
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</>
@@ -630,7 +637,7 @@ export default function AuthPage() {
 
                 <p className="text-center text-[13px] text-slate-500">
                   Already have an account?{' '}
-                  <button type="button" onClick={() => setTab('login')} className="text-[#8B7CF8] font-bold hover:underline">
+                  <button type="button" onClick={() => setTab('login')} className="text-primary-400 font-bold hover:underline">
                     Sign in
                   </button>
                 </p>

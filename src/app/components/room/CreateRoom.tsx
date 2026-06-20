@@ -28,7 +28,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-[#8B7CF8]/50 ring-1 ring-[#8B7CF8]/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
+        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-primary-400/50 ring-1 ring-primary-400/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
       >
         <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -46,7 +46,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
               }}
               className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
                 value === option.value 
-                  ? 'bg-slate-50 text-[#8B7CF8] font-bold' 
+                  ? 'bg-slate-50 text-primary-400 font-bold' 
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
               }`}
             >
@@ -101,7 +101,7 @@ export default function CreateRoom() {
     return (
       <div className="max-w-[1100px] mx-auto px-6 py-20 flex flex-col items-center justify-center min-h-[60vh]">
         <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-12 text-center backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-32 bg-[#6C5CE7]/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute top-0 right-0 p-32 bg-primary-500/10 rounded-full blur-[80px] pointer-events-none" />
           <h2 className="text-[32px] font-extrabold text-white mb-3 font-display">Builders Only</h2>
           <p className="text-slate-400 mb-8 max-w-sm mx-auto font-medium">Only builders can create rooms. Update your profile role to get started.</p>
           <Link to="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-full text-white font-bold transition-all">
@@ -163,9 +163,9 @@ export default function CreateRoom() {
             if (error) throw error;
             coverImageUrl = data?.secure_url || null;
             toast.dismiss("upload");
-          } catch (error: any) {
+          } catch (error: unknown) {
             toast.dismiss("upload");
-            throw new Error(`Image upload failed: ${error.message}`);
+            throw new Error(`Image upload failed: ${(error instanceof Error ? error.message : String(error))}`);
           }
         }
 
@@ -197,8 +197,8 @@ export default function CreateRoom() {
         
         toast.success('Room created successfully!');
         navigate(`/dashboard/room/${roomId}`);
-      } catch (err: any) {
-        toast.error(`Failed to create room: ${err.message}`);
+      } catch (err: unknown) {
+        toast.error(`Failed to create room: ${(err instanceof Error ? err.message : String(err))}`);
       } finally {
         setLoading(false);
       }
@@ -207,7 +207,7 @@ export default function CreateRoom() {
 
   return (
     <div className="max-w-[800px] mx-auto px-6 py-12 relative">
-      <div className="absolute top-20 left-0 w-96 h-96 bg-[#8B7CF8]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-20 left-0 w-96 h-96 bg-primary-400/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 hover:text-slate-900 mb-8 transition-colors group">
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
@@ -226,7 +226,7 @@ export default function CreateRoom() {
           {/* Templates Section */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
             <h3 className="text-[14px] font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#8B7CF8]" /> Start from a template
+              <Sparkles className="w-4 h-4 text-primary-400" /> Start from a template
             </h3>
             {loadingTemplates ? (
               <div className="flex items-center justify-center py-8">
@@ -255,11 +255,11 @@ export default function CreateRoom() {
                         setTags(tpl.recommended_tags || []);
                         toast.success(`Applied ${tpl.name} template!`);
                       }}
-                      className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-[#8B7CF8] bg-[#8B7CF8]/5 ring-1 ring-[#8B7CF8]' : 'border-slate-200 bg-white hover:border-[#8B7CF8]/50 hover:shadow-sm'}`}
+                      className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-primary-400 bg-primary-400/5 ring-1 ring-primary-400' : 'border-slate-200 bg-white hover:border-primary-400/50 hover:shadow-sm'}`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <IconMatch className={`w-4 h-4 ${isSelected ? 'text-[#8B7CF8]' : 'text-slate-500'}`} />
-                        <span className={`text-[13px] font-bold ${isSelected ? 'text-[#8B7CF8]' : 'text-slate-900'}`}>{tpl.name}</span>
+                        <IconMatch className={`w-4 h-4 ${isSelected ? 'text-primary-400' : 'text-slate-500'}`} />
+                        <span className={`text-[13px] font-bold ${isSelected ? 'text-primary-400' : 'text-slate-900'}`}>{tpl.name}</span>
                       </div>
                       <p className="text-[11px] text-slate-500 leading-relaxed font-medium line-clamp-2">{tpl.description}</p>
                     </button>
@@ -274,7 +274,7 @@ export default function CreateRoom() {
             <label className="block text-[13px] font-bold text-slate-700 mb-2">Cover Image (Optional)</label>
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-slate-200 hover:border-[#8B7CF8]/50 bg-slate-50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+              className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400/50 bg-slate-50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
             >
               {form.coverImage ? (
                 <>
@@ -317,7 +317,7 @@ export default function CreateRoom() {
                 }}
                 placeholder="e.g. Redesigning merchant onboarding flow"
                 maxLength={100}
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 transition-all font-medium"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all font-medium"
               />
               <div className="flex justify-end mt-1.5">
                 <span className="text-[11px] font-mono text-slate-400">{form.title.length}/100</span>
@@ -340,7 +340,7 @@ export default function CreateRoom() {
                   placeholder="room-slug"
                   maxLength={50}
                   className={`w-full px-4 py-4 bg-slate-50 border rounded-r-xl text-[14px] font-mono text-slate-900 placeholder-slate-400 focus:outline-none transition-all ${
-                    slugError ? 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-200 focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50'
+                    slugError ? 'border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-200 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50'
                   }`}
                 />
               </div>
@@ -360,7 +360,7 @@ export default function CreateRoom() {
               placeholder="What are you building? Give observers context."
               rows={4}
               maxLength={500}
-              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 transition-all resize-none font-medium leading-relaxed"
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed"
             />
             <div className="flex justify-end mt-1.5">
               <span className="text-[11px] font-mono text-slate-400">{form.description.length}/500</span>
@@ -374,7 +374,7 @@ export default function CreateRoom() {
               value={form.primaryLink}
               onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
               placeholder="https://github.com/your/repo or your live site"
-              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 transition-all font-medium"
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
             />
           </div>
 
@@ -397,7 +397,7 @@ export default function CreateRoom() {
             <button
               type="button"
               onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#8B7CF8] focus:ring-offset-2 ${form.isPrivate ? 'bg-slate-800' : 'bg-emerald-500'}`}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 ${form.isPrivate ? 'bg-slate-800' : 'bg-emerald-500'}`}
               role="switch"
               aria-checked={form.isPrivate}
             >
@@ -440,7 +440,7 @@ export default function CreateRoom() {
             
             <div className="flex flex-wrap gap-2 mb-4">
               {tags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1.5 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
+                <span key={tag} className="inline-flex items-center gap-1.5 bg-primary-400/10 border border-primary-400/20 text-primary-400 text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
                   {tag}
                   <button type="button" onClick={() => removeTag(tag)} className="hover:text-slate-900 transition-colors">
                     <X className="w-3.5 h-3.5" />
@@ -456,7 +456,7 @@ export default function CreateRoom() {
                 onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(form.tagInput); } }}
                 placeholder="Add a tag..."
-                className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8B7CF8]/50 transition-all font-medium"
+                className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
               />
               <button
                 type="button"
@@ -502,7 +502,7 @@ export default function CreateRoom() {
                 type="submit"
                 onClick={() => setSubmitStatus('active')}
                 disabled={loading || !form.title.trim()}
-                className="flex justify-center items-center gap-2 px-6 py-3 bg-[#8B7CF8] text-white rounded-full text-[14px] font-bold hover:bg-[#7a6aeb] transition-colors shadow-sm hover:shadow-[#8B7CF8]/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex justify-center items-center gap-2 px-6 py-3 bg-primary-400 text-white rounded-full text-[14px] font-bold hover:bg-[#7a6aeb] transition-colors shadow-sm hover:shadow-primary-400/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {loading && submitStatus === 'active' ? 'Creating...' : <>{(!profile || !profile.emailVerified) && <Lock className="w-4 h-4 opacity-70" />}<ArrowRight className="w-4 h-4" /> Publish Room</>}
               </button>

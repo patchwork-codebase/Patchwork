@@ -126,8 +126,8 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
 
       toast.success("Review request sent successfully!");
       onClose();
-    } catch (err: any) {
-      toast.error(`Failed to send request: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to send request: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setLoading(false);
     }
@@ -175,7 +175,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     placeholder="Search by domain (e.g., UX Design, React, Growth)..."
                     value={domainFilter}
                     onChange={(e) => setDomainFilter(e.target.value)}
-                    className="w-full pl-12 pr-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-500 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all"
+                    className="w-full pl-12 pr-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all"
                   />
                 </div>
                 

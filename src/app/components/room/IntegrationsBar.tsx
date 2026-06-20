@@ -42,7 +42,7 @@ function IntegrationPill({
         rel="noopener noreferrer"
         title={displayLabel}
         aria-label={`Open ${displayLabel}`}
-        className={`group flex items-center gap-2 px-3 py-2 rounded-xl border ${cfg.borderColor} ${cfg.bgColor} transition-all hover:scale-105 hover:shadow-lg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+        className={`group flex items-center gap-2 px-3 py-2 rounded-xl border ${cfg.borderColor} ${cfg.bgColor} transition-all hover:scale-105 hover:shadow-lg active:scale-95 focus-ring`}
       >
         <IntegrationPlatformIcon platform={integration.platform} className="w-4 h-4 text-white shrink-0" />
         <div className="flex flex-col gap-0.5">
@@ -139,9 +139,9 @@ export function IntegrationsBar({ roomId, builderId, isOwner }: IntegrationsBarP
             onClick={() => setAddModalOpen(true)}
             title="Add integration"
             aria-label="Add integration"
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all hover:scale-105 active:scale-95 focus-ring ${
               integrations.length === 0
-                ? 'bg-[#6C5CE7]/10 border-[#6C5CE7]/30 hover:bg-[#6C5CE7]/20 text-[#8B7CF8]'
+                ? 'bg-primary-500/10 border-primary-500/30 hover:bg-primary-500/20 text-primary-400'
                 : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] text-slate-400 hover:text-white'
             }`}
           >

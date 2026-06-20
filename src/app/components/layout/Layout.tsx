@@ -8,104 +8,7 @@ import { useNotifications } from "../../hooks/useNotifications";
 
 import { getAvatarUrl } from "../../utils/helpers";
 
-/* ─── tiny inline SVGs ─────────────────────────────────────────── */
-const HammerIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M15 12L9 6l-6 6 1.5 1.5L9 9l4.5 4.5L15 12Z" />
-    <path d="M15 12l4.5 4.5-1.5 1.5L13.5 13.5" />
-    <path d="M9 6l3-3 3 3" />
-  </svg>
-);
-
-const DashboardIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7" rx="1.5" />
-    <rect x="14" y="3" width="7" height="7" rx="1.5" />
-    <rect x="3" y="14" width="7" height="7" rx="1.5" />
-    <rect x="14" y="14" width="7" height="7" rx="1.5" />
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="7" />
-    <path d="M16 16L21 21" />
-  </svg>
-);
-
-const ActivityIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-  </svg>
-);
-
-const EyeIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const CompassIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
-
-const LogOutIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-const ZapIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>
-);
-
-const RoadmapIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="8" y1="6" x2="21" y2="6" />
-    <line x1="8" y1="12" x2="21" y2="12" />
-    <line x1="8" y1="18" x2="21" y2="18" />
-    <line x1="3" y1="6" x2="3.01" y2="6" />
-    <line x1="3" y1="12" x2="3.01" y2="12" />
-    <line x1="3" y1="18" x2="3.01" y2="18" />
-  </svg>
-);
-
-const MilestonesIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const AnalyticsIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-    <polyline points="16 7 22 7 22 13" />
-  </svg>
-);
-
-
+import { HammerIcon, DashboardIcon, SearchIcon, ActivityIcon, EyeIcon, CompassIcon, PlusIcon, LogOutIcon, UserIcon, ZapIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon } from "./LayoutIcons";
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 
@@ -113,6 +16,11 @@ const AnalyticsIcon = () => (
 import VerificationRequiredModal from '../ui/VerificationRequiredModal';
 import VerificationSuccessModal from '../dashboard/VerificationSuccessModal';
 import { WelcomeTour } from '../dashboard/WelcomeTour';
+
+import { MobileBottomNav } from "./MobileBottomNav";
+import { DesktopSidebar } from "./DesktopSidebar";
+
+import { GlobalHeader } from "./GlobalHeader";
 
 export default function Layout() {
   const { user, profile, signOut, loading, refreshProfile } = useAuth();
@@ -178,7 +86,7 @@ export default function Layout() {
     return (
       <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
         <div className="flex items-center gap-2.5 text-slate-600 font-mono text-[13px]">
-          <div className="w-4.5 h-4.5 rounded-full border-2 border-[#6C5CE7]/20 border-t-[#6C5CE7] animate-spin" />
+          <div className="w-4.5 h-4.5 rounded-full border-2 border-primary-500/20 border-t-primary-500 animate-spin" />
           Loading Patchwork…
         </div>
       </div>
@@ -215,26 +123,7 @@ export default function Layout() {
         />
       )}
 
-      {/* ── GLOBAL TOP HEADER ─────────────────── */}
-      <header className="relative h-[60px] bg-white/85 backdrop-blur-xl border-b border-slate-200 flex flex-wrap items-center justify-between px-4 sm:px-6 sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-slate-900 hover:opacity-80 transition group">
-            <span>patch<span className="inline-block text-[#8B7CF8] group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
-            <span className="rounded bg-[#8B7CF8]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8B7CF8]">Beta</span>
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Link
-            to="/dashboard/notifications"
-            className="flex sm:hidden relative items-center justify-center w-[36px] h-[36px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-600 transition-colors"
-          >
-            <Bell className="w-[16px] h-[16px]" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" />
-            )}
-          </Link>
-        </div>
-      </header>
+      <GlobalHeader unreadCount={unreadCount} />
 
       {/* ── UNVERIFIED EMAIL BANNER ───────────────────────── */}
       {profile && !profile.emailVerified && (
@@ -260,373 +149,33 @@ export default function Layout() {
         </div>
       )}
 
-      {/* ── MOBILE BOTTOM NAV ─────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-        {/* Safe-area spacer + glass bar */}
-        <div className="bg-white/95 backdrop-blur-2xl border-t border-slate-200/60 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
-          <nav className="flex items-stretch justify-around px-1 pt-1 pb-1">
-
-            {/* Home */}
-            <Link
-              to="/dashboard"
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
-            >
-              {activeSection === 'overview' && (
-                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
-              )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill={activeSection === 'overview' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'overview' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
-                Home
-              </span>
-            </Link>
-
-            {/* Feed */}
-            <Link
-              to="/dashboard?tab=feed"
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
-            >
-              {activeSection === 'feed' && (
-                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
-              )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeWidth={activeSection === 'feed' ? '2.5' : '2'} />
-                </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'feed' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
-                Feed
-              </span>
-            </Link>
-
-            {/* My Rooms */}
-            <Link
-              to="/dashboard/rooms"
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
-            >
-              {activeSection === 'rooms' && (
-                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
-              )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'rooms' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 12L9 6l-6 6 1.5 1.5L9 9l4.5 4.5L15 12Z" strokeWidth={activeSection === 'rooms' ? '2.5' : '2'} />
-                  <path d="M15 12l4.5 4.5-1.5 1.5L13.5 13.5" />
-                  <path d="M9 6l3-3 3 3" />
-                </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'rooms' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
-                Rooms
-              </span>
-            </Link>
-
-            {/* Explore */}
-            <Link
-              to="/dashboard/explore"
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
-            >
-              {activeSection === 'explore' && (
-                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
-              )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7] scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'explore' ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
-                Explore
-              </span>
-            </Link>
-
-            {/* Profile */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
-            >
-              {mobileMenuOpen && (
-                <div className="absolute inset-0 bg-[#6C5CE7]/10 rounded-xl" />
-              )}
-              <div className="relative z-10">
-                <div className={`w-7 h-7 rounded-full overflow-hidden transition-all duration-200 ${mobileMenuOpen ? 'ring-2 ring-[#6C5CE7] ring-offset-1 ring-offset-white' : 'ring-1 ring-slate-200'}`}>
-                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                </div>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-1 ring-white" />
-                )}
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${mobileMenuOpen ? 'text-[#6C5CE7]' : 'text-slate-400'}`}>
-                Profile
-              </span>
-            </button>
-
-          </nav>
-        </div>
-      </div>
-
-      {/* MOBILE PROFILE BOTTOM SHEET */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
-            >
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
-
-              <div className="px-5 pb-5">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
-                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>
-                    <div className="text-xs text-slate-500 font-mono truncate">{profile?.email || user.email}</div>
-                  </div>
-                </div>
-
-                <div className="space-y-1 mb-6">
-                  <Link
-                    to={`/dashboard/profile/${user.id}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    <UserIcon /> My Profile
-                  </Link>
-                  <Link 
-                    to="/dashboard/explore"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeSection === 'explore' ? 'bg-[#8B7CF8]/10 text-[#8B7CF8]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                  >
-                    <CompassIcon /> Explore Builders
-                  </Link>
-                  {/* <Link 
-                    to="/learning-hub"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeSection === 'learning-hub' ? 'bg-[#8B7CF8]/10 text-[#8B7CF8]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                  >
-                    <CompassIcon /> Learning Hub
-                  </Link> */}
-                </div>
-
-                <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
-                  <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Privacy Policy</Link>
-                  <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Terms of Service</Link>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleSignOut();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"
-                >
-                  <LogOutIcon /> Sign out
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <MobileBottomNav 
+        activeSection={activeSection}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        unreadCount={unreadCount}
+        avatarUrl={avatarUrl}
+        userDisplayName={userDisplayName}
+        user={user}
+        profile={profile}
+        setForceShowTour={setForceShowTour}
+        handleSignOut={handleSignOut}
+      />
 
       <div className="flex flex-col lg:flex-row flex-1 pb-[80px] lg:pb-0">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
-
-          <nav className="p-5 flex-1 overflow-y-auto">
-
-            {/* workspace section */}
-            <div className="mb-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
-              Primary
-            </div>
-
-            <Link
-              to="/dashboard"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <DashboardIcon />
-              Dashboard
-            </Link>
-
-            <Link
-              to="/dashboard/rooms"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'rooms' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <div className="flex items-center gap-2.5">
-                <HammerIcon />
-                My rooms
-              </div>
-            </Link>
-
-            <Link
-              to="/dashboard/build-logs"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <ZapIcon />
-              Build logs
-            </Link>
-
-            {/* discovery section */}
-            <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
-              Secondary
-            </div>
-
-            <Link
-              to="/dashboard?tab=feed"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <ActivityIcon />
-              Global timeline
-            </Link>
-
-            <Link
-              to="/dashboard/observer"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <EyeIcon />
-              Observer hub
-            </Link>
-
-            <Link
-              to="/dashboard/explore"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <CompassIcon />
-              Explore builders
-            </Link>
-
-            {/* <Link
-              to="/learning-hub"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'learning-hub' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <CompassIcon />
-              Learning Hub
-            </Link> */}
-
-            {/* product ops section */}
-            <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
-              Product Ops
-            </div>
-
-            <Link
-              to="/dashboard/roadmap"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'roadmap' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <RoadmapIcon />
-              Roadmap view
-            </Link>
-
-            <Link
-              to="/dashboard/milestones"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'milestones' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <MilestonesIcon />
-              Milestones
-            </Link>
-
-            <Link
-              to="/dashboard/analytics"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'analytics' ? 'bg-[#6C5CE7]/15 text-[#8B7CF8] font-bold border-[#6C5CE7]/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <AnalyticsIcon />
-              Analytics
-            </Link>
-
-            <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
-              <Link to="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
-              <span>·</span>
-              <Link to="/terms" className="hover:text-slate-900 transition">Terms of Service</Link>
-            </div>
-          </nav>
-
-          {/* Profile card at the very bottom */}
-          <div className="border-t border-slate-200 p-4 bg-slate-50/50">
-            <div className="relative">
-              <button
-                onClick={() => setProfileMenuOpen(o => !o)}
-                className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
-              >
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-slate-900 truncate">
-                    {userDisplayName}
-                  </div>
-                <div className="text-[10px] text-slate-500 mt-0.5 truncate">
-                    {[profile?.domain, profile?.city].filter(Boolean).join(' · ') || profile?.role || 'Builder'}
-                  </div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-slate-700 transition">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-
-              {/* Profile dropdown menu */}
-              <AnimatePresence>
-                {profileMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setProfileMenuOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
-                    >
-                      <div className="p-3 border-b border-slate-100">
-                        <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
-                          {profile?.email || user.email}
-                        </div>
-                      </div>
-                      <Link
-                        to={`/dashboard/profile/${user.id}`}
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
-                      >
-                        <UserIcon /> Profile
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setProfileMenuOpen(false);
-                          setForceShowTour(true);
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
-                      >
-                        <CompassIcon /> Replay Tour
-                      </button>
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
-                      >
-                        <LogOutIcon /> Sign out
-                      </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </aside>
+        <DesktopSidebar 
+          activeSection={activeSection}
+          avatarUrl={avatarUrl}
+          userDisplayName={userDisplayName}
+          profile={profile}
+          user={user}
+          profileMenuOpen={profileMenuOpen}
+          setProfileMenuOpen={setProfileMenuOpen}
+          setForceShowTour={setForceShowTour}
+          handleSignOut={handleSignOut}
+        />
 
         <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
           <div className="h-full">

@@ -22,7 +22,7 @@ import {
 import type { Room, Reaction, Update, ReactionConfig } from "../../types";
 
 const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
-  decision: { label: 'Decision', color: 'bg-[#8B7CF8]/10 text-[#6C5CE7] border-[#8B7CF8]/30', icon: '⚡' },
+  decision: { label: 'Decision', color: 'bg-primary-400/10 text-primary-500 border-primary-400/30', icon: '⚡' },
   scrap: { label: 'Scrap', color: 'bg-rose-50 text-rose-600 border-rose-200', icon: '🗑' },
   pivot: { label: 'Pivot', color: 'bg-orange-50 text-orange-600 border-orange-200', icon: '🔄' },
   blocker: { label: 'Blocker', color: 'bg-red-50 text-red-600 border-red-200', icon: '🚧' },
@@ -66,7 +66,7 @@ export function RoomFeed({
   if (room.updates.length === 0) {
     return (
       <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
-        <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-[#8B7CF8]" />
+        <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-primary-400" />
         <p className="font-extrabold text-[16px] text-slate-900 font-display mb-2">No updates yet</p>
         {isBuilder && (
           <>
@@ -101,15 +101,15 @@ export function RoomFeed({
         const isTarget = update.id === updateIdToScroll;
 
         return (
-          <div key={update.id} id={`update-${update.id}`} className={`bg-white border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] mb-6 transition-all duration-700 ${isTarget ? 'border-[#8B7CF8] shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-[#8B7CF8]' : 'border-slate-200 shadow-sm'}`} tabIndex={0}>
+          <div key={update.id} id={`update-${update.id}`} className={`bg-white border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 ${isTarget ? 'border-primary-400 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400' : 'border-slate-200 shadow-sm'}`} tabIndex={0}>
             {isTarget && (
-              <div className="absolute inset-0 bg-[#8B7CF8]/5 pointer-events-none animate-pulse" />
+              <div className="absolute inset-0 bg-primary-400/5 pointer-events-none animate-pulse" />
             )}
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[15px] font-extrabold font-display shadow-inner">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 flex items-center justify-center text-white text-[15px] font-extrabold font-display shadow-inner">
                   {update.authorName[0]?.toUpperCase()}
                 </div>
                 <div>
@@ -175,7 +175,7 @@ export function RoomFeed({
               {!isBuilder && room.status === 'active' && (
                 <button
                   onClick={() => setReactionModal({ open: true, updateId: update.id })}
-                  className="text-[11px] text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-full px-4 py-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="text-[11px] text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-full px-4 py-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest focus-ring"
                 >
                   React
                 </button>
@@ -187,7 +187,7 @@ export function RoomFeed({
             ) : (
               <ReadMoreText 
                 content={update.content} 
-                className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-[#8B7CF8]/40 pl-4 sm:pl-5 mb-4 relative z-10" 
+                className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-primary-400/40 pl-4 sm:pl-5 mb-4 relative z-10" 
               />
             )}
 
@@ -260,7 +260,7 @@ export function RoomFeed({
                                       updateTextAreaRef.current?.focus();
                                       window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
-                                    className="text-[10px] font-bold text-[#8B7CF8] hover:text-slate-900 ml-2 underline decoration-[#8B7CF8]/30 underline-offset-2 transition-colors"
+                                    className="text-[10px] font-bold text-primary-400 hover:text-slate-900 ml-2 underline decoration-primary-400/30 underline-offset-2 transition-colors"
                                   >
                                     Draft Follow-up
                                   </button>
@@ -275,7 +275,7 @@ export function RoomFeed({
                       {hiddenCount > 0 && (
                         <button
                           onClick={() => setExpandedUpdates((prev: Record<string, boolean>) => ({ ...prev, [update.id]: true }))}
-                          className="text-[12px] font-bold text-[#8B7CF8] hover:text-slate-900 transition-colors"
+                          className="text-[12px] font-bold text-primary-400 hover:text-slate-900 transition-colors"
                         >
                           View {hiddenCount} more {hiddenCount === 1 ? 'reply' : 'replies'}...
                         </button>

@@ -39,7 +39,7 @@ export async function apiCall(path: string, opts: RequestInit = {}, token?: stri
       throw error;
     }
     throw new ApiError(
-      error instanceof Error ? error.message : "An unexpected error occurred",
+      error instanceof Error ? (error instanceof Error ? error.message : String(error)) : "An unexpected error occurred",
       500
     );
   }

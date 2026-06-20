@@ -36,8 +36,8 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
         body: JSON.stringify({ room_id: roomId })
       });
       setContent(res.content);
-    } catch (err: any) {
-      toast.error('Failed to generate summary: ' + err.message);
+    } catch (err: unknown) {
+      toast.error('Failed to generate summary: ' + (err instanceof Error ? err.message : String(err)));
       setContent(`🚀 Just wrapped another milestone on Patchwork: ${roomTitle}\n\nKey improvements:\n• [Add your points here]\n\nBuilding products means solving small problems that create better user experiences.\n\nFollow the journey:\nhttps://patchwork.com/dashboard/rooms/${roomId}\n\n#buildinpublic #product #engineering`);
     } finally {
       setLoading(false);
@@ -55,8 +55,8 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
       });
       setSuccess(true);
       toast.success('Successfully published to LinkedIn!');
-    } catch (err: any) {
-      toast.error('Failed to publish: ' + err.message);
+    } catch (err: unknown) {
+      toast.error('Failed to publish: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setPublishing(false);
     }

@@ -103,18 +103,18 @@ export function useRoomDetails(roomId?: string) {
   return query;
 }
 
-export function useRooms() {
+export function useRooms(searchQuery: string = "", category: string = "All") {
   const queryClient = useQueryClient();
 
   const query = useInfiniteQuery<Room[], Error>({
-    queryKey: QUERY_KEYS.rooms,
+    queryKey: QUERY_KEYS.rooms(searchQuery, category),
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       const pageSize = 12;
       const from = (pageParam as number) * pageSize;
       const to = from + pageSize - 1;
 
-      const { data, error } = await supabase
+      let queryBuilder = supabase
         .from('rooms')
         .select(`
           id, title, description, status, is_private,
@@ -125,7 +125,17 @@ export function useRooms() {
           room_observers(observer_id)
         `)
         .eq('status', 'active')
-        .eq('is_private', false)
+        .eq('is_private', false);
+
+      if (searchQuery) {
+        queryBuilder = queryBuilder.or(`title.ilike.%${searchQuery}%,builder_name.ilike.%${searchQuery}%`);
+      }
+
+      if (category && category !== "All") {
+        queryBuilder = queryBuilder.contains('tags', [category]);
+      }
+
+      const { data, error } = await queryBuilder
         .order('updated_at', { ascending: false })
         .range(from, to);
 
@@ -150,7 +160,7 @@ export function useRooms() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms' },
         () => {
-          debouncedInvalidate(queryClient, QUERY_KEYS.rooms);
+          debouncedInvalidate(queryClient, ['rooms']);
         }
       )
       .subscribe();

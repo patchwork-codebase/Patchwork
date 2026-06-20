@@ -37,7 +37,7 @@ export function RoomCard({ room }: RoomCardProps) {
   return (
     <div
       onClick={() => navigate(`/dashboard/room/${room.id}`)}
-      className="group bg-white border border-slate-200 hover:border-[#8B7CF8]/50 rounded-[28px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#8B7CF8]/5 relative overflow-hidden"
+      className="group bg-white border border-slate-200 hover:border-primary-400/50 rounded-[28px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/5 relative overflow-hidden"
     >
       {/* Cover Banner */}
       <div
@@ -84,7 +84,7 @@ export function RoomCard({ room }: RoomCardProps) {
       {/* Card Body */}
       <div className="px-6 pt-8 pb-6 flex flex-col flex-1">
         <div className="mb-3">
-          <h3 className="text-slate-900 font-extrabold text-[18px] group-hover:text-[#8B7CF8] transition-colors line-clamp-1 font-display">
+          <h3 className="text-slate-900 font-extrabold text-[18px] group-hover:text-primary-400 transition-colors line-clamp-1 font-display">
             {room.title}
           </h3>
           <div className="flex items-center gap-1.5 mt-1">
@@ -117,7 +117,7 @@ export function RoomCard({ room }: RoomCardProps) {
           </div>
 
           {/* Update count badge */}
-          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide uppercase bg-[#8B7CF8]/10 text-[#8B7CF8] px-3 py-1.5 rounded-full shrink-0">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide uppercase bg-primary-400/10 text-primary-400 px-3 py-1.5 rounded-full shrink-0">
             {room.updateCount ?? 0} {(room.updateCount ?? 0) === 1 ? 'update' : 'updates'}
           </div>
         </div>

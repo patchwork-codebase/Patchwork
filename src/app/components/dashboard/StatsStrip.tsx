@@ -51,7 +51,7 @@ export function StatsStrip({
       value: activeRoomsCount,
       delta: activeRoomsDelta,
       deltaColor: 'text-emerald-400',
-      numColor: 'text-[#8B7CF8]',
+      numColor: 'text-primary-400',
       loading: myRoomsLoading,
     },
     {
@@ -88,7 +88,7 @@ export function StatsStrip({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.05 }}
           key={s.label} 
-          className="bg-white border border-slate-200 rounded-[16px] p-5 flex min-h-[120px] flex-col justify-between group hover:bg-slate-50 transition-colors cursor-default min-w-[150px] shrink-0 snap-center sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-sm"
+          className="bg-white border border-slate-200 rounded-[16px] p-5 flex min-h-[120px] flex-col justify-between group hover:bg-slate-50 transition-colors cursor-default min-w-[150px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring shadow-sm"
           tabIndex={0}
         >
           {s.loading ? (

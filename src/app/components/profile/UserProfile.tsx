@@ -36,60 +36,11 @@ interface Room {
 import { useProfile } from "../../hooks/useProfile";
 import { useUserRooms } from "../../hooks/useRooms";
 import { useQueryClient } from "@tanstack/react-query";
+import { EditProfileForm } from "./EditProfileForm";
 import Integrations from "./Integrations";
-
-function CustomSelect({ value, onChange, options, label }: { value: string, onChange: (v: string) => void, options: {value: string, label: string}[], label: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectedOption = options.find(o => o.value === value);
-
-  return (
-    <div className="relative" ref={ref}>
-      <label className="block text-[13px] font-bold text-slate-700 mb-2">{label}</label>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-[#8B7CF8]/50 ring-1 ring-[#8B7CF8]/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
-      >
-        <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
-          {options.map(option => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-              className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
-                value === option.value 
-                  ? 'bg-slate-50 text-[#8B7CF8] font-bold' 
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import { ProfileDetailsView } from "./ProfileDetailsView";
+import { ExpertCard } from "./ExpertCard";
+import { ProfileStats } from "./ProfileStats";
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
@@ -171,8 +122,8 @@ export default function UserProfile() {
       setIsFollowing(!isFollowing);
       queryClient.invalidateQueries({ queryKey: ['profile', id] });
       toast.success(isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
-    } catch (err: any) {
-      toast.error(`Failed to update follow status: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to update follow status: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setFollowLoading(false);
     }
@@ -193,8 +144,8 @@ export default function UserProfile() {
       setEditing(false);
       await refreshProfile();
       toast.success('Profile updated!');
-    } catch (err: any) {
-      toast.error(`Failed to update: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to update: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setSaving(false);
     }
@@ -214,7 +165,7 @@ export default function UserProfile() {
     return (
       <div className="max-w-[800px] mx-auto px-6 py-20 text-center text-slate-400">
         <p className="font-medium text-lg">User not found</p>
-        <Link to="/dashboard" className="text-[#8B7CF8] hover:text-white transition-colors text-sm mt-4 inline-flex items-center gap-2">
+        <Link to="/dashboard" className="text-primary-400 hover:text-white transition-colors text-sm mt-4 inline-flex items-center gap-2">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
       </div>
@@ -223,7 +174,7 @@ export default function UserProfile() {
 
   return (
     <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative overflow-x-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 hover:text-slate-900 mb-6 sm:mb-8 transition-colors group">
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
@@ -231,7 +182,7 @@ export default function UserProfile() {
 
       {/* Profile card */}
       <div className="bg-white border border-slate-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-10 mb-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6C5CE7]/50 to-transparent opacity-50" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
         
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 flex-wrap relative z-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 sm:gap-6 w-full md:w-auto flex-1">
@@ -245,7 +196,7 @@ export default function UserProfile() {
                   target.style.display = 'none';
                   const parent = target.parentElement;
                   if (parent) {
-                    parent.classList.add('bg-gradient-to-br', 'from-[#6C5CE7]', 'to-[#8B7CF8]', 'flex', 'items-center', 'justify-center');
+                    parent.classList.add('bg-gradient-to-br', 'from-primary-500', 'to-primary-400', 'flex', 'items-center', 'justify-center');
                     parent.innerHTML = `<span style="color:white;font-size:32px;font-weight:800">${profile.name?.[0]?.toUpperCase() ?? '?'}</span>`;
                   }
                 }}
@@ -253,322 +204,16 @@ export default function UserProfile() {
             </div>
             <div className="flex-1 min-w-0 w-full">
               {editing ? (
-                <div className="space-y-4 max-w-md mx-auto sm:mx-0 text-left">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Name</label>
-                    <input
-                      value={editForm.name}
-                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                      className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium"
-                      placeholder="Your name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Bio</label>
-                    <textarea
-                      value={editForm.bio}
-                      onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))}
-                      rows={3}
-                      placeholder="Tell observers about yourself..."
-                      className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all resize-none font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">Role</label>
-                    <div className="flex justify-center sm:justify-start gap-3">
-                      {['builder', 'observer'].map(r => (
-                        <button
-                          key={r} type="button"
-                          onClick={() => setEditForm(f => ({ ...f, role: r }))}
-                          className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-[13px] font-bold capitalize transition-all ${
-                            editForm.role === r 
-                              ? 'border-[#6C5CE7]/50 bg-[#6C5CE7]/10 text-slate-900 shadow-[0_0_15px_rgba(108,92,231,0.15)]' 
-                              : 'border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-100'
-                          }`}
-                        >
-                          {r === 'builder' ? <Hammer className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          {r}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {editForm.role === 'builder' && (
-                    <div className="relative z-50">
-                      <CustomSelect
-                        label="User Type"
-                        value={editForm.domain}
-                        onChange={val => setEditForm(f => ({ ...f, domain: val }))}
-                        options={[
-                          { value: "product-manager", label: "📋 Product Manager" },
-                          { value: "engineer", label: "⚙️ Engineer" },
-                          { value: "product-designer", label: "🎨 Product Designer" },
-                          { value: "founder", label: "🚀 Founder" },
-                          { value: "writer", label: "✍️ Writer" },
-                          { value: "growth", label: "📈 Growth" },
-                          { value: "research", label: "🔬 Research" },
-                          { value: "other", label: "✦ Other" },
-                        ]}
-                      />
-                    </div>
-                  )}
-
-                  {/* Social Links Form */}
-                  <div className="pt-6 mt-2 border-t border-slate-200 space-y-5">
-                    <div>
-                      <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-1">Social Links</h3>
-                      <p className="text-[12px] text-slate-600">Connect your profiles to build your network.</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Website URL</label>
-                        <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Globe className="w-4 h-4 text-slate-500 group-focus-within:text-[#6C5CE7] transition-colors" />
-                          </div>
-                          <input
-                            value={editForm.website}
-                            onChange={e => setEditForm(f => ({ ...f, website: e.target.value }))}
-                            className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all placeholder:text-slate-500 shadow-sm"
-                            placeholder="https://yourwebsite.com"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Twitter</label>
-                        <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Twitter className="w-4 h-4 text-slate-500 group-focus-within:text-[#1DA1F2] transition-colors" />
-                          </div>
-                          <input
-                            value={editForm.twitter}
-                            onChange={e => setEditForm(f => ({ ...f, twitter: e.target.value }))}
-                            className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-[#1DA1F2]/50 focus:ring-1 focus:ring-[#1DA1F2]/50 transition-all placeholder:text-slate-500 shadow-sm"
-                            placeholder="@username"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">GitHub</label>
-                        <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Github className="w-4 h-4 text-slate-500 group-focus-within:text-slate-900 transition-colors" />
-                          </div>
-                          <input
-                            value={editForm.github_url}
-                            onChange={e => setEditForm(f => ({ ...f, github_url: e.target.value }))}
-                            className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all placeholder:text-slate-500 shadow-sm"
-                            placeholder="https://github.com/..."
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">LinkedIn</label>
-                        <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Linkedin className="w-4 h-4 text-slate-500 group-focus-within:text-[#0A66C2] transition-colors" />
-                          </div>
-                          <input
-                            value={editForm.linkedin_url}
-                            onChange={e => setEditForm(f => ({ ...f, linkedin_url: e.target.value }))}
-                            className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-[#0A66C2]/50 focus:ring-1 focus:ring-[#0A66C2]/50 transition-all placeholder:text-slate-500 shadow-sm"
-                            placeholder="https://linkedin.com/in/..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expert Settings Form */}
-                  {(profile as any).isVerifiedExpert && (
-                    <div className="pt-6 mt-2 border-t border-slate-200 space-y-5">
-                      <div>
-                        <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-1">Expert Availability</h3>
-                        <p className="text-[12px] text-slate-600">Manage your review capacity and response times.</p>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 mb-2">
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            className="sr-only peer" 
-                            checked={editForm.expert_available}
-                            onChange={(e) => setEditForm(f => ({ ...f, expert_available: e.target.checked }))}
-                          />
-                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                        </label>
-                        <span className="text-[13px] font-bold text-slate-900">{editForm.expert_available ? 'Available for requests' : 'Currently unavailable'}</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Open Slots (Active)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            max="20"
-                            value={editForm.expert_open_slots}
-                            onChange={e => setEditForm(f => ({ ...f, expert_open_slots: parseInt(e.target.value) || 0 }))}
-                            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all shadow-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Avg Response Time (Hours)</label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="168"
-                            value={editForm.expert_avg_response_hours}
-                            onChange={e => setEditForm(f => ({ ...f, expert_avg_response_hours: parseInt(e.target.value) || 24 }))}
-                            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all shadow-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Skills Form */}
-                  <div className="pt-4 border-t border-slate-200">
-                    <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-3">Tech Stack / Skills</h3>
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        value={skillInput}
-                        onChange={e => setSkillInput(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (skillInput.trim() && !editForm.skills.includes(skillInput.trim())) {
-                              setEditForm(f => ({ ...f, skills: [...f.skills, skillInput.trim()] }));
-                              setSkillInput('');
-                            }
-                          }
-                        }}
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 focus:outline-none focus:border-[#6C5CE7]/50"
-                        placeholder="Add a skill (e.g. React) and press Enter"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (skillInput.trim() && !editForm.skills.includes(skillInput.trim())) {
-                            setEditForm(f => ({ ...f, skills: [...f.skills, skillInput.trim()] }));
-                            setSkillInput('');
-                          }
-                        }}
-                        className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 text-[13px] font-bold rounded-xl transition-colors"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    {editForm.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {editForm.skills.map(skill => (
-                          <span key={skill} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-800 text-[12px] font-medium">
-                            {skill}
-                            <button
-                              type="button"
-                              onClick={() => setEditForm(f => ({ ...f, skills: f.skills.filter(s => s !== skill) }))}
-                              className="text-slate-400 hover:text-red-400 transition-colors"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <EditProfileForm 
+                  editForm={editForm}
+                  setEditForm={setEditForm}
+                  skillInput={skillInput}
+                  setSkillInput={setSkillInput}
+                  profile={profile}
+                />
               ) : (
                 <>
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2">
-                    <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 font-display tracking-tight leading-tight sm:leading-none break-words">
-                      {profile.name}
-                      <span className="inline-block ml-2 align-middle">
-                        <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6" />
-                      </span>
-                    </h1>
-                    {(profile as any).isVerifiedExpert && (
-                      <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="md" />
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3">
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#8B7CF8] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full capitalize tracking-wide">
-                      {profile.role === 'builder' ? <Hammer className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      {profile.role} {(profile as any).domain && profile.role === 'builder' ? ` • ${(profile as any).domain.replace('-', ' ')}` : ''}
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-500 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full tracking-wide">
-                      <Zap className="w-3 h-3" /> {profile.reputation} rep
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full tracking-wide">
-                      <Calendar className="w-3 h-3" /> Joined {timeAgo(profile.createdAt || '')}
-                    </span>
-                    <div className="w-px h-4 bg-slate-300 hidden sm:block mx-1"></div>
-                    <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900 tracking-wide">
-                      {profile.followers && profile.followers.length > 0 ? (
-                        <div className="flex items-center group/followers cursor-pointer">
-                          {profile.followers.slice(0, 4).map((followerId, i) => (
-                            <div
-                              key={followerId}
-                              className="w-5 h-5 rounded-full bg-slate-200 border-2 border-white overflow-hidden transition-all duration-300 -ml-1.5 first:ml-0 group-hover/followers:-ml-0.5 group-hover/followers:shadow-sm shrink-0"
-                              style={{ zIndex: 10 - i }}
-                            >
-                              <img
-                                src={getAvatarUrl(followerId)}
-                                alt="Follower"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <Users className="w-3.5 h-3.5 text-slate-500" />
-                      )}
-                      <span className="ml-0.5">
-                        {profile.followerCount || 0} <span className="text-slate-600 font-medium">followers</span>
-                      </span>
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900 tracking-wide">
-                      {profile.followingCount || 0} <span className="text-slate-600 font-medium">following</span>
-                    </span>
-                  </div>
-                  {profile.bio && <p className="text-[14px] text-slate-700 mt-4 leading-relaxed max-w-xl mx-auto sm:mx-0 font-medium">{profile.bio}</p>}
-                  
-                  {/* Social Links & Skills */}
-                  {(profile.website || profile.twitter || profile.github_url || profile.linkedin_url || (profile.skills && profile.skills.length > 0)) && (
-                    <div className="mt-5 space-y-4 max-w-xl mx-auto sm:mx-0">
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                        {profile.website && (
-                          <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
-                            <Globe className="w-3.5 h-3.5" /> Website
-                          </a>
-                        )}
-                        {profile.twitter && (
-                          <a href={`https://twitter.com/${profile.twitter.replace('@', '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-[#1DA1F2] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
-                            <Twitter className="w-3.5 h-3.5" /> Twitter
-                          </a>
-                        )}
-                        {profile.github_url && (
-                          <a href={profile.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
-                            <Github className="w-3.5 h-3.5" /> GitHub
-                          </a>
-                        )}
-                        {profile.linkedin_url && (
-                          <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-[#0A66C2] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
-                            <Linkedin className="w-3.5 h-3.5" /> LinkedIn
-                          </a>
-                        )}
-                      </div>
-                      
-                      {profile.skills && profile.skills.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                          {profile.skills.map(skill => (
-                            <span key={skill} className="px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold uppercase tracking-wider">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <ProfileDetailsView profile={profile} />
                 </>
               )}
             </div>
@@ -584,7 +229,7 @@ export default function UserProfile() {
             {isOwn && !(profile as any).isVerifiedExpert && !expertApp && (
               <Link
                 to="/dashboard/expert-apply"
-                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-[#8B7CF8]/30 bg-[#6C5CE7]/10 hover:bg-[#6C5CE7]/20 rounded-full text-[13px] font-bold text-[#8B7CF8] transition-colors"
+                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-primary-400/30 bg-primary-500/10 hover:bg-primary-500/20 rounded-full text-[13px] font-bold text-primary-400 transition-colors"
               >
                 <ShieldCheck className="w-4 h-4" /> Become Verified Expert
               </Link>
@@ -646,60 +291,9 @@ export default function UserProfile() {
         </div>
       </div>
 
-      {/* Expert card */}
-      {(profile as any).isVerifiedExpert && (
-        <div className="mb-8 bg-gradient-to-br from-[#6C5CE7]/10 to-[#8B7CF8]/5 border border-[#6C5CE7]/20 rounded-[24px] p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="lg" />
-            <div className="ml-auto flex items-center gap-2">
-              {(profile as any).expertAvailable ? (
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Available
-                </span>
-              ) : (
-                <span className="text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full">Unavailable</span>
-              )}
-            </div>
-          </div>
-          {(profile as any).expertDomains?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-5">
-              {((profile as any).expertDomains as string[]).map((d: string) => (
-                <span key={d} className="px-2.5 py-1 rounded-full bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[11px] font-bold">{d}</span>
-              ))}
-            </div>
-          )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              { icon: Star, label: "Review score", value: (profile as any).expertReviewScore ? `${(profile as any).expertReviewScore}/5.0` : "—" },
-              { icon: CheckCircle, label: "Reviews done", value: (profile as any).expertReviewsCompleted || 0 },
-              { icon: TrendingUp, label: "Acceptance rate", value: (profile as any).expertAcceptanceRate ? `${(profile as any).expertAcceptanceRate}%` : "—" },
-              { icon: Clock, label: "Avg. response", value: (profile as any).expertAvgResponseHours ? `${(profile as any).expertAvgResponseHours}h` : "—" },
-              { icon: ShieldCheck, label: "Open slots", value: (profile as any).expertOpenSlots ?? 3 },
-              { icon: Users, label: "Followers", value: profile.followerCount || 0 },
-            ].map(({ icon: Icon, label, value }) => (
-              <div key={label} className="bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
-                <Icon className="w-4 h-4 text-[#8B7CF8] mx-auto mb-1" />
-                <div className="text-[16px] font-extrabold text-slate-900">{value}</div>
-                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <ExpertCard profile={profile} />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">
-        {[
-          { label: 'Rooms', value: rooms.length, color: 'text-emerald-400', bg: 'bg-emerald-400/5', border: 'border-emerald-400/10' },
-          { label: 'Reputation', value: profile.reputation, color: 'text-amber-400', bg: 'bg-amber-400/5', border: 'border-amber-400/10' },
-          { label: 'Role', value: profile.role, color: 'text-[#8B7CF8]', bg: 'bg-[#6C5CE7]/5', border: 'border-[#6C5CE7]/10', capitalize: true },
-        ].map((s, idx) => (
-          <div key={s.label} className={`border ${s.border} ${s.bg} rounded-[16px] md:rounded-[20px] p-4 md:p-6 text-center backdrop-blur-sm ${idx === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
-            <div className={`text-[28px] md:text-[32px] font-black ${s.color} capitalize font-display leading-none mb-2`}>{s.value}</div>
-            <div className="text-[10px] md:text-[11px] font-bold text-slate-600 uppercase tracking-widest">{s.label}</div>
-          </div>
-        ))}
-      </div>
+      <ProfileStats profile={profile} roomsCount={rooms.length} />
 
       {/* Integrations (Only visible to the owner if they are a builder) */}
       {isOwn && profile.role === 'builder' && (
@@ -716,7 +310,7 @@ export default function UserProfile() {
             <Hammer className="w-12 h-12 mx-auto mb-4 text-slate-600" />
             <p className="text-[15px] font-bold text-slate-600 mb-2">No rooms yet</p>
             {isOwn && profile.role === 'builder' && (
-              <Link to="/dashboard/create" className="text-[#8B7CF8] hover:text-white font-bold text-[13px] transition-colors inline-flex items-center gap-1">
+              <Link to="/dashboard/create" className="text-primary-400 hover:text-white font-bold text-[13px] transition-colors inline-flex items-center gap-1">
                 Create your first room <ArrowLeft className="w-3 h-3 rotate-180" />
               </Link>
             )}
@@ -726,10 +320,10 @@ export default function UserProfile() {
             {rooms.map(room => (
               <Link
                 key={room.id} to={`/dashboard/room/${room.id}`}
-                className="flex flex-col gap-3 bg-white border border-slate-200 rounded-[20px] p-4 sm:p-5 hover:border-[#6C5CE7]/50 hover:bg-slate-50 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md min-w-0 overflow-hidden"
+                className="flex flex-col gap-3 bg-white border border-slate-200 rounded-[20px] p-4 sm:p-5 hover:border-primary-500/50 hover:bg-slate-50 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md min-w-0 overflow-hidden"
               >
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-extrabold text-[15px] sm:text-[16px] text-slate-900 group-hover:text-[#8B7CF8] transition-colors font-display mb-2 line-clamp-2 break-words">{room.title}</h3>
+                  <h3 className="font-extrabold text-[15px] sm:text-[16px] text-slate-900 group-hover:text-primary-400 transition-colors font-display mb-2 line-clamp-2 break-words">{room.title}</h3>
                   <div className="flex flex-wrap items-center gap-2 text-[12px] font-medium text-slate-600">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-widest font-mono ${room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'}`}>
                       {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}

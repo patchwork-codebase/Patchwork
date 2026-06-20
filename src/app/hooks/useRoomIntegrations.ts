@@ -39,7 +39,7 @@ export function useRoomIntegrations(roomId?: string) {
 
       // 404 means the table doesn't exist yet (migration not run) — return empty silently
       if (error) {
-        if ((error as any).code === 'PGRST116' || error.message?.includes('does not exist') || (error as any).status === 404 || (error as any).hint?.includes('room_integrations')) {
+        if ((error as any).code === 'PGRST116' || (error instanceof Error ? error.message : String(error))?.includes('does not exist') || (error as any).status === 404 || (error as any).hint?.includes('room_integrations')) {
           return [];
         }
         throw error;

@@ -19,7 +19,7 @@ export function ReadMoreText({ content, text, maxLength = 250, className = "" }:
       {!expanded ? (
         <button 
           onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
-          className="text-[#8B7CF8] hover:text-white font-bold text-[13px] mt-2 transition-colors focus-visible:outline-none"
+          className="text-primary-400 hover:text-white font-bold text-[13px] mt-2 transition-colors focus-visible:outline-none"
         >
           Read more
         </button>

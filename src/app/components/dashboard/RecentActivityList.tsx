@@ -43,7 +43,7 @@ export function RecentActivityList({
             recentEvents.map((event, idx) => (
               <div 
                 key={idx} 
-                className="flex gap-3 items-start min-w-0 p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="flex gap-3 items-start min-w-0 p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer focus-ring"
                 tabIndex={0}
               >
                 <span className={`w-2 h-2 rounded-full ${event.color} mt-1.5 shrink-0`} />
@@ -80,7 +80,7 @@ export function RecentActivityList({
             roomObservers.map((obs, idx) => (
               <div 
                 key={idx} 
-                className="flex items-center justify-between gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                className="flex items-center justify-between gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer focus-ring"
                 tabIndex={0}
               >
                 <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export function RecentActivityList({
                         navigate(`/dashboard/profile/${obs.userId}`);
                       }
                     }}
-                    className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-mono overflow-hidden shadow-sm cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all`}
+                    className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-mono overflow-hidden shadow-sm cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
                   >
                     <img src={getAvatarUrl(obs.name)} alt="Avatar" className="w-full h-full object-cover scale-110" />
                   </div>

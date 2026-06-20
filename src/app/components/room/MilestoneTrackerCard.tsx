@@ -99,12 +99,12 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
         body: { roomId }
       });
 
-      if (error) throw new Error(error.message || 'Failed to sync');
+      if (error) throw new Error((error instanceof Error ? error.message : String(error)) || 'Failed to sync');
       
       toast.success(`Successfully synced ${data.count} issues from Linear!`);
       queryClient.invalidateQueries({ queryKey: ['linear-issues', roomId] });
-    } catch (err: any) {
-      toast.error(`Linear sync failed: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Linear sync failed: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setIsSyncing(false);
     }
@@ -131,8 +131,8 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
       }
       queryClient.invalidateQueries({ queryKey: ["room-details", roomId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-    } catch (err: any) {
-      toast.error(`Reaction failed: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Reaction failed: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -158,8 +158,8 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
       await queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       setReplyText('');
       setReplyingTo(null);
-    } catch (err: any) {
-      toast.error(`Failed to post reply: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -233,7 +233,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                   <div className="flex items-center gap-3 px-2">
                     <button 
                       onClick={() => toggleReaction(milestone.id, 'sharp')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-[#8B7CF8]/10 text-[#8B7CF8] border-[#8B7CF8]/30' : `bg-transparent border-slate-200 ${isNested ? 'text-slate-500 hover:text-slate-900 hover:border-slate-400' : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'}`}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-400 border-primary-400/30' : `bg-transparent border-slate-200 ${isNested ? 'text-slate-500 hover:text-slate-900 hover:border-slate-400' : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'}`}`}
                     >
                       <span>✦</span> Sharp {sharpCount > 0 && <span className="opacity-70">{sharpCount}</span>}
                     </button>
@@ -271,7 +271,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                                 const uid = reply.observer_id || reply.observerId;
                                 if (uid) navigate(`/dashboard/profile/${uid}`);
                               }}
-                              className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all" 
+                              className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" 
                               alt="avatar" 
                             />
                             <div>
@@ -291,7 +291,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="mt-4 p-3 bg-[#110F1A] border border-[#8B7CF8]/30 rounded-2xl relative mx-2"
+                        className="mt-4 p-3 bg-[#110F1A] border border-primary-400/30 rounded-2xl relative mx-2"
                       >
                         <textarea
                           autoFocus
@@ -304,7 +304,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                           <button
                             onClick={() => submitReply(milestone.id)}
                             disabled={!replyText.trim()}
-                            className="px-4 py-1.5 bg-[#8B7CF8] hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                            className="px-4 py-1.5 bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-ring"
                           >
                             <Send className="w-3.5 h-3.5" /> Send
                           </button>

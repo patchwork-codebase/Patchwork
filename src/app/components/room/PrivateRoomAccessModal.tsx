@@ -34,7 +34,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
     if (window.confirm("Are you sure? Anyone using the old link will lose access.")) {
       regenerateTokenMutation.mutate(room.id, {
         onSuccess: () => toast.success("New invite link generated!"),
-        onError: (err: any) => toast.error(`Failed to regenerate token: ${err.message}`)
+        onError: (err: any) => toast.error(`Failed to regenerate token: ${(err instanceof Error ? err.message : String(err))}`)
       });
     }
   };
@@ -61,7 +61,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
         setDomainInput("");
         toast.success("Domain added!");
       },
-      onError: (err: any) => toast.error(`Failed to add domain: ${err.message}`)
+      onError: (err: any) => toast.error(`Failed to add domain: ${(err instanceof Error ? err.message : String(err))}`)
     });
   };
 
@@ -71,7 +71,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
     
     updateAccessMutation.mutate({ roomId: room.id, whitelistedDomains: newDomains }, {
       onSuccess: () => toast.success("Domain removed!"),
-      onError: (err: any) => toast.error(`Failed to remove domain: ${err.message}`)
+      onError: (err: any) => toast.error(`Failed to remove domain: ${(err instanceof Error ? err.message : String(err))}`)
     });
   };
 
@@ -93,7 +93,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
         >
           <div className="p-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Lock className="w-5 h-5 text-[#8B7CF8]" /> Private Room Access
+              <Lock className="w-5 h-5 text-primary-400" /> Private Room Access
             </h2>
             <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
               <X className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
                 </div>
                 <button
                   onClick={handleCopyLink}
-                  className="shrink-0 p-3 bg-[#8B7CF8]/10 text-[#8B7CF8] hover:bg-[#8B7CF8]/20 rounded-xl transition-colors border border-[#8B7CF8]/20"
+                  className="shrink-0 p-3 bg-primary-400/10 text-primary-400 hover:bg-primary-400/20 rounded-xl transition-colors border border-primary-400/20"
                   title="Copy link"
                 >
                   <Copy className="w-4 h-4" />
@@ -158,7 +158,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
                   onChange={(e) => setDomainInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain(); } }}
                   placeholder="e.g. yourcompany.com"
-                  className="flex-1 px-4 py-3 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 transition-all font-medium"
+                  className="flex-1 px-4 py-3 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
                 />
                 <button
                   onClick={handleAddDomain}

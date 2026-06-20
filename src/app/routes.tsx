@@ -114,6 +114,10 @@ export const router = createBrowserRouter([
         path: "/build-room/:roomId/decision/:decisionId",
         lazy: () => import("./components/room/DecisionDeepLink").then(m => ({ Component: m.default })),
       },
+      {
+        path: "/room/:id",
+        lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })),
+      },
 
       // Authenticated dashboard shell
       {

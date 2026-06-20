@@ -13,13 +13,17 @@ import { MilestoneTrackerCard } from "./MilestoneTrackerCard";
 import { ProductRoomStats } from "./ProductRoomStats";
 import { RoomHeader } from "./RoomHeader";
 import { RoomFeed } from "./RoomFeed";
+import { RoomOverviewTab } from "./RoomOverviewTab";
+import { RoomWorkspaceTab } from "./RoomWorkspaceTab";
+import { RoomTeamTab } from "./RoomTeamTab";
 import { useRoomDetails, useJoinPrivateRoom } from "../../hooks/useRooms";
 import { timeAgo } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { RequestExpertReviewModal } from "./RequestExpertReviewModal";
+import { RequestJoinModal } from "./RequestJoinModal";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
-  sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20', desc: 'Incisive, direct critique' },
+  sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-primary-400/10 text-primary-400 border border-primary-400/20', desc: 'Incisive, direct critique' },
   pushback: { emoji: '🔄', label: 'Push back', color: 'bg-rose-500/5 border-rose-500/20 text-rose-400', badge: 'bg-rose-500/10 text-rose-400 border border-rose-500/20', desc: 'Challenge this assumption' },
   tellmemore: { emoji: '💬', label: 'Tell me more', color: 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20', desc: 'I want to explore this deeper' },
   reply: { emoji: '↩️', label: 'Reply', color: 'bg-blue-500/5 border-blue-500/20 text-blue-400', badge: 'bg-blue-500/10 text-blue-400 border border-blue-500/20', desc: 'A direct reply' },
@@ -36,8 +40,9 @@ export default function BuildRoom() {
 
   const { data: room, isLoading: loading } = useRoomDetails(id);
   const joinPrivateRoomMutation = useJoinPrivateRoom();
-  const inviteToken = searchParams.get('invite');
+  const inviteToken = searchParams.get('invite_token') || searchParams.get('invite');
   const [hasAttemptedJoin, setHasAttemptedJoin] = useState(false);
+  const [hasAttemptedAcceptInvite, setHasAttemptedAcceptInvite] = useState(false);
 
   const [newUpdate, setNewUpdate] = useState('');
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -45,10 +50,11 @@ export default function BuildRoom() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [postingUpdate, setPostingUpdate] = useState(false);
   const [reactionModal, setReactionModal] = useState<{ open: boolean; updateId: string | null }>({ open: false, updateId: null });
-  const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions'>('updates');
+  const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions' | 'team'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
   const [linkedinShareOpen, setLinkedinShareOpen] = useState(false);
   const [requestExpertModalOpen, setRequestExpertModalOpen] = useState(false);
+  const [requestJoinModalOpen, setRequestJoinModalOpen] = useState(false);
   const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
   const [suggestedDecision, setSuggestedDecision] = useState<{ isDecision: boolean; extractedText: string | null } | null>(null);
   const [loggingDecision, setLoggingDecision] = useState(false);
@@ -67,11 +73,43 @@ export default function BuildRoom() {
   }, [quickUpdateMode, room, profile]);
 
   useEffect(() => {
-    if (!loading && !room && id && user && !hasAttemptedJoin && !joinPrivateRoomMutation.isPending) {
-      setHasAttemptedJoin(true);
-      joinPrivateRoomMutation.mutate({ roomId: id, inviteToken });
+    if (!loading && !user && inviteToken) {
+      navigate(`/signup?returnUrl=${encodeURIComponent(`/room/${id}?invite_token=${inviteToken}`)}`, { replace: true });
     }
-  }, [loading, room, id, user, inviteToken, hasAttemptedJoin, joinPrivateRoomMutation]);
+  }, [loading, user, inviteToken, id, navigate]);
+
+  useEffect(() => {
+    if (!loading && user && inviteToken && !hasAttemptedAcceptInvite) {
+      setHasAttemptedAcceptInvite(true);
+      supabase.rpc('accept_room_invitation', { p_token: inviteToken }).then(({ error }) => {
+        if (!error) {
+          toast.success("Invitation accepted! You have successfully joined the room.");
+          queryClient.invalidateQueries({ queryKey: ['room-details', id] });
+          // Clean up the URL
+          const newSearchParams = new URLSearchParams(searchParams);
+          newSearchParams.delete('invite_token');
+          newSearchParams.delete('invite');
+          navigate({ search: newSearchParams.toString() }, { replace: true });
+        } else {
+          // If it fails (maybe already accepted, expired, or wrong email), fallback to standard join
+          if (!room && !hasAttemptedJoin && !joinPrivateRoomMutation.isPending) {
+            setHasAttemptedJoin(true);
+            joinPrivateRoomMutation.mutate({ roomId: id!, inviteToken });
+          }
+        }
+      });
+    } else if (!loading && !room && id && user && !hasAttemptedJoin && !joinPrivateRoomMutation.isPending && !inviteToken) {
+      setHasAttemptedJoin(true);
+      joinPrivateRoomMutation.mutate({ roomId: id });
+    }
+  }, [loading, room, id, user, inviteToken, hasAttemptedAcceptInvite, hasAttemptedJoin, joinPrivateRoomMutation, searchParams, navigate, queryClient]);
+
+  useEffect(() => {
+    if (user && window.location.pathname.startsWith('/room/')) {
+      const search = window.location.search;
+      navigate(`/dashboard/room/${id}${search}`, { replace: true });
+    }
+  }, [user, id, navigate]);
 
   const handlePostUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,8 +179,8 @@ export default function BuildRoom() {
           setSuggestedDecision(data.result);
         }
       });
-    } catch (err: any) {
-      toast.error(`Failed to post update: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to post update: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       isPostingRef.current = false;
       setPostingUpdate(false);
@@ -164,8 +202,8 @@ export default function BuildRoom() {
       if (error) throw error;
       toast.success('Decision automatically logged!');
       setSuggestedDecision(null);
-    } catch (err: any) {
-      toast.error(`Failed to log decision: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to log decision: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setLoggingDecision(false);
     }
@@ -188,8 +226,8 @@ export default function BuildRoom() {
       const { error } = await supabase.from('reactions').insert(payload);
       if (error) throw error;
       toast.success('Reaction posted!');
-    } catch (err: any) {
-      toast.error(`Failed to post reaction: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to post reaction: ${(err instanceof Error ? err.message : String(err))}`);
     }
   }
 
@@ -204,8 +242,8 @@ export default function BuildRoom() {
         
       if (error) throw error;
       toast.success('Room closed successfully!');
-    } catch (err: any) {
-      toast.error(`Failed to close room: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to close room: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setClosingRoom(false);
     }
@@ -221,8 +259,8 @@ export default function BuildRoom() {
       if (error) throw error;
       if (count === 0) throw new Error("Update not found or permission denied.");
       toast.success("Update deleted");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete update");
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to delete update");
     } finally {
       setDeletingUpdateId(null);
     }
@@ -250,7 +288,7 @@ export default function BuildRoom() {
     if (joinPrivateRoomMutation.isPending) {
       return (
         <div className="max-w-[1000px] mx-auto px-6 py-20 text-center flex flex-col items-center justify-center">
-          <div className="w-12 h-12 border-4 border-[#8B7CF8] border-t-transparent rounded-full animate-spin mb-4" />
+          <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Requesting Access...</h2>
           <p className="text-slate-400">Verifying your invite token.</p>
         </div>
@@ -269,14 +307,24 @@ export default function BuildRoom() {
         </p>
         
         {!user && inviteToken ? (
-          <Link to={`/?returnUrl=/room/${id}?invite=${inviteToken}`} className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-[#8B7CF8]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+          <Link to={`/login?returnUrl=/room/${id}?invite_token=${inviteToken}`} className="bg-primary-400 hover:bg-[#7b6ce8] text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-primary-400/20 focus-ring">
             Sign In to Join
           </Link>
+        ) : user ? (
+          <div className="flex gap-4">
+            <Link to="/dashboard" className="text-slate-400 hover:text-white transition-colors inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white bg-white/5 px-6 py-3 rounded-xl hover:bg-white/10 font-bold">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Link>
+            <button onClick={() => setRequestJoinModalOpen(true)} className="bg-primary-400 hover:bg-[#7b6ce8] text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-primary-400/20 focus-ring">
+              Request to Join
+            </button>
+          </div>
         ) : (
           <Link to="/dashboard" className="text-slate-400 hover:text-white transition-colors inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white bg-white/5 px-6 py-3 rounded-xl hover:bg-white/10 font-bold">
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </Link>
         )}
+        <RequestJoinModal open={requestJoinModalOpen} onClose={() => setRequestJoinModalOpen(false)} roomId={id!} />
       </div>
     );
   }
@@ -291,9 +339,9 @@ export default function BuildRoom() {
   return (
     <>
       <div className="max-w-[1000px] w-full mx-auto px-4 sm:px-6 py-6 md:py-10 relative">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
-        <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded">
+        <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-8 transition-colors group focus-ring rounded">
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Dashboard
         </Link>
 
@@ -310,24 +358,25 @@ export default function BuildRoom() {
 
         <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
           {[
-            { key: 'overview', label: 'Overview', count: null },
-            { key: 'workspace', label: 'Product Workspace', count: null },
-            { key: 'updates', label: 'Updates', count: room.updates.length },
-            { key: 'reactions', label: 'Reactions', count: room.reactions.length },
-          ].map(tab => (
+            { key: 'overview', label: 'Overview', count: null, show: true },
+            { key: 'workspace', label: 'Product Workspace', count: null, show: true },
+            { key: 'updates', label: 'Updates', count: room.updates.length, show: true },
+            { key: 'reactions', label: 'Reactions', count: room.reactions.length, show: true },
+            { key: 'team', label: 'Team Members', count: room.observerCount, show: room.isPrivate }
+          ].filter(t => t.show).map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-5 py-3 text-[14px] font-bold border-b-2 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+              className={`px-5 py-3 text-[14px] font-bold border-b-2 transition-all flex items-center gap-2 focus-ring ${
                 activeTab === tab.key
-                  ? 'border-[#8B7CF8] text-[#8B7CF8]'
+                  ? 'border-primary-400 text-primary-400'
                   : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
               }`}
             >
               {tab.label}
               {tab.count !== null && (
                 <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold tracking-widest ${
-                  activeTab === tab.key ? 'bg-[#8B7CF8]/20 text-[#8B7CF8] ring-1 ring-[#8B7CF8]/30' : 'bg-white/5 text-slate-500'
+                  activeTab === tab.key ? 'bg-primary-400/20 text-primary-400 ring-1 ring-primary-400/30' : 'bg-white/5 text-slate-500'
                 }`}>{tab.count}</span>
               )}
             </button>
@@ -335,60 +384,15 @@ export default function BuildRoom() {
         </div>
 
         {activeTab === 'overview' && (
-          <div className="mt-2">
-            {(room.tags?.includes('product') || room.tags?.includes('product-management') || room.builderDomain?.toLowerCase() === 'product') && (
-              <ProductRoomStats roomId={id!} reactionsCount={room.reactions.length} roomCreatedAt={room.created_at || room.createdAt || new Date().toISOString()} />
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-4">
-              <DecisionLogCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} isBuilder={isBuilder} />
-              <MilestoneTrackerCard roomId={id!} user={user} reactions={room.reactions} queryClient={queryClient} />
-            </div>
-          </div>
+          <RoomOverviewTab room={room} id={id} user={user} reactions={room.reactions} queryClient={queryClient} isBuilder={isBuilder} />
         )}
 
         {activeTab === 'workspace' && (
-          <div className="mb-8 p-8 bg-white border border-slate-200 rounded-[24px] shadow-sm">
-            <div className="text-center mb-8">
-              <h3 className="text-[18px] font-bold text-slate-900 mb-2">Product Workspace</h3>
-              <p className="text-[14px] text-slate-500 max-w-[400px] mx-auto">
-                Connect your Notion PRDs, Linear Roadmaps, and GitHub repos to maintain a single source of truth.
-              </p>
-            </div>
-            
-            <div className="max-w-[800px] mx-auto mb-6 bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-start gap-3">
-              <Lock className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-[13px] font-bold text-slate-700 mb-1">Privacy & Security</h4>
-                <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Patchwork only stores reference URLs to your documents. We do not store your private code or PRD content. Observers can only view documents you have explicitly made public in the source application.</p>
-              </div>
-            </div>
+          <RoomWorkspaceTab roomId={id} builderId={room.builderId} user={user} />
+        )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-                <h4 className="text-[14px] font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#8B7CF8]"></span>
-                  Linked Artifacts
-                </h4>
-                <IntegrationsBar roomId={id!} builderId={room.builderId} isOwner={!!(user && user.id === room.builderId)} />
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center text-center">
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center">
-                  <div className="px-3 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 text-[#8B7CF8] text-[10px] font-bold uppercase tracking-wider rounded-full mb-3">
-                    Coming Soon
-                  </div>
-                  <span className="text-[14px] font-semibold text-slate-900">Native Artifacts</span>
-                  <p className="text-[12px] text-slate-500 mt-2 px-6 font-medium">
-                    Create and edit PRDs and Roadmaps directly inside Patchwork.
-                  </p>
-                </div>
-                <div className="opacity-40 pointer-events-none w-full">
-                  <div className="w-full h-8 bg-slate-200 rounded-md mb-2"></div>
-                  <div className="w-3/4 h-8 bg-slate-200 rounded-md mx-auto"></div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {activeTab === 'team' && (
+          <RoomTeamTab roomId={id!} isBuilder={isBuilder} roomTitle={room.title} builderName={room.builderName} />
         )}
 
         {activeTab === 'updates' && (
@@ -427,13 +431,13 @@ export default function BuildRoom() {
                   </div>
                 )}
                 <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden group">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#8B7CF8]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline gap-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-[#8B7CF8]/10 rounded-lg flex items-center justify-center">
-                        <Hammer className="w-4 h-4 text-[#8B7CF8]" />
+                      <div className="w-8 h-8 bg-primary-400/10 rounded-lg flex items-center justify-center">
+                        <Hammer className="w-4 h-4 text-primary-400" />
                       </div>
-                      <span className="text-[14px] font-extrabold text-[#8B7CF8] font-display">Post an update</span>
+                      <span className="text-[14px] font-extrabold text-primary-400 font-display">Post an update</span>
                     </div>
                     <span className="text-[11px] text-slate-500 font-medium ml-0 sm:ml-2">For general progress and commits (Use the 'Log Decision' tab below for architectural choices)</span>
                   </div>
@@ -441,7 +445,7 @@ export default function BuildRoom() {
                   {(() => {
                     const UPDATE_TYPES = [
                       { value: 'general',       label: 'General',       color: 'bg-slate-100 text-slate-600 border-slate-200' },
-                      { value: 'decision',      label: '⚡ Decision',    color: 'bg-[#8B7CF8]/10 text-[#6C5CE7] border-[#8B7CF8]/30' },
+                      { value: 'decision',      label: '⚡ Decision',    color: 'bg-primary-400/10 text-primary-500 border-primary-400/30' },
                       { value: 'scrap',         label: '🗑 Scrap',       color: 'bg-rose-50 text-rose-600 border-rose-200' },
                       { value: 'pivot',         label: '🔄 Pivot',       color: 'bg-orange-50 text-orange-600 border-orange-200' },
                       { value: 'blocker',       label: '🚧 Blocker',     color: 'bg-red-50 text-red-600 border-red-200' },
@@ -479,7 +483,7 @@ export default function BuildRoom() {
                     placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
                     rows={3}
                     maxLength={500}
-                    className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 resize-none mb-1 text-slate-900 placeholder-slate-500 font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                    className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 resize-none mb-1 text-slate-900 placeholder-slate-500 font-medium transition-all focus-ring"
                   />
                   <span className={`absolute bottom-3 right-3 text-[11px] font-mono font-bold transition-colors ${
                     newUpdate.length >= 480 ? 'text-rose-400' : 'text-slate-400'
@@ -500,14 +504,14 @@ export default function BuildRoom() {
                     onChange={e => setCodeSnippet(e.target.value)}
                     placeholder="Paste your code snippet here..."
                     rows={5}
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono text-slate-800 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/50 resize-none mb-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono text-slate-800 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 resize-none mb-4 transition-all focus-ring"
                   />
                 )}
 
                 <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
                   <div className="grid grid-cols-2 sm:flex items-center gap-2">
-                    <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-full text-[12px] font-bold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-                      <ImageIcon className="w-4 h-4 text-[#8B7CF8]" />
+                    <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-full text-[12px] font-bold cursor-pointer transition-all focus-ring">
+                      <ImageIcon className="w-4 h-4 text-primary-400" />
                       Attach visual
                       <input
                         type="file"
@@ -531,7 +535,7 @@ export default function BuildRoom() {
                     <button
                       type="button"
                       onClick={() => setShowCodeInput(!showCodeInput)}
-                      className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border ${showCodeInput ? 'border-[#8B7CF8] text-[#8B7CF8]' : 'border-slate-200 text-slate-600'} rounded-full text-[12px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]`}
+                      className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border ${showCodeInput ? 'border-primary-400 text-primary-400' : 'border-slate-200 text-slate-600'} rounded-full text-[12px] font-bold transition-all focus-ring`}
                     >
                       <Code className="w-4 h-4" />
                       Code snippet
@@ -541,7 +545,7 @@ export default function BuildRoom() {
                   <button
                     type="submit"
                     disabled={postingUpdate || (!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview)}
-                    className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-white text-slate-700 border border-slate-200 text-[13px] font-bold rounded-full hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                    className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-white text-slate-700 border border-slate-200 text-[13px] font-bold rounded-full hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-50 focus-ring"
                   >
                     {postingUpdate ? 'Posting...' : <><Send className="w-4 h-4" /> Post Update</>}
                   </button>
@@ -555,7 +559,7 @@ export default function BuildRoom() {
                 <div />
                 <button
                   onClick={() => setReactionModal({ open: true, updateId: null })}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-ring"
                 >
                   <MessageCircle className="w-4 h-4" /> React to room
                 </button>
@@ -585,14 +589,14 @@ export default function BuildRoom() {
           <div className="space-y-4">
             {room.reactions.length === 0 ? (
               <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
-                <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-30 text-[#8B7CF8]" />
+                <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-30 text-primary-400" />
                 <p className="font-extrabold text-[16px] text-slate-900 font-display mb-2">No reactions yet</p>
               </div>
             ) : (
               [...room.reactions].reverse().filter(r => r.text && r.text.trim().length > 0).map(r => {
                 const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                 return (
-                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]" tabIndex={0}>
+                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm focus-ring" tabIndex={0}>
                     <div className="text-xl mt-0.5">{cfg.emoji}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; badge: string }> = {
-  sharp:       { emoji: '⚡', label: 'Sharp',        badge: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border border-[#8B7CF8]/20' },
+  sharp:       { emoji: '⚡', label: 'Sharp',        badge: 'bg-primary-400/10 text-primary-400 border border-primary-400/20' },
   pushback:    { emoji: '🔄', label: 'Push back',    badge: 'bg-rose-500/10 text-rose-400 border border-rose-500/20' },
   tellmemore:  { emoji: '💬', label: 'Tell me more', badge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' },
   reply:       { emoji: '↩️', label: 'Reply',        badge: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
@@ -38,7 +38,7 @@ function StatusBadge({ status }: { status: string }) {
     shipped:   { label: 'Shipped',   icon: CheckCircle2, color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
     paused:    { label: 'Paused',    icon: PauseCircle,  color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
     stalled:   { label: 'Stalled',   icon: Archive,       color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
-    active:    { label: 'Active',    icon: Zap,           color: 'bg-[#8B7CF8]/10 text-[#8B7CF8] border-[#8B7CF8]/30' },
+    active:    { label: 'Active',    icon: Zap,           color: 'bg-primary-400/10 text-primary-400 border-primary-400/30' },
   };
   const cfg = map[status] || map['completed'];
   const Icon = cfg.icon;
@@ -123,7 +123,7 @@ export default function RoomLogPage() {
       <div className="max-w-[860px] mx-auto px-6 py-20 text-center">
         <Hammer className="w-12 h-12 mx-auto mb-4 text-slate-300" />
         <p className="text-[16px] font-bold text-slate-600 mb-2">Room not found</p>
-        <Link to="/dashboard/build-logs" className="text-[#8B7CF8] hover:text-[#6C5CE7] font-bold text-[13px] inline-flex items-center gap-2 transition-colors">
+        <Link to="/dashboard/build-logs" className="text-primary-400 hover:text-primary-500 font-bold text-[13px] inline-flex items-center gap-2 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Build Logs
         </Link>
       </div>
@@ -167,8 +167,8 @@ export default function RoomLogPage() {
       toast.success('Retrospective saved!');
       queryClient.invalidateQueries({ queryKey: ['room-details', roomId] });
       setRetroEditing(false);
-    } catch (err: any) {
-      toast.error(`Failed to save: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to save: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setRetroSaving(false);
     }
@@ -182,10 +182,10 @@ export default function RoomLogPage() {
       </button>
 
       <div className="bg-white border border-slate-200 rounded-[28px] p-6 sm:p-8 mb-6 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#8B7CF8]/5 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-primary-400/5 rounded-full blur-[80px] pointer-events-none" />
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 relative">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-2xl flex items-center justify-center shrink-0">
-            <BookOpen className="w-7 h-7 text-[#8B7CF8]" />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-400/10 border border-primary-400/20 rounded-2xl flex items-center justify-center shrink-0">
+            <BookOpen className="w-7 h-7 text-primary-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -198,7 +198,7 @@ export default function RoomLogPage() {
               <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" />Started {formatDate(room.createdAt)}</span>
               <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" />Built over {days} day{days !== 1 ? 's' : ''}</span>
               {room.builderName && (
-                <Link to={`/dashboard/profile/${room.builderId}`} className="flex items-center gap-1.5 hover:text-[#8B7CF8] transition-colors">
+                <Link to={`/dashboard/profile/${room.builderId}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
                   <img src={getAvatarUrl(room.builderId || room.builderName)} className="w-4 h-4 rounded-full" alt="builder" />
                   {room.builderName}
                   <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" />
@@ -214,7 +214,7 @@ export default function RoomLogPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {[
-          { icon: TrendingUp, label: 'Updates', value: updates.length, color: 'text-[#8B7CF8]', bg: 'bg-[#8B7CF8]/10' },
+          { icon: TrendingUp, label: 'Updates', value: updates.length, color: 'text-primary-400', bg: 'bg-primary-400/10' },
           { icon: Users, label: 'Observers', value: getObserverCount(room), color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
           { icon: Zap, label: 'Reactions', value: totalReactions, color: 'text-amber-500', bg: 'bg-amber-500/10' },
           { icon: MessageCircle, label: 'Replies', value: totalReplies, color: 'text-sky-500', bg: 'bg-sky-500/10' },
@@ -268,7 +268,7 @@ export default function RoomLogPage() {
                 </div>
               ) : (
                 <>
-                  <textarea autoFocus value={retroNote} onChange={e => setRetroNote(e.target.value)} rows={5} className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-[14px] text-slate-800 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/40 font-medium leading-relaxed" placeholder="What would you do differently? What worked well? What did you learn?" />
+                  <textarea autoFocus value={retroNote} onChange={e => setRetroNote(e.target.value)} rows={5} className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-[14px] text-slate-800 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400/40 font-medium leading-relaxed" placeholder="What would you do differently? What worked well? What did you learn?" />
                   <div className="flex gap-2 mt-3 justify-end">
                     <button onClick={() => setRetroEditing(false)} className="px-4 py-2 text-[12px] font-bold text-slate-500 hover:text-slate-700 transition-colors">Cancel</button>
                     <button onClick={saveRetroNote} disabled={retroSaving || !retroNote.trim()} className="px-5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-[12px] font-bold rounded-full transition-colors">{retroSaving ? 'Saving...' : 'Save retrospective'}</button>
@@ -281,11 +281,11 @@ export default function RoomLogPage() {
       )}
 
       {closingNote && (
-        <div className="bg-gradient-to-br from-[#8B7CF8]/5 to-[#6C5CE7]/5 border border-[#8B7CF8]/20 rounded-[20px] p-5 sm:p-6 mb-6 relative overflow-hidden">
-          <div className="absolute top-4 right-4 text-[60px] leading-none text-[#8B7CF8]/10 font-serif select-none">"</div>
+        <div className="bg-gradient-to-br from-primary-400/5 to-primary-500/5 border border-primary-400/20 rounded-[20px] p-5 sm:p-6 mb-6 relative overflow-hidden">
+          <div className="absolute top-4 right-4 text-[60px] leading-none text-primary-400/10 font-serif select-none">"</div>
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#8B7CF8] animate-pulse" />
-            <span className="text-[10px] font-bold text-[#8B7CF8] uppercase tracking-widest">Builder's closing note</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-widest">Builder's closing note</span>
             <span className="text-[10px] text-slate-400 font-mono ml-auto">{timeAgo(closingNote.createdAt)}</span>
           </div>
           <p className="text-[14px] sm:text-[15px] text-slate-700 font-medium leading-relaxed line-clamp-4">{closingNote.content}</p>
@@ -301,8 +301,8 @@ export default function RoomLogPage() {
             {topObservers.map((obs, i) => (
               <div key={obs.id} onClick={() => navigate(`/dashboard/profile/${obs.id}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
                 <span className="text-[11px] font-mono font-bold text-slate-300 w-4">{i + 1}</span>
-                <img src={getAvatarUrl(obs.id)} className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-[#8B7CF8]/30 transition-all" alt="observer" />
-                <span className="text-[13px] font-bold text-slate-800 flex-1 truncate group-hover:text-[#8B7CF8] transition-colors">{obs.name}</span>
+                <img src={getAvatarUrl(obs.id)} className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-primary-400/30 transition-all" alt="observer" />
+                <span className="text-[13px] font-bold text-slate-800 flex-1 truncate group-hover:text-primary-400 transition-colors">{obs.name}</span>
                 <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{obs.count} reaction{obs.count !== 1 ? 's' : ''}</span>
               </div>
             ))}
@@ -337,14 +337,14 @@ export default function RoomLogPage() {
                 const reactionCounts = updateReactions.reduce((acc: any, r: any) => { acc[r.type] = (acc[r.type] || 0) + 1; return acc; }, {} as Record<string, number>);
                 const isFirst = idx === 0;
                 return (
-                  <div key={update.id} className={`bg-white border rounded-[20px] p-5 sm:p-6 shadow-sm relative ${isFirst ? 'border-[#8B7CF8]/30 ring-1 ring-[#8B7CF8]/10' : 'border-slate-200'}`}>
+                  <div key={update.id} className={`bg-white border rounded-[20px] p-5 sm:p-6 shadow-sm relative ${isFirst ? 'border-primary-400/30 ring-1 ring-primary-400/10' : 'border-slate-200'}`}>
                     {isFirst && (
                       <div className="absolute top-4 right-4">
-                        <span className="text-[9px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Final update</span>
+                        <span className="text-[9px] font-bold text-primary-400 bg-primary-400/10 border border-primary-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Final update</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 mb-3">
-                      <img src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all" alt="author" />
+                      <img src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
                       <span className="text-[13px] font-bold text-slate-800">{update.authorName}</span>
                       <span className="text-[11px] text-slate-400 font-mono ml-auto">{timeAgo(update.createdAt)}</span>
                     </div>
@@ -380,10 +380,10 @@ export default function RoomLogPage() {
           {/* AI Feedback Insights Section */}
           {aiInsights && aiInsights.themes?.length > 0 && (
             <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-5 sm:p-6 mb-8 relative overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#8B7CF8] to-transparent opacity-30" />
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary-400 to-transparent opacity-30" />
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-[#8B7CF8]/10 flex items-center justify-center shrink-0">
-                  <Zap className="w-5 h-5 text-[#8B7CF8]" />
+                <div className="w-10 h-10 rounded-xl bg-primary-400/10 flex items-center justify-center shrink-0">
+                  <Zap className="w-5 h-5 text-primary-400" />
                 </div>
                 <div>
                   <h3 className="text-[16px] font-bold text-slate-900 font-display">AI Feedback Insights</h3>
@@ -422,7 +422,7 @@ export default function RoomLogPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                      <img src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all" alt="observer" />
+                      <img src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="observer" />
                       <span className="text-[12px] font-bold text-slate-800">{r.observerName}</span>
                       <span className="text-[10px] text-slate-400 font-mono ml-auto">{timeAgo(r.createdAt)}</span>
                     </div>
@@ -513,7 +513,7 @@ export default function RoomLogPage() {
                     </div>
                     {m.description && <p className="text-[13px] text-slate-500 leading-relaxed font-medium">{m.description}</p>}
                     {m.url && (
-                      <a href={m.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#8B7CF8] hover:underline font-bold mt-2">
+                      <a href={m.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-primary-400 hover:underline font-bold mt-2">
                         View in Linear ↗
                       </a>
                     )}

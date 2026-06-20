@@ -50,22 +50,22 @@ export default function VerificationSuccessModal({ isOpen, onClose, role }: Prop
             {role === 'builder' ? (
               <>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center shrink-0">
-                    <Rocket className="w-4 h-4 text-[#8B7CF8]" />
+                  <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
+                    <Rocket className="w-4 h-4 text-primary-400" />
                   </div>
                   <span className="text-sm font-medium text-slate-700">Initialize and manage build rooms</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center shrink-0">
-                    <Plus className="w-4 h-4 text-[#8B7CF8]" />
+                  <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
+                    <Plus className="w-4 h-4 text-primary-400" />
                   </div>
                   <span className="text-sm font-medium text-slate-700">Post updates to your timeline</span>
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center shrink-0">
-                  <MessageSquare className="w-4 h-4 text-[#8B7CF8]" />
+                <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-4 h-4 text-primary-400" />
                 </div>
                 <span className="text-sm font-medium text-slate-700">Comment and react to updates</span>
               </div>

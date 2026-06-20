@@ -144,8 +144,8 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         window.open('https://cal.com/patchwork-qzq15c/15min', '_blank');
       }
       onComplete(stepId);
-    } catch (err: any) {
-      setError(err.message || 'Save failed. Please try again.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Save failed. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -195,7 +195,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
                     stepId === 'update' && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
                       'e.g. I want updates about early-stage product decisions and launch pivots.'
               }
-              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all mb-6 resize-none"
+              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all mb-6 resize-none"
             />
           )}
 
@@ -205,7 +205,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
             <select
               value={selectedDomain}
               onChange={(e) => setSelectedDomain(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
             >
               {DOMAINS.map(d => (
                 <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
@@ -232,7 +232,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
             whileTap={{ scale: saving ? 1 : 0.98 }}
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_16px_rgba(108,92,231,0.3)]"
+            className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_16px_rgba(108,92,231,0.3)]"
           >
             {saving
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
@@ -378,13 +378,13 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
         animate={{ opacity: 1, y: 0 }}
         className="mb-6 bg-white border border-slate-200 rounded-[20px] p-5 relative overflow-hidden shadow-sm"
       >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-[#8B7CF8]/50 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-primary-400/50 to-transparent" />
 
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h3 className="text-[15px] font-extrabold text-slate-900">
               Complete your setup{' '}
-              <span className="text-[#8B7CF8]">({completedCount}/{steps.length})</span>
+              <span className="text-primary-400">({completedCount}/{steps.length})</span>
             </h3>
             <p className="text-[12px] text-slate-500 mt-0.5">
               Fills your profile, creates your room, and syncs to your account
@@ -398,7 +398,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
             initial={{ width: 0 }}
             animate={{ width: `${(completedCount / steps.length) * 100}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] rounded-full"
+            className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full"
           />
         </div>
 
@@ -419,7 +419,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
               >
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all ${done
                     ? 'bg-emerald-500/20 border-emerald-500/30'
-                    : 'bg-white border-slate-200 group-hover:border-[#8B7CF8]/40'
+                    : 'bg-white border-slate-200 group-hover:border-primary-400/40'
                   }`}>
                   {done
                     ? <Check className="w-3.5 h-3.5 text-emerald-400" />

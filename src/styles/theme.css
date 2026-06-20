@@ -138,6 +138,12 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-50: var(--purple-50);
+  --color-primary-100: var(--purple-100);
+  --color-primary-200: var(--purple-200);
+  --color-primary-400: var(--purple-light);
+  --color-primary-500: var(--purple);
+  --color-primary-600: var(--purple-dark);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -275,4 +281,8 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@utility focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400;
 }

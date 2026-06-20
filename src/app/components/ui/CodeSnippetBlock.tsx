@@ -30,7 +30,7 @@ export function CodeSnippetBlock({ code }: { code: string }) {
             e.stopPropagation();
             handleCopy();
           }}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/[0.05] rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/[0.05] rounded-md transition-all focus-ring"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? 'Copied' : 'Copy'}
