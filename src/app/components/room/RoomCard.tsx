@@ -126,6 +126,6 @@ export function RoomCard({ room }: RoomCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -8,7 +8,8 @@ import { useNotifications } from "../../hooks/useNotifications";
 
 import { getAvatarUrl } from "../../utils/helpers";
 
-import { HammerIcon, DashboardIcon, SearchIcon, ActivityIcon, EyeIcon, CompassIcon, PlusIcon, LogOutIcon, UserIcon, ZapIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon } from "./LayoutIcons";
+import { HammerIcon, DashboardIcon, SearchIcon, ActivityIcon, EyeIcon, CompassIcon, PlusIcon, LogOutIcon, UserIcon, ZapIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, LightbulbIcon } from "./LayoutIcons";
+
 
 /* ─── Layout ────────────────────────────────────────────────────── */
 
@@ -64,17 +65,19 @@ export default function Layout() {
       ? 'learning-hub'
     : location.pathname.startsWith('/dashboard/rooms')
       ? 'rooms'
-      : location.pathname.startsWith('/dashboard/build-logs')
-        ? 'logs'
-        : location.pathname.startsWith('/dashboard/observer')
-          ? 'observer'
-          : location.pathname.startsWith('/dashboard/roadmap')
-            ? 'roadmap'
-            : location.pathname.startsWith('/dashboard/milestones')
-              ? 'milestones'
-              : location.pathname.startsWith('/dashboard/analytics')
-                ? 'analytics'
-                : activeTab;
+    : location.pathname.startsWith('/dashboard/build-logs')
+      ? 'logs'
+    : location.pathname.startsWith('/dashboard/observer')
+      ? 'observer'
+    : location.pathname.startsWith('/dashboard/roadmap')
+      ? 'roadmap'
+    : location.pathname.startsWith('/dashboard/milestones')
+      ? 'milestones'
+    : location.pathname.startsWith('/dashboard/analytics')
+      ? 'analytics'
+    : location.pathname.startsWith('/dashboard/discovery')
+      ? 'discovery'
+      : activeTab;
 
   useEffect(() => {
     if (!loading && !user) {

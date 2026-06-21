@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { DashboardIcon, HammerIcon, ZapIcon, ActivityIcon, EyeIcon, CompassIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, UserIcon, LogOutIcon } from "./LayoutIcons";
+import { DashboardIcon, HammerIcon, ZapIcon, ActivityIcon, EyeIcon, CompassIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, UserIcon, LogOutIcon, LightbulbIcon } from "./LayoutIcons";
+
 
 interface DesktopSidebarProps {
   activeSection: string;
@@ -90,6 +91,15 @@ export function DesktopSidebar({
               <CompassIcon />
               Explore builders
             </Link>
+
+            <Link
+              to="/dashboard/discovery"
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mt-1 border ${activeSection === 'discovery' ? 'bg-amber-500/15 text-amber-600 font-bold border-amber-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+            >
+              <LightbulbIcon />
+              Discovery mode
+            </Link>
+
 
             {/* <Link
               to="/learning-hub"
@@ -186,6 +196,13 @@ export function DesktopSidebar({
                         className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
                       >
                         <UserIcon /> Profile
+                      </Link>
+                      <Link
+                        to="/dashboard/discovery"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                      >
+                        <LightbulbIcon /> Discovery Mode
                       </Link>
                       <button
                         onClick={() => {

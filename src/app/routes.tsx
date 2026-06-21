@@ -139,6 +139,8 @@ export const router = createBrowserRouter([
           { path: "roadmap", lazy: () => import("./components/dashboard/RoadmapPage").then(m => ({ Component: m.default })) },
           { path: "milestones", lazy: () => import("./components/dashboard/MilestonesPage").then(m => ({ Component: m.default })) },
           { path: "analytics", lazy: () => import("./components/dashboard/AnalyticsPage").then(m => ({ Component: m.default })) },
+          { path: "discovery", lazy: () => import("./components/discovery/DiscoveryHub").then(m => ({ Component: m.default })) },
+          { path: "discovery/:id", lazy: () => import("./components/discovery/DiscoveryDashboard").then(m => ({ Component: m.default })) },
         ],
       },
     ]

@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { User as UserIcon, Compass as CompassIcon, LogOut as LogOutIcon } from "lucide-react";
+import { User as UserIcon, Compass as CompassIcon, LogOut as LogOutIcon, Lightbulb as LightbulbIcon } from "lucide-react";
+
 
 interface MobileBottomNavProps {
   activeSection: string;
@@ -175,6 +176,13 @@ export function MobileBottomNav({
                     className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                   >
                     <UserIcon /> My Profile
+                  </Link>
+                  <Link
+                    to="/dashboard/discovery"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                  >
+                    <LightbulbIcon /> Discovery Mode
                   </Link>
                   <button
                     onClick={() => {

@@ -216,7 +216,22 @@ export default function CreateRoom() {
       <div className="mb-10">
 
         <h1 className="text-[40px] font-extrabold text-slate-900 font-display tracking-tight leading-tight mb-2">Create a Build Room</h1>
-        <p className="text-[15px] text-slate-600 font-medium">Initialize a dedicated space to share your work-in-progress.</p>
+        <p className="text-[15px] text-slate-600 font-medium mb-6">Initialize a dedicated space to share your work-in-progress.</p>
+        
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-amber-800">Still validating your idea?</h4>
+            <p className="text-xs text-amber-700 font-medium leading-relaxed">
+              Use <strong>Discovery Mode</strong> to define hypotheses, record customer interviews, and calculate validation confidence before writing code.
+            </p>
+          </div>
+          <Link 
+            to="/dashboard/discovery" 
+            className="shrink-0 text-xs font-bold text-amber-800 bg-amber-500/20 hover:bg-amber-500/30 px-4 py-2 rounded-xl transition-all self-start sm:self-center"
+          >
+            Start Discovery Mode →
+          </Link>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
