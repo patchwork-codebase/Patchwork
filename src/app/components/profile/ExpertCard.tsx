@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "motion/react";
 import { Star, CheckCircle, TrendingUp, Clock, ShieldCheck, Users } from "lucide-react";
 import { ExpertBadge } from "./ExpertBadge";
 
@@ -38,11 +39,11 @@ export function ExpertCard({ profile }: ExpertCardProps) {
           { icon: ShieldCheck, label: "Open slots", value: (profile as any).expertOpenSlots ?? 3 },
           { icon: Users, label: "Followers", value: profile.followerCount || 0 },
         ].map(({ icon: Icon, label, value }) => (
-          <div key={label} className="bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
+          <motion.div whileHover={{ y: -2, scale: 1.02 }} key={label} className="bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
             <Icon className="w-4 h-4 text-primary-400 mx-auto mb-1" />
             <div className="text-[16px] font-extrabold text-slate-900">{value}</div>
             <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">{label}</div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

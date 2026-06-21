@@ -2,6 +2,7 @@
  * RoomCard – reusable room preview card used in ExplorePage and Dashboard.
  * Previously, identical card markup was duplicated in both pages.
  */
+import { motion } from "motion/react";
 import { useNavigate } from "react-router";
 import { Clock } from "lucide-react";
 import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
@@ -35,9 +36,12 @@ export function RoomCard({ room }: RoomCardProps) {
   const observerCount = getObserverCount(room);
 
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -4, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => navigate(`/dashboard/room/${room.id}`)}
-      className="group bg-white border border-slate-200 hover:border-primary-400/50 rounded-[28px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/5 relative overflow-hidden"
+      className="group bg-white border border-slate-200 hover:border-primary-400/50 rounded-[28px] flex flex-col cursor-pointer transition-colors hover:shadow-xl hover:shadow-primary-400/10 relative overflow-hidden"
     >
       {/* Cover Banner */}
       <div

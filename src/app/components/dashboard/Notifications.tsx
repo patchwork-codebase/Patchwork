@@ -70,12 +70,21 @@ export default function Notifications() {
             <span className="text-[14px]">Loading notifications...</span>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">
-            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-4">
+          <div className="p-16 flex flex-col items-center justify-center text-center text-slate-500 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-[40px] pointer-events-none" />
+            <div className="w-16 h-16 rounded-[20px] bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-5 shadow-sm text-primary-400">
               <span className="text-2xl">🔔</span>
             </div>
-            <h3 className="text-slate-900 font-bold text-[16px] mb-1">All caught up</h3>
-            <p className="text-[13px]">You don't have any notifications yet.</p>
+            <h3 className="text-slate-900 font-extrabold text-[20px] mb-2 tracking-tight">You're all caught up!</h3>
+            <p className="text-[14px] text-slate-500 max-w-[280px] leading-relaxed mb-6">
+              You don't have any notifications right now. Discover active rooms to follow.
+            </p>
+            <Link
+              to="/explore"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[13px] font-bold transition-all shadow-sm active:scale-95"
+            >
+              Explore Builders →
+            </Link>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">

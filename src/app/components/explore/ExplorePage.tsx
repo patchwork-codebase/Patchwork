@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Compass } from "lucide-react";
 import { useRooms } from "../../hooks/useRooms";
 import { RoomCard } from "../room/RoomCard";
@@ -22,13 +22,13 @@ function useDebounce<T>(value: T, delay: number): T {
 export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  
+
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const { data, isLoading } = useRooms(debouncedSearch, selectedCategory);
 
   // useRooms is an infinite query, so data.pages contains the arrays of rooms
-  const rooms = data?.pages.flat() ?? [];
+  const rooms = useMemo(() => data?.pages.flat() ?? [], [data?.pages]);
 
   return (
     <div className="max-w-[1080px] w-full mx-auto px-4 sm:px-6 py-12 relative overflow-hidden">
@@ -50,10 +50,10 @@ export default function ExplorePage() {
       </div>
 
       <div className="mb-8 flex justify-center">
-        <ExploreCategories 
-          categories={[...EXPLORE_CATEGORIES]} 
-          selected={selectedCategory} 
-          onSelect={setSelectedCategory} 
+        <ExploreCategories
+          categories={[...EXPLORE_CATEGORIES]}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
         />
       </div>
 
