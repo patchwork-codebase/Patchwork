@@ -40,6 +40,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/v1/, ''),
       },
+      '/linear-api': {
+        target: 'https://api.linear.app/graphql',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/linear-api/, ''),
+      },
     },
   },
 })

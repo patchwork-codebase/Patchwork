@@ -33,20 +33,9 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
   const allDecisions = decisions.filter(d => d.type === 'decision');
   const decisionsThisWeek = allDecisions.filter(d => new Date(d.created_at) > oneWeekAgo).length;
   
-  // Scrapped
   const allScrapped = decisions.filter(d => d.type === 'scrapped');
-  // Just making up a "rerouted" stat from scrapped for flavor, as requested by mockup matching
-  const reroutedCount = Math.floor(allScrapped.length * 0.6) || 0; 
-
-  // Reactions
-  const updatesCount = 1; // We can pass this as a prop, but let's just make it look good for now or calculate properly.
-  // Actually, we need updates count. Let's get it from the prop or assume a safe average.
-  const avgPerUpdate = reactionsCount > 0 ? (reactionsCount / 8).toFixed(1) : "0.0"; // Placeholder calculation since we don't have updates count easily here without passing it.
-
-  // Days to Target (Mocking this for now as target_date isn't on the rooms table yet)
-  // Let's use "Days Active" instead if we can't do target.
+  // Days Active
   const daysActive = Math.max(1, Math.floor((now.getTime() - new Date(roomCreatedAt).getTime()) / (1000 * 60 * 60 * 24)));
-  const daysAhead = Math.floor(daysActive / 2); // Mocked subtext
 
   if (isLoading) {
     return (
@@ -81,7 +70,7 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
             {allScrapped.length}
           </p>
           <p className="text-[11px] font-medium text-slate-500 mt-1.5">
-            {reroutedCount} rerouted
+            decisions pivoted
           </p>
         </div>
       </div>
@@ -93,8 +82,8 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
           <p className="text-[32px] font-bold text-slate-900 leading-none mb-1">
             {reactionsCount}
           </p>
-          <p className="text-[11px] font-medium text-emerald-500 mt-1.5">
-            ↑ {avgPerUpdate} avg/update
+          <p className="text-[11px] font-medium text-slate-500 mt-1.5">
+            total engagements
           </p>
         </div>
       </div>
@@ -106,8 +95,8 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
           <p className="text-[32px] font-bold text-slate-900 leading-none mb-1">
             {daysActive}
           </p>
-          <p className="text-[11px] font-medium text-emerald-500 mt-1.5">
-            ↑ {daysAhead}d ahead of schedule
+          <p className="text-[11px] font-medium text-slate-500 mt-1.5">
+            since creation
           </p>
         </div>
       </div>

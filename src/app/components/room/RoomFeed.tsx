@@ -1,5 +1,6 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
+import { useSearchParams } from "react-router";
 import { Hammer, MessageCircle, Trash2 } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
@@ -18,25 +19,54 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import type { Room, Reaction, Update, ReactionConfig } from "../../types";
 
-export function RoomFeed({ 
-  room, 
-  user, 
-  isBuilder, 
-  reactionsByUpdate, 
-  expandedUpdates, 
-  setExpandedUpdates, 
-  setReactionModal, 
-  deletingUpdateId, 
+const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
+  decision: { label: 'Decision', color: 'bg-primary-400/10 text-primary-500 border-primary-400/30', icon: '⚡' },
+  scrap: { label: 'Scrap', color: 'bg-rose-50 text-rose-600 border-rose-200', icon: '🗑' },
+  pivot: { label: 'Pivot', color: 'bg-orange-50 text-orange-600 border-orange-200', icon: '🔄' },
+  blocker: { label: 'Blocker', color: 'bg-red-50 text-red-600 border-red-200', icon: '🚧' },
+  insight: { label: 'Insight', color: 'bg-amber-50 text-amber-600 border-amber-200', icon: '💡' },
+  open_question: { label: 'Open question', color: 'bg-blue-50 text-blue-600 border-blue-200', icon: '❓' },
+  shipped: { label: 'Shipped', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: '🚀' }
+};
+
+interface RoomFeedProps {
+  room: Room;
+  user: { id: string } | null;
+  isBuilder: boolean;
+  reactionsByUpdate: Record<string, Reaction[]>;
+  expandedUpdates: Record<string, boolean>;
+  setExpandedUpdates: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setReactionModal: (update: Update | null) => void;
+  deletingUpdateId: string | null;
+  handleDeleteUpdate: (updateId: string) => void;
+  setNewUpdate: (content: string) => void;
+  updateTextAreaRef: React.RefObject<HTMLTextAreaElement>;
+  REACTION_CONFIG: ReactionConfig;
+}
+
+export function RoomFeed({
+  room,
+  user,
+  isBuilder,
+  reactionsByUpdate,
+  expandedUpdates,
+  setExpandedUpdates,
+  setReactionModal,
+  deletingUpdateId,
   handleDeleteUpdate,
   setNewUpdate,
   updateTextAreaRef,
   REACTION_CONFIG
-}: any) {
+}: RoomFeedProps) {
+  const [searchParams] = useSearchParams();
+  const updateIdToScroll = searchParams.get('updateId');
+
   if (room.updates.length === 0) {
     return (
       <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
-        <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-[#8B7CF8]" />
+        <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-primary-400" />
         <p className="font-extrabold text-[16px] text-slate-900 font-display mb-2">No updates yet</p>
         {isBuilder && (
           <>
@@ -56,22 +86,30 @@ export function RoomFeed({
   }
 
   const sortedUpdates = [...room.updates].reverse();
+  const initialTopMostItemIndex = updateIdToScroll 
+    ? Math.max(0, sortedUpdates.findIndex((u: any) => u.id === updateIdToScroll)) 
+    : 0;
 
   return (
     <Virtuoso
       useWindowScroll
+      initialTopMostItemIndex={initialTopMostItemIndex}
       data={sortedUpdates}
       itemContent={(index, update) => {
         const updateReactions = reactionsByUpdate[update.id] || [];
         const isFigmaUrl = update.content.includes("figma.com/");
+        const isTarget = update.id === updateIdToScroll;
 
         return (
-          <div key={update.id} className="bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 shadow-sm relative overflow-hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] mb-6" tabIndex={0}>
+          <div key={update.id} id={`update-${update.id}`} className={`bg-white border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 ${isTarget ? 'border-primary-400 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400' : 'border-slate-200 shadow-sm'}`} tabIndex={0}>
+            {isTarget && (
+              <div className="absolute inset-0 bg-primary-400/5 pointer-events-none animate-pulse" />
+            )}
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] flex items-center justify-center text-white text-[15px] font-extrabold font-display shadow-inner">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 flex items-center justify-center text-white text-[15px] font-extrabold font-display shadow-inner">
                   {update.authorName[0]?.toUpperCase()}
                 </div>
                 <div>
@@ -81,6 +119,15 @@ export function RoomFeed({
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide">{timeAgo(update.createdAt)}</div>
+                    {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType] && (
+                      <>
+                        <span className="text-slate-300">•</span>
+                        <div className={`px-2 py-0.5 rounded text-[10px] font-bold border ${UPDATE_TYPE_UI[update.updateType].color} flex items-center gap-1`}>
+                          <span>{UPDATE_TYPE_UI[update.updateType].icon}</span>
+                          {UPDATE_TYPE_UI[update.updateType].label}
+                        </div>
+                      </>
+                    )}
                     {update.authorId === user?.id && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -128,7 +175,7 @@ export function RoomFeed({
               {!isBuilder && room.status === 'active' && (
                 <button
                   onClick={() => setReactionModal({ open: true, updateId: update.id })}
-                  className="text-[11px] text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-full px-4 py-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                  className="text-[11px] text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-full px-4 py-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest focus-ring"
                 >
                   React
                 </button>
@@ -140,7 +187,7 @@ export function RoomFeed({
             ) : (
               <ReadMoreText 
                 content={update.content} 
-                className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-[#8B7CF8]/40 pl-4 sm:pl-5 mb-4 relative z-10" 
+                className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-primary-400/40 pl-4 sm:pl-5 mb-4 relative z-10" 
               />
             )}
 
@@ -165,12 +212,12 @@ export function RoomFeed({
             {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
             {updateReactions.length > 0 && (() => {
-              const reactionCounts = updateReactions.reduce((acc: any, r: any) => {
+              const reactionCounts = updateReactions.reduce((acc: Record<string, number>, r: Reaction) => {
                 acc[r.type] = (acc[r.type] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>);
               
-              const textReactions = updateReactions.filter((r: any) => r.text && r.text.trim().length > 0);
+              const textReactions = updateReactions.filter((r: Reaction) => r.text && r.text.trim().length > 0);
               const isExpanded = expandedUpdates[update.id];
               const visibleReactions = isExpanded ? textReactions : textReactions.slice(0, 3);
               const hiddenCount = textReactions.length - visibleReactions.length;
@@ -193,7 +240,7 @@ export function RoomFeed({
                   {/* Text Reactions */}
                   {visibleReactions.length > 0 && (
                     <div className="pt-4 border-t border-white/[0.06] space-y-3">
-                      {visibleReactions.map((r: any) => {
+                      {visibleReactions.map((r: Reaction) => {
                         const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                         return (
                           <div key={r.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -213,7 +260,7 @@ export function RoomFeed({
                                       updateTextAreaRef.current?.focus();
                                       window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
-                                    className="text-[10px] font-bold text-[#8B7CF8] hover:text-slate-900 ml-2 underline decoration-[#8B7CF8]/30 underline-offset-2 transition-colors"
+                                    className="text-[10px] font-bold text-primary-400 hover:text-slate-900 ml-2 underline decoration-primary-400/30 underline-offset-2 transition-colors"
                                   >
                                     Draft Follow-up
                                   </button>
@@ -227,8 +274,8 @@ export function RoomFeed({
                       
                       {hiddenCount > 0 && (
                         <button
-                          onClick={() => setExpandedUpdates((prev: any) => ({ ...prev, [update.id]: true }))}
-                          className="text-[12px] font-bold text-[#8B7CF8] hover:text-slate-900 transition-colors"
+                          onClick={() => setExpandedUpdates((prev: Record<string, boolean>) => ({ ...prev, [update.id]: true }))}
+                          className="text-[12px] font-bold text-primary-400 hover:text-slate-900 transition-colors"
                         >
                           View {hiddenCount} more {hiddenCount === 1 ? 'reply' : 'replies'}...
                         </button>

@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .upsert(payload, { onConflict: 'id' });
       if (error) throw error;
     } catch (err) {
-      console.log('Could not create or update profile row:', err);
+      console.error('Could not create or update profile row:', err);
     }
   }
 
@@ -167,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(profile);
       return profile;
     } catch (err) {
-      console.log('Could not load profile:', err);
+      console.error('Could not load profile:', err);
       return null;
     }
   }
@@ -439,69 +439,12 @@ export async function sendVerificationEmailDirect(userId: string, email: string,
 }
 
 export async function sendWelcomeEmailDirect(email: string, name: string, role: string) {
-  const resendRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer re_bxj3KLqG_nh6hxq34aHSK7UbWhLZA9FPr',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'Patchwork <welcome@joinpatchwork.xyz>',
-      to: email,
-      subject: 'Welcome to Patchwork! 🎉',
-      html: `
-        <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-          <div style="text-align: center; margin-bottom: 32px;">
-            <div style="font-size: 24px; font-weight: 800; color: #6C5CE7; margin-bottom: 8px;">
-              patchwork
-            </div>
-            <h1 style="font-size: 32px; font-weight: 800; color: #1a1a1a; margin: 0;">
-              Welcome to Patchwork!
-            </h1>
-            <p style="font-size: 18px; color: #4a5568; margin-top: 8px;">
-              Hi ${name}, thanks for joining!
-            </p>
-          </div>
-
-          <div style="background: linear-gradient(135deg, #6C5CE7 0%, #8B7CF8 100%); border-radius: 16px; padding: 24px; color: white; margin-bottom: 32px;">
-            <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 8px 0;">
-              You're part of the founding cohort!
-            </h2>
-            <p style="font-size: 16px; margin: 0; opacity: 0.9;">
-              As a ${role === 'observer' ? 'observer' : 'builder'}, you're helping us build the future of transparent, collaborative product development.
-            </p>
-          </div>
-
-          <div style="background: #f7fafc; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <h3 style="font-size: 16px; font-weight: 600; color: #1a1a1a; margin-top: 0;">
-              What's next?
-            </h3>
-            <ul style="margin: 16px 0 0 0; padding-left: 20px; color: #4a5568;">
-              <li style="margin-bottom: 8px;">${role === 'observer' ? 'Explore live rooms and give feedback' : 'Create your first build room'}</li>
-              <li style="margin-bottom: 8px;">Join the community</li>
-              <li>Start sharing your work!</li>
-            </ul>
-          </div>
-
-          <div style="text-align: center; margin-top: 32px;">
-            <p style="font-size: 14px; color: #718096; margin: 0;">
-              Check out <a href="https://joinpatchwork.xyz" style="color: #6C5CE7; text-decoration: none;">joinpatchwork.xyz</a> to get started!
-            </p>
-            <p style="font-size: 14px; color: #718096; margin: 8px 0 0 0;">
-              If you have any questions, reply to this email!
-            </p>
-            <p style="font-size: 14px; color: #718096; margin: 8px 0 0 0;">
-              — The Patchwork Team
-            </p>
-          </div>
-        </div>
-      `
-    })
+  const { error } = await supabase.functions.invoke('send-welcome-email', {
+    body: { email, name, role }
   });
 
-  if (!resendRes.ok) {
-    const errorText = await resendRes.text();
-    console.error('Resend direct welcome call failed:', errorText);
+  if (error) {
+    console.error('Failed to call send-welcome-email edge function:', error);
   }
 }
 

@@ -15,10 +15,45 @@ serve(async (req) => {
     const eventType = req.headers.get('x-github-event');
     const signature = req.headers.get('x-hub-signature-256');
 
-    // In a real implementation, we would validate `signature` using a secret stored in Deno.env.
-    // For MVP, we proceed to parse the payload.
+    if (!signature) {
+      return new Response('Missing signature', { status: 401 });
+    }
+
+    const payloadText = await req.text();
     
-    const payload = await req.json();
+    const GITHUB_WEBHOOK_SECRET = Deno.env.get('GITHUB_WEBHOOK_SECRET') || '';
+    if (GITHUB_WEBHOOK_SECRET) {
+      const parts = signature.split('=');
+      if (parts.length !== 2 || parts[0] !== 'sha256') {
+        return new Response('Invalid signature format', { status: 401 });
+      }
+      
+      const key = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(GITHUB_WEBHOOK_SECRET),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['verify']
+      );
+
+      const sigBytes = new Uint8Array(parts[1].length / 2);
+      for (let i = 0; i < parts[1].length; i += 2) {
+        sigBytes[i / 2] = parseInt(parts[1].substring(i, i + 2), 16);
+      }
+
+      const isValid = await crypto.subtle.verify(
+        'HMAC',
+        key,
+        sigBytes,
+        new TextEncoder().encode(payloadText)
+      );
+
+      if (!isValid) {
+        return new Response('Invalid signature', { status: 401 });
+      }
+    }
+
+    const payload = JSON.parse(payloadText);
 
     if (eventType !== 'push') {
       return new Response(JSON.stringify({ message: `Ignored event: ${eventType}` }), {

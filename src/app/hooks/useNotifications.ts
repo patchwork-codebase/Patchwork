@@ -6,13 +6,16 @@ export interface NotificationMetadata {
   reaction_type?: string;
   reaction_text?: string;
   room_title?: string;
+  room_id?: string;
+  update_id?: string;
+  decision_text?: string;
 }
 
 export interface Notification {
   id: string;
   user_id: string;
   actor_id: string;
-  type: 'reaction' | 'room_follow';
+  type: 'reaction' | 'room_follow' | 'decision';
   reference_id: string;
   read: boolean;
   metadata: NotificationMetadata;

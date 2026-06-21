@@ -38,7 +38,7 @@ export function ActiveRoomPanel({
       <div className="p-5 border-b border-slate-200 flex items-center justify-between shrink-0 bg-white gap-4">
         <div className="flex flex-col min-w-0">
           <h3 className="text-[16px] sm:text-[18px] font-extrabold text-slate-900 leading-tight mb-0.5 line-clamp-2">{room.title}</h3>
-          <span className="text-[12px] text-[#8B7CF8] font-bold">Active Workspace</span>
+          <span className="text-[12px] text-primary-400 font-bold">Active Workspace</span>
         </div>
         <a 
           href={`/dashboard/room/${room.id}`}
@@ -55,7 +55,7 @@ export function ActiveRoomPanel({
         >
           <Zap className="w-4 h-4" /> Decision Log
           {activeTab === 'decisions' && (
-            <motion.div layoutId="room-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B7CF8]" />
+            <motion.div layoutId="room-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-400" />
           )}
         </button>
         <button
@@ -64,7 +64,7 @@ export function ActiveRoomPanel({
         >
           <Target className="w-4 h-4" /> Milestones
           {activeTab === 'milestones' && (
-            <motion.div layoutId="room-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B7CF8]" />
+            <motion.div layoutId="room-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-400" />
           )}
         </button>
       </div>
@@ -85,6 +85,7 @@ export function ActiveRoomPanel({
                 reactions={roomReactions} 
                 queryClient={queryClient} 
                 isNested={true}
+                isBuilder={room.builder_id === user?.id || room.builderId === user?.id}
               />
             </motion.div>
           ) : (

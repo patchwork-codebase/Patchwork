@@ -23,15 +23,22 @@ const RouteErrorBoundary = () => {
     error?.message?.includes("Importing a module script failed") ||
     (error?.name === "TypeError" && error?.message?.includes("fetch"))
   ) {
-    const reloadCount = parseInt(sessionStorage.getItem("chunk-reload-count") || "0", 10);
-    if (reloadCount < 2) {
-      sessionStorage.setItem("chunk-reload-count", (reloadCount + 1).toString());
-      window.location.reload();
-      return null;
+    try {
+      const reloadCount = parseInt(sessionStorage.getItem("chunk-reload-count") || "0", 10);
+      if (reloadCount < 2) {
+        sessionStorage.setItem("chunk-reload-count", (reloadCount + 1).toString());
+        window.location.reload();
+        return null;
+      }
+    } catch (e) {
+      // sessionStorage might be disabled or unavailable, skip auto-reload and show error UI
+      console.error("Failed to access sessionStorage for chunk reload:", e);
     }
   }
 
-  sessionStorage.removeItem("chunk-reload-count");
+  try {
+    sessionStorage.removeItem("chunk-reload-count");
+  } catch (e) {}
 
   return (
     <div className="min-h-screen bg-[#0E0C15] flex items-center justify-center p-4">
@@ -42,7 +49,9 @@ const RouteErrorBoundary = () => {
         </p>
         <button
           onClick={() => {
-            sessionStorage.removeItem("chunk-reload-count");
+            try {
+              sessionStorage.removeItem("chunk-reload-count");
+            } catch (e) {}
             window.location.reload();
           }}
           className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.98]"
@@ -89,6 +98,10 @@ export const router = createBrowserRouter([
         path: "/observer-onboarding",
         lazy: () => import("./components/observer/ObserverOnboarding").then(m => ({ Component: m.default })),
       },
+      // {
+      //   path: "/learning-hub",
+      //   lazy: () => import("./components/learning-hub/LearningHub").then(m => ({ Component: m.default })),
+      // },
       {
         path: "/terms",
         lazy: () => import("./components/legal/TermsOfService").then(m => ({ Component: m.default })),
@@ -96,6 +109,14 @@ export const router = createBrowserRouter([
       {
         path: "/privacy",
         lazy: () => import("./components/legal/PrivacyPolicy").then(m => ({ Component: m.default })),
+      },
+      {
+        path: "/build-room/:roomId/decision/:decisionId",
+        lazy: () => import("./components/room/DecisionDeepLink").then(m => ({ Component: m.default })),
+      },
+      {
+        path: "/room/:id",
+        lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })),
       },
 
       // Authenticated dashboard shell
@@ -106,6 +127,7 @@ export const router = createBrowserRouter([
           { index: true, lazy: () => import("./components/dashboard/Dashboard").then(m => ({ Component: m.default })) },
           { path: "create", lazy: () => import("./components/room/CreateRoom").then(m => ({ Component: m.default })) },
           { path: "room/:id", lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })) },
+          { path: "rooms", lazy: () => import("./components/dashboard/MyRoomsPage").then(m => ({ Component: m.default })) },
           { path: "profile/:id", lazy: () => import("./components/profile/UserProfile").then(m => ({ Component: m.default })) },
           { path: "observer", lazy: () => import("./components/observer/ObserverHub").then(m => ({ Component: m.default })) },
           { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },
@@ -114,6 +136,11 @@ export const router = createBrowserRouter([
           { path: "notifications", lazy: () => import("./components/dashboard/Notifications").then(m => ({ Component: m.default })) },
           { path: "expert-apply", lazy: () => import("./components/profile/VerifiedExpertApplication").then(m => ({ Component: m.default })) },
           { path: "expert-hub", lazy: () => import("./components/dashboard/ExpertReviewHub").then(m => ({ Component: m.default })) },
+          { path: "roadmap", lazy: () => import("./components/dashboard/RoadmapPage").then(m => ({ Component: m.default })) },
+          { path: "milestones", lazy: () => import("./components/dashboard/MilestonesPage").then(m => ({ Component: m.default })) },
+          { path: "analytics", lazy: () => import("./components/dashboard/AnalyticsPage").then(m => ({ Component: m.default })) },
+          { path: "discovery", lazy: () => import("./components/discovery/DiscoveryHub").then(m => ({ Component: m.default })) },
+          { path: "discovery/:id", lazy: () => import("./components/discovery/DiscoveryDashboard").then(m => ({ Component: m.default })) },
         ],
       },
     ]

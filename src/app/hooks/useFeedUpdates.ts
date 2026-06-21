@@ -28,7 +28,9 @@ export interface FeedUpdate {
   }[];
 }
 
-import { normalizeRow } from "../utils/helpers";
+import { normalizeRow } from '../utils/helpers';
+import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
+import type { Reaction } from '../types';
 
 export function useFeedUpdates() {
   const queryClient = useQueryClient();
@@ -50,7 +52,7 @@ export function useFeedUpdates() {
       if (error) throw error;
 
       const updateIds = (data || []).map(u => u.id);
-      let reactionsData: any[] = [];
+      let reactionsData: Reaction[] = [];
       
       if (updateIds.length > 0) {
         const { data: rData } = await supabase
@@ -76,7 +78,7 @@ export function useFeedUpdates() {
   });
 
   useEffect(() => {
-    const channelName = 'feed-updates-live';
+    const channelName = CHANNEL_NAMES.feedUpdates;
 
     // Remove any stale channel before (re-)subscribing.
     // Prevents "cannot add postgres_changes callbacks after subscribe()" crash.
@@ -89,7 +91,7 @@ export function useFeedUpdates() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates' },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
         }
       )
       .subscribe();

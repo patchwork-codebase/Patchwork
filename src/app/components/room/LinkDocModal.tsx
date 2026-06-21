@@ -61,8 +61,8 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
       if (error) throw error;
       toast.success("Document linked successfully!");
       onClose();
-    } catch (err: any) {
-      toast.error(`Failed to link doc: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to link doc: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -85,7 +85,7 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
           >
             <div className="flex items-center justify-between p-5 border-b border-white/[0.08]">
               <h2 className="text-[18px] font-bold text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#8B7CF8]" />
+                <FileText className="w-5 h-5 text-primary-400" />
                 Link Notion Document
               </h2>
               <button
@@ -106,7 +106,7 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
                   <p className="text-[13px] text-slate-400 mb-6">
                     Connect your Notion workspace in profile settings to browse and link live documents.
                   </p>
-                  <button onClick={onClose} className="px-5 py-2.5 bg-[#8B7CF8] hover:bg-[#7a6ce0] text-white text-[13px] font-bold rounded-xl transition-colors">
+                  <button onClick={onClose} className="px-5 py-2.5 bg-primary-400 hover:bg-[#7a6ce0] text-white text-[13px] font-bold rounded-xl transition-colors">
                     Go to Integrations
                   </button>
                 </div>
@@ -119,14 +119,14 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Notion pages..."
-                      className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8] transition-colors"
+                      className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
                     />
                   </div>
 
                   <div className="max-h-[300px] overflow-y-auto space-y-2 mt-4">
                     {isSearching ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-6 h-6 text-[#8B7CF8] animate-spin" />
+                        <Loader2 className="w-6 h-6 text-primary-400 animate-spin" />
                       </div>
                     ) : searchResults.length === 0 ? (
                       <div className="text-center text-slate-500 text-[13px] py-8">No documents found.</div>

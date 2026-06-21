@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp, Archive } from "lucide-react";
-import { useAuth } from "../auth/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useAuth, supabase } from "../auth/AuthContext";
 import { useUserRooms } from "../../hooks/useRooms";
+import { getObserverCount, timeAgo } from "../../utils/helpers";
+import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 
 function timeAgoDays(iso: string) {
   if (!iso) return 1;
@@ -20,6 +24,22 @@ export default function BuildLogs() {
   const { user } = useAuth();
   const { data: myRoomsData, isLoading } = useUserRooms(user?.id);
   const myRooms = myRoomsData?.pages.flat() || [];
+  const queryClient = useQueryClient();
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+
+  const handleArchiveRoom = async (roomId: string) => {
+    setArchivingId(roomId);
+    try {
+      const { error } = await supabase.from('rooms').update({ status: 'archived' }).eq('id', roomId);
+      if (error) throw error;
+      toast.success('Room archived successfully');
+      queryClient.invalidateQueries({ queryKey: ['user-rooms'] });
+    } catch (err: unknown) {
+      toast.error('Failed to archive room: ' + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setArchivingId(null);
+    }
+  };
 
   const activeRooms = myRooms.filter(r => r.status === 'active' || !r.status);
   const shippedRooms = myRooms.filter(r => r.status === 'shipped');
@@ -42,7 +62,7 @@ export default function BuildLogs() {
           {[
             { label: "Active", count: activeRooms.length, color: "text-amber-500", dot: "bg-amber-500" },
             { label: "Shipped", count: shippedRooms.length, color: "text-emerald-500", dot: "bg-emerald-500" },
-            { label: "Completed", count: completedRooms.length, color: "text-[#8B7CF8]", dot: "bg-[#8B7CF8]" },
+            { label: "Completed", count: completedRooms.length, color: "text-primary-400", dot: "bg-primary-400" },
             { label: "Stalled", count: stalledRooms.length, color: "text-rose-500", dot: "bg-rose-500" },
           ].map(m => (
             <div key={m.label} className="bg-white border border-slate-200 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-4 text-center shadow-sm">
@@ -62,7 +82,7 @@ export default function BuildLogs() {
           <button
             key={f}
             onClick={() => setBuildLogFilter(f)}
-            className={`px-4 sm:px-5 py-2.5 min-h-[44px] sm:min-h-auto rounded-full text-[13px] sm:text-[14px] font-bold capitalize transition-all snap-start active:scale-95 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] ${
+            className={`px-4 sm:px-5 py-2.5 min-h-[44px] sm:min-h-auto rounded-full text-[13px] sm:text-[14px] font-bold capitalize transition-all snap-start active:scale-95 border focus-ring ${
               buildLogFilter === f
                 ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                 : 'bg-white text-slate-500 border-slate-200 hover:text-slate-900 hover:bg-slate-50'
@@ -89,12 +109,12 @@ export default function BuildLogs() {
                       <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{room.title}</h3>
+                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-amber-200">Active</span>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-primary-500 bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
                       </div>
-                      <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Day {daysActive} of build · {room.updateCount} updates · {room.observerCount} observers</p>
+                      <div className="flex items-center gap-2 m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Day {daysActive} of build · {room.updateCount} updates · <ObserverAvatarStack room={room} /></div>
                     </div>
                   </div>
                 </div>
@@ -121,11 +141,11 @@ export default function BuildLogs() {
                   </div>
                 </div>
 
-                {room.lastUpdate && (
+                {room.updatedAt && (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 relative">
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Latest update</div>
                     <p className="text-[13px] sm:text-[14px] text-slate-700 italic m-0 leading-relaxed font-medium line-clamp-2">
-                      "{room.lastUpdate}"
+                      Updated {timeAgo(room.updatedAt)}
                     </p>
                   </div>
                 )}
@@ -140,7 +160,7 @@ export default function BuildLogs() {
                   <Link to={`/dashboard/room/${room.id}`}
                     title="Open room"
                     aria-label="Open room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
                     <ArrowUpRight size={18} />
                   </Link>
                 </div>
@@ -167,8 +187,8 @@ export default function BuildLogs() {
                       <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{log.title}</h3>
+                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">Shipped</span>
                       </div>
                       <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Shipped {formatDate(log.updatedAt)}</p>
@@ -191,10 +211,10 @@ export default function BuildLogs() {
                   </div>
                 </div>
 
-                {log.lastUpdate && (
+                {log.updatedAt && (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative">
                     <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Builder's closing note</div>
-                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">"{log.lastUpdate}"</p>
+                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">Updated {timeAgo(log.updatedAt)}</p>
                   </div>
                 )}
 
@@ -208,7 +228,7 @@ export default function BuildLogs() {
                   <Link to={`/dashboard/build-logs/${log.id}`}
                     title="View log"
                     aria-label="View log"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
                     <ArrowUpRight size={18} />
                   </Link>
                 </div>
@@ -225,18 +245,18 @@ export default function BuildLogs() {
             const tag = log.tags?.[0] || 'product';
             const daysActive = timeAgoDays(log.createdAt);
             return (
-              <div key={log.id} className="bg-white border border-[#8B7CF8]/20 rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 relative overflow-hidden shadow-sm group hover:border-[#8B7CF8]/40 transition-all" tabIndex={0}>
-                <div className="absolute top-0 right-0 p-24 bg-[#8B7CF8]/5 rounded-full blur-[50px] -mr-12 -mt-12 pointer-events-none" />
+              <div key={log.id} className="bg-white border border-primary-400/20 rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 relative overflow-hidden shadow-sm group hover:border-primary-400/40 transition-all" tabIndex={0}>
+                <div className="absolute top-0 right-0 p-24 bg-primary-400/5 rounded-full blur-[50px] -mr-12 -mt-12 pointer-events-none" />
                 <div className="flex justify-between items-start relative mb-1">
                   <div className="flex gap-3 sm:gap-4 w-full">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 flex items-center justify-center shrink-0 shadow-sm">
-                      <Archive className="w-5 h-5 sm:w-6 sm:h-6 text-[#8B7CF8]" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary-400/10 border border-primary-400/20 flex items-center justify-center shrink-0 shadow-sm">
+                      <Archive className="w-5 h-5 sm:w-6 sm:h-6 text-primary-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{log.title}</h3>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-[#8B7CF8] bg-[#8B7CF8]/10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-[#8B7CF8]/20">Completed</span>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-[#6C5CE7] bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
+                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-primary-400 bg-primary-400/10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-primary-400/20">Completed</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-primary-500 bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
                       </div>
                       <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Closed {formatDate(log.updatedAt)}</p>
                     </div>
@@ -256,17 +276,17 @@ export default function BuildLogs() {
                     <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Days</div>
                   </div>
                 </div>
-                {log.lastUpdate && (
+                {log.updatedAt && (
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative">
-                    <div className="text-[10px] font-bold text-[#8B7CF8] uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#8B7CF8]" /> Builder's closing note</div>
-                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">"{log.lastUpdate}"</p>
+                    <div className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-primary-400" /> Builder's closing note</div>
+                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">Updated {timeAgo(log.updatedAt)}</p>
                   </div>
                 )}
                 <div className="flex flex-row gap-2 relative mt-auto">
                   <Link to={`/dashboard/build-logs/${log.id}`}
                     title="View log"
                     aria-label="View log"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-[#8B7CF8]/10 hover:bg-[#8B7CF8]/20 border border-[#8B7CF8]/20 text-[#8B7CF8] rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
+                    className="inline-flex items-center justify-center w-11 h-11 bg-primary-400/10 hover:bg-primary-400/20 border border-primary-400/20 text-primary-400 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
                     <ArrowUpRight size={18} />
                   </Link>
                 </div>
@@ -292,8 +312,8 @@ export default function BuildLogs() {
                     <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display truncate">{room.title}</h3>
+                    <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <span className="text-[9px] sm:text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-rose-200">Stalled</span>
                     </div>
                     <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Last update {daysSinceUpdate} days ago</p>
@@ -318,10 +338,12 @@ export default function BuildLogs() {
                     <Edit3 size={18} />
                   </Link>
                   <button
+                    onClick={() => handleArchiveRoom(room.id)}
+                    disabled={archivingId === room.id}
                     title="Archive room"
                     aria-label="Archive room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-                    <Archive size={18} />
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
+                    {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
                   </button>
                 </div>
               </div>
@@ -329,12 +351,12 @@ export default function BuildLogs() {
           })}
 
           {/* New Room Placeholder */}
-          <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-[#6C5CE7]/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-[#6C5CE7]/30 flex items-center justify-center bg-slate-50 group-hover:bg-[#6C5CE7]/5 transition-colors">
-              <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-[#8B7CF8] font-light leading-none transition-colors">+</span>
+          <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors">
+              <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
             </div>
             <div className="text-center">
-              <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-[#6C5CE7] font-display transition-colors">Open a new build room</h3>
+              <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-primary-500 font-display transition-colors">Open a new build room</h3>
               <p className="m-0 text-[12px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors font-medium">Start streaming your next project</p>
             </div>
           </Link>

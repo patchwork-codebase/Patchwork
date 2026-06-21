@@ -41,3 +41,22 @@ export function useGithubDrafts(roomId: string | undefined) {
     enabled: !!roomId,
   });
 }
+
+export function useAllGithubDrafts(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['all_github_drafts', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      // To get drafts for a user, we join through the room to check builder_id
+      const { data, error } = await supabase
+        .from('github_drafts')
+        .select('*, rooms!inner(builder_id, title)')
+        .eq('rooms.builder_id', userId)
+        .eq('status', 'draft')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+}

@@ -27,6 +27,7 @@ ALTER TABLE public.linear_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.linear_issues ENABLE ROW LEVEL SECURITY;
 
 -- Policies for linear_accounts
+DROP POLICY IF EXISTS "Users can manage their own linear accounts" ON public.linear_accounts;
 CREATE POLICY "Users can manage their own linear accounts"
 ON public.linear_accounts
 FOR ALL TO authenticated
@@ -34,12 +35,14 @@ USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
 -- Policies for linear_issues
+DROP POLICY IF EXISTS "Linear issues are viewable by everyone" ON public.linear_issues;
 CREATE POLICY "Linear issues are viewable by everyone"
 ON public.linear_issues
 FOR SELECT TO authenticated
 USING (true);
 
 -- Builders can manage linear issues for their rooms
+DROP POLICY IF EXISTS "Builders can manage linear issues for their rooms" ON public.linear_issues;
 CREATE POLICY "Builders can manage linear issues for their rooms"
 ON public.linear_issues
 FOR ALL TO authenticated

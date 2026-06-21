@@ -31,9 +31,10 @@ interface DecisionLogCardProps {
   reactions: any[];
   queryClient: any;
   isNested?: boolean;
+  isBuilder?: boolean;
 }
 
-export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false }: DecisionLogCardProps) {
+export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false, isBuilder = false }: DecisionLogCardProps) {
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -108,8 +109,8 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
       }
       queryClient.invalidateQueries({ queryKey: ["room-details", roomId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-    } catch (err: any) {
-      toast.error(`Reaction failed: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Reaction failed: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -135,8 +136,8 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
       await queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       setReplyText('');
       setReplyingTo(null);
-    } catch (err: any) {
-      toast.error(`Failed to post reply: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -151,12 +152,14 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
             <span className="text-[12px] text-slate-500 font-medium">12 decisions · day 1-12</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-[12px] sm:text-[13px] transition-colors flex items-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <span>+</span> <span className="hidden sm:inline">Log a decision</span><span className="sm:hidden">Log</span>
-            </button>
+            {isBuilder && (
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-primary-400 hover:bg-[#7b6ce8] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-[12px] sm:text-[13px] transition-colors flex items-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <span>+</span> <span className="hidden sm:inline">Log a decision</span><span className="sm:hidden">Log</span>
+              </button>
+            )}
             <button className="text-[11px] sm:text-[12px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider shrink-0 whitespace-nowrap">
               View All
             </button>
@@ -165,20 +168,22 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
       ) : (
         <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-100">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-5 h-5 rounded bg-[#8B7CF8]/10 text-[#8B7CF8] text-[11px] font-bold border border-[#8B7CF8]/20">
+            <span className="flex items-center justify-center w-5 h-5 rounded bg-primary-400/10 text-primary-400 text-[11px] font-bold border border-primary-400/20">
               {allDecisions.length}
             </span>
             <span className="text-[12px] text-slate-500 font-medium">decisions logged</span>
           </div>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsModalOpen(true)}
-            className="group relative overflow-hidden bg-slate-900 hover:bg-slate-800 border border-transparent text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#8B7CF8]" />
-            <span className="relative z-10">Log a decision</span>
-          </motion.button>
+          {isBuilder && (
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsModalOpen(true)}
+              className="group relative overflow-hidden bg-slate-900 hover:bg-slate-800 border border-transparent text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5 text-primary-400" />
+              <span className="relative z-10">Log a decision</span>
+            </motion.button>
+          )}
         </div>
       )}
 
@@ -225,7 +230,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <button 
                           onClick={() => toggleReaction(decision.id, 'sharp')}
-                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-[#8B7CF8]/10 text-[#8B7CF8] border-[#8B7CF8]/30' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900'}`}
+                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-400 border-primary-400/30' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900'}`}
                         >
                           <span>✦</span> Sharp {sharpCount > 0 && <span className="opacity-70">{sharpCount}</span>}
                         </button>
@@ -264,7 +269,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                                     const uid = reply.observer_id || reply.observerId;
                                     if (uid) navigate(`/dashboard/profile/${uid}`);
                                   }}
-                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-[#8B7CF8] transition-all" 
+                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" 
                                   alt="avatar" 
                                 />
                                 <div>
@@ -298,7 +303,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                               <button
                                 onClick={() => submitReply(decision.id)}
                                 disabled={!replyText.trim()}
-                                className="px-4 py-1.5 bg-[#8B7CF8] hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+                                className="px-4 py-1.5 bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-ring"
                               >
                                 <Send className="w-3.5 h-3.5" /> Send
                               </button>

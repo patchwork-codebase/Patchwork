@@ -18,8 +18,8 @@ export default function VerificationRequiredModal() {
     try {
       await sendVerificationEmailDirect(user.id, user.email || '', profile.name);
       toast.success("Verification email resent! Check your inbox.");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to resend. Please try again later.");
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to resend. Please try again later.");
     } finally {
       setResending(false);
     }
@@ -46,11 +46,11 @@ export default function VerificationRequiredModal() {
           className="relative w-full max-w-md bg-[#15131C] border border-white/[0.08] rounded-2xl p-8 shadow-[0_0_80px_rgba(108,92,231,0.2)] overflow-hidden text-center"
         >
           {/* Ambient glow */}
-          <div className="absolute -top-32 -left-32 w-64 h-64 bg-[#6C5CE7]/20 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-[#8B7CF8]/20 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-32 -left-32 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-primary-400/20 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(108,92,231,0.3)] mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-400 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(108,92,231,0.3)] mb-6">
               <Mail className="w-8 h-8 text-white" />
             </div>
 
@@ -67,7 +67,7 @@ export default function VerificationRequiredModal() {
               <button
                 onClick={handleResend}
                 disabled={resending}
-                className="w-full py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)] disabled:opacity-50"
+                className="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)] disabled:opacity-50"
               >
                 {resending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                 {resending ? 'Sending...' : 'Resend Verification Email'}

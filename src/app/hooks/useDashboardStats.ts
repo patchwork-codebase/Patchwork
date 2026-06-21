@@ -1,6 +1,47 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import { timeAgo } from '../utils/helpers';
+
+export function useDashboardRealtimeSync(userId?: string) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channelName = 'dashboard-stats-sync';
+
+    // Remove any stale channel with the same name before subscribing.
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) supabase.removeChannel(existing);
+
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reactions' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', userId] });
+          queryClient.invalidateQueries({ queryKey: ['recent-activity', userId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'room_observers' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', userId] });
+          queryClient.invalidateQueries({ queryKey: ['room-observers'] });
+          queryClient.invalidateQueries({ queryKey: ['recent-activity', userId] });
+          queryClient.invalidateQueries({ queryKey: ['my-rooms', userId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+}
 
 export function useDashboardStats(userId?: string) {
   return useQuery({
@@ -62,7 +103,7 @@ export function useRecentActivity(userId?: string) {
             name,
             text,
             time: timeAgo(re.created_at),
-            color: 'bg-[#6C5CE7]',
+            color: 'bg-primary-500',
             date: new Date(re.created_at),
             userId: re.observer_id
           });
@@ -110,8 +151,8 @@ export function useRoomObservers(roomId?: string) {
           initials,
           name,
           visits: 'Active',
-          bg: 'bg-[#6C5CE7]/20',
-          color: 'text-[#8B7CF8]',
+          bg: 'bg-primary-500/20',
+          color: 'text-primary-400',
           userId: ob.observer_id
         };
       });

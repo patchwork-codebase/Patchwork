@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Sparkles, Image as ImageIcon, ChevronDown, Save } from "lucide-react";
+import { X, ChevronDown, Image as ImageIcon, Lock, Sparkles, Save } from "lucide-react";
+import type { Room } from "../../types";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,7 +28,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-[#8B7CF8]/50 ring-1 ring-[#8B7CF8]/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
+        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-primary-400/50 ring-1 ring-primary-400/50' : 'border-slate-200'} rounded-xl text-[15px] text-slate-900 focus:outline-none transition-all font-medium flex items-center justify-between`}
       >
         <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -45,7 +46,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
               }}
               className={`w-full text-left px-5 py-3 text-[14px] transition-colors ${
                 value === option.value 
-                  ? 'bg-slate-50 text-[#8B7CF8] font-bold' 
+                  ? 'bg-slate-50 text-primary-400 font-bold' 
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
               }`}
             >
@@ -61,7 +62,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
 interface EditRoomModalProps {
   open: boolean;
   onClose: () => void;
-  room: any;
+  room: Room;
 }
 
 export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
@@ -73,7 +74,8 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
     coverImage: null as string | null,
     primaryLink: '',
     projectStage: '',
-    primaryGoal: ''
+    primaryGoal: '',
+    isPrivate: false
   });
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,11 +90,12 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         coverImage: room.coverImage || null,
         primaryLink: room.primaryLink || '',
         projectStage: room.projectStage || 'Ideation',
-        primaryGoal: room.primaryGoal || 'Just sharing my journey'
+        primaryGoal: room.primaryGoal || '',
+        isPrivate: room.isPrivate || false
       });
       setTags(room.tags || []);
     }
-  }, [open, room]);
+  }, [open, room?.id]);
 
   if (!open) return null;
 
@@ -153,9 +156,9 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
           if (!response.ok) throw new Error(result.error?.message || "Upload failed");
           coverImageUrl = result.secure_url;
           toast.dismiss("upload");
-        } catch (error: any) {
+        } catch (error: unknown) {
           toast.dismiss("upload");
-          throw new Error(`Image upload failed: ${error.message}`);
+          throw new Error(`Image upload failed: ${(error instanceof Error ? error.message : String(error))}`);
         }
       }
 
@@ -167,7 +170,8 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         cover_image: coverImageUrl,
         primary_link: form.primaryLink.trim() || null,
         project_stage: form.projectStage,
-        primary_goal: form.primaryGoal
+        primary_goal: form.primaryGoal,
+        is_private: form.isPrivate
       };
 
       const { error } = await supabase.from('rooms').update(payload).eq('id', room.id);
@@ -177,8 +181,8 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
       queryClient.invalidateQueries({ queryKey: ['room-details', room.id] });
       queryClient.invalidateQueries({ queryKey: ['user-rooms'] });
       onClose();
-    } catch (err: any) {
-      toast.error(`Failed to update room: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to update room: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setLoading(false);
     }
@@ -202,7 +206,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         >
           <div className="p-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#8B7CF8]" /> Edit Room Details
+              <Sparkles className="w-5 h-5 text-primary-400" /> Edit Room Details
             </h2>
             <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
               <X className="w-5 h-5" />
@@ -215,7 +219,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                 <label className="block text-[13px] font-bold text-slate-300 mb-2">Cover Image (Optional)</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-32 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-[#6C5CE7]/50 bg-[#0A0910]/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+                  className="w-full h-32 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary-500/50 bg-[#0A0910]/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
                 >
                   {form.coverImage ? (
                     <>
@@ -240,7 +244,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                   type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   required maxLength={100}
                   placeholder="e.g., Redesigning the onboarding flow"
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
                 />
               </div>
 
@@ -250,7 +254,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                   value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={3} maxLength={500}
                   placeholder="What's the goal of this room? What are you trying to accomplish?"
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium resize-none"
+                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium resize-none"
                 />
               </div>
 
@@ -259,7 +263,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                 <input
                   type="url" value={form.primaryLink} onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
                   placeholder="https://figma.com/... or https://github.com/..."
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 focus:ring-1 focus:ring-[#6C5CE7]/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
                 />
               </div>
 
@@ -286,10 +290,45 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
               </div>
 
               <div>
+                <div 
+                  onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
+                  className="bg-[#0A0910]/30 rounded-xl p-5 border border-white/[0.05] flex items-start justify-between gap-4 cursor-pointer hover:bg-[#0A0910]/50 transition-colors"
+                >
+                  <div>
+                    <h4 className="text-[14px] font-bold text-white mb-1 flex items-center gap-2">
+                      Room Visibility
+                      {form.isPrivate ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary-500/20 text-primary-400">Private</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/10 text-slate-300">Public</span>
+                      )}
+                    </h4>
+                    <p className="text-[13px] text-slate-400 font-medium">
+                      {form.isPrivate 
+                        ? "Only people with the direct link can view this room." 
+                        : "This room will appear in the global Patchwork feed for anyone to discover."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 ${form.isPrivate ? 'bg-primary-400' : 'bg-slate-700'}`}
+                    role="switch"
+                    aria-checked={form.isPrivate}
+                  >
+                    <span className="sr-only">Toggle visibility</span>
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.isPrivate ? 'translate-x-5' : 'translate-x-0'}`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-[13px] font-bold text-slate-300 mb-3">Tags <span className="text-slate-500 font-normal ml-1">(up to 5)</span></label>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {tags.map(tag => (
-                    <span key={tag} className="inline-flex items-center gap-1.5 bg-[#6C5CE7]/15 border border-[#6C5CE7]/30 text-[#8B7CF8] text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
+                    <span key={tag} className="inline-flex items-center gap-1.5 bg-primary-500/15 border border-primary-500/30 text-primary-400 text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
                       {tag}
                       <button type="button" onClick={() => removeTag(tag)} className="hover:text-white transition-colors"><X className="w-3.5 h-3.5" /></button>
                     </span>
@@ -300,7 +339,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                     type="text" value={form.tagInput} onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(form.tagInput); } }}
                     placeholder="Add a tag..."
-                    className="flex-1 px-5 py-3.5 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#6C5CE7]/50 transition-all font-medium"
+                    className="flex-1 px-5 py-3.5 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
                   />
                   <button
                     type="button" onClick={() => addTag(form.tagInput)} disabled={!form.tagInput.trim() || tags.length >= 5}
@@ -322,7 +361,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
 
           <div className="p-6 border-t border-white/[0.08] flex justify-end gap-3 shrink-0">
             <button onClick={onClose} className="px-5 py-2.5 text-slate-400 hover:text-white rounded-xl text-[14px] font-bold transition-colors">Cancel</button>
-            <button form="edit-room-form" type="submit" disabled={loading || !form.title.trim()} className="flex items-center gap-2 px-6 py-2.5 bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white rounded-xl text-[14px] font-bold transition-all disabled:opacity-50 shadow-lg shadow-[#8B7CF8]/20">
+            <button form="edit-room-form" type="submit" disabled={loading || !form.title.trim()} className="flex items-center gap-2 px-6 py-2.5 bg-primary-400 hover:bg-[#7b6ce8] text-white rounded-xl text-[14px] font-bold transition-all disabled:opacity-50 shadow-lg shadow-primary-400/20">
               <Save className="w-4 h-4" /> {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>

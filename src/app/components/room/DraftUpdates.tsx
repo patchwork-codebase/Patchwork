@@ -44,8 +44,8 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
       refetch();
       queryClient.invalidateQueries({ queryKey: ['room', roomId] });
       queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-    } catch (err: any) {
-      toast.error(`Failed to publish draft: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to publish draft: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setPublishing(null);
     }
@@ -57,8 +57,8 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
       await supabase.from('github_drafts').update({ status: 'discarded' }).eq('id', draftId);
       toast.success('Draft discarded');
       refetch();
-    } catch (err: any) {
-      toast.error(`Failed to discard draft: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to discard draft: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setDiscarding(null);
     }
@@ -77,12 +77,12 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
   return (
     <div className="mb-8 space-y-4">
       <h3 className="text-[14px] font-extrabold text-white flex items-center gap-2 uppercase tracking-widest font-display">
-        <Github className="w-4 h-4 text-[#8B7CF8]" /> Review GitHub Drafts
+        <Github className="w-4 h-4 text-primary-400" /> Review GitHub Drafts
       </h3>
       
       {drafts.map(draft => (
-        <div key={draft.id} className="bg-[#8B7CF8]/5 border border-[#8B7CF8]/20 rounded-2xl p-4 sm:p-5 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#6C5CE7] to-[#8B7CF8]" />
+        <div key={draft.id} className="bg-primary-400/5 border border-primary-400/20 rounded-2xl p-4 sm:p-5 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary-500 to-primary-400" />
           
           <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
@@ -107,7 +107,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
               <button
                 onClick={() => handlePublish(draft)}
                 disabled={publishing === draft.id || discarding === draft.id}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#8B7CF8] hover:bg-[#7b6ce8] text-white rounded-xl text-[13px] font-bold transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-primary-400 hover:bg-[#7b6ce8] text-white rounded-xl text-[13px] font-bold transition-colors disabled:opacity-50"
               >
                 {publishing === draft.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 Publish

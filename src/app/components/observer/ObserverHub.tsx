@@ -37,7 +37,7 @@ export default function ObserverHub() {
       {/* ── HEADER ── */}
       <div className="mb-8">
         <h1 className="font-display font-extrabold text-[32px] text-slate-900 leading-tight tracking-tight m-0 flex items-center gap-3">
-          Observer Hub <Zap className="w-6 h-6 text-[#8B7CF8]" />
+          Observer Hub <Zap className="w-6 h-6 text-primary-400" />
         </h1>
         <p className="text-[14px] text-slate-600 mt-2 font-medium max-w-[500px]">
           Your curated feed of rooms you're watching, your reaction history, and your proof of taste across the Patchwork ecosystem.
@@ -48,7 +48,7 @@ export default function ObserverHub() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         {[
           { label: 'Rooms followed', value: stats?.roomsFollowed || 0, icon: <Eye size={18} />, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-          { label: 'Reactions given', value: stats?.totalReactions || 0, icon: <MessagesSquare size={18} />, color: 'text-[#8B7CF8]', bg: 'bg-[#6C5CE7]/10' },
+          { label: 'Reactions given', value: stats?.totalReactions || 0, icon: <MessagesSquare size={18} />, color: 'text-primary-400', bg: 'bg-primary-500/10' },
           { label: 'Sharp insights', value: stats?.sharpInsights || 0, icon: <Flame size={18} />, color: 'text-amber-400', bg: 'bg-amber-500/10' },
           { label: 'Shipped products', value: stats?.shippedProducts || 0, icon: <CheckCircle2 size={18} />, color: 'text-rose-400', bg: 'bg-rose-500/10' },
         ].map((stat, i) => (
@@ -85,14 +85,14 @@ export default function ObserverHub() {
           {roomsLoading ? (
             <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading your watchlist...</div>
           ) : followedRooms.filter(r => filter === 'all' || (filter === 'active' ? r.status === 'active' || !r.status : r.status === filter)).map((room, i) => (
-            <Link key={room.id || i} to={`/dashboard/room/${room.id}`} className="block bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-[#6C5CE7]/30 rounded-[20px] p-6 hover:bg-slate-50 transition-all group">
+            <Link key={room.id || i} to={`/dashboard/room/${room.id}`} className="block bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-500/30 rounded-[20px] p-6 hover:bg-slate-50 transition-all group">
               <div className="flex justify-between items-start mb-4">
-                <div className={`w-2.5 h-2.5 rounded-full mt-1 ${room.status === 'active' || !room.status ? 'bg-emerald-400 animate-pulse' : room.status === 'shipped' ? 'bg-[#8B7CF8]' : 'bg-amber-400'}`} />
+                <div className={`w-2.5 h-2.5 rounded-full mt-1 ${room.status === 'active' || !room.status ? 'bg-emerald-400 animate-pulse' : room.status === 'shipped' ? 'bg-primary-400' : 'bg-amber-400'}`} />
                 <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md uppercase tracking-wider">
                   {room.status || 'Active'}
                 </span>
               </div>
-              <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-[#8B7CF8] transition-colors mb-2 leading-snug">{room.title}</h3>
+              <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-primary-400 transition-colors mb-2 leading-snug">{room.title}</h3>
               <p className="text-[12px] text-slate-600 font-medium mb-6">{room.updateCount || 0} updates</p>
               
               <div className="flex items-center justify-between border-t border-slate-200 pt-4">
@@ -102,7 +102,7 @@ export default function ObserverHub() {
             </Link>
           ))}
           
-          <Link to="/dashboard/explore" className="border-2 border-dashed border-slate-300 hover:border-[#8B7CF8]/50 hover:bg-slate-50 rounded-[20px] p-6 flex flex-col items-center justify-center text-center gap-3 transition-all min-h-[200px]">
+          <Link to="/dashboard/explore" className="border-2 border-dashed border-slate-300 hover:border-primary-400/50 hover:bg-slate-50 rounded-[20px] p-6 flex flex-col items-center justify-center text-center gap-3 transition-all min-h-[200px]">
              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                <Eye className="w-5 h-5" />
              </div>
@@ -120,7 +120,7 @@ export default function ObserverHub() {
           <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
             Trending Builders <Flame className="w-5 h-5 text-amber-500" />
           </h2>
-          <Link to="/dashboard/explore" className="text-[13px] font-bold text-[#8B7CF8] hover:underline">
+          <Link to="/dashboard/explore" className="text-[13px] font-bold text-primary-400 hover:underline">
             View all
           </Link>
         </div>
@@ -129,7 +129,7 @@ export default function ObserverHub() {
           {buildersLoading ? (
             <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading builders...</div>
           ) : trendingBuilders?.map((builder: any) => (
-            <Link key={builder.id} to={`/dashboard/profile/${builder.id}`} className="bg-white border border-slate-200 shadow-sm rounded-[20px] p-5 flex items-start gap-4 hover:bg-slate-50 hover:border-[#8B7CF8]/30 transition-all">
+            <Link key={builder.id} to={`/dashboard/profile/${builder.id}`} className="bg-white border border-slate-200 shadow-sm rounded-[20px] p-5 flex items-start gap-4 hover:bg-slate-50 hover:border-primary-400/30 transition-all">
               <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0 overflow-hidden">
                 <img src={getAvatarUrl(builder.id || builder.email)} alt={builder.name} className="w-full h-full object-cover" />
               </div>
@@ -140,7 +140,7 @@ export default function ObserverHub() {
                 </h3>
                 <p className="text-[12px] text-slate-500 font-medium capitalize truncate mb-2">{builder.domain || 'Builder'}</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold bg-[#8B7CF8]/10 text-[#8B7CF8] px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+                  <span className="text-[11px] font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
                     Rep {builder.reputation || 0}
                   </span>
                 </div>

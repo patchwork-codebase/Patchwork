@@ -199,7 +199,7 @@ export default function Integrations({ userId }: { userId: string }) {
           }, { onConflict: 'user_id' });
           toast.success('GitHub connected!');
           refetchGithub();
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('Failed to store github account', err);
         }
       }
@@ -214,7 +214,7 @@ export default function Integrations({ userId }: { userId: string }) {
           }, { onConflict: 'user_id' });
           toast.success('LinkedIn connected!');
           refetchLinkedin();
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('Failed to store linkedin account', err);
         }
       }
@@ -229,7 +229,7 @@ export default function Integrations({ userId }: { userId: string }) {
           }, { onConflict: 'user_id' });
           toast.success('Notion connected!');
           refetchNotion();
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('Failed to store notion account', err);
         }
       }
@@ -252,7 +252,7 @@ export default function Integrations({ userId }: { userId: string }) {
 
       const { error } = await supabase.auth.signInWithOAuth({ provider, options });
       if (error) throw error;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const name = provider === 'linkedin_oidc' ? 'LinkedIn' : provider.charAt(0).toUpperCase() + provider.slice(1);
       toast.error(`Could not connect ${name}. Please try again.`);
       setConnecting(null);
@@ -277,8 +277,8 @@ export default function Integrations({ userId }: { userId: string }) {
       else if (provider === 'linkedin') refetchLinkedin();
       else if (provider === 'linear') refetchLinear();
       else if (provider === 'notion') refetchNotion();
-    } catch (err: any) {
-      toast.error(`Failed to disconnect: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to disconnect: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setConnecting(null);
     }
@@ -296,8 +296,8 @@ export default function Integrations({ userId }: { userId: string }) {
       toast.success('Linear token saved!');
       refetchLinear();
       setLinearPAT('');
-    } catch (err: any) {
-      toast.error(`Failed to save: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to save: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setConnecting(null);
     }

@@ -44,7 +44,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
         { id: '789012', name: 'patchwork-api', full_name: 'builder/patchwork-api', private: false },
         { id: '345678', name: 'my-awesome-project', full_name: 'builder/my-awesome-project', private: false }
       ]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Failed to load repositories');
     } finally {
       setLoadingRepos(false);
@@ -72,8 +72,8 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
       toast.success(`Repository ${repo.name} linked successfully!`);
       refetchRepos();
       setOpen(false);
-    } catch (err: any) {
-      toast.error(`Failed to link repository: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to link repository: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setLinking(null);
     }
@@ -96,8 +96,8 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
       
       toast.success(`Repository ${repo.name} unlinked successfully!`);
       refetchRepos();
-    } catch (err: any) {
-      toast.error(`Failed to unlink repository: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to unlink repository: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setUnlinking(null);
     }
@@ -112,14 +112,14 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
            <button
              title={roomLinkedRepo.github_repo_name.split('/')[1]}
              aria-label={`Repository: ${roomLinkedRepo.github_repo_name}`}
-             className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
+             className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95">
              <Github className="w-4 h-4" />
            </button>
         ) : (
           <button
             title="Link Repository"
             aria-label="Link Repository"
-            className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] active:scale-95">
+            className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95">
             <LinkIcon className="w-4 h-4" />
           </button>
         )}
@@ -149,7 +149,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {loadingRepos ? (
               <div className="flex justify-center py-10">
-                <Loader2 className="w-6 h-6 animate-spin text-[#8B7CF8]" />
+                <Loader2 className="w-6 h-6 animate-spin text-primary-400" />
               </div>
             ) : repos.length === 0 ? (
               <div className="text-center py-8 text-slate-400 text-sm">No repositories found.</div>
@@ -183,7 +183,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
                       <button
                         onClick={() => handleLinkRepo(repo)}
                         disabled={linking === repo.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8B7CF8]/10 text-[#8B7CF8] hover:bg-[#8B7CF8]/20 rounded-lg text-[12px] font-bold transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-400/10 text-primary-400 hover:bg-primary-400/20 rounded-lg text-[12px] font-bold transition-colors disabled:opacity-50"
                       >
                         {linking === repo.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
                         Link

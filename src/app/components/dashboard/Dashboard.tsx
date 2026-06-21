@@ -1,15 +1,16 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useNavigate } from "react-router";
 import { useAuth, supabase, sendVerificationEmailDirect } from "../auth/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw, Bell } from "lucide-react";
 import { OnboardingChecklist } from "./OnboardingChecklist";
+import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import VerificationSuccessModal from "./VerificationSuccessModal";
 import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDashboardStats, useRecentActivity, useRoomObservers } from "../../hooks/useDashboardStats";
+import { useDashboardStats, useRecentActivity, useRoomObservers, useDashboardRealtimeSync } from "../../hooks/useDashboardStats";
 import { useNotifications } from "../../hooks/useNotifications";
 
 // Subcomponents
@@ -19,7 +20,11 @@ import { RecentActivityList } from "./RecentActivityList";
 import { TimelineFeed } from "./TimelineFeed";
 import { ActiveRoomPanel } from "./ActiveRoomPanel";
 import { OverviewInsights } from "./OverviewInsights";
+import { PendingDraftsList } from "./PendingDraftsList";
+import { RequestsAndInvites } from "./RequestsAndInvites";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { MobileActionSheet } from "./MobileActionSheet";
+import { ComposerSheet } from "./ComposerSheet";
 
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -32,6 +37,7 @@ import { timeAgo, getAvatarUrl, STORAGE_KEYS } from "../../utils/helpers";
 export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: notificationsData } = useNotifications(user?.id);
@@ -57,11 +63,14 @@ export default function Dashboard() {
   const observedRooms = observedRoomsData?.pages.flat() || [];
   const dbUpdates = dbUpdatesData?.pages.flat() || [];
 
-  const [updateContent, setUpdateContent] = useState("");
-  const [codeSnippet, setCodeSnippet] = useState("");
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const allMyRooms = [...myRooms, ...observedRooms].reduce((acc, current) => {
+    if (!acc.find(item => item.id === current.id)) {
+      acc.push(current);
+    }
+    return acc;
+  }, [] as any[]);
+
   const [selectedRoomId, setSelectedRoomId] = useState("");
-  const [posting, setPosting] = useState(false);
 
   const { data: statsData, isLoading: statsLoading } = useDashboardStats(user?.id);
   const reactions = statsData?.reactions || [];
@@ -79,51 +88,13 @@ export default function Dashboard() {
   const { data: roomObserversData } = useRoomObservers(selectedRoomId);
   const roomObservers = roomObserversData || [];
 
-  // Email resend countdown cooldown state
-  const [cooldownSeconds, setCooldownSeconds] = useState(0);
-  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
-
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [resending, setResending] = useState(false);
-
-  async function handleResendVerification() {
-    if (resendCooldown > 0 || resending || !user) return;
-    setResending(true);
-    try {
-      await sendVerificationEmailDirect(
-        user.id,
-        profile?.email || user.email || '',
-        profile?.name || ''
-      );
-      toast.success('Verification email sent! Check your inbox.');
-      setResendCooldown(60);
-      localStorage.setItem(STORAGE_KEYS.lastVerificationSent, Date.now().toString());
-    } catch (err: any) {
-      toast.error('Failed to send email. Please try again.');
-    } finally {
-      setResending(false);
-    }
-  }
-
-  // Restore cooldown on mount from localStorage
-  useEffect(() => {
-    const lastSent = localStorage.getItem(STORAGE_KEYS.lastVerificationSent);
-    if (lastSent) {
-      const elapsed = Math.floor((Date.now() - parseInt(lastSent)) / 1000);
-      if (elapsed < 60) setResendCooldown(60 - elapsed);
-    }
-  }, []);
-
-  // Countdown timer
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const timer = setInterval(() => setResendCooldown(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
 
   useEffect(() => {
-    if (searchParams.get("verified") === "true") {
+    const isVerified = searchParams.get("verified") === "true";
+    const returnTo = localStorage.getItem('authRedirectUrl');
+
+    if (isVerified) {
       setShowVerificationSuccess(true);
       setSearchParams(params => {
         params.delete("verified");
@@ -132,8 +103,20 @@ export default function Dashboard() {
       // Immediately re-load the profile from DB so the verification banner
       // disappears without needing a manual page refresh.
       refreshProfile();
+    } else if (returnTo) {
+      localStorage.removeItem('authRedirectUrl');
+      navigate(returnTo, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, navigate, refreshProfile]);
+
+  const handleCloseVerificationModal = () => {
+    setShowVerificationSuccess(false);
+    const returnTo = localStorage.getItem('authRedirectUrl');
+    if (returnTo) {
+      localStorage.removeItem('authRedirectUrl');
+      navigate(returnTo, { replace: true });
+    }
+  };
 
 
 
@@ -141,83 +124,10 @@ export default function Dashboard() {
   const loading = roomsLoading || myRoomsLoading || dbUpdatesLoading;
 
   useEffect(() => {
-    if (myRooms && myRooms.length > 0 && !selectedRoomId) {
-      setSelectedRoomId(myRooms[0].id);
+    if (allMyRooms && allMyRooms.length > 0 && !selectedRoomId) {
+      setSelectedRoomId(allMyRooms[0].id);
     }
-  }, [myRooms, selectedRoomId]);
-
-  const isPostingRef = useRef(false);
-
-  const handlePostUpdate = async () => {
-    withVerification(async () => {
-      if (isPostingRef.current) return;
-      if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
-      
-      isPostingRef.current = true;
-      setPosting(true);
-      try {
-        const { data: room, error: roomError } = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('id', selectedRoomId)
-          .single();
-
-        if (roomError || !room) {
-          throw new Error(roomError?.message || "Room not found");
-        }
-
-        const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-        let uploadedMediaUrl = null;
-        if (mediaPreview) {
-          toast.loading("Uploading image...", { id: "upload" });
-          const { data, error } = await supabase.functions.invoke('upload-image', {
-            body: { image: mediaPreview }
-          });
-          if (error) throw error;
-          uploadedMediaUrl = data?.secure_url || null;
-          toast.dismiss("upload");
-        }
-
-        const payload = {
-          id: updateId,
-          room_id: selectedRoomId,
-          author_id: user.id,
-          author_name: profile?.name || user.email?.split('@')[0] || 'Builder',
-          content: updateContent.trim(),
-          media_url: uploadedMediaUrl,
-          code_snippet: codeSnippet.trim() || null,
-          created_at: new Date().toISOString(),
-        };
-
-        const { error: insertError } = await supabase
-          .from('updates')
-          .insert(payload);
-
-        if (insertError) throw insertError;
-
-        await supabase
-          .from('rooms')
-          .update({
-            update_count: (room.update_count || 0) + 1,
-            last_update: updateContent.trim().slice(0, 120),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', selectedRoomId);
-
-        setUpdateContent("");
-        setCodeSnippet("");
-        setMediaPreview(null);
-        queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
-        toast.success("Update posted successfully!");
-      } catch (err: any) {
-        toast.error(`Failed to post update: ${err.message}`);
-      } finally {
-        isPostingRef.current = false;
-        setPosting(false);
-      }
-    });
-  };
+  }, [allMyRooms, selectedRoomId]);
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
@@ -237,49 +147,15 @@ export default function Dashboard() {
       case 'research': return { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' };
       case 'founder': return { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' };
       case 'product-manager': return { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' };
-      default: return { bg: 'bg-[#6C5CE7]/10', text: 'text-[#8B7CF8]', border: 'border-[#6C5CE7]/20' };
+      default: return { bg: 'bg-primary-500/10', text: 'text-primary-400', border: 'border-primary-500/20' };
     }
   }
   const domainStyle = getDomainStyle(profile?.domain);
 
-  // Real-time Postgres subscriptions
-  useEffect(() => {
-    if (!user) return;
+  // Initialize real-time sync for dashboard stats and activities
+  useDashboardRealtimeSync(user?.id);
 
-    const channelName = 'dashboard-stats-sync';
-
-    // Remove any stale channel with the same name before subscribing.
-    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
-    if (existing) supabase.removeChannel(existing);
-
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'reactions' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'room_observers' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['room-observers'] });
-          queryClient.invalidateQueries({ queryKey: ['recent-activity', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['my-rooms', user.id] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
-
-  const selectedRoom = myRooms.find(r => r.id === selectedRoomId);
+  const selectedRoom = allMyRooms.find(r => r.id === selectedRoomId);
   const selectedRoomTitle = selectedRoom?.title || 'Active Room';
 
   function setTab(tab: 'overview' | 'feed' | 'mine') {
@@ -293,40 +169,7 @@ export default function Dashboard() {
     <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
 
       {/* ── EMAIL VERIFICATION BANNER ─── shown until email is verified */}
-      {profile && !profile.emailVerified && (
-        <div className="mb-6 rounded-[20px] border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 overflow-hidden">
-          <div className="p-5 sm:p-6">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-                <ShieldAlert className="w-5 h-5 text-amber-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[15px] font-extrabold text-slate-900 mb-1">Verify your email to unlock Patchwork</h3>
-                <p className="text-[13px] text-slate-600 leading-relaxed mb-4">
-                  You won't be able to <strong className="text-slate-800">post updates</strong>, <strong className="text-slate-800">create rooms</strong>, or <strong className="text-slate-800">react to builds</strong> until your email is confirmed.
-                  We sent a link to <span className="text-amber-500 font-semibold">{profile?.email || user?.email}</span>.
-                </p>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={handleResendVerification}
-                    disabled={resendCooldown > 0 || resending}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/40 disabled:cursor-not-allowed text-black disabled:text-black/50 rounded-xl text-[13px] font-bold transition-all active:scale-95"
-                  >
-                    {resending
-                      ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Sending...</>
-                      : resendCooldown > 0
-                        ? <><Mail className="w-3.5 h-3.5" /> Resend in {resendCooldown}s</>
-                        : <><Mail className="w-3.5 h-3.5" /> Resend verification email</>
-                    }
-                  </button>
-                  <p className="text-[12px] text-slate-500">Check your spam folder if you don't see it.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="h-1 bg-gradient-to-r from-amber-500/50 via-orange-400/50 to-amber-500/50" />
-        </div>
-      )}
+      <EmailVerificationBanner />
 
       {/* Onboarding Checklist */}
       {user && profile && !profile.signup_completed_at && !(profile as any).signupCompletedAt && localStorage.getItem(STORAGE_KEYS.checklistDismissed(user.id)) !== 'true' && (
@@ -347,7 +190,7 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <h1 className="font-bold text-[20px] sm:text-[28px] text-slate-900 leading-tight tracking-tight m-0 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>{greeting},</span>
-                <span className="text-[#8B7CF8] inline-flex items-center gap-1.5 sm:gap-2">
+                <span className="text-primary-400 inline-flex items-center gap-1.5 sm:gap-2">
                   <span className="truncate max-w-[150px] sm:max-w-none">{firstName}</span>
                   <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                   <span className="shrink-0">👋</span>
@@ -362,7 +205,7 @@ export default function Dashboard() {
                 <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[11px] font-mono font-bold uppercase">
                   Free
                 </span>
-                <span className="px-2.5 py-1 rounded-full border border-[#8B7CF8]/20 bg-[#8B7CF8]/10 text-[#8B7CF8] text-[11px] font-mono font-bold uppercase">
+                <span className="px-2.5 py-1 rounded-full border border-primary-400/20 bg-primary-400/10 text-primary-400 text-[11px] font-mono font-bold uppercase">
                   Rep {profile?.reputation || 0}
                 </span>
               </div>
@@ -384,7 +227,7 @@ export default function Dashboard() {
         <div className="hidden sm:flex items-center gap-3 w-full sm:w-auto">
           <Link
             to="/dashboard/notifications"
-            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 hover:text-slate-900 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 hover:text-slate-900 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-ring"
           >
             <Bell className="w-[18px] h-[18px]" />
             {unreadCount > 0 && (
@@ -393,7 +236,7 @@ export default function Dashboard() {
           </Link>
           <Link
             to="/dashboard/create"
-            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8]"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-ring"
           >
             <IconPlus /> New room
           </Link>
@@ -403,7 +246,7 @@ export default function Dashboard() {
       {/* PROFILE CARD & STATS */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Profile Card - hidden on mobile to prevent redundancy with header */}
-        <div className="hidden md:block xl:col-span-2 bg-white border border-slate-100 rounded-[20px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] shadow-[0_2px_8px_rgba(0,0,0,0.04)]" tabIndex={0}>
+        <div className="hidden md:block xl:col-span-2 bg-white border border-slate-100 rounded-[20px] p-6 focus-ring shadow-[0_2px_8px_rgba(0,0,0,0.04)]" tabIndex={0}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
               <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
@@ -419,7 +262,7 @@ export default function Dashboard() {
           <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
             <div>
               <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Reputation</p>
-              <p className="text-[20px] font-bold text-[#8B7CF8] mt-1">{profile?.reputation || 0}</p>
+              <p className="text-[20px] font-bold text-primary-400 mt-1">{profile?.reputation || 0}</p>
             </div>
             <div>
               <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Member since</p>
@@ -430,7 +273,7 @@ export default function Dashboard() {
 
         {/* Stats Strip */}
         <StatsStrip
-          myRooms={myRooms}
+          myRooms={allMyRooms}
           reactions={reactions}
           observers={observers}
           myRoomsLoading={myRoomsLoading}
@@ -452,7 +295,7 @@ export default function Dashboard() {
               <button
                 key={tab.key}
                 onClick={() => setTab(tab.key)}
-                className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7CF8] whitespace-nowrap snap-start active:scale-95 ${isCurrent
+                className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-ring whitespace-nowrap snap-start active:scale-95 ${isCurrent
                     ? 'text-slate-900'
                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-t-lg'
                   }`}
@@ -461,7 +304,7 @@ export default function Dashboard() {
                 {isCurrent && (
                   <motion.div
                     layoutId="tab-indicator"
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-[#8B7CF8] rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-primary-400 rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
@@ -477,8 +320,8 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.95fr] gap-8">
           {/* LEFT COLUMN: ACTIVE WORK LIST */}
           <ActiveRoomsList
-            rooms={myRooms}
-            loading={myRoomsLoading}
+            rooms={allMyRooms}
+            loading={myRoomsLoading || observedRoomsLoading}
             setTab={setTab}
           />
 
@@ -491,17 +334,19 @@ export default function Dashboard() {
         </div>
       ) : activeTab === 'overview' ? (
         <div>
+          <RequestsAndInvites />
+          <PendingDraftsList />
           <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.55fr] gap-8 xl:gap-12">
             <ActiveRoomsList
-              rooms={myRooms}
-              loading={myRoomsLoading}
+              rooms={allMyRooms}
+              loading={myRoomsLoading || observedRoomsLoading}
               setTab={setTab}
               selectedRoomId={selectedRoomId}
               setSelectedRoomId={setSelectedRoomId}
             />
             <ActiveRoomPanel
               user={user}
-              room={myRooms.find(r => r.id === selectedRoomId) || myRooms[0]}
+              room={allMyRooms.find(r => r.id === selectedRoomId) || allMyRooms[0]}
               reactions={reactions}
               queryClient={queryClient}
             />
@@ -513,19 +358,11 @@ export default function Dashboard() {
         <TimelineFeed
           user={user}
           profile={profile}
-          myRooms={myRooms}
+          myRooms={allMyRooms}
           observedRooms={observedRooms}
           dbUpdates={dbUpdates}
           selectedRoomId={selectedRoomId}
           setSelectedRoomId={setSelectedRoomId}
-          updateContent={updateContent}
-          setUpdateContent={setUpdateContent}
-          codeSnippet={codeSnippet}
-          setCodeSnippet={setCodeSnippet}
-          mediaPreview={mediaPreview}
-          setMediaPreview={setMediaPreview}
-          posting={posting}
-          handlePostUpdate={handlePostUpdate}
           hasNextUpdates={hasNextUpdates}
           fetchNextUpdates={fetchNextUpdates}
           isFetchingNextUpdates={isFetchingNextUpdates}
@@ -536,190 +373,23 @@ export default function Dashboard() {
         />
       )}
 
-      {/* MOBILE FAB */}
-      <div className="fixed bottom-[110px] right-4 z-[40] sm:hidden">
-        <button
-          onClick={() => {
-            if (!profile?.emailVerified) {
-              toast.error("Please verify your email to post.");
-              return;
-            }
-            setFabActionSheetOpen(true);
-          }}
-          className="w-14 h-14 bg-[#6C5CE7] hover:bg-[#5b4ed6] text-white rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(108,92,231,0.4)] active:scale-95 transition-transform"
-        >
-          <IconPlus />
-        </button>
-      </div>
-
-      {/* FAB ACTION SHEET */}
-      <AnimatePresence>
-        {fabActionSheetOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm sm:hidden flex flex-col justify-end"
-            onClick={() => setFabActionSheetOpen(false)}
-          >
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-white border-t border-slate-200 rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={() => {
-                    setFabActionSheetOpen(false);
-                    setComposerSheetOpen(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl text-left border border-slate-100 active:scale-95 transition-all"
-                >
-                  <div className="w-10 h-10 rounded-full bg-[#8B7CF8]/20 flex items-center justify-center text-[#8B7CF8]">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                  </div>
-                  <div>
-                    <div className="text-[15px] font-bold text-slate-900">Post an update</div>
-                    <div className="text-[12px] font-medium text-slate-500">Share what you're working on</div>
-                  </div>
-                </button>
-                <Link
-                  to="/dashboard/create"
-                  className="w-full flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl text-left border border-slate-100 active:scale-95 transition-all"
-                >
-                  <div className="w-10 h-10 rounded-full bg-[#6C5CE7]/20 flex items-center justify-center text-[#6C5CE7]">
-                    <IconPlus />
-                  </div>
-                  <div>
-                    <div className="text-[15px] font-bold text-slate-900">Create new room</div>
-                    <div className="text-[12px] font-medium text-slate-500">Initialize a new project space</div>
-                  </div>
-                </Link>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* POST UPDATE BOTTOM SHEET */}
-      <AnimatePresence>
-        {composerSheetOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm sm:hidden flex flex-col justify-end"
-            onClick={() => setComposerSheetOpen(false)}
-          >
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-white border-t border-slate-200 rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[18px] font-bold text-slate-900">Post an Update</h2>
-                <button
-                  onClick={() => setComposerSheetOpen(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <textarea 
-                value={updateContent}
-                onChange={(e) => setUpdateContent(e.target.value)}
-                placeholder="What feature did you ship today? Or what product decision did you make?"
-                className="w-full bg-white border border-slate-200 text-slate-900 text-[16px] sm:text-[15px] resize-none placeholder:text-slate-400 min-h-[100px] focus-visible:ring-2 focus-visible:ring-[#8B7CF8] rounded-xl p-4 mb-4 shadow-sm"
-              />
-
-              {/* Action row similar to desktop inline composer */}
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center justify-center w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full cursor-pointer transition-all">
-                    <ImageIcon className="w-5 h-5" />
-                    <input
-                      type="file" accept="image/*" className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setMediaPreview(reader.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </label>
-                  
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="flex items-center gap-1.5 bg-[#8B7CF8]/10 text-[#8B7CF8] text-[13px] font-bold rounded-full px-4 py-2 transition-all max-w-[150px]"
-                    >
-                      <span className="truncate">{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
-                      <ChevronDown className="w-4 h-4 shrink-0" />
-                    </button>
-
-                    <AnimatePresence>
-                      {dropdownOpen && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                          <motion.div
-                            initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                            className="absolute left-0 bottom-full mb-2 min-w-[200px] w-max bg-white border border-slate-200 rounded-xl shadow-xl p-1 z-50 overflow-hidden"
-                          >
-                            {myRooms.map(r => (
-                              <button
-                                key={r.id} type="button"
-                                onClick={() => {
-                                  setSelectedRoomId(r.id);
-                                  setDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-3.5 py-2.5 rounded-lg text-[13px] font-semibold ${
-                                  selectedRoomId === r.id ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]' : 'text-slate-600 hover:bg-slate-50'
-                                }`}
-                              >
-                                {r.title}
-                              </button>
-                            ))}
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => {
-                    handlePostUpdate();
-                    setComposerSheetOpen(false);
-                  }}
-                  disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId}
-                  className="bg-[#8B7CF8] hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-full font-bold text-[14px] transition-colors active:scale-95"
-                >
-                  {posting ? "Posting..." : "Post"}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* MOBILE FAB & POST SHEETS */}
+      <MobileActionSheet
+        fabActionSheetOpen={fabActionSheetOpen}
+        setFabActionSheetOpen={setFabActionSheetOpen}
+        setComposerSheetOpen={setComposerSheetOpen}
+      />
+      <ComposerSheet
+        isOpen={composerSheetOpen}
+        onClose={() => setComposerSheetOpen(false)}
+        myRooms={allMyRooms}
+        selectedRoomId={selectedRoomId}
+        setSelectedRoomId={setSelectedRoomId}
+      />
 
       <VerificationSuccessModal 
         isOpen={showVerificationSuccess} 
-        onClose={() => setShowVerificationSuccess(false)} 
+        onClose={handleCloseVerificationModal} 
         role={profile?.role || 'builder'}
       />
     </div>

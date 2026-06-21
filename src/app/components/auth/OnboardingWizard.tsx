@@ -37,7 +37,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
           setIsOpen(!isOpen);
           setSearch("");
         }}
-        className="w-full flex items-center justify-between px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[14px] text-white focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all disabled:opacity-50 text-left cursor-pointer"
+        className="w-full flex items-center justify-between px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[14px] text-white focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all disabled:opacity-50 text-left cursor-pointer"
       >
         <span className={selectedOption ? "text-white font-medium truncate" : "text-slate-500 font-medium truncate"}>
           {displayLabel}
@@ -70,7 +70,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
                   placeholder={`Search ${label.toLowerCase()}...`}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 transition-all mb-2"
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 transition-all mb-2"
                 />
               )}
               <div className="flex-1 overflow-y-auto max-h-[180px] space-y-0.5 pr-1">
@@ -87,7 +87,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-[13px] font-semibold transition-all truncate block ${
                         value === o.value
-                          ? 'bg-[#8B7CF8]/20 text-[#8B7CF8]'
+                          ? 'bg-primary-400/20 text-primary-400'
                           : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                       }`}
                     >
@@ -195,22 +195,27 @@ export default function OnboardingWizard() {
       await refreshProfile();
       toast.success("Profile setup complete!");
       
-      // Navigate to dashboard
-      navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to save profile. Please try again.');
+      const returnTo = localStorage.getItem('authRedirectUrl');
+      if (returnTo) {
+        localStorage.removeItem('authRedirectUrl');
+        navigate(returnTo);
+      } else {
+        navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
+      }
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to save profile. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  if (authLoading) return <div className="min-h-screen bg-[#0E0C16] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#8B7CF8]" /></div>;
+  if (authLoading) return <div className="min-h-screen bg-[#0E0C16] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary-400" /></div>;
 
   return (
     <div className="min-h-screen bg-[#0E0C16] flex items-center justify-center p-6 relative overflow-hidden">
       {/* Ambient backgrounds */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#6C5CE7]/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-500/10 rounded-full blur-[150px] pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -222,7 +227,7 @@ export default function OnboardingWizard() {
           {[0, 1, 2].map(i => (
             <div 
               key={i} 
-              className={`h-1.5 rounded-full transition-all duration-300 ${step >= i ? 'w-8 bg-[#8B7CF8]' : 'w-4 bg-white/[0.1]'}`} 
+              className={`h-1.5 rounded-full transition-all duration-300 ${step >= i ? 'w-8 bg-primary-400' : 'w-4 bg-white/[0.1]'}`} 
             />
           ))}
         </div>
@@ -250,9 +255,9 @@ export default function OnboardingWizard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <button
                   onClick={() => setUserRole('builder')}
-                  className={`p-6 rounded-2xl border text-left transition-all ${userRole === 'builder' ? 'bg-[#6C5CE7]/10 border-[#8B7CF8] shadow-[0_0_20px_rgba(108,92,231,0.2)]' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]'}`}
+                  className={`p-6 rounded-2xl border text-left transition-all ${userRole === 'builder' ? 'bg-primary-500/10 border-primary-400 shadow-[0_0_20px_rgba(108,92,231,0.2)]' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]'}`}
                 >
-                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'builder' ? 'bg-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'builder' ? 'bg-primary-400' : 'bg-white/[0.05]'}`}>
                     <Hammer className={`w-6 h-6 ${userRole === 'builder' ? 'text-white' : 'text-slate-400'}`} />
                   </div>
                   <h3 className="text-[18px] font-bold text-white mb-2">Builder</h3>
@@ -260,9 +265,9 @@ export default function OnboardingWizard() {
                 </button>
                 <button
                   onClick={() => setUserRole('observer')}
-                  className={`p-6 rounded-2xl border text-left transition-all ${userRole === 'observer' ? 'bg-[#6C5CE7]/10 border-[#8B7CF8] shadow-[0_0_20px_rgba(108,92,231,0.2)]' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]'}`}
+                  className={`p-6 rounded-2xl border text-left transition-all ${userRole === 'observer' ? 'bg-primary-500/10 border-primary-400 shadow-[0_0_20px_rgba(108,92,231,0.2)]' : 'bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04]'}`}
                 >
-                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'observer' ? 'bg-[#8B7CF8]' : 'bg-white/[0.05]'}`}>
+                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'observer' ? 'bg-primary-400' : 'bg-white/[0.05]'}`}>
                     <Eye className={`w-6 h-6 ${userRole === 'observer' ? 'text-white' : 'text-slate-400'}`} />
                   </div>
                   <h3 className="text-[18px] font-bold text-white mb-2">Observer</h3>
@@ -273,7 +278,7 @@ export default function OnboardingWizard() {
               <div className="mt-auto pt-4 flex gap-3">
                 <button
                   onClick={handleNext}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </button>
@@ -318,7 +323,7 @@ export default function OnboardingWizard() {
                     value={interestsText}
                     onChange={e => setInterestsText(e.target.value)}
                     placeholder="e.g. Product Design, Fintech, Growth Strategies..."
-                    className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all resize-none"
+                    className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all resize-none"
                   />
                   <p className="text-[12px] text-slate-500 mt-2">Comma separated values work best.</p>
                 </div>
@@ -328,7 +333,7 @@ export default function OnboardingWizard() {
                 <button
                   onClick={handleNext}
                   disabled={role === 'builder' ? !builderType || builderType !== 'product-manager' : !interestsText}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </button>
@@ -414,7 +419,7 @@ export default function OnboardingWizard() {
                 <button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-[#6C5CE7] to-[#8B7CF8] hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Completing setup...</> : <>Complete Setup <Check className="w-4 h-4" /></>}
                 </button>

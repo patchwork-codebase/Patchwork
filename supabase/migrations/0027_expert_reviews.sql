@@ -43,13 +43,19 @@ ALTER TABLE public.expert_review_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expert_reviews ENABLE ROW LEVEL SECURITY;
 
 -- Expert Review Requests Policies
+DROP POLICY IF EXISTS "Allow builders to view their own requests" ON public.expert_review_requests;
 CREATE POLICY "Allow builders to view their own requests" ON public.expert_review_requests FOR SELECT USING (auth.uid() = builder_id OR auth.uid() = expert_id);
+DROP POLICY IF EXISTS "Allow builders to insert their own requests" ON public.expert_review_requests;
 CREATE POLICY "Allow builders to insert their own requests" ON public.expert_review_requests FOR INSERT WITH CHECK (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Allow experts to update requests assigned to them" ON public.expert_review_requests;
 CREATE POLICY "Allow experts to update requests assigned to them" ON public.expert_review_requests FOR UPDATE USING (auth.uid() = expert_id OR auth.uid() = builder_id);
 
 -- Expert Reviews Policies
+DROP POLICY IF EXISTS "Allow public read access to public reviews" ON public.expert_reviews;
 CREATE POLICY "Allow public read access to public reviews" ON public.expert_reviews FOR SELECT USING (true); -- Simplified for now, should check request is_public
+DROP POLICY IF EXISTS "Allow experts to insert their own reviews" ON public.expert_reviews;
 CREATE POLICY "Allow experts to insert their own reviews" ON public.expert_reviews FOR INSERT WITH CHECK (auth.uid() = expert_id);
+DROP POLICY IF EXISTS "Allow experts and builders to update reviews" ON public.expert_reviews;
 CREATE POLICY "Allow experts and builders to update reviews" ON public.expert_reviews FOR UPDATE USING (auth.uid() = expert_id OR auth.uid() = builder_id);
 
 -- Realtime replication

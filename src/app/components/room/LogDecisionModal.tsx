@@ -59,8 +59,8 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
       setType('decision');
       onSuccess();
       onClose();
-    } catch (err: any) {
-      toast.error(`Failed to log decision: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Failed to log decision: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -135,7 +135,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Moved KYC check from step 7 → step 1"
-                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8] transition-colors"
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
                   autoFocus
                 />
               </div>
@@ -147,7 +147,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Why was this decision made? What's the impact?"
-                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8] transition-colors resize-none h-24"
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors resize-none h-24"
                 />
               </div>
 
@@ -163,7 +163,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
                 <button
                   type="submit"
                   disabled={isSubmitting || !title.trim()}
-                  className="flex-[2] py-3 rounded-xl font-bold text-[14px] text-white bg-[#8B7CF8] hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 transition-colors shadow-[0_0_20px_rgba(139,124,248,0.2)] disabled:shadow-none"
+                  className="flex-[2] py-3 rounded-xl font-bold text-[14px] text-white bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 transition-colors shadow-[0_0_20px_rgba(139,124,248,0.2)] disabled:shadow-none"
                 >
                   {isSubmitting ? 'Logging...' : 'Log Decision'}
                 </button>

@@ -83,9 +83,9 @@ export default function VerifyEmail() {
         }
 
         setStatus("success");
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus("error");
-        setErrorMsg(err.message || "Something went wrong during verification.");
+        setErrorMsg((err instanceof Error ? err.message : String(err)) || "Something went wrong during verification.");
 
         // Try to pre-fill email from the current session for the resend form
         try {
@@ -113,8 +113,8 @@ export default function VerifyEmail() {
       setResendCooldown(60);
       localStorage.setItem(STORAGE_KEYS.lastVerificationSent, Date.now().toString());
       toast.success("Verification email sent! Check your inbox.");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send. Please try from your dashboard.");
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || "Failed to send. Please try from your dashboard.");
     } finally {
       setResending(false);
     }
@@ -122,10 +122,10 @@ export default function VerifyEmail() {
 
   return (
     <div className="min-h-screen bg-[#08070D] flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#6C5CE7]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <div className="w-full max-w-[460px] bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 backdrop-blur-md shadow-2xl relative overflow-hidden text-center">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6C5CE7]/50 to-transparent opacity-50" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
 
         <div className="font-extrabold text-[24px] text-white font-display tracking-tight mb-8">
           patchwork
@@ -135,7 +135,7 @@ export default function VerifyEmail() {
         {status === "verifying" && (
           <div className="space-y-6">
             <div className="flex justify-center">
-              <Loader2 className="w-16 h-16 text-[#8B7CF8] animate-spin" />
+              <Loader2 className="w-16 h-16 text-primary-400 animate-spin" />
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-extrabold text-white font-display">Verifying your email</h2>
@@ -188,7 +188,7 @@ export default function VerifyEmail() {
                   value={resendEmail}
                   onChange={e => setResendEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8B7CF8]/50 focus:ring-1 focus:ring-[#8B7CF8]/30 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                 />
                 <button
                   onClick={handleResend}
@@ -212,7 +212,7 @@ export default function VerifyEmail() {
             <div className="pt-1 space-y-3">
               <button
                 onClick={() => navigate("/dashboard", { replace: true })}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#6C5CE7] hover:bg-[#5B4ED6] text-white rounded-full text-[14px] font-bold transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-primary-500 hover:bg-[#5B4ED6] text-white rounded-full text-[14px] font-bold transition-all"
               >
                 Go to Dashboard
               </button>

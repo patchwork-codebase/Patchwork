@@ -1,31 +1,60 @@
-import { Link, useNavigate } from "react-router";
-import { Compass, Users, Clock, Hammer } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Compass } from "lucide-react";
 import { useRooms } from "../../hooks/useRooms";
-import { timeAgo } from "../../utils/helpers";
-import { VerifiedTick } from "../ui/VerifiedTick";
+import { RoomCard } from "../room/RoomCard";
+import { ExploreCategories } from "./ExploreCategories";
+import { ExploreSearch } from "./ExploreSearch";
+import { EXPLORE_CATEGORIES } from "../../constants";
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 export default function ExplorePage() {
-  const { data, isLoading } = useRooms();
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const { data, isLoading } = useRooms(debouncedSearch, selectedCategory);
 
   // useRooms is an infinite query, so data.pages contains the arrays of rooms
-  const rooms = data?.pages.flat() || [];
+  const rooms = useMemo(() => data?.pages.flat() ?? [], [data?.pages]);
 
   return (
     <div className="max-w-[1080px] w-full mx-auto px-4 sm:px-6 py-12 relative overflow-hidden">
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[380px] h-[380px] sm:w-[600px] sm:h-[600px] bg-[#6C5CE7]/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[380px] h-[380px] sm:w-[600px] sm:h-[600px] bg-primary-500/5 rounded-full blur-[120px] pointer-events-none -z-10" />
 
-      <div className="mb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 rounded-full mb-4 mx-auto">
-          <Compass className="w-3.5 h-3.5 text-[#8B7CF8]" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B7CF8]">Directory</span>
+      <div className="mb-10 text-center flex flex-col items-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-500/10 border border-primary-500/20 rounded-full mb-4 mx-auto">
+          <Compass className="w-3.5 h-3.5 text-primary-400" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400">Directory</span>
         </div>
         <h1 className="text-5xl sm:text-[40px] font-extrabold text-slate-900 font-display tracking-tight leading-tight mb-3">
-          Explore <span className="text-[#8B7CF8]">Builders</span>
+          Explore <span className="text-primary-400">Builders</span>
         </h1>
-        <p className="text-[15px] text-slate-600 font-medium">
-          Discover builders working in the open across Patchwork.
+        <p className="text-[15px] text-slate-600 font-medium max-w-lg mx-auto mb-8">
+          Discover builders working in the open across Patchwork. Find inspiration and follow their progress.
         </p>
+
+        <ExploreSearch value={searchQuery} onChange={setSearchQuery} />
+      </div>
+
+      <div className="mb-8 flex justify-center">
+        <ExploreCategories
+          categories={[...EXPLORE_CATEGORIES]}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
       </div>
 
       {isLoading ? (
@@ -49,66 +78,12 @@ export default function ExplorePage() {
       ) : rooms.length === 0 ? (
         <div className="bg-slate-50 border border-slate-200 rounded-[32px] px-6 py-16 text-center backdrop-blur-md">
           <p className="text-slate-900 font-bold text-lg">No active rooms found</p>
-          <p className="text-slate-600 text-sm mt-2">Check back later or start your own room!</p>
+          <p className="text-slate-600 text-sm mt-2">Try adjusting your filters or search query.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {rooms.map((room) => (
-            <div 
-              key={room.id}
-              onClick={() => navigate(`/dashboard/room/${room.id}`)}
-              className="group bg-white border border-slate-200 hover:border-[#6C5CE7]/50 rounded-[24px] p-0 flex flex-col cursor-pointer transition-all hover:-translate-y-1 shadow-sm hover:shadow-md relative overflow-hidden h-[340px]"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-transparent pointer-events-none z-0" />
-              
-              {/* Cover Image Banner */}
-              {room.coverImage && (
-                <div className="w-full h-32 overflow-hidden border-b border-slate-200 shrink-0 relative z-10">
-                  <img 
-                    src={room.coverImage} 
-                    alt={room.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              )}
-
-              <div className="p-6 flex flex-col h-full relative z-10">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    {!room.coverImage && (
-                      <div className="w-10 h-10 rounded-xl bg-[#6C5CE7]/10 border border-[#6C5CE7]/20 flex items-center justify-center text-[#8B7CF8] shrink-0">
-                        <Hammer className="w-5 h-5" />
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <h3 className="text-slate-900 font-bold text-lg group-hover:text-[#8B7CF8] transition-colors line-clamp-1">{room.title}</h3>
-                      <p className="text-slate-600 text-xs flex items-center gap-1">
-                        by {room.builderName}
-                        <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3 h-3" />
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-sm text-slate-700 mb-6 line-clamp-2 flex-grow">
-                  {room.description || "No description provided."}
-                </p>
-
-                <div className="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{timeAgo(room.updatedAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{room.observerCount || 0}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 ml-auto bg-[#6C5CE7]/10 text-[#8B7CF8] px-2 py-0.5 rounded-full font-medium">
-                    {room.updateCount || 0} updates
-                  </div>
-                </div>
-              </div>
-            </div>
+            <RoomCard key={room.id} room={room} />
           ))}
         </div>
       )}
