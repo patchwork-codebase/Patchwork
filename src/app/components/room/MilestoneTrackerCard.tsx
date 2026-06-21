@@ -95,13 +95,67 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('linear-sync', {
-        body: { roomId }
+      const { data: linearAccount, error: accError } = await supabase
+        .from('linear_accounts')
+        .select('access_token')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      if (accError || !linearAccount || !linearAccount.access_token) {
+        toast.error('Linear account not connected.');
+        setIsSyncing(false);
+        return;
+      }
+
+      const linearRes = await fetch('/linear-api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': linearAccount.access_token
+        },
+        body: JSON.stringify({
+          query: `
+            query {
+              issues(first: 20, filter: { assignee: { isMe: { eq: true } } }, orderBy: updatedAt) {
+                nodes {
+                  id
+                  title
+                  description
+                  url
+                  state {
+                    name
+                  }
+                }
+              }
+            }
+          `
+        })
       });
 
-      if (error) throw new Error((error instanceof Error ? error.message : String(error)) || 'Failed to sync');
-      
-      toast.success(`Successfully synced ${data.count} issues from Linear!`);
+      if (!linearRes.ok) throw new Error('Failed to fetch from Linear API');
+
+      const linearData = await linearRes.json();
+      if (linearData.errors) throw new Error('Linear API returned errors');
+
+      const issues = linearData.data?.issues?.nodes || [];
+      const upserts = issues.map((issue: any) => ({
+        room_id: roomId,
+        linear_issue_id: issue.id,
+        title: issue.title,
+        description: issue.description || '',
+        state: issue.state?.name || 'Todo',
+        url: issue.url
+      }));
+
+      if (upserts.length > 0) {
+        const { error: upsertError } = await supabase
+          .from('linear_issues')
+          .upsert(upserts, { onConflict: 'room_id,linear_issue_id' });
+        
+        if (upsertError) throw new Error(upsertError.message);
+      }
+
+      toast.success(`Successfully synced ${upserts.length} issues from Linear!`);
       queryClient.invalidateQueries({ queryKey: ['linear-issues', roomId] });
     } catch (err: unknown) {
       toast.error(`Linear sync failed: ${(err instanceof Error ? err.message : String(err))}`);
