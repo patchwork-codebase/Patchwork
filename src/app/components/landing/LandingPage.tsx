@@ -39,6 +39,8 @@ import { LandingCalculator } from "./LandingCalculator";
 import { LandingFAQ } from "./LandingFAQ";
 import { LandingCTA } from "./LandingCTA";
 import { LandingFooter } from "./LandingFooter";
+import { LandingUseCases } from "./LandingUseCases";
+import { LandingTicker } from "./LandingTicker";
 import { domainOptions, detailedRooms, showcaseBuilders, workflowSteps, faqs } from "../../constants/landingData";
 
 
@@ -391,8 +393,14 @@ export default function LandingPage() {
               handleHeroReaction={handleHeroReaction}
             />
 
+            {/* ─── Live Builder Ticker ───────────────────────────────── */}
+            <LandingTicker />
+
             {/* ─── Features Section (Why Patchwork) ──────────────────────────── */}
             <LandingFeatures />
+
+            {/* ─── Use Cases Section ──────────────────────────── */}
+            <LandingUseCases />
 
             {/* ─── Interactive Workflow Timeline (How it Works) ─────────────── */}
             <LandingWorkflow 

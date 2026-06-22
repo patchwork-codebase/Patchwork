@@ -21,9 +21,9 @@ export function LandingCalculator({
   calculateReputation
 }: LandingCalculatorProps) {
   return (
-            <section className="relative py-24 bg-[#FAFAF9]">
+            <section className="relative py-24 bg-[#050505]">
               <div className="mx-auto max-w-4xl px-6">
-                <div className="relative overflow-hidden rounded-[32px] border border-slate-200 bg-white p-8 md:p-12 shadow-xl">
+                <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0E0C15] p-8 md:p-12 shadow-2xl">
                   {/* Gradient background circles */}
                   <div className="absolute -top-40 -right-40 h-[300px] w-[300px] rounded-full bg-primary-500/10 blur-[80px]" />
                   <div className="absolute -bottom-40 -left-40 h-[300px] w-[300px] rounded-full bg-emerald-500/5 blur-[80px]" />
@@ -36,10 +36,10 @@ export function LandingCalculator({
                         <span className="text-[10px] font-extrabold tracking-widest text-primary-400 uppercase">
                           BUILDER reputation estimate
                         </span>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-snug">
                           Estimate your builder weight
                         </h2>
-                        <p className="text-xs text-slate-600">
+                        <p className="text-xs text-slate-400">
                           Reputation is earned. Use the sliders below to estimate your score based on updates, reactions, and observers.
                         </p>
                       </div>
@@ -48,7 +48,7 @@ export function LandingCalculator({
                         {/* Control 1: Weekly updates */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs font-semibold">
-                            <span className="text-slate-700">Weekly Updates</span>
+                            <span className="text-slate-300">Weekly Updates</span>
                             <span className="text-primary-400 font-mono font-bold">{calcUpdates} / week</span>
                           </div>
                           <input
@@ -64,7 +64,7 @@ export function LandingCalculator({
                         {/* Control 2: Average Reactions */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs font-semibold">
-                            <span className="text-slate-700">Avg Reactions Per Update</span>
+                            <span className="text-slate-300">Avg Reactions Per Update</span>
                             <span className="text-primary-400 font-mono font-bold">{calcReactions} reactions</span>
                           </div>
                           <input
@@ -80,7 +80,7 @@ export function LandingCalculator({
                         {/* Control 3: Observer follow rate */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs font-semibold">
-                            <span className="text-slate-700">Active Observers</span>
+                            <span className="text-slate-300">Active Observers</span>
                             <span className="text-primary-400 font-mono font-bold">{calcObservers} observers</span>
                           </div>
                           <input
@@ -96,7 +96,7 @@ export function LandingCalculator({
                     </div>
 
                     {/* Calculator Result (Right) */}
-                    <div className="md:col-span-5 text-center p-6 rounded-2xl bg-white shadow-sm border border-slate-200 relative flex flex-col justify-center min-h-[220px]">
+                    <div className="md:col-span-5 text-center p-6 rounded-2xl bg-[#1C1A24] shadow-sm border border-white/5 relative flex flex-col justify-center min-h-[220px]">
                       <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                         Est. Reputation Score
                       </div>

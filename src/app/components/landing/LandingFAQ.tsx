@@ -9,7 +9,7 @@ interface LandingFAQProps {
 
 export function LandingFAQ({ activeFaq, setActiveFaq }: LandingFAQProps) {
   return (
-            <section id="faq" className="relative py-24 bg-[#FAFAF9] border-t border-slate-200">
+            <section id="faq" className="relative py-24 bg-[#050505] border-t border-white/5">
               <div className="mx-auto max-w-4xl px-6">
 
                 {/* Section Header */}
@@ -17,10 +17,10 @@ export function LandingFAQ({ activeFaq, setActiveFaq }: LandingFAQProps) {
                   <span className="text-[11px] uppercase tracking-[0.2em] font-semibold text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full">
                     HELP & RESOURCES
                   </span>
-                  <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900">
+                  <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
                     Frequently Asked Questions
                   </h2>
-                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                  <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
                     Have questions about building in the open, private rooms, or reputation metrics? We've got you covered.
                   </p>
                 </div>
@@ -32,24 +32,24 @@ export function LandingFAQ({ activeFaq, setActiveFaq }: LandingFAQProps) {
                     return (
                       <div
                         key={idx}
-                        className="rounded-2xl border border-slate-200 bg-white overflow-hidden transition"
+                        className="rounded-2xl border border-white/10 bg-[#0E0C15] overflow-hidden transition"
                       >
                         <button
                           onClick={() => setActiveFaq(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between p-6 text-left transition hover:bg-white shadow-sm"
+                          className="w-full flex items-center justify-between p-6 text-left transition hover:bg-white/5 shadow-sm"
                         >
-                          <span className="text-sm sm:text-base font-bold text-slate-900 pr-4">
+                          <span className="text-sm sm:text-base font-bold text-white pr-4">
                             {faq.q}
                           </span>
                           <ChevronDown
-                            className={`h-5 w-5 text-slate-600 shrink-0 transition duration-300 ${isOpen ? "rotate-180 text-slate-900" : ""
+                            className={`h-5 w-5 text-slate-400 shrink-0 transition duration-300 ${isOpen ? "rotate-180 text-white" : ""
                               }`}
                           />
                         </button>
 
                         {/* Dynamic Height collapse */}
                         {isOpen && (
-                          <div className="border-t border-slate-200 bg-slate-50 px-6 py-5 text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
+                          <div className="border-t border-white/10 bg-[#1C1A24] px-6 py-5 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
                             {faq.a}
                           </div>
                         )}

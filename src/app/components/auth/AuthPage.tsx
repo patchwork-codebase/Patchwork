@@ -144,56 +144,24 @@ function TestimonialSlider() {
 }
 
 /* ─── Social Auth Component ───────────────────────────────────── */
-function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, onLinkedin: () => void, loading: boolean }) {
+function SocialAuth({ onLinkedin, loading }: { onGoogle: () => void, onLinkedin: () => void, loading: boolean }) {
   return (
-    <div className="flex flex-col gap-3 mt-2">
+    <div className="flex flex-col gap-4 mt-2">
       <div className="flex items-center gap-3">
         <div className="flex-1 h-[1px] bg-white/[0.08]" />
         <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">or continue with</span>
         <div className="flex-1 h-[1px] bg-white/[0.08]" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          disabled={true}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.02] border border-white/[0.04] text-slate-600 rounded-xl text-[13px] font-bold transition-all cursor-not-allowed"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" className="shrink-0 opacity-50">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c3.15 0 5.8-1.05 7.73-2.85l-3.57-2.77c-1.08.73-2.43 1.17-4.16 1.17-3.2 0-5.91-2.16-6.87-5.06H1.54v2.87C3.51 21.14 7.45 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.13 14.48c-.25-.73-.38-1.51-.38-2.31s.13-1.58.38-2.31V7.01H1.54C.56 8.97 0 11.17 0 13.5s.56 4.53 1.54 6.49l3.59-2.87c-.1-.73-.13-1.5-.13-2.14z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 4.75c1.71 0 3.25.59 4.45 1.73l3.33-3.33C17.79 1.19 15.15 0 12 0 7.45 0 3.51 1.86 1.54 5.12l3.59 2.87c.96-2.9 3.67-5.06 6.87-5.06z"
-            />
-          </svg>
-          <span className="relative">
-            Google
-            <span className="absolute -top-3 -right-10 text-[10px] text-yellow-400 font-bold bg-yellow-400/10 px-1.5 py-0.5 rounded-full border border-yellow-400/30">
-              Coming Soon
-            </span>
-          </span>
-        </button>
-        <button
-          type="button"
-          disabled={loading}
-          onClick={onLinkedin}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] rounded-xl text-[13px] text-white font-bold transition-all disabled:opacity-50"
-        >
-          <Linkedin className="w-4 h-4 text-[#0A66C2] fill-[#0A66C2]" />
-          LinkedIn
-        </button>
-      </div>
+      <button
+        type="button"
+        disabled={loading}
+        onClick={onLinkedin}
+        className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] rounded-xl text-[14px] text-white font-bold transition-all disabled:opacity-50"
+      >
+        <Linkedin className="w-5 h-5 text-[#0A66C2] fill-[#0A66C2]" />
+        Continue with LinkedIn
+      </button>
     </div>
   );
 }
@@ -406,22 +374,7 @@ export default function AuthPage() {
           <span className="text-lg font-bold text-white">patch·work</span>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-full p-1 mb-8 w-full max-w-sm">
-          {(['login', 'signup'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => { setTab(t); setError(''); }}
-              className={`flex-1 py-2.5 rounded-full text-[13px] font-bold transition-all ${
-                tab === t
-                  ? 'bg-white text-ink shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {t === 'login' ? 'Sign in' : 'Create account'}
-            </button>
-          ))}
-        </div>
+        {/* Removed Tab Switcher for cleaner UI */}
 
         <div className="w-full max-w-sm">
           <AnimatePresence mode="wait">
@@ -436,16 +389,10 @@ export default function AuthPage() {
                 onSubmit={handleLogin}
                 className="flex flex-col gap-4"
               >
-                <div>
-                  <h2 className="text-[28px] font-extrabold text-white tracking-tight">Welcome back</h2>
-                  <p className="text-[14px] text-slate-400 mt-1">Sign in to your Patchwork account</p>
+                <div className="mb-2">
+                  <h2 className="text-[32px] font-extrabold text-white tracking-tight">Welcome back</h2>
+                  <p className="text-[15px] text-slate-400 mt-1">Sign in to your Patchwork account</p>
                 </div>
-
-                <SocialAuth 
-                  onGoogle={handleGoogleAuth} 
-                  onLinkedin={handleLinkedinAuth} 
-                  loading={loading} 
-                />
 
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
@@ -491,6 +438,12 @@ export default function AuthPage() {
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : <>Sign in <ArrowRight className="w-4 h-4" /></>}
                 </motion.button>
 
+                <SocialAuth 
+                  onGoogle={handleGoogleAuth} 
+                  onLinkedin={handleLinkedinAuth} 
+                  loading={loading} 
+                />
+
                 <p className="text-center text-[13px] text-slate-500">
                   No account?{' '}
                   <button type="button" onClick={() => setTab('signup')} className="text-primary-400 font-bold hover:underline">
@@ -511,16 +464,10 @@ export default function AuthPage() {
                 onSubmit={handleSignup}
                 className="flex flex-col gap-4"
               >
-                <div>
-                  <h2 className="text-[28px] font-extrabold text-white tracking-tight">Create your account</h2>
-                  <p className="text-[14px] text-slate-400 mt-1">Join the founding cohort. Takes 30 seconds.</p>
+                <div className="mb-2">
+                  <h2 className="text-[32px] font-extrabold text-white tracking-tight">Create account</h2>
+                  <p className="text-[15px] text-slate-400 mt-1">Join the founding cohort. Takes 30 seconds.</p>
                 </div>
-
-                <SocialAuth 
-                  onGoogle={handleGoogleAuth} 
-                  onLinkedin={handleLinkedinAuth} 
-                  loading={loading} 
-                />
 
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
@@ -630,6 +577,12 @@ export default function AuthPage() {
                     : <>Create account — free <ArrowRight className="w-4 h-4" /></>
                   }
                 </motion.button>
+
+                <SocialAuth 
+                  onGoogle={handleGoogleAuth} 
+                  onLinkedin={handleLinkedinAuth} 
+                  loading={loading} 
+                />
 
                 <p className="text-center text-[12px] text-slate-600 leading-relaxed">
                   You'll set up your domain, room and preferences<br />inside the dashboard after signing up.

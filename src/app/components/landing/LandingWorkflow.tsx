@@ -56,7 +56,7 @@ export function LandingWorkflow({
   };
 
   return (
-    <section id="workflow" className="relative py-24 bg-[#FAFAF9]">
+    <section id="workflow" className="relative py-24 bg-[#050505] border-y border-white/5">
       <div className="mx-auto max-w-7xl px-6">
 
         {/* Section Header */}
@@ -64,10 +64,10 @@ export function LandingWorkflow({
           <span className="text-[11px] uppercase tracking-[0.2em] font-semibold text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full">
             HOW IT WORKS
           </span>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
             From private idea to public proof-of-work
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+          <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
             Click through the steps below to explore how a raw idea transforms into a verified, permanent portfolio piece.
           </p>
         </div>
@@ -84,20 +84,20 @@ export function LandingWorkflow({
                   key={step.step}
                   onClick={() => setSelectedWorkflowStep(step.step)}
                   className={`w-full flex items-start gap-4 rounded-2xl p-5 text-left transition border ${isActive
-                    ? "bg-white shadow-sm border-slate-200 shadow-lg"
-                    : "hover:bg-white shadow-sm border-transparent"
+                    ? "bg-[#1C1A24] border-white/10 shadow-lg"
+                    : "hover:bg-white/5 border-transparent"
                     }`}
                 >
                   <div
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold transition text-sm ${isActive
                       ? "bg-primary-500 text-white shadow-md"
-                      : "bg-white shadow-sm text-slate-500"
+                      : "bg-[#2A2635] text-slate-400 border border-white/5"
                       }`}
                   >
                     {getStepIcon(step.step)}
                   </div>
                   <div className="space-y-1">
-                    <h3 className={`text-base font-bold transition ${isActive ? "text-slate-900" : "text-slate-600 hover:text-slate-900"}`}>
+                    <h3 className={`text-base font-bold transition ${isActive ? "text-white" : "text-slate-400 hover:text-white"}`}>
                       {step.title}
                     </h3>
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
@@ -120,10 +120,10 @@ export function LandingWorkflow({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.98 }}
                 transition={{ duration: 0.3 }}
-                className="absolute inset-0 rounded-[20px] border border-slate-200 bg-white p-6 space-y-6 shadow-xl"
+                className="absolute inset-0 rounded-[20px] border border-white/10 bg-[#0E0C15] p-6 space-y-6 shadow-2xl"
               >
                 {/* Workflow Card Mockup Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-4 sm:gap-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-4 gap-4 sm:gap-0">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
                       Patchwork Room Simulator
@@ -132,7 +132,7 @@ export function LandingWorkflow({
                   </div>
                   <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                     {renderAvatars(selectedWorkflowStep)}
-                    <div className="text-[10px] text-slate-500 font-mono bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                    <div className="text-[10px] text-slate-400 font-mono bg-[#1C1A24] px-2 py-1 rounded-md border border-white/5">
                       Step {selectedWorkflowStep} / 4
                     </div>
                   </div>
@@ -142,19 +142,19 @@ export function LandingWorkflow({
                 <div className="space-y-5 h-[340px] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="flex items-center justify-between">
                     <span className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
-                      selectedWorkflowStep === 1 ? 'bg-slate-100 text-slate-600' :
-                      selectedWorkflowStep === 2 ? 'bg-indigo-500/10 text-indigo-500' :
-                      selectedWorkflowStep === 3 ? 'bg-amber-500/10 text-amber-500' :
-                      'bg-emerald-500/10 text-emerald-500'
+                      selectedWorkflowStep === 1 ? 'bg-[#1C1A24] text-slate-400 border border-white/5' :
+                      selectedWorkflowStep === 2 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+                      selectedWorkflowStep === 3 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                      'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                     }`}>
                       {workflowSteps[selectedWorkflowStep - 1].mockup.tag}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500">
+                    <span className="text-[10px] font-mono text-slate-400">
                       {workflowSteps[selectedWorkflowStep - 1].mockup.status}
                     </span>
                   </div>
 
-                  <h4 className="text-lg font-bold text-slate-900 leading-tight">
+                  <h4 className="text-lg font-bold text-white leading-tight">
                     {workflowSteps[selectedWorkflowStep - 1].mockup.title}
                   </h4>
 
@@ -162,9 +162,9 @@ export function LandingWorkflow({
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="rounded-xl bg-slate-50 border border-slate-100 p-5 text-sm font-serif italic text-slate-700 leading-relaxed relative"
+                    className="rounded-xl bg-[#1C1A24] border border-white/5 p-5 text-sm font-serif italic text-slate-300 leading-relaxed relative"
                   >
-                    <div className="absolute -left-1.5 top-5 w-3 h-3 bg-white border-t border-l border-slate-100 rotate-[-45deg]" />
+                    <div className="absolute -left-1.5 top-5 w-3 h-3 bg-[#1C1A24] border-t border-l border-white/5 rotate-[-45deg]" />
                     "{workflowSteps[selectedWorkflowStep - 1].mockup.content}"
                   </motion.div>
 
@@ -177,8 +177,8 @@ export function LandingWorkflow({
                       className="flex flex-wrap gap-2 pt-2"
                     >
                       <span className="rounded-full bg-primary-500/10 border border-primary-500/30 px-3 py-1.5 text-[11px] text-primary-500 font-bold hover:bg-primary-500/20 cursor-pointer transition">✦ Sharp · 12</span>
-                      <span className="rounded-full bg-white shadow-sm border border-slate-200 px-3 py-1.5 text-[11px] text-slate-600 font-medium hover:bg-slate-50 cursor-pointer transition">↩ Push back · 2</span>
-                      <span className="rounded-full bg-white shadow-sm border border-slate-200 px-3 py-1.5 text-[11px] text-slate-600 font-medium hover:bg-slate-50 cursor-pointer transition">? Tell me more · 5</span>
+                      <span className="rounded-full bg-[#1C1A24] shadow-sm border border-white/10 px-3 py-1.5 text-[11px] text-slate-400 font-medium hover:bg-[#2A2635] cursor-pointer transition">↩ Push back · 2</span>
+                      <span className="rounded-full bg-[#1C1A24] shadow-sm border border-white/10 px-3 py-1.5 text-[11px] text-slate-400 font-medium hover:bg-[#2A2635] cursor-pointer transition">? Tell me more · 5</span>
                     </motion.div>
                   )}
 
@@ -186,14 +186,14 @@ export function LandingWorkflow({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="space-y-3 pt-4 border-t border-slate-100"
+                    className="space-y-3 pt-4 border-t border-white/10"
                   >
                     <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Key Features at this Step</div>
                     <ul className="space-y-2.5">
                       {workflowSteps[selectedWorkflowStep - 1].points.map((point, index) => (
-                        <li key={index} className="flex items-start gap-3 text-sm text-slate-600 leading-relaxed bg-white p-2 rounded-lg border border-slate-50 shadow-sm">
+                        <li key={index} className="flex items-start gap-3 text-sm text-slate-400 leading-relaxed bg-[#1C1A24] p-2 rounded-lg border border-white/5 shadow-sm">
                           <Check className="h-4 w-4 text-[#00B37E] shrink-0 mt-0.5" />
-                          <span>{point}</span>
+                          <span className="text-slate-300">{point}</span>
                         </li>
                       ))}
                     </ul>
