@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp, Archive } from "lucide-react";
+import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp, Archive, Compass } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { useUserRooms } from "../../hooks/useRooms";
+import { useUserRooms, useRooms } from "../../hooks/useRooms";
 import { getObserverCount, timeAgo } from "../../utils/helpers";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 
@@ -21,9 +21,18 @@ function formatDate(iso: string) {
 
 export default function BuildLogs() {
   const [buildLogFilter, setBuildLogFilter] = useState("all");
-  const { user } = useAuth();
-  const { data: myRoomsData, isLoading } = useUserRooms(user?.id);
-  const myRooms = myRoomsData?.pages.flat() || [];
+  const { user, profile } = useAuth();
+  const isObserver = profile?.role === 'observer';
+
+  // Builders see their own rooms; observers see all public rooms
+  const { data: myRoomsData, isLoading: builderLoading } = useUserRooms(!isObserver ? user?.id : undefined);
+  const { data: publicRoomsData, isLoading: publicLoading } = useRooms();
+
+  const isLoading = isObserver ? publicLoading : builderLoading;
+  const myRooms = isObserver
+    ? (publicRoomsData?.pages.flat() || [])
+    : (myRoomsData?.pages.flat() || []);
+
   const queryClient = useQueryClient();
   const [archivingId, setArchivingId] = useState<string | null>(null);
 
@@ -55,8 +64,14 @@ export default function BuildLogs() {
       {/* Header + metrics */}
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 m-0 mb-1 font-display tracking-tight leading-tight">Build logs</h2>
-          <p className="text-[13px] text-slate-500 m-0 font-medium">Compiled histories of your completed, in-progress, and stalled rooms.</p>
+          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 m-0 mb-1 font-display tracking-tight leading-tight">
+            {isObserver ? 'Build logs' : 'Build logs'}
+          </h2>
+          <p className="text-[13px] text-slate-500 m-0 font-medium">
+            {isObserver
+              ? 'Active, shipped, and completed builds across Patchwork.'
+              : 'Compiled histories of your completed, in-progress, and stalled rooms.'}
+          </p>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 sm:justify-end">
           {[
@@ -151,12 +166,14 @@ export default function BuildLogs() {
                 )}
 
                 <div className="flex flex-row gap-2 relative mt-auto">
-                  <Link to={`/dashboard/room/${room.id}?action=post`}
-                    title="Post update"
-                    aria-label="Post update"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-                    <Edit3 size={18} />
-                  </Link>
+                  {!isObserver && (
+                    <Link to={`/dashboard/room/${room.id}?action=post`}
+                      title="Post update"
+                      aria-label="Post update"
+                      className="inline-flex items-center justify-center w-11 h-11 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+                      <Edit3 size={18} />
+                    </Link>
+                  )}
                   <Link to={`/dashboard/room/${room.id}`}
                     title="Open room"
                     aria-label="Open room"
@@ -331,35 +348,47 @@ export default function BuildLogs() {
                 </div>
 
                 <div className="flex flex-row gap-2 relative mt-auto">
-                  <Link to={`/dashboard/room/${room.id}?action=post`}
-                    title="Post update"
-                    aria-label="Post update"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
-                    <Edit3 size={18} />
+                  {!isObserver && (
+                    <Link to={`/dashboard/room/${room.id}?action=post`}
+                      title="Post update"
+                      aria-label="Post update"
+                      className="inline-flex items-center justify-center w-11 h-11 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                      <Edit3 size={18} />
+                    </Link>
+                  )}
+                  {!isObserver && (
+                    <button
+                      onClick={() => handleArchiveRoom(room.id)}
+                      disabled={archivingId === room.id}
+                      title="Archive room"
+                      aria-label="Archive room"
+                      className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
+                      {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
+                    </button>
+                  )}
+                  <Link to={`/dashboard/room/${room.id}`}
+                    title="View room"
+                    aria-label="View room"
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
+                    <ArrowUpRight size={18} />
                   </Link>
-                  <button
-                    onClick={() => handleArchiveRoom(room.id)}
-                    disabled={archivingId === room.id}
-                    title="Archive room"
-                    aria-label="Archive room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
-                    {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
-                  </button>
                 </div>
               </div>
             );
           })}
 
-          {/* New Room Placeholder */}
-          <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors">
-              <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
-            </div>
-            <div className="text-center">
-              <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-primary-500 font-display transition-colors">Open a new build room</h3>
-              <p className="m-0 text-[12px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors font-medium">Start streaming your next project</p>
-            </div>
-          </Link>
+          {/* New Room Placeholder — only for builders */}
+          {!isObserver && (
+            <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors">
+                <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
+              </div>
+              <div className="text-center">
+                <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-primary-500 font-display transition-colors">Open a new build room</h3>
+                <p className="m-0 text-[12px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors font-medium">Start streaming your next project</p>
+              </div>
+            </Link>
+          )}
         </div>
       )}
 
@@ -389,13 +418,21 @@ export default function BuildLogs() {
               </div>
               <h3 className="text-[18px] font-extrabold text-slate-900 mb-2 font-display">No logs found</h3>
               <p className="text-[14px] text-slate-500 max-w-[280px] mb-8 font-medium">
-                {buildLogFilter === 'all' 
-                  ? "You haven't opened any build rooms yet." 
-                  : `You don't have any ${buildLogFilter} build logs right now.`}
+                {isObserver
+                  ? `No public ${buildLogFilter === 'all' ? '' : buildLogFilter + ' '}builds found right now.`
+                  : buildLogFilter === 'all'
+                    ? "You haven't opened any build rooms yet."
+                    : `You don't have any ${buildLogFilter} build logs right now.`}
               </p>
-              <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
-                <Sparkles size={16} /> Open a new room
-              </Link>
+              {isObserver ? (
+                <Link to="/dashboard/explore" className="bg-primary-500 hover:bg-[#5b4ed6] text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
+                  <Compass size={16} /> Explore builders
+                </Link>
+              ) : (
+                <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
+                  <Sparkles size={16} /> Open a new room
+                </Link>
+              )}
             </div>
           );
         }

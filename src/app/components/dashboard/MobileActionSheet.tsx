@@ -17,6 +17,9 @@ interface MobileActionSheetProps {
 
 export function MobileActionSheet({ fabActionSheetOpen, setFabActionSheetOpen, setComposerSheetOpen }: MobileActionSheetProps) {
   const { profile } = useAuth();
+  const isObserver = profile?.role === 'observer';
+
+  if (isObserver) return null;
 
   return (
     <>

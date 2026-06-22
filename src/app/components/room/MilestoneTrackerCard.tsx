@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle, ArrowRight, Clock, AlertCircle, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "../auth/AuthContext";
+import { supabase, useAuth } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 
@@ -40,6 +40,8 @@ interface MilestoneTrackerCardProps {
 }
 
 export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient, isNested = false }: MilestoneTrackerCardProps) {
+  const { profile } = useAuth();
+  const isObserver = profile?.role === 'observer';
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -93,6 +95,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   }));
 
   const handleSync = async () => {
+    if (isObserver) return;
     setIsSyncing(true);
     try {
       const { data: linearAccount, error: accError } = await supabase
@@ -228,15 +231,17 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
             <span className="text-[12px] text-slate-500 font-medium">Synced with Linear</span>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={handleSync}
-              disabled={isSyncing}
-              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 sm:px-3.5 py-1.5 rounded-full font-bold text-[11px] sm:text-[12px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} strokeWidth="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg>
-              <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync Linear'}</span>
-              <span className="sm:hidden">{isSyncing ? 'Syncing...' : 'Sync'}</span>
-            </button>
+            {!isObserver && (
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 sm:px-3.5 py-1.5 rounded-full font-bold text-[11px] sm:text-[12px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} strokeWidth="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg>
+                <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync Linear'}</span>
+                <span className="sm:hidden">{isSyncing ? 'Syncing...' : 'Sync'}</span>
+              </button>
+            )}
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="hidden sm:inline">Linear Sync</span>

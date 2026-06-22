@@ -1,10 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Plus, X, ArrowRight, Sparkles, Image as ImageIcon, ChevronDown, Lock, FileText, Users, Rocket, LayoutTemplate, Crosshair, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, X, ArrowRight, Sparkles, Image as ImageIcon, ChevronDown, Lock, FileText, Users, Rocket, LayoutTemplate, Crosshair, Loader2, Check, Hammer } from "lucide-react";
 import { toast } from "sonner";
 
 const SUGGESTED_TAGS = ['design', 'engineering', 'product', 'research', 'writing', 'growth'];
+
+const BUILDER_TRACKS = [
+  { value: 'product-manager', label: 'Product PM', emoji: '📋', desc: 'Define what gets built, align teams, and track milestones.' },
+  { value: 'founder', label: 'Founder', emoji: '🚀', desc: 'Build the company, share traction, and scale operations.' },
+  { value: 'engineer', label: 'Engineer', emoji: '⚙️', desc: 'Write code, design architectures, and share technical snippets.' },
+  { value: 'product-designer', label: 'Designer', emoji: '🎨', desc: 'Craft customer experiences, test flows, and iterate in public.' },
+  { value: 'researcher', label: 'Researcher', emoji: '🔬', desc: 'Interview customers, formulate hypotheses, and track signals.' },
+  { value: 'growth', label: 'Growth', emoji: '📈', desc: 'Run growth experiments, track metrics, and optimize conversions.' },
+];
 
 function CustomSelect({ value, onChange, options, label }: { value: string, onChange: (v: string) => void, options: {value: string, label: string}[], label: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,8 +69,49 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
 }
 
 export default function CreateRoom() {
-  const { token, profile, withVerification } = useAuth();
+  const { token, profile, withVerification, user, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const [upgrading, setUpgrading] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState('');
+
+  const handleUpgradeToBuilder = async () => {
+    if (!user || !selectedTrack) return;
+    setUpgrading(true);
+    try {
+      const { data: currentUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (fetchError) throw fetchError;
+
+      const payload = {
+        ...currentUser,
+        role: 'builder',
+        domain: selectedTrack,
+        signup_completed_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('users')
+        .upsert(payload, { onConflict: 'id' });
+
+      if (error) throw error;
+
+      await supabase.auth.updateUser({
+        data: { role: 'builder' }
+      });
+
+      await refreshProfile();
+      toast.success(`Welcome to the builder track! You are now a Builder (${selectedTrack}).`);
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to update role.');
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
   const [form, setForm] = useState({ 
     title: '', 
     slug: '', 
@@ -99,14 +149,56 @@ export default function CreateRoom() {
 
   if (profile?.role !== 'builder') {
     return (
-      <div className="max-w-[1100px] mx-auto px-6 py-20 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-12 text-center backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-32 bg-primary-500/10 rounded-full blur-[80px] pointer-events-none" />
-          <h2 className="text-[32px] font-extrabold text-white mb-3 font-display">Builders Only</h2>
-          <p className="text-slate-400 mb-8 max-w-sm mx-auto font-medium">Only builders can create rooms. Update your profile role to get started.</p>
-          <Link to="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-full text-white font-bold transition-all">
-            <ArrowLeft size={16} /> Back to dashboard
-          </Link>
+      <div className="max-w-[1100px] mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[75vh]">
+        <div className="bg-[#15131C] border border-white/[0.08] rounded-[32px] p-8 sm:p-12 text-center max-w-lg w-full backdrop-blur-md relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="absolute top-0 right-0 p-32 bg-primary-500/10 rounded-full blur-[80px] pointer-events-none -z-10" />
+          
+          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-400/20 flex items-center justify-center text-purple-400 mx-auto mb-4 animate-pulse">
+            <Hammer className="w-6 h-6" />
+          </div>
+
+          <h2 className="text-[28px] font-extrabold text-white mb-2 font-display">Upgrade to Builder</h2>
+          <p className="text-slate-400 mb-6 text-[13.5px] leading-relaxed max-w-md mx-auto font-medium">
+            Only builders can create rooms. Select a track below to activate your Builder status and get started.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6 text-left">
+            {BUILDER_TRACKS.map(track => {
+              const isSelected = selectedTrack === track.value;
+              return (
+                <button
+                  key={track.value}
+                  onClick={() => setSelectedTrack(track.value)}
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    isSelected 
+                      ? 'border-purple-400 bg-purple-500/10 shadow-[0_0_10px_rgba(168,85,247,0.15)]'
+                      : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <span className="text-[14px] mr-1">{track.emoji}</span>
+                  <span className="text-[13px] font-bold text-white leading-tight">{track.label}</span>
+                  <p className="text-[10px] text-slate-500 mt-1 leading-snug font-medium line-clamp-1">{track.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/[0.06]">
+            <Link to="/dashboard" className="flex-1 py-3 border border-white/[0.08] hover:bg-white/5 text-slate-300 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+              <ArrowLeft size={16} /> Back to dashboard
+            </Link>
+            <button
+              onClick={handleUpgradeToBuilder}
+              disabled={upgrading || !selectedTrack}
+              className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+            >
+              {upgrading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Upgrading...</>
+              ) : (
+                <><Check className="w-4 h-4" /> Activate Status</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     );

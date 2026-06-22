@@ -107,6 +107,7 @@ export default function Layout() {
 
   const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
 
+  const isObserver = profile?.role === 'observer';
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
@@ -153,17 +154,17 @@ export default function Layout() {
       )}
 
       <MobileBottomNav 
-        activeSection={activeSection}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        unreadCount={unreadCount}
-        avatarUrl={avatarUrl}
-        userDisplayName={userDisplayName}
-        user={user}
-        profile={profile}
-        setForceShowTour={setForceShowTour}
-        handleSignOut={handleSignOut}
-      />
+          activeSection={activeSection}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          unreadCount={unreadCount}
+          avatarUrl={avatarUrl}
+          userDisplayName={userDisplayName}
+          user={user}
+          profile={profile}
+          setForceShowTour={setForceShowTour}
+          handleSignOut={handleSignOut}
+        />
 
       <div className="flex flex-col lg:flex-row flex-1 pb-[80px] lg:pb-0">
 
@@ -182,6 +183,7 @@ export default function Layout() {
 
         <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
           <div className="h-full">
+
             <Suspense fallback={
               <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-8">
                 {/* Page skeleton */}

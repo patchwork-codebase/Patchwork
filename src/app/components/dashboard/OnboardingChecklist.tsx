@@ -320,6 +320,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
 
   const completedCount = (['room', 'update', 'call'] as const).filter(k => completion[k]).length;
   const allDone = completedCount === steps.length;
+  const isObserver = role === 'observer';
 
   useEffect(() => {
     if (allDone && !dismissed) {
@@ -359,7 +360,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
   return (
     <>
       <AnimatePresence>
-        {activeStep && (
+        {activeStep && !isObserver && (
           <StepModal
             stepId={activeStep.id}
             emoji={activeStep.emoji}
@@ -412,10 +413,13 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.06 }}
-                onClick={() => !done && setActiveStep(step)}
-                disabled={done}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${done ? 'opacity-50 cursor-default' : 'hover:bg-slate-50 cursor-pointer'
-                  }`}
+                onClick={() => !done && !isObserver && setActiveStep(step)}
+                disabled={done || isObserver}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
+                  done ? 'opacity-50 cursor-default' :
+                  isObserver ? 'opacity-70 cursor-default' :
+                  'hover:bg-slate-50 cursor-pointer'
+                }`}
               >
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border transition-all ${done
                     ? 'bg-emerald-500/20 border-emerald-500/30'
@@ -436,7 +440,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
                   )}
                 </div>
 
-                {!done && <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />}
+                {!done && !isObserver && <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />}
               </motion.button>
             );
           })}

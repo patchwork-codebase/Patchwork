@@ -4,13 +4,14 @@ import { useSubmitDecision, useDiscoveryDecisions } from '../../hooks/useDiscove
 import { DiscoveryProject } from '../../types/discovery';
 import { supabase, useAuth } from '../auth/AuthContext';
 import { toast } from 'sonner';
-import { Award, ShieldAlert, RefreshCw, Eye, ArrowRight, CheckCircle2, FileText, Lock } from 'lucide-react';
+import { Award, ShieldAlert, RefreshCw, Eye, ArrowRight, CheckCircle2, Lock } from 'lucide-react';
 
 interface DecisionTrackerProps {
   project: DiscoveryProject;
+  isObserver?: boolean;
 }
 
-export default function DecisionTracker({ project }: DecisionTrackerProps) {
+export default function DecisionTracker({ project, isObserver = false }: DecisionTrackerProps) {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const submitDecision = useSubmitDecision();
@@ -27,7 +28,7 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
 
   const handleDecision = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile) return;
+    if (!profile || isObserver) return;
     setIsSubmitting(true);
 
     try {
@@ -125,6 +126,14 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
               Go to Build Room <ArrowRight className="w-4 h-4" />
             </button>
           )}
+        </div>
+      ) : isObserver ? (
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-4">
+          <Lock className="w-12 h-12 text-slate-400 mx-auto" />
+          <h3 className="text-xl font-bold text-slate-900">No Decision Logged</h3>
+          <p className="text-sm text-slate-500 max-w-md mx-auto">
+            The project builders have not logged a final discovery verdict yet.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

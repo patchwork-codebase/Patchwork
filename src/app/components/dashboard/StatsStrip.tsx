@@ -8,6 +8,14 @@ interface StatsStripProps {
   myRoomsLoading: boolean;
   reactionsLoading: boolean;
   observersLoading: boolean;
+  isObserver?: boolean;
+  observerStats?: {
+    roomsFollowed: number;
+    totalReactions: number;
+    sharpInsights: number;
+    shippedProducts: number;
+  };
+  observerStatsLoading?: boolean;
 }
 
 export function StatsStrip({
@@ -17,6 +25,9 @@ export function StatsStrip({
   myRoomsLoading,
   reactionsLoading,
   observersLoading,
+  isObserver = false,
+  observerStats,
+  observerStatsLoading = false,
 }: StatsStripProps) {
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -24,64 +35,99 @@ export function StatsStrip({
   const oneDayAgo = new Date();
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-  // Active rooms calculation
+  // Active rooms calculation (Builder)
   const activeRoomsCount = myRooms.filter(r => r.status === 'active').length;
   const activeRoomsThisWeek = myRooms.filter(r => r.status === 'active' && new Date(r.createdAt || r.created_at) >= oneWeekAgo).length;
   const activeRoomsDelta = activeRoomsThisWeek > 0 ? `↑ ${activeRoomsThisWeek} this week` : '0 new this week';
 
-  // Total reactions calculation
+  // Total reactions calculation (Builder)
   const totalReactions = reactions.length;
   const reactionsTodayCount = reactions.filter((re: any) => new Date(re.created_at) >= oneDayAgo).length;
   const reactionsDelta = reactionsTodayCount > 0 ? `↑ ${reactionsTodayCount} today` : '0 new today';
 
-  // Observers calculation
+  // Observers calculation (Builder)
   const totalObservers = myRooms.reduce((sum, r) => sum + getObserverCount(r), 0);
   const observersThisWeekCount = observers.filter((ob: any) => new Date(ob.created_at) >= oneWeekAgo).length;
   const observersDelta = observersThisWeekCount > 0 ? `↑ ${observersThisWeekCount} new` : '0 new';
 
-  // Build logs calculation
+  // Build logs calculation (Builder)
   const totalBuildLogs = myRooms.reduce((sum, r) => sum + (r.updateCount || 0), 0);
   const completedRooms = myRooms.filter(r => r.status === 'completed').length;
   const completedRoomsThisWeek = myRooms.filter(r => r.status === 'completed' && new Date(r.createdAt || r.created_at) >= oneWeekAgo).length;
   const buildLogsDelta = completedRoomsThisWeek > 0 ? `↑ ${completedRoomsThisWeek} this week` : `${completedRooms} completed`;
 
-  const stats = [
-    {
-      label: 'active rooms',
-      value: activeRoomsCount,
-      delta: activeRoomsDelta,
-      deltaColor: 'text-emerald-400',
-      numColor: 'text-primary-400',
-      loading: myRoomsLoading,
-    },
-    {
-      label: 'total reactions',
-      value: totalReactions,
-      delta: reactionsDelta,
-      deltaColor: 'text-amber-500',
-      numColor: 'text-slate-900',
-      loading: reactionsLoading,
-    },
-    {
-      label: 'observers',
-      value: totalObservers,
-      delta: observersDelta,
-      deltaColor: 'text-emerald-500',
-      numColor: 'text-slate-900',
-      loading: myRoomsLoading || observersLoading,
-    },
-    {
-      label: 'build logs',
-      value: totalBuildLogs,
-      delta: buildLogsDelta,
-      deltaColor: 'text-slate-500',
-      numColor: 'text-slate-900',
-      loading: myRoomsLoading,
-    },
-  ];
+  const stats = isObserver
+    ? [
+        {
+          label: 'followed rooms',
+          value: observerStats?.roomsFollowed ?? 0,
+          delta: 'tracking progress',
+          deltaColor: 'text-primary-400',
+          numColor: 'text-primary-400',
+          loading: observerStatsLoading,
+        },
+        {
+          label: 'reactions given',
+          value: observerStats?.totalReactions ?? 0,
+          delta: 'insights shared',
+          deltaColor: 'text-amber-500',
+          numColor: 'text-slate-900',
+          loading: observerStatsLoading,
+        },
+        {
+          label: 'sharp critiques',
+          value: observerStats?.sharpInsights ?? 0,
+          delta: '⚡ high signal',
+          deltaColor: 'text-purple-500',
+          numColor: 'text-slate-900',
+          loading: observerStatsLoading,
+        },
+        {
+          label: 'shipped products',
+          value: observerStats?.shippedProducts ?? 0,
+          delta: 'witnessed launches',
+          deltaColor: 'text-emerald-500',
+          numColor: 'text-slate-900',
+          loading: observerStatsLoading,
+        },
+      ]
+    : [
+        {
+          label: 'active rooms',
+          value: activeRoomsCount,
+          delta: activeRoomsDelta,
+          deltaColor: 'text-emerald-400',
+          numColor: 'text-primary-400',
+          loading: myRoomsLoading,
+        },
+        {
+          label: 'total reactions',
+          value: totalReactions,
+          delta: reactionsDelta,
+          deltaColor: 'text-amber-500',
+          numColor: 'text-slate-900',
+          loading: reactionsLoading,
+        },
+        {
+          label: 'observers',
+          value: totalObservers,
+          delta: observersDelta,
+          deltaColor: 'text-emerald-500',
+          numColor: 'text-slate-900',
+          loading: myRoomsLoading || observersLoading,
+        },
+        {
+          label: 'build logs',
+          value: totalBuildLogs,
+          delta: buildLogsDelta,
+          deltaColor: 'text-slate-500',
+          numColor: 'text-slate-900',
+          loading: myRoomsLoading,
+        },
+      ];
 
   return (
-    <div className="xl:col-span-3 flex overflow-x-auto snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 sm:overflow-visible pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <div className="xl:col-span-3 h-fit self-start flex overflow-x-auto snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 sm:overflow-visible pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {stats.map((s, i) => (
         <motion.div 
           initial={{ opacity: 0, y: 10 }}

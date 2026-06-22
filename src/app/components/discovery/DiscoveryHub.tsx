@@ -6,15 +6,17 @@ import { Plus, Compass, Beaker, FileText, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DiscoveryHub() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { data: projects, isLoading } = useDiscoveryProjects(user?.id);
   const createProject = useCreateDiscoveryProject();
   const [isCreating, setIsCreating] = useState(false);
   const [title, setTitle] = useState('');
+  const isObserver = profile?.role === 'observer';
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isObserver) return;
     if (!title.trim()) {
       toast.error("Please enter a project title");
       return;
@@ -49,23 +51,25 @@ export default function DiscoveryHub() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Discovery Projects</h1>
           <p className="text-slate-500 text-sm sm:text-base">Validate assumptions and gather signals before you build.</p>
         </div>
-        <form onSubmit={handleCreate} className="flex gap-2 w-full sm:w-auto">
-          <input 
-            type="text" 
-            placeholder="New Project Title..." 
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 sm:w-64 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 text-sm"
-          />
-          <button 
-            type="submit" 
-            disabled={!title.trim() || isCreating}
-            className="bg-[#8B7CF8] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-[#7a6aeb] disabled:opacity-50 text-sm whitespace-nowrap"
-          >
-            {isCreating ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/> : <Plus className="w-4 h-4"/>}
-            New Project
-          </button>
-        </form>
+        {!isObserver && (
+          <form onSubmit={handleCreate} className="flex gap-2 w-full sm:w-auto">
+            <input 
+              type="text" 
+              placeholder="New Project Title..." 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="flex-1 sm:w-64 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 text-sm"
+            />
+            <button 
+              type="submit" 
+              disabled={!title.trim() || isCreating}
+              className="bg-[#8B7CF8] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-[#7a6aeb] disabled:opacity-50 text-sm whitespace-nowrap"
+            >
+              {isCreating ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/> : <Plus className="w-4 h-4"/>}
+              New Project
+            </button>
+          </form>
+        )}
       </div>
 
       {isLoading ? (

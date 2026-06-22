@@ -7,11 +7,15 @@ import HypothesisTracker from './HypothesisTracker';
 import CustomerInterviews from './CustomerInterviews';
 import SignalTracker from './SignalTracker';
 import DecisionTracker from './DecisionTracker';
+import LinkedInDeckGenerator from './LinkedInDeckGenerator';
+import { useAuth } from '../auth/AuthContext';
 
 export default function DiscoveryDashboard() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading } = useDiscoveryProject(id);
   const [activeTab, setActiveTab] = useState('overview');
+  const { profile } = useAuth();
+  const isObserver = profile?.role === 'observer';
 
   if (isLoading) {
     return (
@@ -59,16 +63,19 @@ export default function DiscoveryDashboard() {
           </div>
         </div>
         
-        {/* Confidence Gauge */}
-        <div className="w-full md:w-auto bg-white border border-slate-200 rounded-2xl p-4 flex md:flex-col flex-row items-center justify-between md:justify-center md:min-w-[150px] shadow-sm shrink-0 gap-2">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Confidence Score</div>
-          <div className={`text-2xl sm:text-3xl font-black ${
-            project.confidence_score >= 70 ? 'text-emerald-500' :
-            project.confidence_score >= 40 ? 'text-amber-500' :
-            'text-rose-500'
-          }`}>
-            {project.confidence_score}%
+        {/* Confidence Gauge & Share */}
+        <div className="flex md:flex-col flex-row gap-3 shrink-0 items-center w-full md:w-auto justify-between md:justify-center">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex md:flex-col flex-row items-center justify-between md:justify-center md:min-w-[150px] shadow-sm gap-2">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Confidence Score</div>
+            <div className={`text-2xl sm:text-3xl font-black ${
+              project.confidence_score >= 70 ? 'text-emerald-500' :
+              project.confidence_score >= 40 ? 'text-amber-500' :
+              'text-rose-500'
+            }`}>
+              {project.confidence_score}%
+            </div>
           </div>
+          {!isObserver && <LinkedInDeckGenerator project={project} />}
         </div>
       </div>
 
@@ -92,26 +99,27 @@ export default function DiscoveryDashboard() {
       {/* Content Area */}
       <div className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-8 min-h-[400px]">
         {activeTab === 'overview' && (
-          <ProblemStatementForm project={project} />
+          <ProblemStatementForm project={project} isObserver={isObserver} />
         )}
         
         {activeTab === 'hypotheses' && (
-          <HypothesisTracker projectId={project.id} />
+          <HypothesisTracker projectId={project.id} isObserver={isObserver} />
         )}
 
         {activeTab === 'interviews' && (
-          <CustomerInterviews projectId={project.id} />
+          <CustomerInterviews projectId={project.id} isObserver={isObserver} />
         )}
 
         {activeTab === 'signals' && (
-          <SignalTracker projectId={project.id} />
+          <SignalTracker projectId={project.id} isObserver={isObserver} />
         )}
 
         {activeTab === 'decision' && (
-          <DecisionTracker project={project} />
+          <DecisionTracker project={project} isObserver={isObserver} />
         )}
       </div>
     </div>
   );
 }
+
 

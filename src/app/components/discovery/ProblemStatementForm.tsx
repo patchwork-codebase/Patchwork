@@ -5,9 +5,10 @@ import { Edit2, Save, X, Plus, Trash2, CheckCircle2, AlertCircle, HelpCircle } f
 
 interface ProblemStatementFormProps {
   project: DiscoveryProject;
+  isObserver?: boolean;
 }
 
-export default function ProblemStatementForm({ project }: ProblemStatementFormProps) {
+export default function ProblemStatementForm({ project, isObserver = false }: ProblemStatementFormProps) {
   const { data: assumptions, isLoading: loadingAssumptions } = useDiscoveryAssumptions(project.id);
   const updateProject = useUpdateDiscoveryProject();
   const mutateAssumption = useMutateAssumption();
@@ -98,12 +99,14 @@ export default function ProblemStatementForm({ project }: ProblemStatementFormPr
                 </button>
               </div>
             ) : (
-              <button 
-                onClick={() => setIsEditing(true)}
-                className="text-slate-500 hover:text-[#8B7CF8] p-1.5 hover:bg-slate-100 rounded-lg transition-all"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
+              !isObserver && (
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="text-slate-500 hover:text-[#8B7CF8] p-1.5 hover:bg-slate-100 rounded-lg transition-all"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              )
             )}
           </div>
 
@@ -161,7 +164,7 @@ export default function ProblemStatementForm({ project }: ProblemStatementFormPr
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Problem Statement</h4>
                 <p className="text-slate-800 leading-relaxed text-[15px] whitespace-pre-wrap">
-                  {project.problem_statement || "Not defined yet. Click edit to add a problem statement."}
+                  {project.problem_statement || (isObserver ? "No problem statement defined yet." : "Not defined yet. Click edit to add a problem statement.")}
                 </p>
               </div>
 
@@ -196,22 +199,24 @@ export default function ProblemStatementForm({ project }: ProblemStatementFormPr
           <h3 className="text-lg font-bold text-slate-900 mb-2">Assumptions</h3>
           <p className="text-xs text-slate-500 mb-4">List leap-of-faith assumptions that must be true for this project to succeed.</p>
 
-          <form onSubmit={handleAddAssumption} className="flex gap-2 mb-6">
-            <input 
-              type="text"
-              placeholder="e.g. Builders care about validation..."
-              value={newAssumption}
-              onChange={(e) => setNewAssumption(e.target.value)}
-              className="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-            />
-            <button 
-              type="submit" 
-              disabled={!newAssumption.trim()}
-              className="bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white p-2 rounded-xl disabled:opacity-50 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </form>
+          {!isObserver && (
+            <form onSubmit={handleAddAssumption} className="flex gap-2 mb-6">
+              <input 
+                type="text"
+                placeholder="e.g. Builders care about validation..."
+                value={newAssumption}
+                onChange={(e) => setNewAssumption(e.target.value)}
+                className="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
+              />
+              <button 
+                type="submit" 
+                disabled={!newAssumption.trim()}
+                className="bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white p-2 rounded-xl disabled:opacity-50 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </form>
+          )}
 
           {loadingAssumptions ? (
             <div className="space-y-2 animate-pulse">
@@ -230,38 +235,55 @@ export default function ProblemStatementForm({ project }: ProblemStatementFormPr
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-slate-800 leading-normal break-words">{a.assumption}</p>
                     <div className="flex gap-1.5 mt-2">
-                      <button 
-                        onClick={() => handleStatusChange(a.id, 'untested')}
-                        className={`p-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-0.5 ${
-                          a.status === 'untested' ? 'bg-slate-200 text-slate-700' : 'text-slate-400 hover:bg-slate-100'
-                        }`}
-                      >
-                        <HelpCircle className="w-3 h-3" /> Untested
-                      </button>
-                      <button 
-                        onClick={() => handleStatusChange(a.id, 'validated')}
-                        className={`p-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-0.5 ${
-                          a.status === 'validated' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-400 hover:bg-slate-100'
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3 h-3" /> Valid
-                      </button>
-                      <button 
-                        onClick={() => handleStatusChange(a.id, 'invalidated')}
-                        className={`p-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-0.5 ${
-                          a.status === 'invalidated' ? 'bg-rose-100 text-rose-700' : 'text-slate-400 hover:bg-slate-100'
-                        }`}
-                      >
-                        <AlertCircle className="w-3 h-3" /> Invalid
-                      </button>
+                      {isObserver ? (
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-0.5 ${
+                          a.status === 'untested' ? 'bg-slate-200 text-slate-700' :
+                          a.status === 'validated' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-rose-100 text-rose-700'
+                        }`}>
+                          {a.status === 'untested' && <HelpCircle className="w-3 h-3" />}
+                          {a.status === 'validated' && <CheckCircle2 className="w-3 h-3" />}
+                          {a.status === 'invalidated' && <AlertCircle className="w-3 h-3" />}
+                          {a.status === 'untested' ? 'Untested' : a.status === 'validated' ? 'Valid' : 'Invalid'}
+                        </span>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => handleStatusChange(a.id, 'untested')}
+                            className={`p-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-0.5 ${
+                              a.status === 'untested' ? 'bg-slate-200 text-slate-700' : 'text-slate-400 hover:bg-slate-100'
+                            }`}
+                          >
+                            <HelpCircle className="w-3 h-3" /> Untested
+                          </button>
+                          <button 
+                            onClick={() => handleStatusChange(a.id, 'validated')}
+                            className={`p-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-0.5 ${
+                              a.status === 'validated' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-400 hover:bg-slate-100'
+                            }`}
+                          >
+                            <CheckCircle2 className="w-3 h-3" /> Valid
+                          </button>
+                          <button 
+                            onClick={() => handleStatusChange(a.id, 'invalidated')}
+                            className={`p-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-0.5 ${
+                              a.status === 'invalidated' ? 'bg-rose-100 text-rose-700' : 'text-slate-400 hover:bg-slate-100'
+                            }`}
+                          >
+                            <AlertCircle className="w-3 h-3" /> Invalid
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleDeleteAssumption(a.id)}
-                    className="text-slate-300 hover:text-rose-500 p-1 rounded transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {!isObserver && (
+                    <button 
+                      onClick={() => handleDeleteAssumption(a.id)}
+                      className="text-slate-300 hover:text-rose-500 p-1 rounded transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
