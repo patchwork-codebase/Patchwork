@@ -175,7 +175,7 @@ export default function ObserverOnboarding() {
                             <h2 className="mt-2 text-lg font-semibold text-white">{room.title}</h2>
                             <div className="flex items-center gap-2 text-sm text-slate-400 mt-1"><ObserverAvatarStack room={room} /> · {room.updateCount} updates</div>
                           </div>
-                          <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-[#0A0910]' : 'bg-primary-500 text-white'}`}>
+                          <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-ink' : 'bg-primary-500 text-white'}`}>
                             {isFollowed ? 'Following' : 'Follow'}
                           </div>
                         </div>

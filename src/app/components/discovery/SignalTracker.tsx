@@ -70,7 +70,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
         <div className="space-y-6">
           <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
             <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5 mb-2">
-              <Plus className="w-4 h-4 text-[#8B7CF8]" /> Log Market Signal
+              <Plus className="w-4 h-4 text-primary-400" /> Log Market Signal
             </h3>
             <p className="text-xs text-slate-500 mb-6">Record quantitative or qualitative evidence that supports or refutes your problem statement.</p>
 
@@ -80,7 +80,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                 <select
                   value={type}
                   onChange={e => setType(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                 >
                   {SIGNAL_TYPES.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -138,7 +138,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                     max="50"
                     value={weight}
                     onChange={e => setWeight(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#8B7CF8]"
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-400"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                     <span>Weak (1%)</span>
@@ -155,14 +155,14 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                   onChange={e => setDescription(e.target.value)}
                   placeholder="e.g. 40 out of 100 landing page visitors clicked 'Join Waitlist'. Highly positive validation score."
                   rows={3}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 leading-normal"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 leading-normal"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={!description.trim()}
-                className="w-full bg-[#8B7CF8] hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-sm transition-colors"
+                className="w-full bg-primary-400 hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-sm transition-colors"
               >
                 Add Signal
               </button>

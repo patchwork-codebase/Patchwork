@@ -93,7 +93,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                 </button>
                 <button 
                   onClick={handleSave}
-                  className="bg-[#8B7CF8] text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1 hover:bg-[#7a6aeb] transition-colors"
+                  className="bg-primary-400 text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1 hover:bg-[#7a6aeb] transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" /> Save
                 </button>
@@ -102,7 +102,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
               !isObserver && (
                 <button 
                   onClick={() => setIsEditing(true)}
-                  className="text-slate-500 hover:text-[#8B7CF8] p-1.5 hover:bg-slate-100 rounded-lg transition-all"
+                  className="text-slate-500 hover:text-primary-400 p-1.5 hover:bg-slate-100 rounded-lg transition-all"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
@@ -119,7 +119,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                   onChange={(e) => setProblem(e.target.value)}
                   placeholder="What pain point are you validating?"
                   rows={4}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
                 />
               </div>
 
@@ -131,7 +131,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                     value={audience}
                     onChange={(e) => setAudience(e.target.value)}
                     placeholder="Who has this problem? (e.g. Solo SaaS Builders)"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
                   />
                 </div>
                 <div>
@@ -141,7 +141,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                     value={market}
                     onChange={(e) => setMarket(e.target.value)}
                     placeholder="Industry or niche segment"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
                   />
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                 <select 
                   value={painLevel} 
                   onChange={(e) => setPainLevel(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                 >
                   <option value="High">High (Must-solve / hair-on-fire)</option>
                   <option value="Medium">Medium (Nice-to-have / inconvenience)</option>
@@ -206,12 +206,12 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                 placeholder="e.g. Builders care about validation..."
                 value={newAssumption}
                 onChange={(e) => setNewAssumption(e.target.value)}
-                className="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
+                className="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
               />
               <button 
                 type="submit" 
                 disabled={!newAssumption.trim()}
-                className="bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white p-2 rounded-xl disabled:opacity-50 transition-colors"
+                className="bg-primary-400 hover:bg-[#7a6aeb] text-white p-2 rounded-xl disabled:opacity-50 transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>

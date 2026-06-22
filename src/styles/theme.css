@@ -146,6 +146,9 @@
   --color-primary-600: var(--purple-dark);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-ink: var(--ink);
+  --color-ink-80: var(--ink-80);
+  --color-ink-60: var(--ink-60);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);

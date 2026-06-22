@@ -7,6 +7,7 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { useUserRooms, useRooms } from "../../hooks/useRooms";
 import { getObserverCount, timeAgo } from "../../utils/helpers";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
+import { QUERY_KEYS } from "../../constants";
 
 function timeAgoDays(iso: string) {
   if (!iso) return 1;
@@ -42,7 +43,7 @@ export default function BuildLogs() {
       const { error } = await supabase.from('rooms').update({ status: 'archived' }).eq('id', roomId);
       if (error) throw error;
       toast.success('Room archived successfully');
-      queryClient.invalidateQueries({ queryKey: ['user-rooms'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(user!.id) });
     } catch (err: unknown) {
       toast.error('Failed to archive room: ' + (err instanceof Error ? err.message : String(err)));
     } finally {

@@ -169,7 +169,7 @@ export default function ExpertReviewHub() {
 
         {/* Capacity Sidebar */}
         <div className="w-full md:w-[320px] shrink-0">
-          <div className="bg-[#1C1A24] border border-white/[0.08] rounded-2xl p-6 sticky top-8">
+          <div className="bg-ink-80 border border-white/[0.08] rounded-2xl p-6 sticky top-8">
             <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" /> Capacity Management
             </h3>

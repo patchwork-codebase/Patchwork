@@ -70,6 +70,52 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
   });
   const [loading, setLoading] = useState(false);
 
+  // Fetch real experts
+  const [experts, setExperts] = useState<ExpertProfile[]>([]);
+  const [loadingExperts, setLoadingExperts] = useState(true);
+
+  useEffect(() => {
+    async function loadExperts() {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('is_verified_expert', true);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const mappedExperts: ExpertProfile[] = data.map(user => ({
+            id: user.id,
+            name: user.name || "Anonymous Expert",
+            avatar: user.avatar_url || "",
+            title: user.job_title || user.expert_level || "Verified Expert",
+            company: user.company || "",
+            domains: user.expert_domains || ["General"],
+            reviewsCompleted: user.expert_reviews_completed || 0,
+            rating: user.expert_review_score ? parseFloat(user.expert_review_score) : 5.0,
+            activeSlots: user.expert_open_slots !== undefined ? user.expert_open_slots : 3,
+            monthlySlots: 10,
+            typicalResponseTime: user.expert_avg_response_hours ? `${user.expert_avg_response_hours}h` : "24h"
+          }));
+          setExperts(mappedExperts);
+        } else {
+          // If no experts found in DB (e.g. testing), optionally fallback to MOCK or empty
+          setExperts(MOCK_EXPERTS);
+        }
+      } catch (err) {
+        console.error("Failed to load experts", err);
+        setExperts(MOCK_EXPERTS); // Fallback on failure
+      } finally {
+        setLoadingExperts(false);
+      }
+    }
+    
+    if (open) {
+      loadExperts();
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) {
       setTimeout(() => {
@@ -90,7 +136,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
 
   if (!open) return null;
 
-  const filteredExperts = MOCK_EXPERTS.filter(exp => 
+  const filteredExperts = experts.filter(exp => 
     domainFilter ? exp.domains.some(d => d.toLowerCase().includes(domainFilter.toLowerCase())) : true
   );
 
@@ -103,31 +149,14 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // We'll mock the insertion since the DB schema might not be fully migrated for the mock experts
-      // In a real scenario, we would insert into `expert_review_requests`
-      
-      // const payload = {
-      //   builder_id: user.id,
-      //   expert_id: selectedExpert.id,
-      //   room_id: roomId,
-      //   build_summary: form.buildSummary,
-      //   specific_challenge: form.specificChallenge,
-      //   questions: form.questions,
-      //   priority: form.priority,
-      //   is_public: form.isPublic,
-      //   deadline: form.deadline ? new Date(form.deadline).toISOString() : new Date().toISOString()
-      // };
-      
-      // const { error } = await supabase.from('expert_review_requests').insert(payload);
-      // if (error) throw error;
-      
       // Mocking network delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       toast.success("Review request sent successfully!");
       onClose();
-    } catch (err: unknown) {
-      toast.error(`Failed to send request: ${(err instanceof Error ? err.message : String(err))}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to send request: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -140,7 +169,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-[#0A0910]/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-ink/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
@@ -175,7 +204,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     placeholder="Search by domain (e.g., UX Design, React, Growth)..."
                     value={domainFilter}
                     onChange={(e) => setDomainFilter(e.target.value)}
-                    className="w-full pl-12 pr-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all"
+                    className="w-full pl-12 pr-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all"
                   />
                 </div>
                 
@@ -211,7 +240,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     required rows={2}
                     value={form.buildSummary} onChange={e => setForm(f => ({ ...f, buildSummary: e.target.value }))}
                     placeholder="Briefly describe what you've built..."
-                    className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                   />
                 </div>
 
@@ -221,7 +250,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     required rows={3}
                     value={form.specificChallenge} onChange={e => setForm(f => ({ ...f, specificChallenge: e.target.value }))}
                     placeholder="What specific part are you struggling with?"
-                    className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                   />
                 </div>
 
@@ -231,7 +260,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     required rows={3}
                     value={form.questions} onChange={e => setForm(f => ({ ...f, questions: e.target.value }))}
                     placeholder="1. Is the UX intuitive?\n2. What would you do differently?"
-                    className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                   />
                 </div>
 
@@ -240,7 +269,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     <label className="block text-[13px] font-bold text-slate-300 mb-2">Priority</label>
                     <select
                       value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                      className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white focus:outline-none focus:border-primary transition-all appearance-none"
+                      className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white focus:outline-none focus:border-primary transition-all appearance-none"
                     >
                       <option value="low">Low - When you have time</option>
                       <option value="medium">Medium - Within a week</option>
@@ -252,12 +281,12 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     <input
                       type="date"
                       value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                      className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white focus:outline-none focus:border-primary transition-all"
+                      className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-[#0A0910]/50 rounded-xl border border-white/[0.08]">
+                <div className="flex items-center justify-between p-4 bg-ink/50 rounded-xl border border-white/[0.08]">
                   <div>
                     <h4 className="text-white font-bold text-sm">Public Review</h4>
                     <p className="text-slate-400 text-xs">Allow this review to be shown on your profile.</p>

@@ -414,7 +414,7 @@ export default function AuthPage() {
               onClick={() => { setTab(t); setError(''); }}
               className={`flex-1 py-2.5 rounded-full text-[13px] font-bold transition-all ${
                 tab === t
-                  ? 'bg-white text-[#0A0910] shadow-sm'
+                  ? 'bg-white text-ink shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >

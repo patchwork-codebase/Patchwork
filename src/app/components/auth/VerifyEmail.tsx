@@ -158,7 +158,7 @@ export default function VerifyEmail() {
             </div>
             <button
               onClick={() => navigate("/dashboard?verified=true", { replace: true })}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-white text-[#0A0910] hover:bg-slate-200 rounded-full text-[14px] font-bold transition-all shadow-lg hover:shadow-xl mt-4"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white text-ink hover:bg-slate-200 rounded-full text-[14px] font-bold transition-all shadow-lg hover:shadow-xl mt-4"
             >
               Go to Dashboard <ArrowRight className="w-4 h-4" />
             </button>

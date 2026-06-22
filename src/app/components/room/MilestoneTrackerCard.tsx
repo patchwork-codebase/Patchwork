@@ -274,7 +274,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                 <div key={milestone.id} className={`pb-5 ${index !== allMilestones.length - 1 ? `border-b ${isNested ? 'border-slate-200' : 'border-white/[0.08]'} mb-5` : ''}`}>
                   <div className="flex items-center justify-between gap-4 mb-3">
                     <div className="flex items-center gap-4">
-                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${isNested ? 'border-slate-200 bg-slate-100' : 'border-white/[0.08] bg-[#0A0910]'}`}>
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${isNested ? 'border-slate-200 bg-slate-100' : 'border-white/[0.08] bg-ink'}`}>
                         <Icon className={`w-3.5 h-3.5 ${style.iconColor}`} />
                       </div>
                       <div>

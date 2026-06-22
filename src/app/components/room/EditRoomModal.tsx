@@ -195,7 +195,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-[#0A0910]/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-ink/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
@@ -219,7 +219,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                 <label className="block text-[13px] font-bold text-slate-300 mb-2">Cover Image (Optional)</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-32 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary-500/50 bg-[#0A0910]/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+                  className="w-full h-32 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary-500/50 bg-ink/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
                 >
                   {form.coverImage ? (
                     <>
@@ -244,7 +244,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                   type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   required maxLength={100}
                   placeholder="e.g., Redesigning the onboarding flow"
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
                 />
               </div>
 
@@ -254,7 +254,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                   value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={3} maxLength={500}
                   placeholder="What's the goal of this room? What are you trying to accomplish?"
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium resize-none"
+                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium resize-none"
                 />
               </div>
 
@@ -263,7 +263,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                 <input
                   type="url" value={form.primaryLink} onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
                   placeholder="https://figma.com/... or https://github.com/..."
-                  className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
                 />
               </div>
 
@@ -292,7 +292,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
               <div>
                 <div 
                   onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
-                  className="bg-[#0A0910]/30 rounded-xl p-5 border border-white/[0.05] flex items-start justify-between gap-4 cursor-pointer hover:bg-[#0A0910]/50 transition-colors"
+                  className="bg-ink/30 rounded-xl p-5 border border-white/[0.05] flex items-start justify-between gap-4 cursor-pointer hover:bg-ink/50 transition-colors"
                 >
                   <div>
                     <h4 className="text-[14px] font-bold text-white mb-1 flex items-center gap-2">
@@ -339,7 +339,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                     type="text" value={form.tagInput} onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(form.tagInput); } }}
                     placeholder="Add a tag..."
-                    className="flex-1 px-5 py-3.5 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
+                    className="flex-1 px-5 py-3.5 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
                   />
                   <button
                     type="button" onClick={() => addTag(form.tagInput)} disabled={!form.tagInput.trim() || tags.length >= 5}

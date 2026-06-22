@@ -18,7 +18,7 @@ export function CodeSnippetBlock({ code }: { code: string }) {
   if (!code) return null;
 
   return (
-    <div className="mb-6 relative z-10 rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0910] shadow-xl">
+    <div className="mb-6 relative z-10 rounded-xl overflow-hidden border border-white/[0.08] bg-ink shadow-xl">
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.02]">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />

@@ -45,7 +45,7 @@ export function ReactionModal({ updateId, onClose, onSubmit }: ReactionModalProp
       {/* Click outside backdrop with protection */}
       <div className="absolute inset-0" onClick={handleOverlayClick} />
 
-      <div className="bg-[#0A0910] border border-white/[0.08] rounded-[24px] md:rounded-[32px] w-full max-w-md shadow-2xl relative overflow-hidden z-10 flex flex-col max-h-[90vh]">
+      <div className="bg-ink border border-white/[0.08] rounded-[24px] md:rounded-[32px] w-full max-w-md shadow-2xl relative overflow-hidden z-10 flex flex-col max-h-[90vh]">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary-400/50 to-transparent opacity-50" />
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/[0.06] relative z-10 shrink-0">
           <h2 className="text-[20px] font-extrabold text-white font-display">Leave a reaction</h2>
@@ -88,7 +88,7 @@ export function ReactionModal({ updateId, onClose, onSubmit }: ReactionModalProp
               placeholder={`Write your ${REACTION_CONFIG[type].label.toLowerCase()} reaction...`}
               rows={4}
               aria-label="Reaction thoughts"
-              className="w-full px-4 py-3 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all resize-none font-medium focus-ring"
+              className="w-full px-4 py-3 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all resize-none font-medium focus-ring"
             />
           </div>
           <div className="flex gap-3 pt-2">
@@ -102,7 +102,7 @@ export function ReactionModal({ updateId, onClose, onSubmit }: ReactionModalProp
             <button
               type="submit"
               disabled={loading || !text.trim()}
-              className="flex-1 py-3 bg-white text-[#0A0910] rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 focus-ring"
+              className="flex-1 py-3 bg-white text-ink rounded-full text-[14px] font-bold hover:bg-slate-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 focus-ring"
             >
               {loading ? 'Posting...' : <><Send className="w-4 h-4" /> Post reaction</>}
             </button>

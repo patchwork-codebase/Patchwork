@@ -3,10 +3,10 @@ import { Link } from "react-router";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Eye, Flame, CheckCircle2, MessagesSquare, ArrowUpRight, Compass } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 import { useObservedRooms, useRooms } from "../../hooks/useRooms";
+import { QUERY_KEYS } from "../../constants";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
 import type { QueryClient } from "@tanstack/react-query";
 import { ObserverProgressionPanel } from "./ObserverProgressionPanel";
@@ -148,7 +148,7 @@ export default function ObserverDashboardView({
       if (error) throw error;
       toast.success("Now watching this build!");
       queryClient.invalidateQueries({ queryKey: ["observer-stats", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["observed-rooms", user.id] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(user.id) });
     } catch (err: any) {
       setFollowedRoomIds((prev) => ({ ...prev, [roomId]: false }));
       toast.error(`Failed: ${err.message}`);

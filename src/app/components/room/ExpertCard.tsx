@@ -29,7 +29,7 @@ export default function ExpertCard({ expert, onSelect, selected }: ExpertCardPro
       className={`relative rounded-2xl p-5 border transition-all duration-300 ${
         selected 
           ? 'bg-primary/5 border-primary shadow-[0_0_20px_rgba(108,92,231,0.15)]' 
-          : 'bg-[#1C1A24] border-white/10 hover:border-white/20'
+          : 'bg-ink-80 border-white/10 hover:border-white/20'
       } ${isUnavailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
       onClick={() => !isUnavailable && onSelect?.(expert)}
     >

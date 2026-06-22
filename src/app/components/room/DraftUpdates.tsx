@@ -97,7 +97,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
                 <p className="text-[13px] text-slate-400 mb-3 line-clamp-2">{draft.commit_message}</p>
               )}
               {draft.diff_preview && (
-                <div className="bg-[#0A0910]/50 border border-white/[0.05] rounded-lg p-3 text-[12px] text-slate-300 font-mono whitespace-pre-wrap">
+                <div className="bg-ink/50 border border-white/[0.05] rounded-lg p-3 text-[12px] text-slate-300 font-mono whitespace-pre-wrap">
                   {draft.diff_preview}
                 </div>
               )}

@@ -58,12 +58,12 @@ export default function DiscoveryHub() {
               placeholder="New Project Title..." 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex-1 sm:w-64 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 text-sm"
+              className="flex-1 sm:w-64 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400/50 text-sm"
             />
             <button 
               type="submit" 
               disabled={!title.trim() || isCreating}
-              className="bg-[#8B7CF8] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-[#7a6aeb] disabled:opacity-50 text-sm whitespace-nowrap"
+              className="bg-primary-400 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-[#7a6aeb] disabled:opacity-50 text-sm whitespace-nowrap"
             >
               {isCreating ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/> : <Plus className="w-4 h-4"/>}
               New Project
@@ -90,11 +90,11 @@ export default function DiscoveryHub() {
             <Link 
               key={project.id} 
               to={`/dashboard/discovery/${project.id}`}
-              className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg hover:border-[#8B7CF8]/30 transition-all"
+              className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg hover:border-primary-400/30 transition-all"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                  project.status === 'active' ? 'bg-[#8B7CF8]/10 text-[#8B7CF8]' :
+                  project.status === 'active' ? 'bg-primary-400/10 text-primary-400' :
                   project.status === 'converted' ? 'bg-emerald-500/10 text-emerald-500' :
                   'bg-rose-500/10 text-rose-500'
                 }`}>
@@ -105,7 +105,7 @@ export default function DiscoveryHub() {
                   <Beaker className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#8B7CF8] transition-colors line-clamp-1">{project.title}</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-primary-400 transition-colors line-clamp-1">{project.title}</h3>
               <p className="text-sm text-slate-500 line-clamp-2 mb-4 h-10">
                 {project.problem_statement || "No problem statement defined yet."}
               </p>
@@ -114,7 +114,7 @@ export default function DiscoveryHub() {
                   <FileText className="w-4 h-4"/>
                   Open workspace
                 </span>
-                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#8B7CF8] group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-primary-400 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
           ))}

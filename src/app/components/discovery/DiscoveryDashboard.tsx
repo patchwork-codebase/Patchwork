@@ -30,7 +30,7 @@ export default function DiscoveryDashboard() {
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900">Project Not Found</h2>
-        <Link to="/dashboard/discovery" className="text-[#8B7CF8] hover:underline mt-4 inline-block">Return to Hub</Link>
+        <Link to="/dashboard/discovery" className="text-primary-400 hover:underline mt-4 inline-block">Return to Hub</Link>
       </div>
     );
   }
@@ -44,9 +44,9 @@ export default function DiscoveryDashboard() {
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-full">
-                <Compass className="w-3.5 h-3.5 text-[#8B7CF8]" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B7CF8]">Discovery Mode</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-400/10 border border-primary-400/20 rounded-full">
+                <Compass className="w-3.5 h-3.5 text-primary-400" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400">Discovery Mode</span>
               </div>
               {project.status === 'converted' && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
@@ -87,7 +87,7 @@ export default function DiscoveryDashboard() {
             onClick={() => setActiveTab(tab)}
             className={`px-6 py-4 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 ${
               activeTab === tab 
-                ? 'border-[#8B7CF8] text-[#8B7CF8]' 
+                ? 'border-primary-400 text-primary-400' 
                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`}
           >

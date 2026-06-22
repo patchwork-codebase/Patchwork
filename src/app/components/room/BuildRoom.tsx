@@ -559,7 +559,7 @@ export default function BuildRoom() {
                 <div />
                 <button
                   onClick={() => setReactionModal({ open: true, updateId: null })}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-[#0A0910] text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-ring"
+                  className="flex items-center gap-2 px-6 py-3 bg-white text-ink text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-ring"
                 >
                   <MessageCircle className="w-4 h-4" /> React to room
                 </button>
