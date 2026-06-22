@@ -65,34 +65,34 @@ const FounderStage = () => {
   }, []);
 
   return (
-    <div className="w-full h-full bg-slate-50/50 rounded-2xl border border-slate-200 p-6 sm:p-8 flex flex-col justify-center items-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.04]" />
+    <div className="w-full h-full bg-[#1C1A24]/50 rounded-2xl border border-white/5 p-6 sm:p-8 flex flex-col justify-center items-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.15]" />
       
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="bg-white border border-slate-200 shadow-xl shadow-blue-500/5 rounded-3xl p-8 w-full max-w-sm z-10 text-center"
+        className="bg-[#0E0C15] border border-white/10 shadow-xl shadow-blue-500/10 rounded-3xl p-8 w-full max-w-sm z-10 text-center"
       >
         <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-500 shadow-sm border border-blue-500/10">
           <Rocket className="w-8 h-8" />
         </div>
-        <h3 className="text-xl font-extrabold text-slate-900 mb-1">MVP Waitlist</h3>
-        <p className="text-sm text-slate-500 mb-8 font-medium">Early access signups for the beta launch</p>
+        <h3 className="text-xl font-extrabold text-white mb-1">MVP Waitlist</h3>
+        <p className="text-sm text-slate-400 mb-8 font-medium">Early access signups for the beta launch</p>
         
         <div className="flex items-baseline justify-center gap-2 mb-8">
           <motion.span 
             key={count}
             initial={{ y: -5, opacity: 0.8 }}
             animate={{ y: 0, opacity: 1 }}
-            className="text-6xl font-black text-slate-900 tracking-tighter"
+            className="text-6xl font-black text-white tracking-tighter"
           >
             {count}
           </motion.span>
-          <span className="text-lg font-bold text-slate-400">/ 500</span>
+          <span className="text-lg font-bold text-slate-500">/ 500</span>
         </div>
         
-        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-5">
+        <div className="w-full h-3 bg-[#2A2635] rounded-full overflow-hidden mb-5">
           <motion.div 
             className="h-full bg-blue-500 rounded-full"
             initial={{ width: "28%" }}
@@ -115,34 +115,34 @@ const FounderStage = () => {
 
 const PMStage = () => {
   return (
-    <div className="w-full h-full bg-slate-50/50 rounded-2xl border border-slate-200 p-4 sm:p-6 flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(#8b7cf8_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.04]" />
+    <div className="w-full h-full bg-[#1C1A24]/50 rounded-2xl border border-white/5 p-4 sm:p-6 flex items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(#8b7cf8_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.15]" />
       
       <div className="w-full max-w-lg grid grid-cols-2 gap-4 z-10">
         {/* Column 1 */}
-        <div className="bg-slate-100/50 border border-slate-200 rounded-2xl p-4 min-h-[340px]">
-          <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-4 flex items-center justify-between">
+        <div className="bg-[#0E0C15]/50 border border-white/10 rounded-2xl p-4 min-h-[340px]">
+          <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
             In Progress
-            <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[10px]">3</span>
+            <span className="bg-[#2A2635] text-slate-300 px-2 py-0.5 rounded-md text-[10px]">3</span>
           </h4>
           
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3 opacity-60">
-            <div className="w-24 h-2.5 bg-slate-200 rounded-full mb-3" />
-            <div className="w-16 h-2 bg-slate-100 rounded-full" />
+          <div className="bg-[#1C1A24] border border-white/5 rounded-xl p-4 shadow-sm mb-3 opacity-60">
+            <div className="w-24 h-2.5 bg-[#2A2635] rounded-full mb-3" />
+            <div className="w-16 h-2 bg-white/5 rounded-full" />
           </div>
           
           <motion.div 
             initial={{ x: 0, y: 0, scale: 1, rotate: 0 }}
             animate={{ x: "110%", y: 30, scale: 1.02, rotate: 2 }}
             transition={{ delay: 0.8, duration: 0.8, ease: "easeInOut" }}
-            className="bg-white border-2 border-primary-500/20 shadow-xl shadow-primary-500/5 rounded-xl p-4 z-20 relative cursor-pointer"
+            className="bg-[#0E0C15] border-2 border-primary-500/20 shadow-xl shadow-primary-500/10 rounded-xl p-4 z-20 relative cursor-pointer"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="px-2 py-1 bg-primary-500/10 text-primary-600 text-[10px] font-bold uppercase rounded-md tracking-wide">Critical</span>
-              <img src={getAvatarUrl("pm-user")} className="w-6 h-6 rounded-full bg-slate-100" alt="avatar" />
+              <span className="px-2 py-1 bg-primary-500/10 text-primary-400 text-[10px] font-bold uppercase rounded-md tracking-wide">Critical</span>
+              <img src={getAvatarUrl("pm-user")} className="w-6 h-6 rounded-full bg-[#2A2635]" alt="avatar" />
             </div>
-            <h5 className="text-[15px] font-bold text-slate-900 mb-2 leading-snug">Revamp Checkout Flow</h5>
-            <p className="text-[13px] text-slate-500 leading-relaxed mb-4">Based on user interviews, moving KYC to step 1.</p>
+            <h5 className="text-[15px] font-bold text-white mb-2 leading-snug">Revamp Checkout Flow</h5>
+            <p className="text-[13px] text-slate-400 leading-relaxed mb-4">Based on user interviews, moving KYC to step 1.</p>
             <div className="flex items-center justify-between mt-auto">
               <div className="flex -space-x-1">
                 <div className="w-5 h-5 rounded-full border border-white bg-blue-100" />
@@ -154,8 +154,8 @@ const PMStage = () => {
         </div>
         
         {/* Column 2 */}
-        <div className="bg-slate-100/50 border border-slate-200 rounded-2xl p-4 min-h-[340px]">
-          <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-4 flex justify-between items-center">
+        <div className="bg-[#0E0C15]/50 border border-white/10 rounded-2xl p-4 min-h-[340px]">
+          <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4 flex justify-between items-center">
             Shipped
             <motion.span 
               initial={{ scale: 0 }} 
@@ -165,9 +165,9 @@ const PMStage = () => {
             />
           </h4>
           
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3 opacity-60">
-            <div className="w-32 h-2.5 bg-slate-200 rounded-full mb-3" />
-            <div className="w-20 h-2 bg-slate-100 rounded-full" />
+          <div className="bg-[#1C1A24] border border-white/5 rounded-xl p-4 shadow-sm mb-3 opacity-60">
+            <div className="w-32 h-2.5 bg-[#2A2635] rounded-full mb-3" />
+            <div className="w-20 h-2 bg-white/5 rounded-full" />
           </div>
         </div>
       </div>
@@ -234,43 +234,43 @@ const EngineerStage = () => {
 
 const DesignerStage = () => {
   return (
-    <div className="w-full h-full bg-slate-50/50 rounded-2xl border border-slate-200 p-6 sm:p-8 flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.04]" />
+    <div className="w-full h-full bg-[#1C1A24]/50 rounded-2xl border border-white/5 p-6 sm:p-8 flex items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.15]" />
       
-      <div className="relative w-full max-w-sm aspect-[4/3] rounded-2xl overflow-hidden shadow-xl shadow-amber-500/5 border border-slate-200 bg-white">
+      <div className="relative w-full max-w-sm aspect-[4/3] rounded-2xl overflow-hidden shadow-xl shadow-amber-500/5 border border-white/10 bg-[#0E0C15]">
         
         {/* Wireframe Layer (Bottom) */}
-        <div className="absolute inset-0 p-6 flex flex-col bg-white">
+        <div className="absolute inset-0 p-6 flex flex-col bg-[#0E0C15]">
           <div className="flex justify-between items-center mb-6">
-            <div className="w-8 h-8 rounded-full border-2 border-slate-200" />
-            <div className="w-24 h-4 rounded-full bg-slate-100" />
+            <div className="w-8 h-8 rounded-full border-2 border-white/10" />
+            <div className="w-24 h-4 rounded-full bg-[#2A2635]" />
           </div>
-          <div className="w-3/4 h-8 rounded-lg bg-slate-100 mb-4" />
-          <div className="w-1/2 h-4 rounded-full bg-slate-50 mb-8" />
+          <div className="w-3/4 h-8 rounded-lg bg-[#2A2635] mb-4" />
+          <div className="w-1/2 h-4 rounded-full bg-[#1C1A24] mb-8" />
           
           <div className="grid grid-cols-2 gap-4 flex-1">
-            <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50" />
-            <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50" />
+            <div className="rounded-xl border-2 border-dashed border-white/10 bg-[#1C1A24]" />
+            <div className="rounded-xl border-2 border-dashed border-white/10 bg-[#1C1A24]" />
           </div>
         </div>
 
         {/* High-Fi Layer (Top, animated width) */}
         <motion.div 
-          className="absolute inset-y-0 left-0 bg-white border-r border-amber-500 overflow-hidden"
+          className="absolute inset-y-0 left-0 bg-[#0E0C15] border-r border-amber-500 overflow-hidden"
           initial={{ width: "15%" }}
           animate={{ width: "100%" }}
           transition={{ duration: 4, ease: "easeInOut", repeat: Infinity, repeatType: "reverse", repeatDelay: 1 }}
         >
-          <div className="absolute inset-0 p-6 flex flex-col w-[380px] bg-white">
+          <div className="absolute inset-0 p-6 flex flex-col w-[380px] bg-[#0E0C15]">
             <div className="flex justify-between items-center mb-6">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-400 shadow-lg shadow-amber-500/20" />
               <div className="flex gap-2">
-                <div className="w-8 h-4 rounded-full bg-slate-100" />
-                <div className="px-2 h-4 rounded-full bg-amber-500/10 text-[9px] text-amber-600 font-extrabold tracking-wider flex items-center justify-center uppercase">New</div>
+                <div className="w-8 h-4 rounded-full bg-[#2A2635]" />
+                <div className="px-2 h-4 rounded-full bg-amber-500/10 text-[9px] text-amber-500 font-extrabold tracking-wider flex items-center justify-center uppercase">New</div>
               </div>
             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Stunning UI</h2>
-            <p className="text-sm text-slate-500 mb-8 max-w-[200px] leading-snug">Beautiful, glassmorphic interfaces that convert.</p>
+            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Stunning UI</h2>
+            <p className="text-sm text-slate-400 mb-8 max-w-[200px] leading-snug">Beautiful, glassmorphic interfaces that convert.</p>
             
             <div className="grid grid-cols-2 gap-4 flex-1">
               <div className="rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 shadow-xl shadow-slate-900/10 border border-slate-700 p-4 relative overflow-hidden">
