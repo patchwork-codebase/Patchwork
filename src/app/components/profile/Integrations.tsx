@@ -158,6 +158,7 @@ export default function Integrations({ userId }: { userId: string }) {
   const { data: notionAccount, isLoading: notionLoading, refetch: refetchNotion } = useNotionAccount(userId);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [linearPAT, setLinearPAT] = useState('');
+  const [notionSecret, setNotionSecret] = useState('');
   const hasProcessedOAuth = useRef(false);
 
   useEffect(() => {
@@ -303,6 +304,26 @@ export default function Integrations({ userId }: { userId: string }) {
     }
   };
 
+  const handleSaveNotion = async () => {
+    if (!notionSecret.trim()) return;
+    setConnecting('notion');
+    try {
+      const { error } = await supabase.from('notion_accounts').upsert({
+        user_id: userId,
+        access_token: notionSecret.trim(),
+        workspace_name: 'Notion Workspace',
+      }, { onConflict: 'user_id' });
+      if (error) throw error;
+      toast.success('Notion integration saved!');
+      refetchNotion();
+      setNotionSecret('');
+    } catch (err: unknown) {
+      toast.error(`Failed to save: ${(err instanceof Error ? err.message : String(err))}`);
+    } finally {
+      setConnecting(null);
+    }
+  };
+
   if (githubLoading || linkedinLoading || linearLoading || notionLoading) return null;
 
   const connectedCount = [githubAccount, linkedinAccount, linearAccount, notionAccount].filter(Boolean).length;
@@ -411,7 +432,7 @@ export default function Integrations({ userId }: { userId: string }) {
           connectedLabel={notionAccount?.workspace_name || 'Workspace connected'}
           isConnected={!!notionAccount}
           isLoading={connecting === 'notion'}
-          onConnect={() => handleConnectOAuth('notion')}
+          onConnect={() => {}}
           onDisconnect={() => handleDisconnect('notion')}
           accentColor="#6B6B6B"
           bgColor="#1a1a1a"
@@ -420,7 +441,27 @@ export default function Integrations({ userId }: { userId: string }) {
               <path d="M4 4h16v2H4zM4 11h10v2H4zM4 18h10v2H4zM16 11l4 3.5L16 18v-7z"/>
             </svg>
           }
-        />
+        >
+          {!notionAccount && (
+            <div className="flex items-center gap-2 mt-2 max-w-[280px]">
+              <input
+                type="password"
+                value={notionSecret}
+                onChange={e => setNotionSecret(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSaveNotion()}
+                placeholder="Integration Secret"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all"
+              />
+              <button
+                onClick={handleSaveNotion}
+                disabled={connecting === 'notion' || !notionSecret.trim()}
+                className="px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#333333] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+              >
+                {connecting === 'notion' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+              </button>
+            </div>
+          )}
+        </IntegrationCard>
       </div>
     </div>
   );
