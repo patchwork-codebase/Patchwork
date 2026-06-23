@@ -38,6 +38,23 @@ export function usePendingInvites(roomId: string) {
         p_role: role
       });
       if (error) throw error;
+
+      // Invoke the edge function to send the email since webhooks might not be set up
+      const { error: invokeError } = await supabase.functions.invoke('room-invitations', {
+        body: {
+          record: {
+            email: email.trim().toLowerCase(),
+            role,
+            token,
+            room_id: roomId,
+            origin: window.location.origin
+          }
+        }
+      });
+      if (invokeError) {
+        console.error("Failed to send email via edge function:", invokeError);
+      }
+
       return { email, role, token };
     },
     onSuccess: () => {
@@ -74,6 +91,23 @@ export function usePendingInvites(roomId: string) {
         p_role: role
       });
       if (error) throw error;
+
+      // Invoke the edge function to send the email
+      const { error: invokeError } = await supabase.functions.invoke('room-invitations', {
+        body: {
+          record: {
+            email: email.trim().toLowerCase(),
+            role,
+            token,
+            room_id: roomId,
+            origin: window.location.origin
+          }
+        }
+      });
+      if (invokeError) {
+        console.error("Failed to send email via edge function:", invokeError);
+      }
+
       return { email, role, token };
     },
     onSuccess: () => {

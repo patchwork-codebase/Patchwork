@@ -133,15 +133,24 @@ export function useResendInvitation() {
   return useMutation({
     mutationFn: async ({ roomId, email, role, roomTitle, builderName }: { roomId: string, email: string, role: string, roomTitle: string, builderName: string }) => {
       
-      // 1. Call the edge function which handles generating the invite and sending the email
+      // 1. Generate new token via RPC to resend
+      const { data: token, error: rpcError } = await supabase.rpc('invite_user_to_room', {
+        p_room_id: roomId,
+        p_email: email.trim().toLowerCase(),
+        p_role: role
+      });
+      if (rpcError) throw rpcError;
+
+      // 2. Call the edge function which handles sending the email
       const { data, error } = await supabase.functions.invoke('room-invitations', {
         body: {
-          roomId,
-          email,
-          role,
-          action: 'invite', // assuming 'invite' resends if it exists or creates new
-          roomTitle,
-          builderName
+          record: {
+            email,
+            role,
+            token,
+            room_id: roomId,
+            origin: window.location.origin
+          }
         }
       });
 
