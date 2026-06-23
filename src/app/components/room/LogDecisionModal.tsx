@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { X, CheckCircle, Zap, Target, AlertTriangle } from "lucide-react";
+import { X, CheckCircle, Zap, Target, AlertTriangle, ImageIcon, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 
@@ -26,6 +26,8 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
   const [type, setType] = useState<DecisionType>('decision');
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [externalLink, setExternalLink] = useState("");
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -34,7 +36,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
     return () => setMounted(false);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       toast.error("Please provide a title for this decision.");
@@ -43,12 +45,37 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
 
     setIsSubmitting(true);
     try {
+      let uploadedMediaUrl = null;
+      if (mediaPreview && mediaPreview.startsWith('data:')) {
+        const fileExt = mediaPreview.split(';')[0].split('/')[1];
+        const fileName = `${userId}-${Date.now()}.${fileExt}`;
+        const base64Data = mediaPreview.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+        const blob = new Blob([new Uint8Array(byteNumbers)], { type: `image/${fileExt}` });
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('updates_media')
+          .upload(`public/decisions/${fileName}`, blob);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('updates_media')
+          .getPublicUrl(`public/decisions/${fileName}`);
+          
+        uploadedMediaUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase.from('room_decisions').insert({
         room_id: roomId,
         builder_id: userId,
         type,
         title: title.trim(),
-        description: description.trim() || null
+        description: description.trim() || null,
+        media_url: uploadedMediaUrl,
+        external_link: externalLink.trim() || null
       });
 
       if (error) throw error;
@@ -56,6 +83,8 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
       toast.success("Decision logged successfully!");
       setTitle("");
       setDescription("");
+      setExternalLink("");
+      setMediaPreview(null);
       setType('decision');
       onSuccess();
       onClose();
@@ -81,9 +110,9 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="bg-[#0D0B14] border border-white/[0.08] rounded-3xl w-full max-w-[500px] overflow-hidden relative z-10 shadow-2xl"
+            className="bg-[#0D0B14] border border-white/[0.08] rounded-3xl w-full max-w-[500px] overflow-hidden relative z-10 shadow-2xl flex flex-col max-h-[90vh]"
           >
-            <div className="flex items-start justify-between p-5 border-b border-white/[0.08]">
+            <div className="flex items-start justify-between p-5 border-b border-white/[0.08] shrink-0">
               <div>
                 <h2 className="text-[18px] font-bold text-white mb-1">Log a decision</h2>
                 <p className="text-[12px] text-slate-400 font-medium">Record structured architectural choices, pivots, or blockers. (For general progress, use 'Post an update')</p>
@@ -96,7 +125,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto min-h-0">
               {/* Type Selection */}
               <div>
                 <label className="block text-[13px] font-bold text-slate-400 mb-3 uppercase tracking-wider">Type</label>
@@ -147,12 +176,64 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Why was this decision made? What's the impact?"
-                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors resize-none h-24"
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors resize-none h-24 mb-3"
                 />
+                {mediaPreview && (
+                  <div className="relative w-fit mb-3 group/preview">
+                    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#1A1820]">
+                      <img src={mediaPreview} alt="Upload preview" className="max-h-[120px] object-cover" />
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setMediaPreview(null)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-slate-800 text-white rounded-full flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity hover:bg-slate-700 shadow-sm"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <label className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.08] text-slate-300 rounded-lg text-[12px] font-bold cursor-pointer transition-all">
+                    <ImageIcon className="w-4 h-4 text-primary-400" />
+                    Attach Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error('Image must be under 5 MB');
+                            e.target.value = '';
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onloadend = () => setMediaPreview(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
-              {/* Actions */}
-              <div className="pt-2 flex gap-3">
+              {/* External Link */}
+              <div>
+                <label className="block text-[13px] font-bold text-slate-400 mb-2 flex items-center gap-1.5">
+                  <LinkIcon className="w-3.5 h-3.5" /> Link <span className="font-normal text-slate-600">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={externalLink}
+                  onChange={e => setExternalLink(e.target.value)}
+                  placeholder="e.g. Figma, Notion, GitHub PR..."
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
+                />
+              </div>
+            </form>
+            <div className="p-5 border-t border-white/[0.08] bg-[#0D0B14] shrink-0">
+              <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
@@ -161,14 +242,15 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
                   disabled={isSubmitting || !title.trim()}
                   className="flex-[2] py-3 rounded-xl font-bold text-[14px] text-white bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 transition-colors shadow-[0_0_20px_rgba(139,124,248,0.2)] disabled:shadow-none"
                 >
                   {isSubmitting ? 'Logging...' : 'Log Decision'}
                 </button>
               </div>
-            </form>
+            </div>
           </motion.div>
         </div>
       )}

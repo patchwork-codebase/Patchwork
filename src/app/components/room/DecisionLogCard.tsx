@@ -16,6 +16,8 @@ interface Decision {
   createdAt: string;
   reactions?: number;
   type?: 'decision' | 'scrapped' | 'blocker' | 'shipped';
+  media_url?: string;
+  external_link?: string;
 }
 
 const TYPE_STYLES = {
@@ -86,6 +88,8 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
     description: d.description,
     type: d.type,
     createdAt: d.created_at,
+    media_url: d.media_url,
+    external_link: d.external_link,
   }));
 
   const toggleReaction = async (itemId: string, type: string) => {
@@ -221,6 +225,25 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                           {decision.description}
                         </p>
                       )}
+                      
+                      {decision.media_url && (
+                        <div className="mb-3 rounded-xl overflow-hidden border border-slate-200">
+                          <img src={decision.media_url} alt="Decision context" className="max-h-[300px] w-full object-cover" />
+                        </div>
+                      )}
+
+                      {decision.external_link && (
+                        <a 
+                          href={decision.external_link.startsWith('http') ? decision.external_link : `https://${decision.external_link}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg text-[12px] font-bold transition-colors mb-3"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                          View External Resource
+                        </a>
+                      )}
+
                       <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium uppercase tracking-wider mb-3">
                         <span>Day {index === 0 ? 12 : index === 1 ? 12 : index === 2 ? 8 : 10}</span>
                         <span>·</span>

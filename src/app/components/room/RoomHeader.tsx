@@ -47,17 +47,15 @@ export function RoomHeader({
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-sm relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
+    <div className="bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] mb-8 shadow-sm relative overflow-hidden">
       {room.coverImage && (
-        <>
-          <div className="absolute inset-0 z-0">
-            <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover opacity-[0.15]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
-          </div>
-        </>
+        <div className="w-full h-48 sm:h-64 md:h-72 relative border-b border-slate-100">
+          <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
+        </div>
       )}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-400/50 to-transparent opacity-50 z-10" />
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
+      <div className="p-6 md:p-10 flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
         <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
           <div className="flex flex-col gap-2.5">
             <div className="flex flex-wrap items-start justify-between gap-3 min-w-0">
