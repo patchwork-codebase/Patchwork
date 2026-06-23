@@ -52,9 +52,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') && !id.includes('react-syntax-highlighter') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
             if (id.includes('react-syntax-highlighter')) {
               return 'syntax-highlighter';
             }
@@ -64,10 +61,7 @@ export default defineConfig({
             if (id.includes('@supabase')) {
               return 'supabase-vendor';
             }
-            if (id.includes('lucide') || id.includes('motion') || id.includes('framer-motion')) {
-              return 'ui-vendor';
-            }
-            return 'vendor';
+            // Let Vite automatically handle chunking for the rest to avoid circular chunk references
           }
         }
       }
