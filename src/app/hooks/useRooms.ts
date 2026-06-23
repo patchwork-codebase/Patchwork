@@ -63,6 +63,8 @@ export function useRoomDetails(roomId?: string) {
       return {
         ...normalizeRow(roomData),
         builderIsVerifiedExpert: !!(roomData.users?.is_verified_expert),
+        builderOrgName: roomData.users?.organization_name,
+        builderOrgLogo: roomData.users?.organization_logo_url,
         updates: (updatesData || []).map(normalizeRow),
         reactions: (reactionsData || []).map(normalizeRow)
       };
@@ -121,7 +123,7 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
           builder_id, builder_name, tags, cover_image, primary_link,
           project_stage, primary_goal, observer_count, update_count,
           created_at, updated_at,
-          users!builder_id(is_verified_expert),
+          users!builder_id(is_verified_expert, organization_name, organization_logo_url),
           room_observers(observer_id)
         `)
         .eq('status', 'active')
@@ -140,10 +142,15 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
         .range(from, to);
 
       if (error) throw error;
-      return (data || []).map(row => ({
-        ...normalizeRow(row),
-        builderIsVerifiedExpert: !!((row.users as any)?.is_verified_expert || (Array.isArray(row.users) && (row.users as any)[0]?.is_verified_expert)),
-      }));
+      return (data || []).map(row => {
+        const usersObj = Array.isArray(row.users) ? row.users[0] : row.users;
+        return {
+          ...normalizeRow(row),
+          builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
+          builderOrgName: (usersObj as any)?.organization_name,
+          builderOrgLogo: (usersObj as any)?.organization_logo_url,
+        };
+      });
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 12 ? allPages.length : undefined;
@@ -273,7 +280,7 @@ export function useObservedRooms(userId?: string) {
             builder_id, builder_name, tags, cover_image, primary_link,
             project_stage, primary_goal, observer_count, update_count,
             created_at, updated_at,
-            users!builder_id(is_verified_expert),
+            users!builder_id(is_verified_expert, organization_name, organization_logo_url),
             room_observers(observer_id)
           )
         `)
@@ -286,7 +293,14 @@ export function useObservedRooms(userId?: string) {
       // Map to return just the room objects formatted correctly
       return (data || []).map(row => {
         const room = Array.isArray(row.rooms) ? row.rooms[0] : row.rooms;
-        return room ? normalizeRow(room) : null;
+        if (!room) return null;
+        const usersObj = Array.isArray(room.users) ? room.users[0] : room.users;
+        return {
+          ...normalizeRow(room),
+          builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
+          builderOrgName: (usersObj as any)?.organization_name,
+          builderOrgLogo: (usersObj as any)?.organization_logo_url,
+        };
       }).filter(Boolean);
     },
     getNextPageParam: (lastPage, allPages) => {

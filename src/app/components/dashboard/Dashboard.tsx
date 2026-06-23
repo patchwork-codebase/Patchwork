@@ -243,7 +243,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/dashboard/notifications"
-            className="relative flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 transition-all shadow-sm focus-ring"
+            className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 transition-all shadow-sm focus-ring"
           >
             <Bell className="w-[15px] h-[15px] sm:w-[18px] sm:h-[18px]" />
             {unreadCount > 0 && (
@@ -253,7 +253,7 @@ export default function Dashboard() {
           {!isObserver && (
             <Link
               to="/dashboard/create"
-              className="inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[11px] sm:text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-ring whitespace-nowrap"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[11px] sm:text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-ring whitespace-nowrap"
             >
               <IconPlus /> + room
             </Link>

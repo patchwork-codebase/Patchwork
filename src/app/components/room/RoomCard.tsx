@@ -8,6 +8,7 @@ import { Clock } from "lucide-react";
 import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
 import type { Room, RoomObserver } from "../../types";
 
 interface RoomCardProps {
@@ -91,14 +92,23 @@ export function RoomCard({ room }: RoomCardProps) {
           <h3 className="text-slate-900 font-extrabold text-[18px] group-hover:text-primary-400 transition-colors line-clamp-1 font-display">
             {room.title}
           </h3>
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-slate-500 text-[13px] font-medium">by</span>
-            <span className="text-slate-700 text-[13px] font-bold group-hover:underline">
-              {room.builderName}
-            </span>
-            <VerifiedTick
-              isVerified={!!room.builderIsVerifiedExpert}
-              className="w-3.5 h-3.5"
+          <div className="flex flex-col mt-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 text-[13px] font-medium">by</span>
+              <span className="text-slate-700 text-[13px] font-bold group-hover:underline">
+                {room.builderName}
+              </span>
+              {!room.builderOrgName && (
+                <VerifiedTick
+                  isVerified={!!room.builderIsVerifiedExpert}
+                  className="w-3.5 h-3.5 shrink-0"
+                />
+              )}
+            </div>
+            <OrganizationBadge 
+              orgName={room.builderOrgName} 
+              orgLogo={room.builderOrgLogo} 
+              isVerified={!!room.builderIsVerifiedExpert} 
             />
           </div>
         </div>

@@ -41,7 +41,9 @@ export function useRoomTeam(roomId?: string) {
             email,
             avatar,
             domain,
-            is_verified_expert
+            is_verified_expert,
+            organization_name,
+            organization_logo_url
           )
         `)
         .eq('room_id', roomId);
@@ -59,6 +61,29 @@ export function useRoomTeam(roomId?: string) {
       // Ignore RLS errors for non-builders fetching invitations
       const invitations = invitationsError ? [] : (invitationsData || []).map(normalizeRow) as TeamInvitation[];
 
+      // 3. Fetch Room Owner's (Builder) org details
+      const { data: roomData } = await supabase
+        .from('rooms')
+        .select(`
+          builder_id,
+          users:builder_id (
+            is_verified_expert,
+            organization_name,
+            organization_logo_url
+          )
+        `)
+        .eq('id', roomId)
+        .single();
+      
+      const builderUser = roomData?.users ? (Array.isArray(roomData.users) ? roomData.users[0] : roomData.users) : null;
+      
+      const ownerOrg = {
+        builder_id: roomData?.builder_id,
+        is_verified_expert: !!builderUser?.is_verified_expert,
+        organization_name: builderUser?.organization_name,
+        organization_logo_url: builderUser?.organization_logo_url
+      };
+
       const members: TeamMember[] = (observersData || []).map((row: any) => {
         const user = Array.isArray(row.users) ? row.users[0] : row.users;
         return {
@@ -73,7 +98,7 @@ export function useRoomTeam(roomId?: string) {
         };
       });
 
-      return { members, invitations };
+      return { members, invitations, ownerOrg };
     },
     enabled: !!roomId,
   });
@@ -131,6 +156,30 @@ export function useResendInvitation() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to resend invitation");
+    }
+  });
+}
+
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ roomId, userId, newRole }: { roomId: string, userId: string, newRole: string }) => {
+      const { error } = await supabase.rpc('update_room_member_role', {
+        p_room_id: roomId,
+        p_user_id: userId,
+        p_new_role: newRole
+      });
+
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: (_, { roomId }) => {
+      toast.success("Member role updated successfully");
+      queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update member role");
     }
   });
 }

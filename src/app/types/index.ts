@@ -47,6 +47,8 @@ export interface Room {
   builderId: string;
   builderName: string;
   builderIsVerifiedExpert?: boolean;
+  builderOrgName?: string | null;
+  builderOrgLogo?: string | null;
   tags?: string[];
   coverImage?: string | null;
   primaryLink?: string | null;
@@ -88,6 +90,8 @@ export interface Profile {
   followers?: string[];
   followingCount?: number;
   isFollowing?: boolean;
+  organization_name?: string | null;
+  organization_logo_url?: string | null;
   createdAt?: string;
 }
 

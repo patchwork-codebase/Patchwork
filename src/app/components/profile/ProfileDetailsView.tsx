@@ -1,6 +1,7 @@
 import React from "react";
 import { Hammer, Eye, Zap, Calendar, Users, Globe, Twitter, Github, Linkedin } from "lucide-react";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { ExpertBadge } from "./ExpertBadge";
 import { getAvatarUrl, timeAgo } from "../../utils/helpers";
 
@@ -12,11 +13,18 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
   return (
     <>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2">
-                    <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 font-display tracking-tight leading-tight sm:leading-none break-words">
+                    <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 font-display tracking-tight leading-tight sm:leading-none break-words flex flex-wrap items-center gap-2">
                       {profile.name}
-                      <span className="inline-block ml-2 align-middle">
-                        <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6" />
-                      </span>
+                      {!(profile as any).organization_name && (
+                        <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6 shrink-0" />
+                      )}
+                      <div className="mt-2 sm:mt-0">
+                        <OrganizationBadge 
+                          orgName={(profile as any).organization_name} 
+                          orgLogo={(profile as any).organization_logo_url} 
+                          isVerified={!!(profile as any).isVerifiedExpert} 
+                        />
+                      </div>
                     </h1>
                     {(profile as any).isVerifiedExpert && (
                       <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="md" />

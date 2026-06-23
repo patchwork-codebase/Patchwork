@@ -9,6 +9,7 @@ import {
 import { useRoomDetails } from "../../hooks/useRooms";
 import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
@@ -201,8 +202,17 @@ export default function RoomLogPage() {
                 <Link to={`/dashboard/profile/${room.builderId}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
                   <img src={getAvatarUrl(room.builderId || room.builderName)} className="w-4 h-4 rounded-full" alt="builder" />
                   {room.builderName}
-                  <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" />
+                  {!room.builderOrgName && (
+                    <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" />
+                  )}
                 </Link>
+              )}
+              {room.builderOrgName && (
+                <OrganizationBadge 
+                  orgName={room.builderOrgName} 
+                  orgLogo={room.builderOrgLogo} 
+                  isVerified={!!room.builderIsVerifiedExpert} 
+                />
               )}
             </div>
           </div>
@@ -343,10 +353,20 @@ export default function RoomLogPage() {
                         <span className="text-[9px] font-bold text-primary-400 bg-primary-400/10 border border-primary-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Final update</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 mb-3">
-                      <img src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
-                      <span className="text-[13px] font-bold text-slate-800">{update.authorName}</span>
-                      <span className="text-[11px] text-slate-400 font-mono ml-auto">{timeAgo(update.createdAt)}</span>
+                    <div className="flex flex-col mb-3 gap-1">
+                      <div className="flex items-center gap-2">
+                        <img src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
+                        <div className="flex items-center gap-1.5 flex-wrap flex-1">
+                          <span className="text-[13px] font-bold text-slate-800">{update.authorName}</span>
+                          {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />}
+                          <OrganizationBadge 
+                            orgName={(update as any).authorOrgName} 
+                            orgLogo={(update as any).authorOrgLogo} 
+                            isVerified={!!(update as any).authorIsVerifiedExpert} 
+                          />
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-mono ml-auto">{timeAgo(update.createdAt)}</span>
+                      </div>
                     </div>
                     <ReadMoreText text={update.content} maxLength={300} className="text-[14px] text-slate-700 leading-relaxed font-medium" />
                     {update.mediaUrl && (

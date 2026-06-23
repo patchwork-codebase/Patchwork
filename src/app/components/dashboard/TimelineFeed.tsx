@@ -16,6 +16,7 @@ import { getAvatarUrl, timeAgo } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { Composer } from "./Composer";
 import { ReplyComposer } from "./ReplyComposer";
 import {
@@ -435,8 +436,13 @@ export function TimelineFeed({
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                         <div className="font-extrabold text-[13px] sm:text-[16px] text-slate-900 leading-tight font-display hover:underline truncate max-w-full flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           {builderName}
-                          <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4" />
+                          {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
                         </div>
+                        <OrganizationBadge 
+                          orgName={(update as any).authorOrgName} 
+                          orgLogo={(update as any).authorOrgLogo} 
+                          isVerified={!!(update as any).authorIsVerifiedExpert} 
+                        />
                         {isLaunch && (
                           <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
                         )}

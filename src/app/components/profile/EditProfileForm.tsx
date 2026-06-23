@@ -110,6 +110,30 @@ export function EditProfileForm({
                     </div>
                   </div>
 
+                  {/* Organization Info */}
+                  <div className="pt-4 border-t border-slate-200 space-y-4 mt-4">
+                    <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest">Organization Branding</h3>
+                    <p className="text-[12px] text-slate-600 -mt-1">Add your company's branding to stand out in your rooms.</p>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Organization Name</label>
+                      <input
+                        value={editForm.organization_name || ''}
+                        onChange={e => setEditForm(f => ({ ...f, organization_name: e.target.value }))}
+                        className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all placeholder:text-slate-500 shadow-sm"
+                        placeholder="e.g. Acme Corp"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Organization Logo URL</label>
+                      <input
+                        value={editForm.organization_logo_url || ''}
+                        onChange={e => setEditForm(f => ({ ...f, organization_logo_url: e.target.value }))}
+                        className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all placeholder:text-slate-500 shadow-sm"
+                        placeholder="https://example.com/logo.png"
+                      />
+                    </div>
+                  </div>
+
                   {editForm.role === 'builder' && (
                     <div className="relative z-50">
                       <CustomSelect
