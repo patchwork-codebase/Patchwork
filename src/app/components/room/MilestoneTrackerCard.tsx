@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { CheckCircle, ArrowRight, Clock, AlertCircle, MessageCircle, Send } from "lucide-react";
+import { CheckCircle, ArrowRight, Clock, AlertCircle, MessageCircle, Send, Smile } from "lucide-react";
+import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase, useAuth } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
@@ -44,6 +45,8 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   const isObserver = profile?.role === 'observer';
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 
@@ -215,6 +218,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
       await queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       setReplyText('');
       setReplyingTo(null);
+      setShowEmojiPicker(false);
     } catch (err: unknown) {
       toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
     }
@@ -353,13 +357,30 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                         className="mt-4 p-3 bg-[#110F1A] border border-primary-400/30 rounded-2xl relative mx-2"
                       >
                         <textarea
+                          ref={replyTextareaRef}
                           autoFocus
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder="Write your reply..."
                           className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-white placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
                         />
-                        <div className="flex justify-end mt-2">
+                        <InlineEmojiPicker
+                          isOpen={showEmojiPicker}
+                          className="px-1 py-2 bg-transparent border-t border-white/5"
+                          buttonClassName="w-8 h-8 rounded-full hover:bg-white/10"
+                          onEmojiSelect={(emoji) => {
+                            setReplyText(prev => prev + emoji);
+                            replyTextareaRef.current?.focus();
+                          }}
+                        />
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
+                          <button 
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
+                            className={`p-1.5 rounded transition-colors ${showEmojiPicker ? 'text-primary-400 bg-primary-500/20' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} 
+                            title="Emoji"
+                          >
+                            <Smile className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => submitReply(milestone.id)}
                             disabled={!replyText.trim()}

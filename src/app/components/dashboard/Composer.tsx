@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Code, ImageIcon, Lock } from "lucide-react";
+import { X, Code, ImageIcon, Lock, Smile } from "lucide-react";
+import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from "../auth/AuthContext";
 import { usePostUpdate } from "../../hooks/usePostUpdate";
 import type { Room, Profile } from "../../types";
@@ -28,6 +29,7 @@ export function Composer({
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const isPostingRef = useRef(false);
   const postMutation = usePostUpdate();
@@ -102,6 +104,41 @@ export function Composer({
           <div className="flex items-center gap-1 sm:gap-2">
             {myRooms && myRooms.length > 0 ? (
               <>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full transition-all focus-ring"
+                  >
+                    <Smile className="w-[18px] h-[18px]" />
+                    <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Emoji</span>
+                  </button>
+                  <AnimatePresence>
+                    {showEmojiPicker && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setShowEmojiPicker(false)} 
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute z-50 mt-2"
+                        >
+                          <EmojiPicker 
+                            onEmojiClick={(emojiData) => {
+                              setUpdateContent(prev => prev + emojiData.emoji);
+                              setShowEmojiPicker(false);
+                            }}
+                          />
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full cursor-pointer transition-all focus-ring">
                   <ImageIcon className="w-[18px] h-[18px]" />
                   <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Media</span>

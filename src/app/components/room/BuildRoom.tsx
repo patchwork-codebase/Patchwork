@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router";
+import { AnimatePresence } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock } from "lucide-react";
+import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile } from "lucide-react";
+import EmojiPicker from 'emoji-picker-react';
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
 import { DraftUpdates } from "./DraftUpdates";
@@ -48,6 +50,7 @@ export default function BuildRoom() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [codeSnippet, setCodeSnippet] = useState('');
   const [showCodeInput, setShowCodeInput] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [postingUpdate, setPostingUpdate] = useState(false);
   const [reactionModal, setReactionModal] = useState<{ open: boolean; updateId: string | null }>({ open: false, updateId: null });
   const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions' | 'team'>('updates');
@@ -430,7 +433,7 @@ export default function BuildRoom() {
                     </div>
                   </div>
                 )}
-                <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-hidden group">
+                <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-visible group">
                   <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline gap-2">
                     <div className="flex items-center gap-3">
@@ -532,6 +535,34 @@ export default function BuildRoom() {
                         }}
                       />
                     </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border ${showEmojiPicker ? 'border-primary-400 text-primary-400' : 'border-slate-200 text-slate-600'} rounded-full text-[12px] font-bold transition-all focus-ring`}
+                      >
+                        <Smile className="w-4 h-4" />
+                        Emoji
+                      </button>
+                      <AnimatePresence>
+                        {showEmojiPicker && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40" 
+                              onClick={() => setShowEmojiPicker(false)} 
+                            />
+                            <div className="absolute z-50 mt-2 bottom-full mb-2">
+                              <EmojiPicker 
+                                onEmojiClick={(emojiData) => {
+                                  setNewUpdate(prev => prev + emojiData.emoji);
+                                  setShowEmojiPicker(false);
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setShowCodeInput(!showCodeInput)}

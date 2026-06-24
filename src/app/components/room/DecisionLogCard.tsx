@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus } from "lucide-react";
+import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus, Smile } from "lucide-react";
+import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
@@ -39,6 +40,8 @@ interface DecisionLogCardProps {
 export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false, isBuilder = false }: DecisionLogCardProps) {
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -140,6 +143,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
       await queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       setReplyText('');
       setReplyingTo(null);
+      setShowEmojiPicker(false);
     } catch (err: unknown) {
       toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
     }
@@ -316,13 +320,30 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                             className="mt-4 p-3 bg-white border border-slate-200 shadow-sm rounded-2xl relative"
                           >
                             <textarea
+                              ref={replyTextareaRef}
                               autoFocus
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                               placeholder="Write your reply..."
                               className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-slate-900 placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
                             />
-                            <div className="flex justify-end mt-2">
+                            <InlineEmojiPicker
+                              isOpen={showEmojiPicker}
+                              className="px-1 py-2 bg-transparent border-t border-slate-100"
+                              buttonClassName="w-8 h-8 rounded-full hover:bg-slate-100"
+                              onEmojiSelect={(emoji) => {
+                                setReplyText(prev => prev + emoji);
+                                replyTextareaRef.current?.focus();
+                              }}
+                            />
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+                              <button 
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
+                                className={`p-1.5 rounded transition-colors ${showEmojiPicker ? 'text-primary-500 bg-primary-50' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`} 
+                                title="Emoji"
+                              >
+                                <Smile className="w-4 h-4" />
+                              </button>
                               <button
                                 onClick={() => submitReply(decision.id)}
                                 disabled={!replyText.trim()}

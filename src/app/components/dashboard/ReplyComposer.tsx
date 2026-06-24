@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { supabase } from "../auth/AuthContext";
-import { Bold, Italic, ListOrdered, List, Link as LinkIcon, Code, Quote, AtSign, ImageIcon } from "lucide-react";
+import { Bold, Italic, ListOrdered, List, Link as LinkIcon, Code, Quote, AtSign, ImageIcon, Smile } from "lucide-react";
+import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { QUERY_KEYS } from "../../constants";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
@@ -27,6 +28,7 @@ export function ReplyComposer({
   initialText = ""
 }: ReplyComposerProps) {
   const [replyText, setReplyText] = useState(initialText);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const insertFormatting = (prefix: string, suffix: string = '') => {
@@ -84,8 +86,10 @@ export function ReplyComposer({
         room_id: newReply.roomId,
         update_id: newReply.updateId,
         observer_id: newReply.observerId,
+        observer_name: newReply.observerName,
         type: newReply.type,
         text: newReply.text,
+        created_at: newReply.createdAt,
       };
       
       const { error } = await supabase.from('reactions').insert(dbPayload);
@@ -128,7 +132,19 @@ export function ReplyComposer({
           <button onClick={() => insertFormatting('@')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Mention"><AtSign className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-slate-200 mx-1" />
           <button onClick={() => insertFormatting('![alt text](', ')')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Image"><ImageIcon className="w-4 h-4" /></button>
+          <div className="relative flex items-center">
+            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-1.5 rounded transition-colors ${showEmojiPicker ? 'text-primary-500 bg-primary-50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'}`} title="Emoji"><Smile className="w-4 h-4" /></button>
+          </div>
         </div>
+        <InlineEmojiPicker
+          isOpen={showEmojiPicker}
+          className="px-3 py-2 bg-slate-50/50 border-b border-slate-100"
+          buttonClassName="w-8 h-8 rounded-full hover:bg-slate-200"
+          onEmojiSelect={(emoji) => {
+            setReplyText(prev => prev + emoji);
+            replyTextareaRef.current?.focus();
+          }}
+        />
         <textarea
           ref={replyTextareaRef}
           autoFocus
