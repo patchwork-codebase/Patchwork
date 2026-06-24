@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile } from "lucide-react";
+import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile, Loader2 } from "lucide-react";
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
@@ -277,12 +277,9 @@ export default function BuildRoom() {
 
   if (loading) {
     return (
-      <div className="max-w-[1000px] mx-auto px-6 py-12">
-        <div className="animate-pulse space-y-6">
-          <div className="h-10 bg-white/5 rounded-xl w-1/2" />
-          <div className="h-6 bg-white/5 rounded-md w-3/4" />
-          <div className="h-64 bg-white/5 rounded-[24px]" />
-        </div>
+      <div className="max-w-[1000px] mx-auto px-6 py-24 flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-10 h-10 text-primary-400 animate-spin mb-4" />
+        <p className="text-slate-500 font-medium animate-pulse">Loading room...</p>
       </div>
     );
   }
