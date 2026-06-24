@@ -10,18 +10,13 @@ import VerificationSuccessModal from "./VerificationSuccessModal";
 import { useRooms, useUserRooms, useObservedRooms, useObserverStats } from "../../hooks/useRooms";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDashboardStats, useRecentActivity, useRoomObservers, useDashboardRealtimeSync } from "../../hooks/useDashboardStats";
+import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { useNotifications } from "../../hooks/useNotifications";
 
 // Subcomponents
 import { StatsStrip } from "./StatsStrip";
-import { ActiveRoomsList } from "./ActiveRoomsList";
-import { RecentActivityList } from "./RecentActivityList";
 import { TimelineFeed } from "./TimelineFeed";
-import { ActiveRoomPanel } from "./ActiveRoomPanel";
-import { OverviewInsights } from "./OverviewInsights";
-import { PendingDraftsList } from "./PendingDraftsList";
-import { RequestsAndInvites } from "./RequestsAndInvites";
+import { DashboardOverview } from "./DashboardOverview";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { MobileActionSheet } from "./MobileActionSheet";
 import { ComposerSheet } from "./ComposerSheet";
@@ -87,12 +82,6 @@ export default function Dashboard() {
   const [composerSheetOpen, setComposerSheetOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const { data: recentEventsData } = useRecentActivity(user?.id);
-  const recentEvents = recentEventsData || [];
-
-  const { data: roomObserversData } = useRoomObservers(selectedRoomId);
-  const roomObservers = roomObserversData || [];
-
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
 
   useEffect(() => {
@@ -157,9 +146,6 @@ export default function Dashboard() {
   }
   const domainStyle = getDomainStyle(profile?.domain);
 
-  // Initialize real-time sync for dashboard stats and activities
-  useDashboardRealtimeSync(user?.id);
-
   const selectedRoom = allMyRooms.find(r => r.id === selectedRoomId);
   const selectedRoomTitle = selectedRoom?.title || 'Active Room';
 
@@ -212,8 +198,8 @@ export default function Dashboard() {
               <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-3.5 h-3.5 sm:w-5 sm:h-5 shrink-0" />
               <span className="shrink-0 text-[14px] sm:text-base">👋</span>
             </h1>
-            {/* Handle + badges — single horizontal scroll row, never wraps */}
-            <div className="flex items-center gap-1.5 mt-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* Handle + badges — flex wrap on desktop */}
+            <div className="flex sm:flex-wrap items-center gap-1.5 mt-1 overflow-x-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0">{handle}</span>
               {profile?.city && (
                 <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0 hidden sm:inline">· {profile.city}</span>
@@ -233,7 +219,7 @@ export default function Dashboard() {
                   <Hammer className="w-2.5 h-2.5" /> Builder
                 </span>
               )}
-              <span className="px-2 py-0.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">Free</span>
+              <span className="px-2 py-0.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">Joined {joinDate}</span>
               <span className="px-2 py-0.5 rounded-full border border-primary-400/20 bg-primary-400/10 text-primary-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">Rep {profile?.reputation || 0}</span>
             </div>
           </div>
@@ -261,51 +247,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-
-      {/* PROFILE CARD & STATS */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
-        {/* Profile Card Column */}
-        <div className="hidden md:flex xl:col-span-2 flex-col gap-4">
-          <div className="bg-white border border-slate-100 rounded-[20px] p-6 focus-ring shadow-[0_2px_8px_rgba(0,0,0,0.04)] w-full" tabIndex={0}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-slate-900 text-[16px] truncate flex items-center gap-1.5">
-                  {profile?.name}
-                  <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-4 h-4" />
-                </h3>
-                <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                  <span className="text-[13px] text-slate-500">{handle}</span>
-                  {isObserver ? (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400 text-[10px] font-mono font-bold uppercase">
-                      <Eye className="w-2.5 h-2.5" /> Observer
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-[10px] font-mono font-bold uppercase">
-                      <Hammer className="w-2.5 h-2.5" /> Builder
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Reputation</p>
-                <p className="text-[20px] font-bold text-primary-400 mt-1">{profile?.reputation || 0}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Member since</p>
-                <p className="text-[16px] font-semibold text-slate-900 mt-1">{joinDate}</p>
-              </div>
-            </div>
-          </div>
-          {isObserver && (
-            <ObserverProgressionPanel />
-          )}
-        </div>
-
+      {/* STATS */}
+      <div className="mb-6 sm:mb-8">
         {/* Stats Strip */}
         <StatsStrip
           myRooms={allMyRooms}
@@ -325,7 +268,6 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-200 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
           {[
             { key: 'overview' as const, label: 'Overview' },
-            { key: 'mine' as const, label: 'My rooms' },
             { key: 'feed' as const, label: 'Global timeline' },
           ].map(tab => {
             const isCurrent = activeTab === tab.key;
@@ -354,43 +296,18 @@ export default function Dashboard() {
       </div>
 
       {/* MAIN COLUMNS GRID */}
-      {activeTab === 'mine' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.95fr] gap-8">
-          {/* LEFT COLUMN: ACTIVE WORK LIST */}
-          <ActiveRoomsList
-            rooms={allMyRooms}
-            loading={myRoomsLoading || observedRoomsLoading}
-            setTab={setTab}
-          />
-
-          {/* RIGHT COLUMN: RECENT ACTIVITY & WATCHERS */}
-          <RecentActivityList
-            recentEvents={recentEvents}
-            roomObservers={roomObservers}
-            selectedRoomTitle={selectedRoomTitle}
-          />
-        </div>
-      ) : activeTab === 'overview' ? (
-        <div>
-          <RequestsAndInvites />
-          <PendingDraftsList />
-          <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.55fr] gap-8 xl:gap-12">
-            <ActiveRoomsList
-              rooms={allMyRooms}
-              loading={myRoomsLoading || observedRoomsLoading}
-              setTab={setTab}
-              selectedRoomId={selectedRoomId}
-              setSelectedRoomId={setSelectedRoomId}
-            />
-            <ActiveRoomPanel
-              user={user}
-              room={allMyRooms.find(r => r.id === selectedRoomId) || allMyRooms[0]}
-              reactions={reactions}
-              queryClient={queryClient}
-            />
-          </div>
-          <OverviewInsights />
-        </div>
+      {activeTab === 'overview' ? (
+        <DashboardOverview
+          user={user}
+          allMyRooms={allMyRooms}
+          myRoomsLoading={myRoomsLoading}
+          observedRoomsLoading={observedRoomsLoading}
+          setTab={setTab}
+          selectedRoomId={selectedRoomId}
+          setSelectedRoomId={setSelectedRoomId}
+          reactions={reactions}
+          queryClient={queryClient}
+        />
       ) : (
         /* TIMELINE FEED FOR MY ROOMS / LIVE FEED TABS */
         <TimelineFeed

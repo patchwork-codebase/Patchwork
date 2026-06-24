@@ -12,10 +12,10 @@ import { Link } from "react-router";
 const BUILDER_TRACKS = [
   { value: 'product-manager', label: 'Product Manager', emoji: '📋', desc: 'Define what gets built, align teams, and track milestones.' },
   { value: 'founder', label: 'Founder', emoji: '🚀', desc: 'Build the company, share traction, and scale operations.' },
-  { value: 'engineer', label: 'Engineer', emoji: '⚙️', desc: 'Write code, design architectures, and share technical snippets.' },
-  { value: 'product-designer', label: 'Product Designer', emoji: '🎨', desc: 'Craft customer experiences, test flows, and iterate in public.' },
-  { value: 'researcher', label: 'Researcher', emoji: '🔬', desc: 'Interview customers, formulate hypotheses, and track signals.' },
-  { value: 'growth', label: 'Growth Strategist', emoji: '📈', desc: 'Run growth experiments, track metrics, and optimize conversions.' },
+  // { value: 'engineer', label: 'Engineer', emoji: '⚙️', desc: 'Write code, design architectures, and share technical snippets.' },
+  // { value: 'product-designer', label: 'Product Designer', emoji: '🎨', desc: 'Craft customer experiences, test flows, and iterate in public.' },
+  // { value: 'researcher', label: 'Researcher', emoji: '🔬', desc: 'Interview customers, formulate hypotheses, and track signals.' },
+  // { value: 'growth', label: 'Growth Strategist', emoji: '📈', desc: 'Run growth experiments, track metrics, and optimize conversions.' },
 ];
 
 export function ObserverProgressionPanel() {

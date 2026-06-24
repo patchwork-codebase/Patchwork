@@ -40,17 +40,28 @@ export function usePostUpdate() {
       const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       let uploadedMediaUrl = null;
-      if (mediaPreview) {
+      if (mediaPreview && mediaPreview.startsWith('data:')) {
         toast.loading("Uploading image...", { id: "upload" });
-        const { data, error } = await supabase.functions.invoke('upload-image', {
-          body: { image: mediaPreview }
-        });
-        if (error) {
+        try {
+          const res = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-image`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ image: mediaPreview })
+          });
+          
+          if (!res.ok) {
+            throw new Error('Failed to upload image to edge function');
+          }
+          
+          const data = await res.json();
+          uploadedMediaUrl = data?.secure_url || null;
+          toast.dismiss("upload");
+        } catch (error) {
           toast.dismiss("upload");
           throw error;
         }
-        uploadedMediaUrl = data?.secure_url || null;
-        toast.dismiss("upload");
       }
 
       const payload = {

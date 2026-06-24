@@ -41,6 +41,9 @@ import Integrations from "./Integrations";
 import { ProfileDetailsView } from "./ProfileDetailsView";
 import { ExpertCard } from "./ExpertCard";
 import { ProfileStats } from "./ProfileStats";
+import { OrganizationSettingsCard } from "./OrganizationSettingsCard";
+import { SocialLinksCard } from "./SocialLinksCard";
+import { SkillsCard } from "./SkillsCard";
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
@@ -298,6 +301,19 @@ export default function UserProfile() {
       <ExpertCard profile={profile} />
 
       <ProfileStats profile={profile} roomsCount={rooms.length} />
+
+      {/* Editable Profile Extensions (Only visible to owner) */}
+      {isOwn && !editing && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-6">
+            <OrganizationSettingsCard profile={profile} />
+            <SocialLinksCard profile={profile} />
+          </div>
+          <div>
+            <SkillsCard profile={profile} />
+          </div>
+        </div>
+      )}
 
       {/* Integrations (Only visible to the owner if they are a builder) */}
       {isOwn && profile.role === 'builder' && (

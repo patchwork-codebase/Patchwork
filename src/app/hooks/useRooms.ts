@@ -27,7 +27,7 @@ function debouncedInvalidate(queryClient: any, queryKey: any[]) {
   }, 1500); // 1.5s debounce for realtime events
 }
 
-export function useRoomDetails(roomId?: string) {
+export function useRoomDetails(roomId?: string, userId?: string) {
   const queryClient = useQueryClient();
 
   const query = useQuery<Room | null, Error>({
@@ -43,6 +43,23 @@ export function useRoomDetails(roomId?: string) {
 
       if (roomError) throw roomError;
       if (!roomData) return null;
+
+      // Strict Privacy Check
+      if (roomData.is_private) {
+        if (!userId) return null; // Unauthenticated users cannot see private rooms
+        
+        if (roomData.builder_id !== userId) {
+          // Not the builder, check if they are an explicitly invited observer
+          const { data: observerData } = await supabase
+            .from('room_observers')
+            .select('observer_id')
+            .eq('room_id', roomId)
+            .eq('observer_id', userId)
+            .maybeSingle();
+
+          if (!observerData) return null; // Not authorized -> hide room completely
+        }
+      }
 
       const { data: updatesData, error: updatesError } = await supabase
         .from('updates')

@@ -274,14 +274,23 @@ export default function CreateRoom() {
         const now = new Date().toISOString();
         
         let coverImageUrl = null;
-        if (form.coverImage) {
+        if (form.coverImage && form.coverImage.startsWith('data:')) {
           toast.loading("Uploading cover image...", { id: "upload" });
           
           try {
-            const { data, error } = await supabase.functions.invoke('upload-image', {
-              body: { image: form.coverImage }
+            const res = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-image`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ image: form.coverImage })
             });
-            if (error) throw error;
+            
+            if (!res.ok) {
+              throw new Error('Failed to upload image to edge function');
+            }
+            
+            const data = await res.json();
             coverImageUrl = data?.secure_url || null;
             toast.dismiss("upload");
           } catch (error: unknown) {

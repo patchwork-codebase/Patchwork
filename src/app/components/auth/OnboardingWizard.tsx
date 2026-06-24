@@ -106,8 +106,9 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
 
 const BUILDER_TYPES = [
   { value: 'product-manager', label: '📋 Product Manager' },
-  { value: 'engineer', label: '⚙️ Engineer (Coming Soon)', disabled: true },
-  { value: 'product-designer', label: '🎨 Product Designer (Coming Soon)', disabled: true },
+  { value: 'founder', label: '🚀 Founder' },
+  // { value: 'engineer', label: '⚙️ Engineer (Coming Soon)', disabled: true },
+  // { value: 'product-designer', label: '🎨 Product Designer (Coming Soon)', disabled: true },
 ];
 
 export default function OnboardingWizard() {
