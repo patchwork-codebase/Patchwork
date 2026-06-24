@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function loadProfile(userId: string) {
+  async function loadProfile(userId: string, providedAuthUser?: any) {
     try {
       const { data, error: fetchErr } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
       if (fetchErr) throw fetchErr;
@@ -129,8 +129,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // fall back to Supabase's built-in email_confirmed_at. Either being true = verified.
       let isConfirmed = false;
       try {
-        // Always fetch the auth user — this is the reliable fallback
-        const { data: { user: authUser } } = await supabase.auth.getUser();
+        let authUser = providedAuthUser;
+        
+        // If not provided, reliably fallback to fetching the auth user, but handle errors gracefully
+        if (!authUser) {
+          const { data, error: authError } = await supabase.auth.getUser();
+          if (!authError) {
+            authUser = data.user;
+          }
+        }
 
         // Try our custom column (only exists after the SQL migration is run)
         const { data: userRow, error: colError } = await supabase
@@ -173,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function refreshProfile() {
-    if (user) await loadProfile(user.id);
+    if (user) await loadProfile(user.id, user);
   }
 
   useEffect(() => {
@@ -206,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           if (session?.user) {
-            loadProfile(session.user.id);
+            loadProfile(session.user.id, session.user);
           }
         });
       }
@@ -232,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
         // Load profile for user
-        await loadProfile(currentSession.user.id);
+        await loadProfile(currentSession.user.id, currentSession.user);
       }
 
       setLoading(false);
@@ -247,7 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(refreshedSession);
             setUser(refreshedUser ?? refreshedSession.user);
             if (refreshedUser?.id || refreshedSession.user?.id) {
-              await loadProfile(refreshedUser?.id || refreshedSession.user.id);
+              await loadProfile(refreshedUser?.id || refreshedSession.user.id, refreshedUser || refreshedSession.user);
             }
           }
         } catch (e) {
@@ -272,14 +279,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (event === 'SIGNED_IN') {
         channel.postMessage('SESSION_LOGIN');
         if (session?.user) {
-          await loadProfile(session.user.id);
+          await loadProfile(session.user.id, session.user);
         }
       } else if (event === 'TOKEN_REFRESHED') {
         channel.postMessage('SESSION_REFRESH');
-        if (session?.user) loadProfile(session.user.id);
+        if (session?.user) loadProfile(session.user.id, session.user);
       } else {
         if (session?.user) {
-          loadProfile(session.user.id);
+          loadProfile(session.user.id, session.user);
         } else {
           setProfile(null);
         }
