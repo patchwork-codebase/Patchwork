@@ -24,6 +24,8 @@ import { VerifiedTick } from "../ui/VerifiedTick";
 import { RequestExpertReviewModal } from "./RequestExpertReviewModal";
 import { RequestJoinModal } from "./RequestJoinModal";
 import { RoomComposer } from "./RoomComposer";
+import { OfficialRoomModal } from "./OfficialRoomModal";
+import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-primary-400/10 text-primary-400 border border-primary-400/20', desc: 'Incisive, direct critique' },
@@ -62,8 +64,21 @@ export default function BuildRoom() {
   const isBuilder = room && profile?.role === 'builder' && room.builderId === user?.id;
   const joined = room?.observerCount !== undefined; // simplified
 
+  const [showOfficialModal, setShowOfficialModal] = useState(false);
 
+  useEffect(() => {
+    if (room && id === PATCHWORK_OFFICIAL_ROOM_ID) {
+      const hasSeen = localStorage.getItem('patchwork_official_modal_seen');
+      if (!hasSeen) {
+        setShowOfficialModal(true);
+      }
+    }
+  }, [room, id]);
 
+  const handleCloseOfficialModal = () => {
+    localStorage.setItem('patchwork_official_modal_seen', 'true');
+    setShowOfficialModal(false);
+  };
   useEffect(() => {
     if (!loading && !user && inviteToken) {
       navigate(`/signup?returnUrl=${encodeURIComponent(`/room/${id}?invite_token=${inviteToken}`)}`, { replace: true });
@@ -108,8 +123,21 @@ export default function BuildRoom() {
   async function handleReaction(type: string, text: string, updateId: string | null) {
     if (!id || !user) return;
     try {
+      const reactionId = `${id}-reaction-${type}-${user.id}-${updateId || 'room'}`;
+      
+      // Check if it already exists (to toggle)
+      const { data: existing } = await supabase.from('reactions').select('id').eq('id', reactionId).maybeSingle();
+      
+      if (existing) {
+        // Toggle off
+        const { error } = await supabase.from('reactions').delete().eq('id', reactionId);
+        if (error) throw error;
+        toast.success('Reaction removed');
+        return;
+      }
+
       const payload = {
-        id: `${id}-reaction-${type}-${user.id}-${Date.now()}`,
+        id: reactionId,
         room_id: id,
         update_id: updateId || null,
         observer_id: user.id,
@@ -231,6 +259,7 @@ export default function BuildRoom() {
 
   return (
     <>
+      <OfficialRoomModal open={showOfficialModal} onClose={handleCloseOfficialModal} />
       <div className="max-w-[1000px] w-full mx-auto px-4 sm:px-6 py-6 md:py-10 relative">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
@@ -251,9 +280,9 @@ export default function BuildRoom() {
 
         <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
           {[
+            { key: 'updates', label: 'Updates', count: room.updates.length, show: true },
             { key: 'overview', label: 'Overview', count: null, show: true },
             { key: 'workspace', label: 'Product Workspace', count: null, show: true },
-            { key: 'updates', label: 'Updates', count: room.updates.length, show: true },
             { key: 'reactions', label: 'Reactions', count: room.reactions.length, show: true },
             { key: 'team', label: 'Team Members', count: room.observerCount, show: room.isPrivate }
           ].filter(t => t.show).map(tab => (

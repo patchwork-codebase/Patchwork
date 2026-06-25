@@ -49,6 +49,7 @@ export interface Room {
   builderIsVerifiedExpert?: boolean;
   builderOrgName?: string | null;
   builderOrgLogo?: string | null;
+  builderAvatarUrl?: string | null;
   tags?: string[];
   coverImage?: string | null;
   primaryLink?: string | null;
@@ -59,10 +60,9 @@ export interface Room {
   whitelistedDomains?: string[] | null;
   observerCount?: number;
   updateCount?: number;
+  latestUpdate?: { content: string; createdAt: string } | null;
   createdAt: string;
   updatedAt: string;
-  created_at?: string;
-  updated_at?: string;
   retrospectiveNote?: string | null;
 
   // Joined / hydrated relations (not always present)
@@ -79,8 +79,8 @@ export interface Profile {
   reputation?: number;
   bio?: string | null;
   avatarUrl?: string | null;
-  github_url?: string | null;
-  linkedin_url?: string | null;
+  githubUrl?: string | null;
+  linkedinUrl?: string | null;
   website?: string | null;
   twitter?: string | null;
   isVerifiedExpert?: boolean;
@@ -90,8 +90,8 @@ export interface Profile {
   followers?: string[];
   followingCount?: number;
   isFollowing?: boolean;
-  organization_name?: string | null;
-  organization_logo_url?: string | null;
+  organizationName?: string | null;
+  organizationLogoUrl?: string | null;
   createdAt?: string;
 }
 

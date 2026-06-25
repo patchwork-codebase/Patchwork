@@ -4,6 +4,7 @@ import { supabase } from '../components/auth/AuthContext';
 
 import { normalizeRow } from '../utils/helpers';
 import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
+import { PATCHWORK_OFFICIAL_ROOM_ID } from '../constants/patchwork';
 import type { Room } from '../types';
 
 
@@ -122,6 +123,38 @@ export function useRoomDetails(roomId?: string, userId?: string) {
   return query;
 }
 
+export function useOfficialRoom() {
+  return useQuery<Room | null, Error>({
+    queryKey: ['official_room', PATCHWORK_OFFICIAL_ROOM_ID],
+    queryFn: async () => {
+      if (!PATCHWORK_OFFICIAL_ROOM_ID || PATCHWORK_OFFICIAL_ROOM_ID === '00000000-0000-0000-0000-000000000000') return null;
+
+      const { data, error } = await supabase
+        .from('rooms')
+        .select(`
+          id, title, description, status, is_private,
+          builder_id, builder_name, tags, cover_image, primary_link,
+          project_stage, primary_goal, observer_count, update_count,
+          created_at, updated_at,
+          users!builder_id(is_verified_expert, organization_name, organization_logo_url)
+        `)
+        .eq('id', PATCHWORK_OFFICIAL_ROOM_ID)
+        .maybeSingle();
+
+      if (error || !data) return null;
+
+      const usersObj = Array.isArray(data.users) ? data.users[0] : data.users;
+      return {
+        ...normalizeRow(data),
+        builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
+        builderOrgName: (usersObj as any)?.organization_name,
+        builderOrgLogo: (usersObj as any)?.organization_logo_url,
+      } as Room;
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+}
+
 export function useRooms(searchQuery: string = "", category: string = "All") {
   const queryClient = useQueryClient();
 
@@ -141,7 +174,8 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
           project_stage, primary_goal, observer_count, update_count,
           created_at, updated_at,
           users!builder_id(is_verified_expert, organization_name, organization_logo_url),
-          room_observers(observer_id)
+          room_observers(observer_id),
+          updates(content, created_at)
         `)
         .eq('status', 'active')
         .eq('is_private', false);
@@ -161,11 +195,14 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
       if (error) throw error;
       return (data || []).map(row => {
         const usersObj = Array.isArray(row.users) ? row.users[0] : row.users;
+        const updatesObj = Array.isArray(row.updates) ? row.updates[0] : row.updates;
         return {
           ...normalizeRow(row),
           builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
           builderOrgName: (usersObj as any)?.organization_name,
           builderOrgLogo: (usersObj as any)?.organization_logo_url,
+          builderAvatarUrl: (usersObj as any)?.avatar_url,
+          latestUpdate: updatesObj ? normalizeRow(updatesObj) : null,
         };
       });
     },
@@ -217,14 +254,27 @@ export function useUserRooms(userId?: string) {
           project_stage, primary_goal, observer_count, update_count,
           invite_token, whitelisted_domains,
           created_at, updated_at,
-          room_observers(observer_id)
+          users!builder_id(is_verified_expert, organization_name, organization_logo_url),
+          room_observers(observer_id),
+          updates(content, created_at)
         `)
         .eq('builder_id', userId)
         .order('updated_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+      return (data || []).map(row => {
+        const usersObj = Array.isArray(row.users) ? row.users[0] : row.users;
+        const updatesObj = Array.isArray(row.updates) ? row.updates[0] : row.updates;
+        return {
+          ...normalizeRow(row),
+          builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
+          builderOrgName: (usersObj as any)?.organization_name,
+          builderOrgLogo: (usersObj as any)?.organization_logo_url,
+          builderAvatarUrl: (usersObj as any)?.avatar_url,
+          latestUpdate: updatesObj ? normalizeRow(updatesObj) : null,
+        };
+      });
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 12 ? allPages.length : undefined;
@@ -298,7 +348,8 @@ export function useObservedRooms(userId?: string) {
             project_stage, primary_goal, observer_count, update_count,
             created_at, updated_at,
             users!builder_id(is_verified_expert, organization_name, organization_logo_url),
-            room_observers(observer_id)
+            room_observers(observer_id),
+            updates(content, created_at)
           )
         `)
         .eq('observer_id', userId)
@@ -312,11 +363,14 @@ export function useObservedRooms(userId?: string) {
         const room = Array.isArray(row.rooms) ? row.rooms[0] : row.rooms;
         if (!room) return null;
         const usersObj = Array.isArray(room.users) ? room.users[0] : room.users;
+        const updatesObj = Array.isArray(room.updates) ? room.updates[0] : room.updates;
         return {
           ...normalizeRow(room),
           builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
           builderOrgName: (usersObj as any)?.organization_name,
           builderOrgLogo: (usersObj as any)?.organization_logo_url,
+          builderAvatarUrl: (usersObj as any)?.avatar_url,
+          latestUpdate: updatesObj ? normalizeRow(updatesObj) : null,
         };
       }).filter(Boolean);
     },

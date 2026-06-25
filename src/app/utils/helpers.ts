@@ -7,11 +7,10 @@ export const STORAGE_KEYS = {
 };
 
 export function toCamelCase(key: string) {
-  if (key === 'onboarding_call_scheduled' || key === 'signup_completed_at' || key === 'github_url' || key === 'linkedin_url') return key;
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 
-export function normalizeRow(row: any): any {
+export function normalizeRow<T>(row: unknown): T {
   if (!row || typeof row !== 'object') return row;
   return Object.entries(row).reduce((result: any, [key, value]) => {
     const camelKey = toCamelCase(key);

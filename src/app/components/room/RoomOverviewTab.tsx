@@ -1,8 +1,18 @@
 import { ProductRoomStats } from "./ProductRoomStats";
 import { DecisionLogCard } from "./DecisionLogCard";
 import { MilestoneTrackerCard } from "./MilestoneTrackerCard";
+import type { Room } from "../../types";
 
-export function RoomOverviewTab({ room, id, user, reactions, queryClient, isBuilder }: any) {
+interface RoomOverviewTabProps {
+  room: Room;
+  id: string;
+  user: any;
+  reactions: any[];
+  queryClient: any;
+  isBuilder: boolean;
+}
+
+export function RoomOverviewTab({ room, id, user, reactions, queryClient, isBuilder }: RoomOverviewTabProps) {
   return (
     <div className="mt-2">
       {(room.tags?.includes('product') || room.tags?.includes('product-management') || room.builderDomain?.toLowerCase() === 'product') && (

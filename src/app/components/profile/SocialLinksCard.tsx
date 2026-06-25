@@ -14,8 +14,8 @@ export function SocialLinksCard({ profile }: SocialLinksCardProps) {
   const [form, setForm] = useState({
     website: profile?.website || '',
     twitter: profile?.twitter || '',
-    github_url: profile?.github_url || '',
-    linkedin_url: profile?.linkedin_url || ''
+    github_url: profile?.githubUrl || '',
+    linkedin_url: profile?.linkedinUrl || ''
   });
   const queryClient = useQueryClient();
 
@@ -45,7 +45,7 @@ export function SocialLinksCard({ profile }: SocialLinksCardProps) {
     }
   };
 
-  const hasLinks = profile?.website || profile?.twitter || profile?.github_url || profile?.linkedin_url;
+  const hasLinks = profile?.website || profile?.twitter || profile?.githubUrl || profile?.linkedinUrl;
 
   if (!editing) {
     return (
@@ -68,15 +68,15 @@ export function SocialLinksCard({ profile }: SocialLinksCardProps) {
                   <Twitter className="w-4 h-4 text-[#1DA1F2]" /> {profile.twitter}
                 </div>
               )}
-              {profile.github_url && (
-                <div className="flex items-center gap-2 text-[13px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full">
-                  <Github className="w-4 h-4" /> {profile.github_url.split('/').pop()}
-                </div>
+              {profile.githubUrl && (
+                <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
+                  <Github className="w-4 h-4" /> {profile.githubUrl.split('/').pop()}
+                </a>
               )}
-              {profile.linkedin_url && (
-                <div className="flex items-center gap-2 text-[13px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full">
-                  <Linkedin className="w-4 h-4 text-[#0A66C2]" /> {profile.linkedin_url.split('/in/')[1]?.replace(/\/$/, '') || 'LinkedIn'}
-                </div>
+              {profile.linkedinUrl && (
+                <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-[#0A66C2] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
+                  <Linkedin className="w-4 h-4 text-[#0A66C2]" /> {profile.linkedinUrl.split('/in/')[1]?.replace(/\/$/, '') || 'LinkedIn'}
+                </a>
               )}
             </div>
           ) : (

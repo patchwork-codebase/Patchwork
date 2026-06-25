@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { X, CheckCircle, Zap, Target, AlertTriangle, ImageIcon, Link as LinkIcon } from "lucide-react";
+import { X, CheckCircle, Zap, Target, AlertTriangle, ImageIcon, Link as LinkIcon, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 
@@ -9,8 +9,8 @@ interface LogDecisionModalProps {
   isOpen: boolean;
   onClose: () => void;
   roomId: string;
-  userId: string;
   onSuccess: () => void;
+  initialDecision?: any;
 }
 
 type DecisionType = 'decision' | 'scrapped' | 'blocker' | 'shipped';
@@ -22,13 +22,15 @@ const TYPE_OPTIONS: { id: DecisionType; label: string; icon: any; color: string;
   { id: 'scrapped', label: 'Scrapped', icon: X, color: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/30' },
 ];
 
-export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }: LogDecisionModalProps) {
-  const [type, setType] = useState<DecisionType>('decision');
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [externalLink, setExternalLink] = useState("");
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, initialDecision }: LogDecisionModalProps) {
+  const [type, setType] = useState<DecisionType>(initialDecision?.type || 'decision');
+  const [title, setTitle] = useState(initialDecision?.title || "");
+  const [description, setDescription] = useState(initialDecision?.description || "");
+  const [externalLink, setExternalLink] = useState(initialDecision?.external_link || "");
+  const [mediaPreview, setMediaPreview] = useState<string | null>(initialDecision?.media_url || null);
+  const [isPrivate, setIsPrivate] = useState<boolean>(initialDecision?.is_private || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -68,19 +70,33 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
         uploadedMediaUrl = urlData.publicUrl;
       }
 
-      const { error } = await supabase.from('room_decisions').insert({
+      const payload = {
         room_id: roomId,
         builder_id: userId,
         type,
         title: title.trim(),
         description: description.trim() || null,
-        media_url: uploadedMediaUrl,
-        external_link: externalLink.trim() || null
-      });
+        media_url: uploadedMediaUrl || (mediaPreview && mediaPreview.startsWith('http') ? mediaPreview : null),
+        external_link: externalLink.trim() || null,
+        is_private: isPrivate
+      };
 
-      if (error) throw error;
+      if (initialDecision?.id) {
+        const { error } = await supabase.from('room_decisions').update(payload).eq('id', initialDecision.id);
+        if (error) throw error;
+        toast.success("Decision updated successfully!");
+      } else {
+        const { error } = await supabase.from('room_decisions').insert(payload);
+        if (error) throw error;
+        toast.success("Decision logged successfully!");
+      }
 
-      toast.success("Decision logged successfully!");
+      if (initialDecision) {
+        // do not duplicate toast
+      } else {
+        // do not duplicate toast
+      }
+      
       setTitle("");
       setDescription("");
       setExternalLink("");
@@ -114,7 +130,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
           >
             <div className="flex items-start justify-between p-5 border-b border-white/[0.08] shrink-0">
               <div>
-                <h2 className="text-[18px] font-bold text-white mb-1">Log a decision</h2>
+                <h2 className="text-[18px] font-bold text-white mb-1">{initialDecision ? 'Edit decision' : 'Log a decision'}</h2>
                 <p className="text-[12px] text-slate-400 font-medium">Record structured architectural choices, pivots, or blockers. (For general progress, use 'Post an update')</p>
               </div>
               <button
@@ -167,6 +183,23 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess }:
                   className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
                   autoFocus
                 />
+              </div>
+
+              {/* Privacy Toggle */}
+              <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl">
+                <div>
+                  <h4 className="text-[14px] font-bold text-white mb-1 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-slate-400" /> Private Decision
+                  </h4>
+                  <p className="text-[12px] text-slate-400">Only visible to you and invited builders. Observers cannot see this.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPrivate(!isPrivate)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isPrivate ? 'bg-primary-500' : 'bg-slate-700'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isPrivate ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
               </div>
 
               {/* Description */}

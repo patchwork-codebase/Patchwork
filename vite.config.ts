@@ -45,6 +45,20 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/linear-api/, ''),
       },
+      '/clickup-api': {
+        target: 'https://api.clickup.com/api/v2',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/clickup-api/, ''),
+      },
+      '/jira-api': {
+        target: 'https://atlassian.net', // Placeholder, overridden by router
+        changeOrigin: true,
+        router: (req) => {
+          const domain = req.headers['x-jira-domain'];
+          return domain ? `https://${domain}` : 'https://atlassian.net';
+        },
+        rewrite: (path) => path.replace(/^\/jira-api/, ''),
+      },
     },
   },
   build: {

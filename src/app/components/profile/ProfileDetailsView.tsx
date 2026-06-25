@@ -15,13 +15,13 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2">
                     <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 font-display tracking-tight leading-tight sm:leading-none break-words flex flex-wrap items-center gap-2">
                       {profile.name}
-                      {!(profile as any).organization_name && (
+                      {!(profile as any).organizationName && (
                         <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6 shrink-0" />
                       )}
                       <div className="mt-2 sm:mt-0">
                         <OrganizationBadge 
-                          orgName={(profile as any).organization_name} 
-                          orgLogo={(profile as any).organization_logo_url} 
+                          orgName={(profile as any).organizationName} 
+                          orgLogo={(profile as any).organizationLogoUrl} 
                           isVerified={!!(profile as any).isVerifiedExpert} 
                         />
                       </div>
@@ -73,7 +73,7 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
                   {profile.bio && <p className="text-[14px] text-slate-700 mt-4 leading-relaxed max-w-xl mx-auto sm:mx-0 font-medium">{profile.bio}</p>}
                   
                   {/* Social Links & Skills */}
-                  {(profile.website || profile.twitter || profile.github_url || profile.linkedin_url || (profile.skills && profile.skills.length > 0)) && (
+                  {(profile.website || profile.twitter || profile.githubUrl || profile.linkedinUrl || (profile.skills && profile.skills.length > 0)) && (
                     <div className="mt-5 space-y-4 max-w-xl mx-auto sm:mx-0">
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                         {profile.website && (
@@ -86,13 +86,13 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
                             <Twitter className="w-3.5 h-3.5" /> Twitter
                           </a>
                         )}
-                        {profile.github_url && (
-                          <a href={profile.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
+                        {profile.githubUrl && (
+                          <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
                             <Github className="w-3.5 h-3.5" /> GitHub
                           </a>
                         )}
-                        {profile.linkedin_url && (
-                          <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-[#0A66C2] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
+                        {profile.linkedinUrl && (
+                          <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-[12px] font-bold text-slate-600 hover:text-[#0A66C2] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full transition-colors">
                             <Linkedin className="w-3.5 h-3.5" /> LinkedIn
                           </a>
                         )}

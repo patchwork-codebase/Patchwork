@@ -7,7 +7,8 @@ import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, Ref
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import VerificationSuccessModal from "./VerificationSuccessModal";
-import { useRooms, useUserRooms, useObservedRooms, useObserverStats } from "../../hooks/useRooms";
+import { useRooms, useUserRooms, useObservedRooms, useObserverStats, useOfficialRoom } from "../../hooks/useRooms";
+import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDashboardStats } from "../../hooks/useDashboardStats";
@@ -56,17 +57,24 @@ export default function Dashboard() {
     isFetchingNextPage: isFetchingNextUpdates
   } = useFeedUpdates();
 
+  const { data: officialRoomData } = useOfficialRoom();
+
   const rooms = roomsData?.pages.flat() || [];
   const myRooms = myRoomsData?.pages.flat() || [];
   const observedRooms = observedRoomsData?.pages.flat() || [];
   const dbUpdates = dbUpdatesData?.pages.flat() || [];
 
-  const allMyRooms = [...myRooms, ...observedRooms].reduce((acc, current) => {
+  const allMyRoomsRaw = [...myRooms, ...observedRooms].reduce((acc, current) => {
     if (!acc.find(item => item.id === current.id)) {
       acc.push(current);
     }
     return acc;
   }, [] as any[]);
+
+  const allMyRooms = [
+    ...(officialRoomData ? [officialRoomData] : []),
+    ...allMyRoomsRaw.filter(r => r.id !== PATCHWORK_OFFICIAL_ROOM_ID)
+  ];
 
   const [selectedRoomId, setSelectedRoomId] = useState("");
 

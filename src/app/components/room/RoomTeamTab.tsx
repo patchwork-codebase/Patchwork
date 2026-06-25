@@ -102,18 +102,18 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
               let shouldInheritOrg = false;
               
               if (isOwner) {
-                displayRole = data?.ownerOrg?.is_verified_expert ? 'Verified Builder' : 'Room Owner';
+                displayRole = data?.ownerOrg?.isVerifiedExpert ? 'Verified Builder' : 'Room Owner';
                 shouldInheritOrg = true;
               } else if (member.role === 'team_member' || member.role === 'collaborator') {
                 displayRole = 'Team Member';
                 shouldInheritOrg = true;
               } else if (member.role === 'expert') {
-                displayRole = member.is_verified_expert ? 'Verified Expert' : 'Expert';
+                displayRole = member.isVerifiedExpert ? 'Verified Expert' : 'Expert';
                 shouldInheritOrg = false;
               }
-              const orgLogo = shouldInheritOrg ? data?.ownerOrg?.organization_logo_url : null;
-              const orgName = shouldInheritOrg ? data?.ownerOrg?.organization_name : null;
-              const orgVerified = shouldInheritOrg ? data?.ownerOrg?.is_verified_expert : false;
+              const orgLogo = shouldInheritOrg ? data?.ownerOrg?.organizationLogoUrl : null;
+              const orgName = shouldInheritOrg ? data?.ownerOrg?.organizationName : null;
+              const orgVerified = shouldInheritOrg ? data?.ownerOrg?.isVerifiedExpert : false;
 
               return (
                 <div key={member.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-slate-200 transition-colors">
@@ -196,8 +196,8 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
         )}
       </section>
 
-      {/* INVITATIONS SECTION (Only for builders or if invitations exist) */}
-      {(isBuilder || invitations.length > 0) && (
+      {/* INVITATIONS SECTION (Only for builders) */}
+      {isBuilder && (
         <section className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-3 mb-6 relative z-10">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
@@ -226,7 +226,7 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[11px] font-mono font-bold uppercase text-slate-500">{invite.role}</span>
                         <span className="text-slate-300">•</span>
-                        <span className="text-[11px] text-slate-500 font-medium">Invited {timeAgo(invite.created_at)}</span>
+                        <span className="text-[11px] text-slate-500 font-medium">Invited {timeAgo((invite as any).createdAt || invite.created_at)}</span>
                       </div>
                     </div>
                   </div>

@@ -1,13 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus, Smile } from "lucide-react";
+import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus, Smile, Edit2, Trash2, Lock } from "lucide-react";
 import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 import { LogDecisionModal } from "./LogDecisionModal";
 import { useQuery } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 interface Decision {
   id: string;
@@ -44,6 +54,21 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDecision, setEditingDecision] = useState<any>(null);
+  const [decisionToDelete, setDecisionToDelete] = useState<string | null>(null);
+
+  const executeDelete = async () => {
+    if (!decisionToDelete) return;
+    try {
+      const { error } = await supabase.from('room_decisions').delete().eq('id', decisionToDelete);
+      if (error) throw error;
+      toast.success("Decision deleted");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to delete");
+    } finally {
+      setDecisionToDelete(null);
+    }
+  };
 
   // Fetch real decisions from the database
   const { data: dbDecisions = [] } = useQuery({
@@ -85,7 +110,12 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   }, [roomId, queryClient]);
 
   // Use real decisions from the database
-  const allDecisions = dbDecisions.map(d => ({
+  const allDecisions = dbDecisions
+  .filter(d => {
+    if (d.is_private && !isBuilder) return false;
+    return true;
+  })
+  .map(d => ({
     id: d.id,
     title: d.title,
     description: d.description,
@@ -93,11 +123,12 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
     createdAt: d.created_at,
     media_url: d.media_url,
     external_link: d.external_link,
+    is_private: d.is_private,
   }));
 
   const toggleReaction = async (itemId: string, type: string) => {
     if (!user) return;
-    const existing = reactions.find(r => r.update_id === itemId && r.type === type && r.observer_id === user.id);
+    const existing = reactions.find(r => (r.update_id === itemId || r.updateId === itemId) && r.type === type && (r.observer_id === user.id || r.observerId === user.id));
     
     try {
       if (existing) {
@@ -220,10 +251,23 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       {decision.type === 'shipped' ? <CheckCircle className={`w-2.5 h-2.5 ${style.text}`} /> : <div className={`w-1.5 h-1.5 rounded-full ${style.bg}`} />}
                     </div>
                     <div>
-                      <div className={`text-[10px] font-bold ${style.text} ${style.bg} px-1.5 py-0.5 rounded uppercase tracking-widest inline-block mb-1.5`}>
+                      <div className={`text-[10px] font-bold ${style.text} ${style.bg} px-1.5 py-0.5 rounded uppercase tracking-widest inline-flex items-center gap-1 mb-1.5`}>
                         {style.label}
+                        {decision.is_private && <Lock className="w-2.5 h-2.5 ml-1" />}
                       </div>
-                      <h4 className="text-[14px] font-bold text-slate-900 mb-1">{decision.title}</h4>
+                      <div className="flex items-start justify-between gap-4">
+                        <h4 className="text-[14px] font-bold text-slate-900 mb-1">{decision.title}</h4>
+                        {isBuilder && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button onClick={() => { setEditingDecision(decision); setIsModalOpen(true); }} className="p-1.5 text-slate-400 hover:text-primary-500 bg-slate-50 hover:bg-primary-50 rounded-lg transition-colors">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => setDecisionToDelete(decision.id)} className="p-1.5 text-slate-400 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 rounded-lg transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                       {decision.description && (
                         <p className="text-[13px] text-slate-600 leading-relaxed mb-2">
                           {decision.description}
@@ -364,15 +408,29 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
         </div>
       </div>
 
-      <LogDecisionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        roomId={roomId}
-        userId={user?.id || ''}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['room-decisions', roomId] });
-        }}
+      <LogDecisionModal 
+        isOpen={isModalOpen} 
+        onClose={() => { setIsModalOpen(false); setEditingDecision(null); }} 
+        roomId={roomId} 
+        userId={user?.id}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['room-decisions', roomId] })}
+        initialDecision={editingDecision}
       />
+
+      <AlertDialog open={!!decisionToDelete} onOpenChange={(open) => !open && setDecisionToDelete(null)}>
+        <AlertDialogContent className="bg-[#0D0B14] border border-white/[0.08] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this decision?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              This action cannot be undone. This decision will be permanently removed from your log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/[0.08] text-slate-300 hover:bg-white/[0.05] hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-rose-500 hover:bg-rose-600 text-white border-0">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

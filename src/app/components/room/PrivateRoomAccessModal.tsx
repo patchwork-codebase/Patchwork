@@ -34,7 +34,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
     if (window.confirm("Are you sure? Anyone using the old link will lose access.")) {
       regenerateTokenMutation.mutate(room.id, {
         onSuccess: () => toast.success("New invite link generated!"),
-        onError: (err: any) => toast.error(`Failed to regenerate token: ${(err instanceof Error ? err.message : String(err))}`)
+        onError: (err: unknown) => toast.error(`Failed to regenerate token: ${(err instanceof Error ? err.message : String(err))}`)
       });
     }
   };
@@ -61,7 +61,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
         setDomainInput("");
         toast.success("Domain added!");
       },
-      onError: (err: any) => toast.error(`Failed to add domain: ${(err instanceof Error ? err.message : String(err))}`)
+      onError: (err: unknown) => toast.error(`Failed to add domain: ${(err instanceof Error ? err.message : String(err))}`)
     });
   };
 
@@ -71,7 +71,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
     
     updateAccessMutation.mutate({ roomId: room.id, whitelistedDomains: newDomains }, {
       onSuccess: () => toast.success("Domain removed!"),
-      onError: (err: any) => toast.error(`Failed to remove domain: ${(err instanceof Error ? err.message : String(err))}`)
+      onError: (err: unknown) => toast.error(`Failed to remove domain: ${(err instanceof Error ? err.message : String(err))}`)
     });
   };
 

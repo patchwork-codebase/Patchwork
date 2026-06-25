@@ -68,6 +68,34 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
     enabled: !!roomId,
   });
 
+  const { data: dbClickUp = [] } = useQuery({
+    queryKey: ['clickup-issues', roomId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clickup_issues')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false });
+      if (error) return [];
+      return data || [];
+    },
+    enabled: !!roomId,
+  });
+
+  const { data: dbJira = [] } = useQuery({
+    queryKey: ['jira-issues', roomId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('jira_issues')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false });
+      if (error) return [];
+      return data || [];
+    },
+    enabled: !!roomId,
+  });
+
   // Real-time listener for linear issues
   useEffect(() => {
     if (!roomId) return;
@@ -83,19 +111,56 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
       )
       .subscribe();
 
+    const channel2 = supabase
+      .channel(`clickup-issues-${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clickup_issues', filter: `room_id=eq.${roomId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['clickup-issues', roomId] });
+      }).subscribe();
+
+    const channel3 = supabase
+      .channel(`jira-issues-${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'jira_issues', filter: `room_id=eq.${roomId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['jira-issues', roomId] });
+      }).subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(channel2);
+      supabase.removeChannel(channel3);
     };
   }, [roomId, queryClient]);
 
-  const allMilestones = dbMilestones.map(issue => ({
+  const linearMilestones = dbMilestones.map(issue => ({
     id: issue.id,
     title: issue.title,
     description: issue.description || '',
     status: mapLinearStateToStatus(issue.state),
     originalState: issue.state,
-    url: issue.url
+    url: issue.url,
+    source: 'Linear'
   }));
+
+  const clickUpMilestones = dbClickUp.map(issue => ({
+    id: issue.id,
+    title: issue.title,
+    description: '',
+    status: mapLinearStateToStatus(issue.state),
+    originalState: issue.state,
+    url: issue.url,
+    source: 'ClickUp'
+  }));
+
+  const jiraMilestones = dbJira.map(issue => ({
+    id: issue.id,
+    title: issue.title,
+    description: '',
+    status: mapLinearStateToStatus(issue.state),
+    originalState: issue.state,
+    url: issue.url,
+    source: 'Jira'
+  }));
+
+  const allMilestones = [...linearMilestones, ...clickUpMilestones, ...jiraMilestones].sort((a, b) => a.status === 'done' ? 1 : -1);
 
   const handleSync = async () => {
     if (isObserver) return;
@@ -170,9 +235,108 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
     }
   };
 
+  const handleSyncClickUp = async () => {
+    if (isObserver) return;
+    setIsSyncing(true);
+    try {
+      const { data: clickupAccount, error: accError } = await supabase
+        .from('clickup_accounts')
+        .select('access_token')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      if (accError || !clickupAccount || !clickupAccount.access_token) {
+        toast.error('ClickUp account not connected.');
+        return;
+      }
+
+      const clickupRes = await fetch('/clickup-api/team', {
+        headers: { 'Authorization': clickupAccount.access_token }
+      });
+      if (!clickupRes.ok) throw new Error('Failed to fetch from ClickUp API');
+      const teamsData = await clickupRes.json();
+      const teamId = teamsData.teams?.[0]?.id;
+      if (!teamId) throw new Error('No ClickUp team found');
+
+      const tasksRes = await fetch(`/clickup-api/team/${teamId}/task?subtasks=true`, {
+        headers: { 'Authorization': clickupAccount.access_token }
+      });
+      if (!tasksRes.ok) throw new Error('Failed to fetch tasks');
+      const tasksData = await tasksRes.json();
+      
+      const upserts = (tasksData.tasks || []).map((task: any) => ({
+        room_id: roomId,
+        clickup_task_id: task.id,
+        title: task.name,
+        state: task.status?.status || 'Open',
+        url: task.url
+      }));
+
+      if (upserts.length > 0) {
+        const { error: upsertError } = await supabase.from('clickup_issues').upsert(upserts, { onConflict: 'room_id,clickup_task_id' });
+        if (upsertError) throw new Error(upsertError.message);
+      }
+      toast.success(`Synced ${upserts.length} tasks from ClickUp!`);
+      queryClient.invalidateQueries({ queryKey: ['clickup-issues', roomId] });
+    } catch (err: unknown) {
+      toast.error(`ClickUp sync failed: ${(err instanceof Error ? err.message : String(err))}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSyncJira = async () => {
+    if (isObserver) return;
+    setIsSyncing(true);
+    try {
+      const { data: jiraAccount, error: accError } = await supabase
+        .from('jira_accounts')
+        .select('*')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      if (accError || !jiraAccount || !jiraAccount.access_token || !jiraAccount.jira_domain) {
+        toast.error('Jira account not connected properly.');
+        return;
+      }
+
+      const jql = encodeURIComponent('assignee=currentUser() ORDER BY updated DESC');
+      const authHeader = 'Basic ' + btoa(`${jiraAccount.email}:${jiraAccount.access_token}`);
+      
+      const jiraRes = await fetch(`/jira-api/rest/api/3/search?jql=${jql}&maxResults=20`, {
+        headers: { 
+          'Authorization': authHeader,
+          'Accept': 'application/json',
+          'x-jira-domain': jiraAccount.jira_domain
+        }
+      });
+      if (!jiraRes.ok) throw new Error('Failed to fetch from Jira API');
+      const jiraData = await jiraRes.json();
+      
+      const upserts = (jiraData.issues || []).map((issue: any) => ({
+        room_id: roomId,
+        jira_issue_key: issue.key,
+        title: issue.fields?.summary || issue.key,
+        state: issue.fields?.status?.name || 'To Do',
+        url: `https://${jiraAccount.jira_domain}/browse/${issue.key}`
+      }));
+
+      if (upserts.length > 0) {
+        const { error: upsertError } = await supabase.from('jira_issues').upsert(upserts, { onConflict: 'room_id,jira_issue_key' });
+        if (upsertError) throw new Error(upsertError.message);
+      }
+      toast.success(`Synced ${upserts.length} issues from Jira!`);
+      queryClient.invalidateQueries({ queryKey: ['jira-issues', roomId] });
+    } catch (err: unknown) {
+      toast.error(`Jira sync failed: ${(err instanceof Error ? err.message : String(err))}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const toggleReaction = async (itemId: string, type: string) => {
     if (!user) return;
-    const existing = reactions.find(r => r.update_id === itemId && r.type === type && r.observer_id === user.id);
+    const existing = reactions.find(r => (r.update_id === itemId || r.updateId === itemId) && r.type === type && (r.observer_id === user.id || r.observerId === user.id));
     
     try {
       if (existing) {
@@ -232,24 +396,37 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
             <h3 className="text-[16px] font-extrabold text-slate-900 leading-tight">
               Milestone tracker
             </h3>
-            <span className="text-[12px] text-slate-500 font-medium">Synced with Linear</span>
+            <span className="text-[12px] text-slate-500 font-medium">Synced with Integrations</span>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {!isObserver && (
-              <button
-                onClick={handleSync}
-                disabled={isSyncing}
-                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 sm:px-3.5 py-1.5 rounded-full font-bold text-[11px] sm:text-[12px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} strokeWidth="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg>
-                <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync Linear'}</span>
-                <span className="sm:hidden">{isSyncing ? 'Syncing...' : 'Sync'}</span>
-              </button>
+              <>
+                <button
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                >
+                  Linear
+                </button>
+                <button
+                  onClick={handleSyncClickUp}
+                  disabled={isSyncing}
+                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                >
+                  ClickUp
+                </button>
+                <button
+                  onClick={handleSyncJira}
+                  disabled={isSyncing}
+                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                >
+                  Jira
+                </button>
+              </>
             )}
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="hidden sm:inline">Linear Sync</span>
-              <span className="sm:hidden">Synced</span>
+            <div className="flex items-center gap-1.5 ml-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap shrink-0">
+              <span className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'}`} />
+              <span className="hidden sm:inline">Active</span>
             </div>
           </div>
         </div>

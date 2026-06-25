@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
-import { FolderGit2, Figma, Github } from "lucide-react";
+import { FolderGit2, Figma, Github, Compass } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
+import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 import type { Room } from "../../types";
 
 const NotionIcon = ({ className }: { className?: string }) => (
@@ -131,8 +132,15 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                     {/* Title row — full width, never compete with tag */}
                     <div className="flex items-start gap-2 min-w-0">
                       <div className={`w-2 h-2 rounded-full mt-[5px] shrink-0 ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                      <div className={`text-[14px] sm:text-[15px] font-extrabold transition-colors font-display leading-snug line-clamp-3 group-hover:underline break-words ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-700 group-hover:text-primary-400'}`}>
-                        {room.title}
+                      <div className="flex flex-col gap-1">
+                        {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full w-fit">
+                            <Compass className="w-3 h-3" /> Pinned by Patchwork
+                          </div>
+                        )}
+                        <div className={`text-[14px] sm:text-[15px] font-extrabold transition-colors font-display leading-snug line-clamp-3 group-hover:underline break-words ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-700 group-hover:text-primary-400'}`}>
+                          {room.title}
+                        </div>
                       </div>
                     </div>
 

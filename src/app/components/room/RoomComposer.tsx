@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router";
+import { getAvatarUrl } from "../../utils/helpers";
+import { uploadImage } from "../../utils/uploadImage";
 import { supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
 import { Send, ImageIcon, Code, Smile, Sparkles, Hammer } from "lucide-react";
@@ -49,20 +51,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
       if (mediaPreview && mediaPreview.startsWith('data:')) {
         toast.loading("Uploading image...", { id: "upload" });
         try {
-          const res = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-image`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ image: mediaPreview })
-          });
-          
-          if (!res.ok) {
-            throw new Error('Failed to upload image to edge function');
-          }
-          
-          const data = await res.json();
-          uploadedMediaUrl = data?.secure_url || null;
+          uploadedMediaUrl = await uploadImage(mediaPreview);
           toast.dismiss("upload");
         } catch (error) {
           toast.dismiss("upload");

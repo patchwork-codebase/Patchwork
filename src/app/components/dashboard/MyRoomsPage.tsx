@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../auth/AuthContext";
-import { useUserRooms, useObservedRooms } from "../../hooks/useRooms";
+import { useUserRooms, useObservedRooms, useOfficialRoom } from "../../hooks/useRooms";
+import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 import { motion } from "motion/react";
 import { FolderGit2, Figma, Github, Plus, Eye, Compass } from "lucide-react";
 import { timeAgo, getObserverCount } from "../../utils/helpers";
@@ -33,11 +34,18 @@ export default function MyRoomsPage() {
   // Builders see their own rooms; observers see rooms they follow
   const { data: myRoomsData, isLoading: myRoomsLoading } = useUserRooms(!isObserver ? user?.id : undefined);
   const { data: observedRoomsData, isLoading: observedLoading } = useObservedRooms(isObserver ? user?.id : undefined);
+  const { data: officialRoomData } = useOfficialRoom();
 
   const isLoading = isObserver ? observedLoading : myRoomsLoading;
-  const rooms = isObserver
+  
+  const roomsRaw = isObserver
     ? (observedRoomsData?.pages.flat() || [])
     : (myRoomsData?.pages.flat() || []);
+
+  const rooms = [
+    ...(officialRoomData ? [officialRoomData] : []),
+    ...roomsRaw.filter(r => r.id !== PATCHWORK_OFFICIAL_ROOM_ID)
+  ];
 
   return (
     <div className="max-w-[1000px] mx-auto w-full p-4 lg:p-8">
@@ -136,9 +144,16 @@ export default function MyRoomsPage() {
                         : isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]'
                         : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'
                       }`} />
-                      <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
-                        {room.title}
-                      </h2>
+                      <div className="flex flex-col gap-1">
+                        {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full w-fit">
+                            <Compass className="w-3 h-3" /> Pinned by Patchwork
+                          </div>
+                        )}
+                        <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
+                          {room.title}
+                        </h2>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 pl-5">

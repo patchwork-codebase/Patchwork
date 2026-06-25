@@ -107,6 +107,15 @@ export function ObserverProgressionPanel() {
     }
   };
 
+  // Determine which pathways to show
+  const showBuilder = profile?.role !== 'builder' && profile?.role !== 'admin';
+  const showExpert = !profile?.isVerifiedExpert;
+  const showLeader = !profile?.isVerifiedExpert; // hide leader if they are already verified (for now)
+
+  if (!showBuilder && !showExpert && !showLeader) {
+    return null;
+  }
+
   return (
     <>
       {/* Sleek, Compact Sidebar Card */}
@@ -118,61 +127,67 @@ export function ObserverProgressionPanel() {
 
         <div className="space-y-4">
           {/* Pathway 1: Become a Builder */}
-          <div className="flex items-start gap-3 pb-3.5 border-b border-slate-50 last:border-0 last:pb-0">
-            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 shrink-0 mt-0.5">
-              <Hammer className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-bold text-slate-900 leading-tight">Become a Builder</span>
-                <button
-                  onClick={() => setBuilderModalOpen(true)}
-                  className="px-2.5 py-1 text-[11px] font-bold bg-purple-550 hover:bg-purple-650 text-white rounded-md transition-colors"
-                >
-                  Upgrade
-                </button>
+          {showBuilder && (
+            <div className="flex items-start gap-3 pb-3.5 border-b border-slate-50 last:border-0 last:pb-0">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 shrink-0 mt-0.5">
+                <Hammer className="w-4 h-4" />
               </div>
-              <p className="text-[11.5px] text-slate-500 leading-normal mt-0.5 font-medium">Create rooms & log build progress</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[13px] font-bold text-slate-900 leading-tight">Become a Builder</span>
+                  <button
+                    onClick={() => setBuilderModalOpen(true)}
+                    className="px-2.5 py-1 text-[11px] font-bold bg-purple-550 hover:bg-purple-650 text-white rounded-md transition-colors"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+                <p className="text-[11.5px] text-slate-500 leading-normal mt-0.5 font-medium">Create rooms & log build progress</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Pathway 2: Apply as an Expert */}
-          <div className="flex items-start gap-3 pb-3.5 border-b border-slate-50 last:border-0 last:pb-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0 mt-0.5">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-bold text-slate-900 leading-tight">Apply as an Expert</span>
-                <Link
-                  to="/dashboard/expert-apply"
-                  className="px-2.5 py-1 text-[11px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors inline-block text-center leading-none"
-                >
-                  Apply
-                </Link>
+          {showExpert && (
+            <div className="flex items-start gap-3 pb-3.5 border-b border-slate-50 last:border-0 last:pb-0">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0 mt-0.5">
+                <ShieldCheck className="w-4 h-4" />
               </div>
-              <p className="text-[11.5px] text-slate-500 leading-normal mt-0.5 font-medium">Mentor builders & write reviews</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[13px] font-bold text-slate-900 leading-tight">Apply as an Expert</span>
+                  <Link
+                    to="/dashboard/expert-apply"
+                    className="px-2.5 py-1 text-[11px] font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors inline-block text-center leading-none"
+                  >
+                    Apply
+                  </Link>
+                </div>
+                <p className="text-[11.5px] text-slate-500 leading-normal mt-0.5 font-medium">Mentor builders & write reviews</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Pathway 3: Leader Verification */}
-          <div className="flex items-start gap-3 last:border-0 last:pb-0">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
-              <Award className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-bold text-slate-900 leading-tight">Request Leader Badge</span>
-                <button
-                  onClick={() => setLeaderModalOpen(true)}
-                  className="px-2.5 py-1 text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-md transition-colors"
-                >
-                  Request
-                </button>
+          {showLeader && (
+            <div className="flex items-start gap-3 last:border-0 last:pb-0">
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
+                <Award className="w-4 h-4" />
               </div>
-              <p className="text-[11.5px] text-slate-500 leading-normal mt-0.5 font-medium">For directors, PMs & founders</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[13px] font-bold text-slate-900 leading-tight">Request Leader Badge</span>
+                  <button
+                    onClick={() => setLeaderModalOpen(true)}
+                    className="px-2.5 py-1 text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-md transition-colors"
+                  >
+                    Request
+                  </button>
+                </div>
+                <p className="text-[11.5px] text-slate-500 leading-normal mt-0.5 font-medium">For directors, PMs & founders</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

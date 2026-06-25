@@ -126,6 +126,22 @@ export default function BuildLogs() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {room.builderAvatarUrl ? (
+                          <img src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
+                            {room.builderName?.substring(0, 2) || '??'}
+                          </div>
+                        )}
+                        <span className="text-[12px] font-bold text-slate-700">{room.builderName}</span>
+                        {room.projectStage && (
+                          <>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wide border border-primary-100">{room.projectStage}</span>
+                          </>
+                        )}
+                      </div>
                       <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-amber-200">Active</span>
                         <span className="text-[9px] sm:text-[10px] font-bold text-primary-500 bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
@@ -206,6 +222,22 @@ export default function BuildLogs() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {log.builderAvatarUrl ? (
+                          <img src={log.builderAvatarUrl} alt={log.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
+                            {log.builderName?.substring(0, 2) || '??'}
+                          </div>
+                        )}
+                        <span className="text-[12px] font-bold text-slate-700">{log.builderName}</span>
+                        {log.projectStage && (
+                          <>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wide border border-primary-100">{log.projectStage}</span>
+                          </>
+                        )}
+                      </div>
                       <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">Shipped</span>
                       </div>
@@ -272,6 +304,22 @@ export default function BuildLogs() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {log.builderAvatarUrl ? (
+                          <img src={log.builderAvatarUrl} alt={log.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
+                            {log.builderName?.substring(0, 2) || '??'}
+                          </div>
+                        )}
+                        <span className="text-[12px] font-bold text-slate-700">{log.builderName}</span>
+                        {log.projectStage && (
+                          <>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wide border border-primary-100">{log.projectStage}</span>
+                          </>
+                        )}
+                      </div>
                       <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[9px] sm:text-[10px] font-bold text-primary-400 bg-primary-400/10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-primary-400/20">Completed</span>
                         <span className="text-[9px] sm:text-[10px] font-bold text-primary-500 bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
@@ -331,6 +379,22 @@ export default function BuildLogs() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {room.builderAvatarUrl ? (
+                          <img src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
+                            {room.builderName?.substring(0, 2) || '??'}
+                          </div>
+                        )}
+                        <span className="text-[12px] font-bold text-slate-700">{room.builderName}</span>
+                        {room.projectStage && (
+                          <>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wide border border-primary-100">{room.projectStage}</span>
+                          </>
+                        )}
+                      </div>
                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <span className="text-[9px] sm:text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-rose-200">Stalled</span>
                     </div>

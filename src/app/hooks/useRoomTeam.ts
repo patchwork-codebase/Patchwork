@@ -10,8 +10,8 @@ export interface TeamMember {
   role: string;
   avatar: string;
   domain?: string;
-  joined_at: string;
-  is_verified_expert: boolean;
+  joinedAt: string;
+  isVerifiedExpert: boolean;
 }
 
 export interface TeamInvitation {
@@ -19,8 +19,8 @@ export interface TeamInvitation {
   email: string;
   role: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'revoked';
-  created_at: string;
-  expires_at: string;
+  createdAt: string;
+  expiresAt: string;
 }
 
 export function useRoomTeam(roomId?: string) {
@@ -78,10 +78,10 @@ export function useRoomTeam(roomId?: string) {
       const builderUser = roomData?.users ? (Array.isArray(roomData.users) ? roomData.users[0] : roomData.users) : null;
       
       const ownerOrg = {
-        builder_id: roomData?.builder_id,
-        is_verified_expert: !!builderUser?.is_verified_expert,
-        organization_name: builderUser?.organization_name,
-        organization_logo_url: builderUser?.organization_logo_url
+        builderId: roomData?.builder_id,
+        isVerifiedExpert: !!builderUser?.is_verified_expert,
+        organizationName: builderUser?.organization_name,
+        organizationLogoUrl: builderUser?.organization_logo_url
       };
 
       const members: TeamMember[] = (observersData || []).map((row: any) => {
@@ -93,8 +93,8 @@ export function useRoomTeam(roomId?: string) {
           role: row.role,
           avatar: user.avatar,
           domain: user.domain,
-          joined_at: row.joined_at,
-          is_verified_expert: !!user.is_verified_expert
+          joinedAt: row.joined_at,
+          isVerifiedExpert: !!user.is_verified_expert
         };
       });
 
@@ -121,8 +121,8 @@ export function useRevokeInvitation() {
       toast.success("Invitation revoked successfully");
       queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to revoke invitation");
+    onError: (error: unknown) => {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to revoke invitation");
     }
   });
 }
@@ -163,8 +163,8 @@ export function useResendInvitation() {
       toast.success("Invitation resent successfully!");
       queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to resend invitation");
+    onError: (error: unknown) => {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to resend invitation");
     }
   });
 }
@@ -187,8 +187,8 @@ export function useUpdateMemberRole() {
       toast.success("Member role updated successfully");
       queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to update member role");
+    onError: (error: unknown) => {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to update member role");
     }
   });
 }

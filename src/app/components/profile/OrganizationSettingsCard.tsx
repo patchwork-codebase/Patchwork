@@ -12,8 +12,8 @@ export function OrganizationSettingsCard({ profile }: OrganizationSettingsCardPr
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    organization_name: profile?.organization_name || '',
-    organization_logo_url: profile?.organization_logo_url || ''
+    organization_name: profile?.organizationName || '',
+    organization_logo_url: profile?.organizationLogoUrl || ''
   });
   const queryClient = useQueryClient();
 
@@ -46,14 +46,14 @@ export function OrganizationSettingsCard({ profile }: OrganizationSettingsCardPr
       <div className="bg-white border border-slate-200 rounded-[24px] p-6 mb-6 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-            {profile?.organization_logo_url ? (
-              <img src={profile.organization_logo_url} alt={profile.organization_name} className="w-full h-full object-cover" />
+            {profile?.organizationLogoUrl ? (
+              <img src={profile.organizationLogoUrl} alt={profile.organizationName} className="w-full h-full object-cover" />
             ) : (
               <Building2 className="w-6 h-6 text-slate-400" />
             )}
           </div>
           <div>
-            <h3 className="font-bold text-[15px] text-slate-900">{profile?.organization_name || 'No Organization'}</h3>
+            <h3 className="font-bold text-[15px] text-slate-900">{profile?.organizationName || 'No Organization'}</h3>
             <p className="text-[13px] text-slate-500">Add your company's branding to stand out</p>
           </div>
         </div>

@@ -16,7 +16,7 @@ interface AddIntegrationModalProps {
   builderId: string;
 }
 
-const SUPPORTED_PLATFORMS = ['github', 'figma', 'notion', 'linear', 'miro'] as const;
+const SUPPORTED_PLATFORMS = ['github', 'figma', 'notion', 'linear', 'miro', 'clickup', 'jira'] as const;
 
 export function AddIntegrationModal({
   open,

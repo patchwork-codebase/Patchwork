@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate, Outlet, useSearchParams, ScrollRestoration } from "react-router";
+import { Link, useLocation, useNavigate, Outlet, useSearchParams, ScrollRestoration, useNavigation } from "react-router";
 import { Suspense } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -28,6 +28,7 @@ export default function Layout() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -112,6 +113,12 @@ export default function Layout() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAF9] text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
+      {/* Global Navigation Progress Bar */}
+      {navigation.state === 'loading' && (
+        <div className="fixed top-0 left-0 w-full h-1 z-[100] bg-primary-400/20 overflow-hidden">
+          <div className="h-full bg-primary-500 animate-[shimmer_1.5s_infinite] w-1/3" />
+        </div>
+      )}
       <VerificationRequiredModal />
       <VerificationSuccessModal
         isOpen={showSuccessModal}

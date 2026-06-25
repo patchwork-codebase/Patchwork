@@ -61,8 +61,8 @@ export function usePendingInvites(roomId: string) {
       queryClient.invalidateQueries({ queryKey });
       toast.success('Invitation sent successfully');
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to send invitation');
+    onError: (err: unknown) => {
+      toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to send invitation');
     }
   });
 
@@ -78,8 +78,8 @@ export function usePendingInvites(roomId: string) {
       queryClient.invalidateQueries({ queryKey });
       toast.success('Invitation revoked');
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to revoke invitation');
+    onError: (err: unknown) => {
+      toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to revoke invitation');
     }
   });
 
@@ -114,8 +114,8 @@ export function usePendingInvites(roomId: string) {
       queryClient.invalidateQueries({ queryKey });
       toast.success('Invitation resent successfully');
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to resend invitation');
+    onError: (err: unknown) => {
+      toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to resend invitation');
     }
   });
 

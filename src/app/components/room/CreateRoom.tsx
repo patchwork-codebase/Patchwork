@@ -113,22 +113,49 @@ export default function CreateRoom() {
     }
   };
 
-  const [form, setForm] = useState({ 
-    title: '', 
-    slug: '', 
-    description: '', 
-    tagInput: '',
-    coverImage: null as string | null,
-    primaryLink: '',
-    projectStage: 'Ideation',
-    primaryGoal: 'Just sharing my journey',
-    isPrivate: false
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = localStorage.getItem('patchwork_createroom_form');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse saved form state', e);
+    }
+    return { 
+      title: '', 
+      slug: '', 
+      description: '', 
+      tagInput: '',
+      coverImage: null as string | null,
+      primaryLink: '',
+      projectStage: 'Ideation',
+      primaryGoal: 'Just sharing my journey',
+      isPrivate: false
+    };
   });
-  const [tags, setTags] = useState<string[]>([]);
+  
+  const [tags, setTags] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('patchwork_createroom_tags');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse saved tags', e);
+    }
+    return [];
+  });
   const [slugError, setSlugError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'active' | 'draft'>('active');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync form state to localStorage
+  useEffect(() => {
+    localStorage.setItem('patchwork_createroom_form', JSON.stringify(form));
+  }, [form]);
+
+  // Sync tags state to localStorage
+  useEffect(() => {
+    localStorage.setItem('patchwork_createroom_tags', JSON.stringify(tags));
+  }, [tags]);
 
   const [templates, setTemplates] = useState<any[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
@@ -258,8 +285,10 @@ export default function CreateRoom() {
     }
   };
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(status: 'draft' | 'active') {
+    
+
+
     withVerification(async () => {
       if (!form.title.trim() || !form.slug.trim() || !profile) return;
 
@@ -306,7 +335,7 @@ export default function CreateRoom() {
           title: form.title.trim(),
           description: form.description.trim(),
           tags,
-          status: submitStatus,
+          status: status,
           update_count: 0,
           observer_count: 0,
           last_update: '',
@@ -326,6 +355,10 @@ export default function CreateRoom() {
         if (error) throw error;
         
         toast.success('Room created successfully!');
+        try {
+          localStorage.removeItem('patchwork_createroom_form');
+          localStorage.removeItem('patchwork_createroom_tags');
+        } catch(e) {}
         navigate(`/dashboard/room/${roomId}`);
       } catch (err: unknown) {
         toast.error(`Failed to create room: ${(err instanceof Error ? err.message : String(err))}`);
@@ -357,7 +390,7 @@ export default function CreateRoom() {
                   <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3">
                   {templates.map(tpl => {
                     const IconMatch = {
                       FileText: FileText,
@@ -375,11 +408,13 @@ export default function CreateRoom() {
                         type="button"
                         onClick={() => {
                           setSelectedTemplate(tpl.id);
-                          setForm(f => ({ ...f, description: tpl.template_context.replace(/\\n/g, '\n') }));
+                          if (!form.description.trim()) {
+                            setForm(f => ({ ...f, description: tpl.template_context.replace(/\\n/g, '\n') }));
+                          }
                           setTags(tpl.recommended_tags || []);
                           toast.success(`Applied ${tpl.name} template!`);
                         }}
-                        className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-primary-400 bg-primary-400/5 ring-1 ring-primary-400' : 'border-slate-200 bg-white hover:border-primary-400/50 hover:shadow-sm'}`}
+                        className={`text-left p-4 rounded-xl border transition-all shrink-0 w-[240px] snap-center sm:w-auto sm:shrink sm:snap-align-none ${isSelected ? 'border-primary-400 bg-primary-400/5 ring-1 ring-primary-400' : 'border-slate-200 bg-white hover:border-primary-400/50 hover:shadow-sm'}`}
                       >
                         <div className="flex items-center gap-2 mb-2">
                           <IconMatch className={`w-4 h-4 ${isSelected ? 'text-primary-400' : 'text-slate-500'}`} />
@@ -534,7 +569,7 @@ export default function CreateRoom() {
                   type="text"
                   value={form.tagInput}
                   onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(form.tagInput); } }}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (form.tagInput.trim()) addTag(form.tagInput); } }}
                   placeholder="Add a tag..."
                   className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
                 />
@@ -597,19 +632,19 @@ export default function CreateRoom() {
               />
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-4 transition-all">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-4 transition-all hover:border-primary-400/30 hover:bg-primary-400/5">
               <div className="flex-1">
                 <h4 className="text-[14px] font-bold text-slate-900 mb-1 flex items-center gap-2">
                   Room Visibility
                   {form.isPrivate ? (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-600">Private</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-100 flex items-center gap-1"><Lock className="w-3 h-3" /> Private</span>
                   ) : (
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">Public</span>
                   )}
                 </h4>
-                <p className="text-[13px] text-slate-500 font-medium">
+                <p className="text-[13px] text-slate-600 font-medium">
                   {form.isPrivate 
-                    ? "Only people with the direct link can view this room." 
+                    ? "Only people with the direct link can view this room. It will be hidden from the feed." 
                     : "This room will appear in the global Patchwork feed for anyone to discover."}
                 </p>
               </div>
@@ -672,7 +707,7 @@ export default function CreateRoom() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col min-h-[400px]">
           <AnimatePresence mode="wait">
             {renderStepContent()}
@@ -708,16 +743,16 @@ export default function CreateRoom() {
               ) : (
                 <>
                   <button
-                    type="submit"
-                    onClick={() => setSubmitStatus('draft')}
+                    type="button"
+                    onClick={() => { setSubmitStatus('draft'); handleSubmit('draft'); }}
                     disabled={loading || !form.title.trim()}
                     className="px-6 py-3 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-full text-[14px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-center"
                   >
                     {loading && submitStatus === 'draft' ? 'Saving...' : 'Save as Draft'}
                   </button>
                   <button
-                    type="submit"
-                    onClick={() => setSubmitStatus('active')}
+                    type="button"
+                    onClick={() => { setSubmitStatus('active'); handleSubmit('active'); }}
                     disabled={loading || !form.title.trim()}
                     className="flex justify-center items-center gap-2 px-6 py-3 bg-primary-400 text-white rounded-full text-[14px] font-bold hover:bg-[#7a6aeb] transition-colors shadow-sm hover:shadow-primary-400/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   >
@@ -728,7 +763,7 @@ export default function CreateRoom() {
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

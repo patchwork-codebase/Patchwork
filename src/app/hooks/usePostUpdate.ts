@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import { toast } from 'sonner';
+import { uploadImage } from '../utils/uploadImage';
 
 interface PostUpdatePayload {
   selectedRoomId: string;
@@ -43,20 +44,7 @@ export function usePostUpdate() {
       if (mediaPreview && mediaPreview.startsWith('data:')) {
         toast.loading("Uploading image...", { id: "upload" });
         try {
-          const res = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-image`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ image: mediaPreview })
-          });
-          
-          if (!res.ok) {
-            throw new Error('Failed to upload image to edge function');
-          }
-          
-          const data = await res.json();
-          uploadedMediaUrl = data?.secure_url || null;
+          uploadedMediaUrl = await uploadImage(mediaPreview);
           toast.dismiss("upload");
         } catch (error) {
           toast.dismiss("upload");
@@ -96,7 +84,7 @@ export function usePostUpdate() {
       queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
       toast.success("Update posted successfully!");
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(`Failed to post update: ${err instanceof Error ? err.message : String(err)}`);
     }
   });
