@@ -86,8 +86,7 @@ export function EditProfileForm({
         .from('users')
         .update({
           role: 'builder',
-          domain: upgradeDomain,
-          updated_at: new Date().toISOString()
+          domain: upgradeDomain
         })
         .eq('id', profile.id);
 

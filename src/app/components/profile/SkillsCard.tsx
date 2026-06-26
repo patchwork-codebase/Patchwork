@@ -21,8 +21,7 @@ export function SkillsCard({ profile }: SkillsCardProps) {
       const { error } = await supabase
         .from('users')
         .update({
-          skills,
-          updated_at: new Date().toISOString()
+          skills
         })
         .eq('id', profile.id);
 

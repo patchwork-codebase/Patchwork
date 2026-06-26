@@ -28,8 +28,7 @@ export function SocialLinksCard({ profile }: SocialLinksCardProps) {
           website: form.website,
           twitter: form.twitter,
           github_url: form.github_url,
-          linkedin_url: form.linkedin_url,
-          updated_at: new Date().toISOString()
+          linkedin_url: form.linkedin_url
         })
         .eq('id', profile.id);
 

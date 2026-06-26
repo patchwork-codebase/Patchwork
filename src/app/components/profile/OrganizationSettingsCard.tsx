@@ -24,8 +24,7 @@ export function OrganizationSettingsCard({ profile }: OrganizationSettingsCardPr
         .from('users')
         .update({
           organization_name: form.organization_name,
-          organization_logo_url: form.organization_logo_url,
-          updated_at: new Date().toISOString()
+          organization_logo_url: form.organization_logo_url
         })
         .eq('id', profile.id);
 
