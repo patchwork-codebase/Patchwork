@@ -18,18 +18,18 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
                         {profile.name}
                       </h1>
                       <div className="flex flex-wrap justify-center items-center gap-2">
-                        {!(profile as any).organizationName && (
-                          <VerifiedTick isVerified={!!(profile as any).isVerifiedExpert} className="w-6 h-6 shrink-0" />
+                        {!profile.organizationName && (
+                          <VerifiedTick isVerified={!!profile.isVerifiedExpert} className="w-6 h-6 shrink-0" />
                         )}
-                        {(profile as any).organizationName && (
+                        {profile.organizationName && (
                           <OrganizationBadge 
-                            orgName={(profile as any).organizationName} 
-                            orgLogo={(profile as any).organizationLogoUrl} 
-                            isVerified={!!(profile as any).isVerifiedExpert} 
+                            orgName={profile.organizationName} 
+                            orgLogo={profile.organizationLogoUrl} 
+                            isVerified={!!profile.isVerifiedExpert} 
                           />
                         )}
-                        {(profile as any).isVerifiedExpert && (
-                          <ExpertBadge tier={(profile as any).expertLevel || "bronze"} size="md" />
+                        {profile.isVerifiedExpert && (
+                          <ExpertBadge tier={profile.expertLevel || "bronze"} size="md" />
                         )}
                       </div>
                     </div>
@@ -40,7 +40,7 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                       <span className="flex items-center gap-1.5 text-[12px] font-bold text-primary-700 bg-primary-50 border border-primary-200/60 px-3 py-1.5 rounded-full capitalize tracking-wide">
                         {profile.role === 'builder' ? <Hammer className="w-3.5 h-3.5 text-primary-500" /> : <Eye className="w-3.5 h-3.5 text-primary-500" />}
-                        {profile.role} {(profile as any).domain && profile.role === 'builder' ? ` • ${(profile as any).domain.replace('-', ' ')}` : ''}
+                        {profile.role} {profile.domain && profile.role === 'builder' ? ` • ${profile.domain.replace('-', ' ')}` : ''}
                       </span>
                       <span className="flex items-center gap-1.5 text-[12px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 px-3 py-1.5 rounded-full tracking-wide">
                         <Zap className="w-3.5 h-3.5 text-amber-500" /> {profile.reputation} rep

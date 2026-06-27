@@ -5,7 +5,18 @@ import { supabase } from '../components/auth/AuthContext';
 import { normalizeRow } from '../utils/helpers';
 import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
 import { PATCHWORK_OFFICIAL_ROOM_ID } from '../constants/patchwork';
-import type { Room } from '../types';
+import type { Room, Update, Reaction } from '../types';
+
+export function parseBuilderInfo(usersObj: any) {
+  if (!usersObj) return { builderIsVerifiedExpert: false, builderOrgName: null, builderOrgLogo: null, builderAvatarUrl: null };
+  const obj = Array.isArray(usersObj) ? usersObj[0] : usersObj;
+  return {
+    builderIsVerifiedExpert: !!obj?.is_verified_expert,
+    builderOrgName: obj?.organization_name ?? null,
+    builderOrgLogo: obj?.organization_logo_url ?? null,
+    builderAvatarUrl: obj?.avatar_url ?? null,
+  };
+}
 
 
 /** Helper: remove any existing Supabase channel with this name before (re-)subscribing.
@@ -72,39 +83,51 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         }
       }
 
-      const { data: updatesData, error: updatesError } = await supabase
-        .from('updates')
-        .select('*')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false });
-
-      if (updatesError) throw updatesError;
-
-      const { data: reactionsData, error: reactionsError } = await supabase
-        .from('reactions')
-        .select('*')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false });
-
-      if (reactionsError) throw reactionsError;
-
       const usersObj = Array.isArray(roomData.users) ? roomData.users[0] : roomData.users;
       return {
         ...normalizeRow(roomData),
-        // Always expose canonical visibility
         visibility: (roomData.visibility ?? (roomData.is_private ? 'private' : 'public')) as Room['visibility'],
-        // IP Protection fields
         contentPermissions: roomData.content_permissions ?? null,
         protectionFlags: roomData.protection_flags ?? null,
         ndaText: roomData.nda_text ?? null,
         authorshipTimestamp: roomData.authorship_timestamp ?? null,
-        // Builder info
-        builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
-        builderOrgName: (usersObj as any)?.organization_name ?? null,
-        builderOrgLogo: (usersObj as any)?.organization_logo_url ?? null,
-        updates: (updatesData || []).map(normalizeRow),
-        reactions: (reactionsData || []).map(normalizeRow)
+        ...parseBuilderInfo(usersObj),
+        // These will be hydrated by separate queries below, but we initialize them here for compat
+        updates: [],
+        reactions: []
       };
+    },
+    enabled: !!roomId,
+  });
+
+  // Fetch updates separately
+  const updatesQuery = useQuery<Update[], Error>({
+    queryKey: ['room-updates', roomId],
+    queryFn: async () => {
+      if (!roomId) return [];
+      const { data, error } = await supabase
+        .from('updates')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map(normalizeRow);
+    },
+    enabled: !!roomId,
+  });
+
+  // Fetch reactions separately
+  const reactionsQuery = useQuery<Reaction[], Error>({
+    queryKey: ['room-reactions', roomId],
+    queryFn: async () => {
+      if (!roomId) return [];
+      const { data, error } = await supabase
+        .from('reactions')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map(normalizeRow);
     },
     enabled: !!roomId,
   });
@@ -125,12 +148,12 @@ export function useRoomDetails(roomId?: string, userId?: string) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates', filter: `room_id=eq.${roomId}` },
-        () => debouncedInvalidate(queryClient, QUERY_KEYS.roomDetails(roomId))
+        () => debouncedInvalidate(queryClient, ['room-updates', roomId])
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions', filter: `room_id=eq.${roomId}` },
-        () => debouncedInvalidate(queryClient, QUERY_KEYS.roomDetails(roomId))
+        () => debouncedInvalidate(queryClient, ['room-reactions', roomId])
       )
       .subscribe();
 
@@ -139,7 +162,18 @@ export function useRoomDetails(roomId?: string, userId?: string) {
     };
   }, [roomId, queryClient]);
 
-  return query;
+  // Combine them for backward compatibility so existing UI doesn't break
+  const combinedQuery = {
+    ...query,
+    data: query.data ? {
+      ...query.data,
+      updates: updatesQuery.data || [],
+      reactions: reactionsQuery.data || []
+    } : null,
+    isLoading: query.isLoading || updatesQuery.isLoading || reactionsQuery.isLoading
+  };
+
+  return combinedQuery;
 }
 
 export function useOfficialRoom() {
@@ -163,12 +197,9 @@ export function useOfficialRoom() {
 
       if (error || !data) return null;
 
-      const usersObj = Array.isArray(data.users) ? data.users[0] : data.users;
       return {
         ...normalizeRow(data),
-        builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
-        builderOrgName: (usersObj as any)?.organization_name,
-        builderOrgLogo: (usersObj as any)?.organization_logo_url,
+        ...parseBuilderInfo(data.users),
       } as Room;
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes

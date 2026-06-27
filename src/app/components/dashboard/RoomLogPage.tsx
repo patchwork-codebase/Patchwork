@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import {
   ArrowLeft, Calendar, Clock, Users, TrendingUp, MessageCircle,
   Share2, BookOpen, Zap, CheckCircle2, PauseCircle, Archive,
   ChevronDown, ChevronUp, RotateCcw, Hammer, FileText, Target,
-  CheckCircle, AlertCircle, ArrowRight
+  CheckCircle, AlertCircle, ArrowRight, LayoutList
 } from "lucide-react";
+import { SmartArtifactCard } from '../../components/room/SmartArtifactCard';
+import { extractKeywords } from '../../utils/keywordExtractor';
 import { useRoomDetails } from "../../hooks/useRooms";
 import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
@@ -14,6 +16,7 @@ import { ReadMoreText } from "../ui/ReadMoreText";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { analyzeFeedbackSignal } from "../../../utils/feedbackEngine";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; badge: string }> = {
   sharp:       { emoji: '⚡', label: 'Sharp',        badge: 'bg-primary-400/10 text-primary-400 border border-primary-400/20' },
@@ -61,6 +64,7 @@ export default function RoomLogPage() {
   const [activeSection, setActiveSection] = useState<'timeline' | 'reactions' | 'decisions' | 'milestones'>('timeline');
   const [retroNote, setRetroNote] = useState('');
   const [retroSaving, setRetroSaving] = useState(false);
+  const [sortHighestSignal, setSortHighestSignal] = useState(false);
   const [retroEditing, setRetroEditing] = useState(false);
 
   // Fetch decisions
@@ -93,18 +97,11 @@ export default function RoomLogPage() {
     enabled: !!roomId,
   });
 
-  // Fetch AI sentiment insights
-  const { data: aiInsights, isLoading: aiLoading } = useQuery({
-    queryKey: ['ai-sentiment', roomId],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('analyze-sentiment', {
-        body: { roomId }
-      });
-      if (error) { console.error(error); return null; }
-      return data?.success ? data.insights : null;
-    },
-    enabled: !!roomId,
-  });
+  // Local heuristic feedback insights — no API needed
+  const aiInsights = useMemo(() => {
+    if (!roomId) return null;
+    return null; // placeholder, insights shown inline per reaction
+  }, [roomId]);
 
   if (isLoading) {
     return (
@@ -140,16 +137,22 @@ export default function RoomLogPage() {
   const existingRetro = room.retrospectiveNote || null;
   const isOwner = user?.id === room.builderId;
 
-  const observerReactionMap: Record<string, { name: string; count: number; id: string }> = {};
+  // Top Observers based on Reputation Score
+  const observerReactionMap: Record<string, { id: string; name: string; score: number, count: number }> = {};
   reactions.forEach((r: any) => {
     if (!r.observerId) return;
     if (!observerReactionMap[r.observerId]) {
-      observerReactionMap[r.observerId] = { name: r.observerName || 'Observer', count: 0, id: r.observerId };
+      observerReactionMap[r.observerId] = { id: r.observerId, name: r.observerName || 'Observer', score: 0, count: 0 };
     }
+    const analysis = analyzeFeedbackSignal(r.text || '', false);
     observerReactionMap[r.observerId].count++;
+    observerReactionMap[r.observerId].score += (analysis.signalScore || 10); // Base 10 for any reaction
   });
-  const topObservers = Object.values(observerReactionMap).sort((a, b) => b.count - a.count).slice(0, 5);
+  const topObservers = Object.values(observerReactionMap).sort((a, b) => b.score - a.score).slice(0, 5);
   const visibleUpdates = showAllUpdates ? updates : updates.slice(0, 5);
+
+  const allUpdatesText = updates.map((u: any) => u.content || '').join(' ');
+  const smartTags = React.useMemo(() => extractKeywords(allUpdatesText, 4), [allUpdatesText]);
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href);
@@ -192,6 +195,13 @@ export default function RoomLogPage() {
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <StatusBadge status={room.status} />
               {room.tags?.[0] && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">{room.tags[0]}</span>}
+              
+              {/* Smart Tags (Local Intelligence) */}
+              {smartTags.map((tag, i) => (
+                <span key={`smart-${i}`} className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest bg-primary-400/10 text-primary-500 border border-primary-400/20 shadow-sm transition-colors hover:bg-primary-400/20 cursor-default flex items-center gap-1">
+                  <Zap className="w-2.5 h-2.5" /> {tag}
+                </span>
+              ))}
             </div>
             <h1 className="text-[22px] sm:text-[26px] font-extrabold text-slate-900 leading-tight font-display mb-2">{room.title}</h1>
             {room.description && <p className="text-[14px] text-slate-500 font-medium leading-relaxed mb-3 max-w-[560px]">{room.description}</p>}
@@ -305,15 +315,21 @@ export default function RoomLogPage() {
       {topObservers.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-[20px] p-5 sm:p-6 mb-6 shadow-sm">
           <h3 className="text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-            <Users className="w-3.5 h-3.5" /> Most engaged observers
+            <Zap className="w-3.5 h-3.5 text-amber-500" /> Top Contributors
           </h3>
           <div className="flex flex-col gap-2">
             {topObservers.map((obs, i) => (
               <div key={obs.id} onClick={() => navigate(`/dashboard/profile/${obs.id}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
                 <span className="text-[11px] font-mono font-bold text-slate-300 w-4">{i + 1}</span>
                 <img src={getAvatarUrl(obs.id)} className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-primary-400/30 transition-all" alt="observer" />
-                <span className="text-[13px] font-bold text-slate-800 flex-1 truncate group-hover:text-primary-400 transition-colors">{obs.name}</span>
-                <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{obs.count} reaction{obs.count !== 1 ? 's' : ''}</span>
+                <span className="text-[13px] font-bold text-slate-800 flex-1 truncate group-hover:text-primary-400 transition-colors flex items-center gap-2">
+                  {obs.name}
+                  {i === 0 && <span className="bg-amber-100 text-amber-700 text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold">Top Observer</span>}
+                </span>
+                <div className="flex flex-col items-end">
+                  <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{obs.score} Rep</span>
+                  <span className="text-[9px] text-slate-400 font-mono mt-0.5">{obs.count} posts</span>
+                </div>
               </div>
             ))}
           </div>
@@ -395,8 +411,50 @@ export default function RoomLogPage() {
         </div>
       )}
 
-      {activeSection === 'reactions' && (
-        <div className="space-y-4">
+      {activeSection === 'reactions' && (() => {
+        const textReactions = reactions.filter((r: any) => r.text?.trim());
+        
+        // Calculate Room Pulse
+        const pulse = { Bug: 0, Idea: 0, Critique: 0, Encouragement: 0, Uncategorized: 0 };
+        textReactions.forEach((r: any) => {
+          const analysis = analyzeFeedbackSignal(r.text, false);
+          pulse[analysis.category]++;
+        });
+        const totalPulse = textReactions.length || 1; // avoid div by 0
+
+        return (
+          <div className="space-y-4">
+            {/* Room Pulse (Sentiment Analytics) */}
+            {textReactions.length > 0 && (
+              <div className="bg-white border border-slate-200 rounded-[20px] p-5 shadow-sm mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-indigo-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-[14px] font-bold text-slate-900 leading-tight">Room Pulse</h3>
+                    <p className="text-[12px] font-medium text-slate-500">Real-time sentiment from {textReactions.length} feedback items</p>
+                  </div>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="h-3 w-full rounded-full overflow-hidden flex bg-slate-100 mb-3 shadow-inner">
+                  {pulse.Encouragement > 0 && <div style={{ width: `${(pulse.Encouragement / totalPulse) * 100}%` }} className="h-full bg-blue-500 transition-all duration-500" title="Encouragement" />}
+                  {pulse.Idea > 0 && <div style={{ width: `${(pulse.Idea / totalPulse) * 100}%` }} className="h-full bg-emerald-500 transition-all duration-500" title="Idea" />}
+                  {pulse.Critique > 0 && <div style={{ width: `${(pulse.Critique / totalPulse) * 100}%` }} className="h-full bg-amber-500 transition-all duration-500" title="Critique" />}
+                  {pulse.Bug > 0 && <div style={{ width: `${(pulse.Bug / totalPulse) * 100}%` }} className="h-full bg-rose-500 transition-all duration-500" title="Bug" />}
+                </div>
+
+                {/* Legend */}
+                <div className="flex flex-wrap gap-4 text-[11px] font-bold tracking-wide">
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-blue-700">Encouragement ({Math.round((pulse.Encouragement/totalPulse)*100)}%)</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-emerald-700">Ideas ({Math.round((pulse.Idea/totalPulse)*100)}%)</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-amber-700">Critiques ({Math.round((pulse.Critique/totalPulse)*100)}%)</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-rose-500" /><span className="text-rose-700">Bugs ({Math.round((pulse.Bug/totalPulse)*100)}%)</span></div>
+                </div>
+              </div>
+            )}
+
           {/* AI Feedback Insights Section */}
           {aiInsights && aiInsights.themes?.length > 0 && (
             <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-5 sm:p-6 mb-8 relative overflow-hidden">
@@ -427,21 +485,63 @@ export default function RoomLogPage() {
             </div>
           )}
 
+          <div className="flex items-center justify-between mb-4 mt-2">
+            <h3 className="text-[14px] font-bold text-slate-900">Feedback ({textReactions.length})</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-bold text-slate-500">Highest signal first</span>
+              <button
+                onClick={() => setSortHighestSignal(!sortHighestSignal)}
+                className={`w-10 h-5 sm:w-11 sm:h-6 rounded-full p-1 transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${sortHighestSignal ? 'bg-primary-500' : 'bg-slate-300'}`}
+                aria-pressed={sortHighestSignal}
+              >
+                <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white transition-transform ${sortHighestSignal ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-3">
-            {reactions.filter((r: any) => r.text?.trim()).length === 0 ? (
+            {textReactions.length === 0 ? (
             <div className="text-center py-16 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
               <MessageCircle className="w-10 h-10 mx-auto mb-3 text-slate-300" />
               <p className="text-[14px] font-bold text-slate-400">No text reactions were left in this room</p>
             </div>
           ) : (
-            reactions.filter((r: any) => r.text?.trim()).map((r: any) => {
+            textReactions
+              .sort((a: any, b: any) => {
+                if (!sortHighestSignal) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Newest first
+                const scoreA = analyzeFeedbackSignal(a.text || '', false).signalScore;
+                const scoreB = analyzeFeedbackSignal(b.text || '', false).signalScore;
+                if (scoreB !== scoreA) return scoreB - scoreA;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+              })
+              .map((r: any) => {
               const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
+              const { category, signalScore } = analyzeFeedbackSignal(r.text || '', false);
+              const isHighSignal = signalScore >= 70;
+              const CATEGORY_BADGE: Record<string, string> = {
+                Bug:           'bg-rose-50 text-rose-600 border-rose-200',
+                Idea:          'bg-emerald-50 text-emerald-600 border-emerald-200',
+                Critique:      'bg-amber-50 text-amber-600 border-amber-200',
+                Encouragement: 'bg-blue-50 text-blue-600 border-blue-200',
+              };
               return (
-                <div key={r.id} className="flex items-start gap-4 p-4 sm:p-5 bg-white border border-slate-200 rounded-[18px] shadow-sm">
+                <div key={r.id} className={`flex items-start gap-4 p-4 sm:p-5 border rounded-[18px] shadow-sm transition-all ${
+                  isHighSignal ? 'bg-amber-50/40 border-amber-200' : 'bg-white border-slate-200'
+                }`}>
                   <div className="text-xl mt-0.5">{cfg.emoji}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
+                      {category !== 'Uncategorized' && (
+                        <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded border ${CATEGORY_BADGE[category] || 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                          {category}
+                        </span>
+                      )}
+                      {isHighSignal && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded tracking-widest uppercase">
+                          <Zap className="w-2.5 h-2.5" /> High Signal
+                        </span>
+                      )}
                       <img src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="observer" />
                       <span className="text-[12px] font-bold text-slate-800">{r.observerName}</span>
                       <span className="text-[10px] text-slate-400 font-mono ml-auto">{timeAgo(r.createdAt)}</span>
@@ -454,7 +554,8 @@ export default function RoomLogPage() {
           )}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ── Decisions tab ── */}
       {activeSection === 'decisions' && (

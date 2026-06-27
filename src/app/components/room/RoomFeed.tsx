@@ -1,8 +1,9 @@
 import { useRef, useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { useSearchParams } from "react-router";
-import { Hammer, MessageCircle, Trash2 } from "lucide-react";
+import { Hammer, Trash2, Zap } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
+import { analyzeFeedbackSignal } from "../../../utils/feedbackEngine";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
@@ -20,6 +21,33 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import type { Room, Reaction, Update, ReactionConfig } from "../../types";
+
+const CATEGORY_BADGE: Record<string, string> = {
+  Bug:           'bg-rose-50 text-rose-600 border-rose-200',
+  Idea:          'bg-emerald-50 text-emerald-600 border-emerald-200',
+  Critique:      'bg-amber-50 text-amber-600 border-amber-200',
+  Encouragement: 'bg-blue-50 text-blue-600 border-blue-200',
+  Uncategorized: 'bg-slate-50 text-slate-500 border-slate-200',
+};
+
+function FeedbackBadge({ text, isExpert, preCalculated }: { text: string; isExpert: boolean; preCalculated?: ReturnType<typeof analyzeFeedbackSignal> }) {
+  const { category, signalScore } = preCalculated || analyzeFeedbackSignal(text, isExpert);
+  const isHighSignal = signalScore >= 70;
+  return (
+    <span className="inline-flex items-center gap-1.5 flex-wrap">
+      {category !== 'Uncategorized' && (
+        <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded border ${CATEGORY_BADGE[category]}`}>
+          {category}
+        </span>
+      )}
+      {isHighSignal && (
+        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded tracking-widest uppercase">
+          <Zap className="w-2.5 h-2.5" /> Signal
+        </span>
+      )}
+    </span>
+  );
+}
 
 const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
   decision: { label: 'Decision', color: 'bg-primary-400/10 text-primary-500 border-primary-400/30', icon: '⚡' },
@@ -242,12 +270,23 @@ export function RoomFeed({
                     <div className="pt-4 border-t border-white/[0.06] space-y-3">
                       {visibleReactions.map((r: Reaction) => {
                         const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
+                        const hasText = r.text && r.text.trim().length > 0;
+                        const analysis = hasText ? analyzeFeedbackSignal(r.text as string, false) : { category: 'Uncategorized', signalScore: 0 };
+                        const isHighSignal = analysis.signalScore >= 70;
+                        
                         return (
-                          <div key={r.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                          <div key={r.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                              isHighSignal
+                                ? 'bg-amber-50/50 border-amber-200 shadow-sm'
+                                : 'bg-slate-50 border-slate-200'
+                            }`}>
                             <div className="text-xl mt-0.5">{cfg.emoji}</div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                 <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
+                                {hasText && (
+                                  <FeedbackBadge text={r.text as string} isExpert={false} preCalculated={analysis} />
+                                )}
                                 <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1">
                                   {r.observerName}
                                   <VerifiedTick userId={r.observerId} className="w-3 h-3" />

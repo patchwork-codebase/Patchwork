@@ -17,32 +17,7 @@ const API_BASE = window.location.origin + "/api/v1";
 
 import { normalizeRow } from "../../utils/helpers";
 
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  reputation: number;
-  bio: string;
-  avatar: string;
-  interests?: string[];
-  createdAt: string;
-  city?: string;
-  domain?: string;
-  emailVerified?: boolean;
-  signup_completed_at?: string | null;
-  gender?: string;
-  phone_country_code?: string;
-  phone_number?: string;
-  website?: string;
-  twitter?: string;
-  github_url?: string;
-  linkedin_url?: string;
-  skills?: string[];
-  followerCount?: number;
-  followingCount?: number;
-  isFollowing?: boolean;
-}
+import { Profile } from "../../types";
 
 interface SignInResult {
   profile: Profile | null;

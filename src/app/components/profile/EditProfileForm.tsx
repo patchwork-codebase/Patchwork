@@ -201,7 +201,7 @@ export function EditProfileForm({
                   )}
 
                   {/* Expert Settings Form */}
-                  {(profile as any).isVerifiedExpert && (
+                  {profile.isVerifiedExpert && (
                     <div className="pt-6 mt-2 border-t border-slate-200 space-y-5">
                       <div>
                         <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-1">Expert Availability</h3>

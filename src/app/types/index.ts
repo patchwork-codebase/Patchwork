@@ -149,8 +149,30 @@ export interface Profile {
   isFollowing?: boolean;
   organizationName?: string | null;
   organizationLogoUrl?: string | null;
-  trustLevelOverride?: string | null;
+  expertAvailable?: boolean;
+  expertOpenSlots?: number;
+  expertAvgResponseHours?: number;
+  expertLevel?: 'bronze' | 'silver' | 'gold' | 'platinum';
+  expertDomains?: string[];
+  expertReviewScore?: number;
+  expertReviewsCompleted?: number;
+  expertAcceptanceRate?: number;
+  expertStripeAccountId?: string | null;
+  expertPricePerReview?: number;
+  interests?: string[];
   createdAt?: string;
+  city?: string;
+  domain?: string;
+  emailVerified?: boolean;
+  gender?: string;
+  phoneCountryCode?: string;
+  phoneNumber?: string;
+  skills?: string[];
+  avatar?: string | null; // legacy map for AuthContext
+  signup_completed_at?: string | null; // legacy map for AuthContext
+  github_url?: string | null; // legacy map for AuthContext
+  linkedin_url?: string | null; // legacy map for AuthContext
+  trustLevelOverride?: string | null;
 }
 
 // ---------------------------------------------------------------------------

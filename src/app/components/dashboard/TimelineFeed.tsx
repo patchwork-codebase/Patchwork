@@ -19,6 +19,7 @@ import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { Composer } from "./Composer";
 import { ReplyComposer } from "./ReplyComposer";
+import { SuggestedBuilders } from "./SuggestedBuilders";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,6 +91,7 @@ export function TimelineFeed({
   const [fullyExpandedComments, setFullyExpandedComments] = useState<string[]>([]);
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
   const [activeDomainFilter, setActiveDomainFilter] = useState('All');
+  const [activeViewToggle, setActiveViewToggle] = useState<'all' | 'media' | 'launches'>('all');
   const [feedSort, setFeedSort] = useState<'latest' | 'trending'>('latest');
 
   const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
@@ -279,7 +281,17 @@ export function TimelineFeed({
       });
     }
 
-    // 3. Sorting (Trending vs Latest)
+    // 3. View Toggles (Media / Launches)
+    if (activeViewToggle === 'media') {
+      result = result.filter(u => !!u.mediaUrl || !!u.figmaUrl || (u.content && u.content.includes("figma.com/")));
+    } else if (activeViewToggle === 'launches') {
+      result = result.filter(u => {
+        const fullRoom = rooms?.find(r => r.id === u.roomId);
+        return fullRoom?.updateCount === 1; // "Launched" logic
+      });
+    }
+
+    // 4. Sorting (Trending vs Latest)
     if (activeTab === 'feed' && feedSort === 'trending') {
       result = [...result].sort((a, b) => {
         const aInteractions = (a.reactions?.length || 0);
@@ -331,23 +343,38 @@ export function TimelineFeed({
                 </button>
               ))}
             </div>
-            <div className="flex bg-white border border-slate-200 rounded-full p-1 self-start sm:self-auto shadow-sm">
-              <button
-                onClick={() => setFeedSort('latest')}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
-                  feedSort === 'latest' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Latest
-              </button>
-              <button
-                onClick={() => setFeedSort('trending')}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
-                  feedSort === 'trending' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Trending
-              </button>
+            <div className="flex overflow-x-auto custom-scrollbar items-center gap-3 w-full sm:w-auto pb-2 sm:pb-0 snap-x">
+              <div className="flex bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0 snap-start">
+                {(['all', 'media', 'launches'] as const).map(view => (
+                  <button
+                    key={view}
+                    onClick={() => setActiveViewToggle(view)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                      activeViewToggle === view ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    {view}
+                  </button>
+                ))}
+              </div>
+              <div className="flex bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0 snap-start">
+                <button
+                  onClick={() => setFeedSort('latest')}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                    feedSort === 'latest' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  Latest
+                </button>
+                <button
+                  onClick={() => setFeedSort('trending')}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
+                    feedSort === 'trending' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  Trending
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -359,24 +386,31 @@ export function TimelineFeed({
           <>
             {[1, 2, 3].map(i => (
               <div key={`skeleton-${i}`} className="bg-white sm:border sm:border-slate-200 sm:rounded-[24px] px-4 py-5 sm:p-6 sm:shadow-sm relative overflow-hidden">
-                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
+                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl bg-slate-100 animate-pulse shrink-0" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-                      <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl bg-slate-200 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
+                        <div className="h-3 w-16 bg-slate-100 rounded-full animate-pulse" />
+                      </div>
+                      <div className="h-3 w-32 bg-slate-100 rounded animate-pulse" />
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3 mb-5">
                   <div className="h-4 w-full bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-5/6 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-4/6 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-[90%] bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-[60%] bg-slate-100 rounded animate-pulse" />
                 </div>
-                <div className="flex items-center gap-5 pt-3">
-                  <div className="h-5 w-10 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-5 w-10 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-5 w-10 bg-slate-100 rounded animate-pulse" />
+                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
+                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
+                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
                 </div>
               </div>
             ))}
@@ -403,7 +437,8 @@ export function TimelineFeed({
             const isLaunch = fullRoom?.updateCount === 1;
 
             return (
-              <motion.div
+              <>
+                <motion.div
                 layout
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -698,12 +733,14 @@ export function TimelineFeed({
                   </div>
                 );})()}
               </motion.div>
+              {idx === 1 && <SuggestedBuilders currentUserId={user?.id} />}
+            </>
             );
           }}
         />
         )}
 
-        {hasNextUpdates && (
+        {hasNextUpdates ? (
           <div className="flex justify-center p-6 border-t border-slate-200 bg-slate-50">
             <button
               onClick={() => fetchNextUpdates()}
@@ -723,7 +760,28 @@ export function TimelineFeed({
               )}
             </button>
           </div>
-        )}
+        ) : !loading && filteredUpdates.length > 0 ? (
+          <div className="mt-8 mb-12 p-8 sm:p-12 text-center bg-white border border-slate-200 rounded-[24px] shadow-sm flex flex-col items-center">
+            <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mb-4 text-primary-500">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <h3 className="text-[18px] font-display font-extrabold text-slate-900 mb-2">You're all caught up!</h3>
+            <p className="text-[14px] text-slate-500 max-w-md mx-auto mb-6">
+              You've seen all the latest updates. Why not discover more rooms or post an update of your own?
+            </p>
+            <div className="flex items-center gap-3">
+              <Link to="/dashboard/explore" className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-full text-[13px] font-bold transition-all shadow-sm">
+                Explore Rooms
+              </Link>
+              <button 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-[13px] font-bold transition-all"
+              >
+                Back to top
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

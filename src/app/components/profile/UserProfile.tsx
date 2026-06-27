@@ -102,9 +102,9 @@ export default function UserProfile() {
         organization_name: profile.organizationName || '',
         organization_logo_url: profile.organizationLogoUrl || '',
         skills: profile.skills || [],
-        expert_available: (profile as any).expertAvailable ?? true,
-        expert_open_slots: (profile as any).expertOpenSlots ?? 3,
-        expert_avg_response_hours: (profile as any).expertAvgResponseHours ?? 48
+        expert_available: profile.expertAvailable ?? true,
+        expert_open_slots: profile.expertOpenSlots ?? 3,
+        expert_avg_response_hours: profile.expertAvgResponseHours ?? 48
       });
     }
   }, [profile]);
@@ -233,7 +233,7 @@ export default function UserProfile() {
             >
               <Share className="w-4 h-4" /> Share
             </button>
-            {isOwn && !(profile as any).isVerifiedExpert && !expertApp && (
+            {isOwn && !profile.isVerifiedExpert && !expertApp && (
               <Link
                 to="/dashboard/expert-apply"
                 className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-primary-400/30 bg-primary-500/10 hover:bg-primary-500/20 rounded-full text-[13px] font-bold text-primary-400 transition-colors"
