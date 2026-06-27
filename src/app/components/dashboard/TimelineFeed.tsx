@@ -354,17 +354,17 @@ export function TimelineFeed({
       </div>
 
       {/* TIMELINE FEED */}
-      <div className="flex flex-col gap-4 mb-12">
+      <div className="flex flex-col sm:gap-4 mb-12 divide-y divide-slate-100 sm:divide-none">
         {loading ? (
           <>
             {[1, 2, 3].map(i => (
-              <div key={`skeleton-${i}`} className="bg-white border border-slate-200 rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 shadow-sm relative overflow-hidden">
+              <div key={`skeleton-${i}`} className="bg-white sm:border sm:border-slate-200 sm:rounded-[24px] px-4 py-5 sm:p-6 sm:shadow-sm relative overflow-hidden">
                 <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="flex items-center gap-2.5 sm:gap-4 flex-1">
-                    <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl bg-slate-100 animate-pulse shrink-0" />
-                    <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl bg-slate-100 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-1.5">
                       <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-                      <div className="h-3 w-48 bg-slate-100 rounded animate-pulse" />
+                      <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
                     </div>
                   </div>
                 </div>
@@ -373,9 +373,10 @@ export function TimelineFeed({
                   <div className="h-4 w-5/6 bg-slate-100 rounded animate-pulse" />
                   <div className="h-4 w-4/6 bg-slate-100 rounded animate-pulse" />
                 </div>
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse" />
-                  <div className="h-8 w-24 bg-slate-100 rounded-full animate-pulse" />
+                <div className="flex items-center gap-5 pt-3">
+                  <div className="h-5 w-10 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-5 w-10 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-5 w-10 bg-slate-100 rounded animate-pulse" />
                 </div>
               </div>
             ))}
@@ -404,13 +405,13 @@ export function TimelineFeed({
             return (
               <motion.div
                 layout
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
                 key={update.id} 
                 onClick={() => toggleComments(update.id)}
-                className={`bg-white border ${isLaunch ? 'border-primary-400/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-slate-200 shadow-sm'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 hover:bg-slate-50/50 transition-all cursor-pointer relative overflow-hidden focus-ring`}
+                className={`bg-white sm:border ${isLaunch ? 'sm:border-primary-400/40 sm:shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'sm:border-slate-200 sm:shadow-sm'} sm:rounded-[24px] px-4 py-5 sm:p-6 hover:bg-slate-50/50 active:bg-slate-50 transition-all cursor-pointer relative overflow-hidden focus-ring`}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -418,60 +419,53 @@ export function TimelineFeed({
                   }
                 }}
               >
-                {/* Header */}
-                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
-                    <div 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (update.authorId) {
-                          navigate(`/dashboard/profile/${update.authorId}`);
-                        }
-                      }}
-                      className={`w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-50 border border-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
-                    >
-                      <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <div className="font-extrabold text-[13px] sm:text-[16px] text-slate-900 leading-tight font-display hover:underline truncate max-w-full flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                {/* Header — Substack-style on mobile, card-style on desktop */}
+                <div className="flex items-start gap-3 mb-3 sm:mb-4">
+                  {/* Round avatar (mobile) / Square avatar (desktop) */}
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (update.authorId) navigate(`/dashboard/profile/${update.authorId}`);
+                    }}
+                    className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 sm:border sm:border-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
+                  >
+                    <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Name + subtitle row */}
+                  <div className="flex-1 min-w-0">
+                    {/* Top row: name, verified, time, follow — all in one line */}
+                    <div className="flex items-center gap-1.5 justify-between">
+                      <div className="flex items-center gap-1 min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
+                        <span className="font-bold text-[14px] sm:text-[15px] text-slate-900 leading-tight truncate hover:underline cursor-pointer">
                           {builderName}
-                          {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
-                        </div>
+                        </span>
+                        {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />}
                         <OrganizationBadge 
                           orgName={(update as any).authorOrgName} 
                           orgLogo={(update as any).authorOrgLogo} 
                           isVerified={!!(update as any).authorIsVerifiedExpert} 
                         />
                         {isLaunch && (
-                          <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
+                          <span className="text-[9px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
                         )}
                       </div>
-                      <div className="text-[12px] sm:text-[13px] text-slate-500 mt-1 font-medium flex items-center flex-wrap gap-x-1.5">
-                        <span className="text-slate-900 font-semibold hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{roomTitle}</span>
-                        <span className="text-slate-600 hidden sm:inline">·</span>
-                        <span className="capitalize">{tag}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col-reverse items-end gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
-                        {timeString}
-                      </div>
-                      {update.authorId === user?.id && (
+                      {/* Right side: time + actions */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[12px] text-slate-400 font-medium whitespace-nowrap">{timeString}</span>
+                        {update.authorId === user?.id && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <button
                                 onClick={(e) => e.stopPropagation()}
                                 disabled={deletingUpdateId === update.id}
-                                className="text-slate-500 hover:text-rose-400 transition-colors p-2.5 sm:p-2 -m-2 sm:-m-1 rounded-lg hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 relative z-20 flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-0 sm:min-h-0"
+                                className="text-slate-400 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-50 focus-visible:outline-none relative z-20"
                                 title="Delete update"
                               >
                                 {deletingUpdateId === update.id ? (
-                                   <span className="w-3.5 h-3.5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                                  <span className="w-3 h-3 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
                                 ) : (
-                                   <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 )}
                               </button>
                             </AlertDialogTrigger>
@@ -488,10 +482,7 @@ export function TimelineFeed({
                               <AlertDialogFooter className="mt-6 border-t border-slate-100 pt-4">
                                 <AlertDialogCancel className="bg-slate-50 hover:bg-slate-100 text-slate-600 border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
                                 <AlertDialogAction 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteUpdate(update.id);
-                                  }}
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteUpdate(update.id); }}
                                   className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 font-bold transition-all"
                                 >
                                   Delete Update
@@ -499,27 +490,32 @@ export function TimelineFeed({
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                      )}
+                        )}
+                        {activeTab === 'feed' && update.authorId !== user?.id && (
+                          isFollowing ? (
+                            <button 
+                              onClick={(e) => handleUnfollowRoom(update.roomId, e)}
+                              className="text-[11px] font-bold text-emerald-600 hover:text-red-500 transition-colors focus-ring rounded px-1"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5 inline" />
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={(e) => handleFollowRoom(update.roomId, e)}
+                              className="text-[11px] font-bold text-primary-500 hover:text-primary-600 transition-colors focus-ring rounded px-1"
+                            >
+                              Follow
+                            </button>
+                          )
+                        )}
+                      </div>
                     </div>
-                    {activeTab === 'feed' && update.authorId !== user?.id && (
-                      isFollowing ? (
-                        <button 
-                          onClick={(e) => handleUnfollowRoom(update.roomId, e)}
-                          className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all group"
-                        >
-                          <CheckCircle className="w-3 h-3 group-hover:hidden" />
-                          <span className="group-hover:hidden">Following</span>
-                          <span className="hidden group-hover:inline">Unfollow</span>
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={(e) => handleFollowRoom(update.roomId, e)}
-                          className="text-[11px] font-bold text-primary-400 bg-primary-400/10 border border-primary-400/20 hover:bg-primary-400/20 px-2.5 py-1 rounded-full transition-all focus-ring"
-                        >
-                          + Follow
-                        </button>
-                      )
-                    )}
+                    {/* Subtitle: room name + tag */}
+                    <div className="text-[12px] text-slate-400 mt-0.5 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      <span className="font-medium truncate hover:underline cursor-pointer text-slate-500">{roomTitle}</span>
+                      <span>·</span>
+                      <span className={`capitalize font-medium ${tStyle.color}`}>{tag}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -529,7 +525,7 @@ export function TimelineFeed({
                   ) : (
                     <ReadMoreText 
                       content={update.content} 
-                      className="text-[14px] sm:text-[15px] text-slate-700 leading-relaxed mb-4 whitespace-pre-wrap break-words" 
+                      className="text-[14px] sm:text-[15px] text-slate-800 leading-[1.65] mb-3 whitespace-pre-wrap break-words" 
                     />
                   )
                 )}
@@ -542,26 +538,60 @@ export function TimelineFeed({
 
                 {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
-                <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-slate-100">
-                  {renderReactionButton(update.id, update.roomId, 'sharp', 'Sharp', '✦', 'bg-primary-400/10 border-primary-400/30 text-primary-400', update.reactions || [])}
-                  {renderReactionButton(update.id, update.roomId, 'pushback', 'Push back', '↩', 'bg-rose-50 border-rose-200 text-rose-500', update.reactions || [])}
-                  {renderReactionButton(update.id, update.roomId, 'tellmemore', 'More', '?', 'bg-emerald-50 border-emerald-200 text-emerald-600', update.reactions || [])}
-                  
-                  {comments.length > 0 ? (
+                {/* Mobile: compact icon + count bar like Substack. Desktop: full pill buttons */}
+                <div className="flex items-center gap-4 sm:gap-3 mt-3 pt-3 border-t border-slate-100">
+                  {/* Mobile icon-only reactions */}
+                  <div className="flex items-center gap-4 sm:hidden">
+                    {(['sharp', 'pushback', 'tellmemore'] as const).map((type) => {
+                      const icons = { sharp: '✦', pushback: '↩', tellmemore: '?' };
+                      const activeColors = { sharp: 'text-primary-500', pushback: 'text-rose-500', tellmemore: 'text-emerald-600' };
+                      const key = `${update.id}-${type}`;
+                      const hasOptimistic = optimisticToggles[key] !== undefined;
+                      const serverActive = update.reactions?.some((r: any) => r.type === type && r.observerId === user?.id) || false;
+                      const isActive = hasOptimistic ? optimisticToggles[key] : serverActive;
+                      let count = update.reactions?.filter((r: any) => r.type === type).length || 0;
+                      if (hasOptimistic) { if (optimisticToggles[key] && !serverActive) count += 1; else if (!optimisticToggles[key] && serverActive) count -= 1; }
+                      return (
+                        <button
+                          key={type}
+                          onClick={(e) => { e.stopPropagation(); handleToggleReaction(update.id, update.roomId, type, update.reactions || []); }}
+                          className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${isActive ? activeColors[type] : 'text-slate-500'}`}
+                        >
+                          <span className="text-[15px]">{icons[type]}</span>
+                          {count > 0 && <span className="text-[13px]">{count}</span>}
+                        </button>
+                      );
+                    })}
                     <button 
                       onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
-                      className="ml-auto text-[12px] font-bold text-primary-400 hover:underline focus-ring rounded px-1"
+                      className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 ml-1"
                     >
-                      {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
+                      <MessageCircle className="w-[15px] h-[15px]" />
+                      {comments.length > 0 && <span>{comments.length}</span>}
                     </button>
-                  ) : (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
-                      className="ml-auto text-[12px] font-bold text-slate-500 hover:text-slate-900 transition-colors focus-ring rounded px-1"
-                    >
-                      Reply
-                    </button>
-                  )}
+                  </div>
+
+                  {/* Desktop: full pill buttons */}
+                  <div className="hidden sm:flex flex-wrap items-center gap-3">
+                    {renderReactionButton(update.id, update.roomId, 'sharp', 'Sharp', '✦', 'bg-primary-400/10 border-primary-400/30 text-primary-400', update.reactions || [])}
+                    {renderReactionButton(update.id, update.roomId, 'pushback', 'Push back', '↩', 'bg-rose-50 border-rose-200 text-rose-500', update.reactions || [])}
+                    {renderReactionButton(update.id, update.roomId, 'tellmemore', 'More', '?', 'bg-emerald-50 border-emerald-200 text-emerald-600', update.reactions || [])}
+                    {comments.length > 0 ? (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
+                        className="ml-auto text-[12px] font-bold text-primary-400 hover:underline focus-ring rounded px-1"
+                      >
+                        {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
+                        className="ml-auto text-[12px] font-bold text-slate-500 hover:text-slate-900 transition-colors focus-ring rounded px-1"
+                      >
+                        Reply
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Comments section */}

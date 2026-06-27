@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, Mail, Send, Check } from "lucide-react";
+import { ArrowRight, Mail, Send, Check, Twitter } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface LandingFooterProps {
@@ -96,10 +96,10 @@ export function LandingFooter({
                     <div className="space-y-4">
                       <div className="text-xs font-bold text-white uppercase tracking-wider">Legal & Social</div>
                       <ul className="space-y-2 text-xs">
+                        <li><span onClick={() => navigate('/ip-framework')} className="hover:text-white transition cursor-pointer text-emerald-400">IP Protection Framework</span></li>
                         <li><span onClick={() => navigate('/privacy')} className="hover:text-white transition cursor-pointer">Privacy Policy</span></li>
                         <li><span onClick={() => navigate('/terms')} className="hover:text-white transition cursor-pointer">Terms of Service</span></li>
-                        <li><a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-white transition">GitHub</a></li>
-                        <li><a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-white transition">Twitter / X</a></li>
+                        <li><a href="https://twitter.com/patchwork" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center gap-1.5"><Twitter className="w-3 h-3" /> Twitter / X</a></li>
                       </ul>
                     </div>
                   </div>

@@ -327,6 +327,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       <AnimatePresence>
                         {itemReplies.length > 0 && (
                           <motion.div 
+                            key="replies-list"
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             className="mt-4 space-y-3"
@@ -358,6 +359,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                         {/* Composer for Reply */}
                         {replyingTo === decision.id && (
                           <motion.div
+                            key="reply-composer"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}

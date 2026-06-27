@@ -22,7 +22,7 @@ export function InlineEmojiPicker({ isOpen, onEmojiSelect, className = "", butto
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className={`flex items-center gap-1 overflow-x-auto overflow-y-hidden ${className}`}
+          className={`flex flex-wrap items-center gap-1.5 overflow-hidden ${className}`}
         >
           {COMMON_EMOJIS.map(emoji => (
             <button

@@ -111,6 +111,10 @@ export const router = createBrowserRouter([
         lazy: () => import("./components/legal/PrivacyPolicy").then(m => ({ Component: m.default })),
       },
       {
+        path: "/ip-framework",
+        lazy: () => import("./components/legal/IPFrameworkPage").then(m => ({ Component: m.default })),
+      },
+      {
         path: "/build-room/:roomId/decision/:decisionId",
         lazy: () => import("./components/room/DecisionDeepLink").then(m => ({ Component: m.default })),
       },

@@ -147,7 +147,7 @@ export default function MyRoomsPage() {
                       <div className="flex flex-col gap-1">
                         {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
                           <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full w-fit">
-                            <Compass className="w-3 h-3" /> Pinned by Patchwork
+                            Pinned by Patchwork
                           </div>
                         )}
                         <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">

@@ -39,6 +39,7 @@ import { LandingCalculator } from "./LandingCalculator";
 import { LandingFAQ } from "./LandingFAQ";
 import { LandingCTA } from "./LandingCTA";
 import { LandingFooter } from "./LandingFooter";
+import { LandingIPFramework } from "./LandingIPFramework";
 import { LandingUseCases } from "./LandingUseCases";
 import { LandingTicker } from "./LandingTicker";
 import { domainOptions, detailedRooms, showcaseBuilders, workflowSteps, faqs } from "../../constants/landingData";
@@ -398,6 +399,9 @@ export default function LandingPage() {
 
             {/* ─── Features Section (Why Patchwork) ──────────────────────────── */}
             <LandingFeatures />
+
+            {/* ─── IP Protection Framework Section ──────────────────────────── */}
+            <LandingIPFramework />
 
             {/* ─── Use Cases Section ──────────────────────────── */}
             <LandingUseCases />

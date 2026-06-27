@@ -135,7 +135,7 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                       <div className="flex flex-col gap-1">
                         {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
                           <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full w-fit">
-                            <Compass className="w-3 h-3" /> Pinned by Patchwork
+                            Pinned by Patchwork
                           </div>
                         )}
                         <div className={`text-[14px] sm:text-[15px] font-extrabold transition-colors font-display leading-snug line-clamp-3 group-hover:underline break-words ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-700 group-hover:text-primary-400'}`}>
