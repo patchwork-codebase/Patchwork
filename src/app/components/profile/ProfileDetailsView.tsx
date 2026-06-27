@@ -12,14 +12,15 @@ interface ProfileDetailsViewProps {
 export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
   return (
     <>
-                  <div className="flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-start gap-3 mb-4">
-                    <div className="text-center sm:text-left flex flex-col sm:flex-row items-center gap-3">
-                      <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 font-display tracking-tight leading-none">
+                  <div className="flex flex-col gap-4">
+                    {/* Header Row: Name & Verifications */}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 font-display tracking-tight leading-tight m-0">
                         {profile.name}
                       </h1>
-                      <div className="flex flex-wrap justify-center items-center gap-2">
+                      <div className="flex items-center gap-2 mt-1 sm:mt-0">
                         {!profile.organizationName && (
-                          <VerifiedTick isVerified={!!profile.isVerifiedExpert} className="w-6 h-6 shrink-0" />
+                          <VerifiedTick isVerified={!!profile.isVerifiedExpert} className="w-5 h-5 shrink-0" />
                         )}
                         {profile.organizationName && (
                           <OrganizationBadge 
@@ -29,57 +30,60 @@ export function ProfileDetailsView({ profile }: ProfileDetailsViewProps) {
                           />
                         )}
                         {profile.isVerifiedExpert && (
-                          <ExpertBadge tier={profile.expertLevel || "bronze"} size="md" />
+                          <ExpertBadge tier={profile.expertLevel || "bronze"} size="sm" />
                         )}
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-4 sm:gap-4 mb-2">
-                    {/* Badges Row */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <span className="flex items-center gap-1.5 text-[12px] font-bold text-primary-700 bg-primary-50 border border-primary-200/60 px-3 py-1.5 rounded-full capitalize tracking-wide">
+                    {/* Stats Row: Role, Rep, Date, Followers */}
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* Role */}
+                      <span className="flex items-center gap-1.5 text-[12px] font-bold text-primary-700 bg-primary-50/50 border border-primary-200/50 px-3 py-1.5 rounded-full capitalize tracking-wide shadow-sm">
                         {profile.role === 'builder' ? <Hammer className="w-3.5 h-3.5 text-primary-500" /> : <Eye className="w-3.5 h-3.5 text-primary-500" />}
                         {profile.role} {profile.domain && profile.role === 'builder' ? ` • ${profile.domain.replace('-', ' ')}` : ''}
                       </span>
-                      <span className="flex items-center gap-1.5 text-[12px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 px-3 py-1.5 rounded-full tracking-wide">
+                      
+                      {/* Reputation */}
+                      <span className="flex items-center gap-1.5 text-[12px] font-bold text-amber-700 bg-amber-50/50 border border-amber-200/50 px-3 py-1.5 rounded-full tracking-wide shadow-sm">
                         <Zap className="w-3.5 h-3.5 text-amber-500" /> {profile.reputation} rep
                       </span>
-                      <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full tracking-wide">
+                      
+                      {/* Join Date */}
+                      <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-600 bg-slate-50/80 border border-slate-200/60 px-3 py-1.5 rounded-full tracking-wide shadow-sm">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" /> Joined {timeAgo(profile.createdAt || '')}
                       </span>
-                    </div>
-
-                    <div className="w-px h-5 bg-slate-200 hidden sm:block"></div>
-                    
-                    {/* Stats Row */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 bg-slate-50/50 sm:bg-transparent px-4 py-2 sm:p-0 rounded-xl sm:rounded-none">
-                      <div className="flex items-center gap-2 text-[13px] font-bold text-slate-900 tracking-wide">
-                        {profile.followers && profile.followers.length > 0 ? (
-                          <div className="flex items-center group/followers cursor-pointer mr-1">
-                            {profile.followers.slice(0, 4).map((followerId: string, i: number) => (
-                              <div
-                                key={followerId}
-                                className="w-6 h-6 rounded-full bg-slate-200 border-2 border-white overflow-hidden transition-all duration-300 -ml-2 first:ml-0 group-hover/followers:-ml-1 group-hover/followers:shadow-sm shrink-0"
-                                style={{ zIndex: 10 - i }}
-                              >
-                                <img
-                                  src={getAvatarUrl(followerId)}
-                                  alt="Follower"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <Users className="w-4 h-4 text-slate-400" />
-                        )}
-                        <span>
-                          {profile.followerCount || 0} <span className="text-slate-500 font-medium">followers</span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[13px] font-bold text-slate-900 tracking-wide">
-                        {profile.followingCount || 0} <span className="text-slate-500 font-medium">following</span>
+                      
+                      <div className="w-px h-5 bg-slate-200 hidden sm:block mx-1"></div>
+                      
+                      {/* Followers */}
+                      <div className="flex items-center gap-4 bg-slate-50/50 border border-slate-100 px-3 py-1.5 rounded-full shadow-sm">
+                        <div className="flex items-center gap-2 text-[12px] font-bold text-slate-900 tracking-wide">
+                          {profile.followers && profile.followers.length > 0 ? (
+                            <div className="flex items-center group/followers cursor-pointer mr-1">
+                              {profile.followers.slice(0, 3).map((followerId: string, i: number) => (
+                                <div
+                                  key={followerId}
+                                  className="w-5 h-5 rounded-full bg-slate-200 border border-white overflow-hidden transition-all duration-300 -ml-1.5 first:ml-0 group-hover/followers:-ml-0.5 group-hover/followers:shadow-sm shrink-0"
+                                  style={{ zIndex: 10 - i }}
+                                >
+                                  <img
+                                    src={getAvatarUrl(followerId)}
+                                    alt="Follower"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                          <span>
+                            {profile.followerCount || 0} <span className="text-slate-500 font-medium">followers</span>
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900 tracking-wide">
+                          {profile.followingCount || 0} <span className="text-slate-500 font-medium">following</span>
+                        </div>
                       </div>
                     </div>
                   </div>

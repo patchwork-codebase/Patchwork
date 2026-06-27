@@ -85,7 +85,8 @@ export function usePostUpdate() {
       toast.success("Update posted successfully!");
     },
     onError: (err: unknown) => {
-      toast.error(`Failed to post update: ${err instanceof Error ? err.message : String(err)}`);
+      const errorMessage = err instanceof Error ? err.message : (err as any)?.message || JSON.stringify(err);
+      toast.error(`Failed to post update: ${errorMessage}`);
     }
   });
 }

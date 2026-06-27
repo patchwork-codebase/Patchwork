@@ -1,0 +1,305 @@
+import React from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { useNavigate } from "react-router";
+import { CheckCircle, Trash2, Heart, MessageCircle, Share2, ImageIcon, Code } from "lucide-react";
+import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { ReadMoreText } from "../ui/ReadMoreText";
+import { FigmaEmbed } from "../ui/FigmaEmbed";
+import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
+import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
+import { ReplyComposer } from "./ReplyComposer";
+import type { Room, Profile } from "../../types";
+import type { FeedUpdate } from "../../hooks/useFeedUpdates";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+
+const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
+  design:      { bg: 'bg-purple-500/10', color: 'text-purple-400' },
+  engineering: { bg: 'bg-emerald-500/10', color: 'text-emerald-400' },
+  dev:         { bg: 'bg-blue-500/10',  color: 'text-blue-400' },
+  product:     { bg: 'bg-primary-500/10', color: 'text-primary-400' },
+  research:    { bg: 'bg-amber-500/10', color: 'text-amber-400' },
+  writing:     { bg: 'bg-pink-500/10', color: 'text-pink-400' },
+};
+
+function tagStyle(tag: string) {
+  return TAG_PALETTE[tag.toLowerCase()] || { bg: 'bg-white/5', color: 'text-slate-400' };
+}
+
+interface FeedUpdateCardProps {
+  update: FeedUpdate;
+  fullRoom?: Room;
+  rooms?: Room[];
+  user: { id: string; email?: string } | null;
+  profile: Profile | null;
+  isFollowing: boolean;
+  activeTab: 'overview' | 'feed' | 'mine';
+  optimisticToggles: Record<string, boolean>;
+  expandedComments: string[];
+  fullyExpandedComments: string[];
+  replyingTo: string | null;
+  deletingUpdateId: string | null;
+  queryClient: any;
+  
+  toggleComments: (id: string) => void;
+  setFullyExpandedComments: React.Dispatch<React.SetStateAction<string[]>>;
+  setReplyingTo: (id: string | null) => void;
+  handleToggleReaction: (updateId: string, roomId: string, type: 'sharp' | 'pushback' | 'tellmemore', currentReactions: any[]) => void;
+  handleFollowRoom: (roomId: string, e: React.MouseEvent) => void;
+  handleUnfollowRoom: (roomId: string, e: React.MouseEvent) => void;
+  handleDeleteUpdate: (updateId: string) => void;
+  handleReplyClick: (e: React.MouseEvent, id: string) => void;
+}
+
+export function FeedUpdateCard({
+  update,
+  fullRoom,
+  rooms,
+  user,
+  profile,
+  isFollowing,
+  activeTab,
+  optimisticToggles,
+  expandedComments,
+  fullyExpandedComments,
+  replyingTo,
+  deletingUpdateId,
+  queryClient,
+  toggleComments,
+  setFullyExpandedComments,
+  setReplyingTo,
+  handleToggleReaction,
+  handleFollowRoom,
+  handleUnfollowRoom,
+  handleDeleteUpdate,
+  handleReplyClick,
+}: FeedUpdateCardProps) {
+  const navigate = useNavigate();
+  const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
+  const tStyle = tagStyle(tag);
+  const builderName = update.authorName;
+  const updateAvatarUrl = getAvatarUrl(update.authorId || builderName);
+  const timeString = timeAgo(update.createdAt);
+  const roomTitle = fullRoom?.title || update.rooms?.title || 'Unknown Room';
+  const comments = update.reactions?.filter((r: any) => r.type === 'reply') || [];
+  const isLaunch = fullRoom?.updateCount === 1;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+      onClick={() => toggleComments(update.id)}
+      className="bg-transparent border-b border-slate-200/60 px-4 py-5 sm:p-6 sm:px-8 hover:bg-slate-50/50 transition-all cursor-pointer relative focus-ring"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') toggleComments(update.id);
+      }}
+    >
+      <div className="flex items-start gap-3 sm:gap-4 mb-3">
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            if (update.authorId) navigate(`/dashboard/profile/${update.authorId}`);
+          }}
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 ring-1 ring-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
+        >
+          <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+        </div>
+
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="flex items-center gap-1.5 justify-between mb-0.5">
+            <div className="flex items-center gap-1 min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
+              <span className="font-bold text-[15px] sm:text-[16px] text-slate-900 truncate hover:underline cursor-pointer">
+                {builderName}
+              </span>
+              {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
+              <OrganizationBadge 
+                orgName={(update as any).authorOrgName} 
+                orgLogo={(update as any).authorOrgLogo} 
+                isVerified={!!(update as any).authorIsVerifiedExpert} 
+              />
+              <span className="text-slate-400 text-[14px] mx-1 hidden sm:inline">·</span>
+              <span className="text-[14px] text-slate-400 hover:underline cursor-pointer truncate hidden sm:inline" onClick={() => navigate(`/dashboard/room/${update.roomId}`)}>
+                {roomTitle}
+              </span>
+              {isLaunch && (
+                <span className="ml-2 text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0 hidden sm:inline">Launched</span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-[14px] text-slate-400 whitespace-nowrap">{timeString}</span>
+              {update.authorId === user?.id && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={deletingUpdateId === update.id}
+                      className="text-slate-400 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-50 relative z-20"
+                    >
+                      {deletingUpdateId === update.id ? (
+                        <span className="w-4 h-4 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-white border border-slate-200 sm:rounded-[24px]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-[20px] font-display font-bold">Delete update?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={(e) => { e.stopPropagation(); handleDeleteUpdate(update.id); }} className="bg-rose-500 text-white hover:bg-rose-600">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </div>
+          
+          <div className="text-[14px] text-slate-500 mb-2 sm:hidden flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            <span className="truncate hover:underline cursor-pointer">{roomTitle}</span>
+          </div>
+
+          <div className="mt-1">
+            {update.content && (
+              update.content.includes("figma.com/") ? (
+                <div className="my-3 rounded-[20px] overflow-hidden border border-slate-200/60 shadow-sm bg-slate-50 relative group">
+                   <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span>Figma Design</span>
+                   </div>
+                   <FigmaEmbed content={update.content} />
+                </div>
+              ) : (
+                <ReadMoreText 
+                  content={update.content} 
+                  className="text-[15px] sm:text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap break-words font-medium" 
+                />
+              )
+            )}
+
+            {update.mediaUrl && (
+              <div className="mt-3 rounded-[20px] overflow-hidden border border-slate-200/60 bg-slate-50 relative group">
+                <img src={update.mediaUrl} alt="Update media" className="w-full object-cover max-h-[600px] hover:scale-[1.02] transition-transform duration-500" />
+              </div>
+            )}
+
+            {update.codeSnippet && (
+              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-slate-200/60">
+                 <CodeSnippetBlock code={update.codeSnippet} />
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-6 mt-4">
+            {(['sharp', 'pushback', 'tellmemore'] as const).map((type) => {
+              const icons = { sharp: '✦', pushback: '↩', tellmemore: '?' };
+              const activeColors = { sharp: 'text-primary-500', pushback: 'text-rose-500', tellmemore: 'text-emerald-600' };
+              const activeBg = { sharp: 'bg-primary-500/10', pushback: 'bg-rose-500/10', tellmemore: 'bg-emerald-500/10' };
+              const key = `${update.id}-${type}`;
+              const hasOptimistic = optimisticToggles[key] !== undefined;
+              const serverActive = update.reactions?.some((r: any) => r.type === type && r.observerId === user?.id) || false;
+              const isActive = hasOptimistic ? optimisticToggles[key] : serverActive;
+              let count = update.reactions?.filter((r: any) => r.type === type).length || 0;
+              if (hasOptimistic) { if (optimisticToggles[key] && !serverActive) count += 1; else if (!optimisticToggles[key] && serverActive) count -= 1; }
+              
+              return (
+                <button
+                  key={type}
+                  onClick={(e) => { e.stopPropagation(); handleToggleReaction(update.id, update.roomId, type, update.reactions || []); }}
+                  className={`flex items-center gap-1.5 transition-all group p-1.5 -ml-1.5 rounded-full ${isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive ? activeBg[type] : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                     <span className={`text-[14px] font-bold ${isActive ? activeColors[type] : 'text-slate-500'}`}>{icons[type]}</span>
+                  </div>
+                  {count > 0 && <span className="text-[13px] font-bold">{count}</span>}
+                </button>
+              );
+            })}
+
+            <button 
+              onClick={(e) => handleReplyClick(e, update.id)}
+              className="flex items-center gap-1.5 text-slate-500 hover:text-primary-500 transition-colors p-1.5 rounded-full hover:bg-primary-50 group"
+            >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 group-hover:bg-primary-100 transition-colors">
+                <MessageCircle className="w-4 h-4 group-hover:text-primary-500" />
+              </div>
+              {comments.length > 0 && <span className="text-[13px] font-bold">{comments.length}</span>}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {replyingTo === update.id && (
+              <motion.div
+                key="reply-composer"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4 overflow-hidden"
+              >
+                <ReplyComposer 
+                  update={update}
+                  user={user} 
+                  profile={profile}
+                  queryClient={queryClient}
+                  onCancel={() => setReplyingTo(null)}
+                  onSuccess={() => {
+                    setReplyingTo(null);
+                    setExpandedComments(prev => update.id && !prev.includes(update.id) ? [...prev, update.id] : prev);
+                    setFullyExpandedComments(prev => update.id && !prev.includes(update.id) ? [...prev, update.id] : prev);
+                  }}
+                  initialText={`@${update.authorName.toLowerCase().replace(/\s+/g, '')} `}
+                />
+              </motion.div>
+            )}
+            
+            {expandedComments.includes(update.id) && comments.length > 0 && (
+              <motion.div
+                key="comments-list"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-4 overflow-hidden"
+              >
+                {comments.slice(0, fullyExpandedComments.includes(update.id) ? comments.length : 3).map((reply: any) => (
+                  <div key={reply.id} className="flex gap-3">
+                    <img src={getAvatarUrl(reply.observerId || reply.observerName)} className="w-8 h-8 rounded-full" alt="Reply avatar" />
+                    <div className="flex-1 bg-slate-50 rounded-2xl p-3 px-4">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="font-bold text-[13px] text-slate-900">{reply.observerName}</span>
+                        <span className="text-[11px] text-slate-400">{timeAgo(reply.createdAt)}</span>
+                      </div>
+                      <p className="text-[14px] text-slate-700 leading-relaxed">{reply.content}</p>
+                    </div>
+                  </div>
+                ))}
+                {comments.length > 3 && !fullyExpandedComments.includes(update.id) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setFullyExpandedComments(prev => [...prev, update.id]); }}
+                    className="text-[13px] font-bold text-primary-500 hover:underline self-start ml-11"
+                  >
+                    View {comments.length - 3} more comments
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  );
+}

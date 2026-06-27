@@ -191,9 +191,9 @@ export default function UserProfile() {
       <div className="bg-white border border-slate-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-10 mb-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
         
-        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 flex-wrap relative z-10">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 sm:gap-6 w-full md:w-auto flex-1">
-            <div className="w-24 h-24 rounded-[24px] bg-slate-100 border border-slate-200 overflow-hidden shrink-0 shadow-[0_0_0_4px_rgba(108,92,231,0.15)] relative">
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
+          <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 w-full flex-1">
+            <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-sm overflow-hidden shrink-0 relative ring-1 ring-slate-200">
               <img
                 src={getAvatarUrl(profile.id || profile.name)}
                 alt={profile.name}
@@ -226,7 +226,7 @@ export default function UserProfile() {
             </div>
           </div>
 
-          <div className="flex gap-3 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0 flex-wrap">
+          <div className="flex gap-3 w-full md:w-auto justify-center md:justify-end shrink-0 flex-wrap">
             <button
               onClick={handleShare}
               className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-full text-[13px] font-bold text-slate-700 transition-colors"
