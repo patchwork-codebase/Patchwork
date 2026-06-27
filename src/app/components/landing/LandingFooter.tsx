@@ -32,7 +32,7 @@ export function LandingFooter({
                       <span className="font-extrabold">patchwork</span>
                     </div>
                     <p className="text-xs text-slate-500 leading-relaxed max-w-xs">
-                      The streaming platform for real software engineering, product design, and growth logic. Proof of work, verified.
+                      Every great product begins with an idea, but every great builder is shaped by the journey. Patchwork exists to help builders document their thinking, collaborate with experts, earn trust through proof of work, and leave behind a record of how meaningful products are built.
                     </p>
 
                     {/* Newsletter Form */}
