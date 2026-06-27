@@ -67,12 +67,26 @@ export function RoomHeader({
                   {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
                   {room.status}
                 </span>
-                {room.isPrivate && (
-                  <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider bg-slate-800 text-slate-100 border border-slate-700">
-                    <Lock className="w-3 h-3" />
-                    Private
-                  </span>
-                )}
+                {(() => {
+                  const vis = room.visibility ?? (room.isPrivate ? 'private' : 'public');
+                  const VISIBILITY_BADGES: Record<string, { icon: string; label: string; className: string }> = {
+                    public: { icon: '🌍', label: 'Public', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+                    unlisted: { icon: '🔗', label: 'Unlisted', className: 'bg-slate-100 text-slate-600 border border-slate-200' },
+                    private: { icon: '🔒', label: 'Private', className: 'bg-slate-800 text-slate-100 border border-slate-700' },
+                    org_only: { icon: '🏢', label: 'Org Only', className: 'bg-blue-50 text-blue-700 border border-blue-200' },
+                    nda_protected: { icon: '📜', label: 'NDA', className: 'bg-primary-400/10 text-primary-400 border border-primary-400/30' },
+                  };
+                  const badge = VISIBILITY_BADGES[vis] ?? VISIBILITY_BADGES.public;
+                  return (
+                    <span
+                      className={`inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider ${badge.className}`}
+                      title={`Visibility: ${vis.replace('_', ' ')}`}
+                    >
+                      <span>{badge.icon}</span>
+                      {badge.label}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
             {room.description && (
@@ -112,6 +126,15 @@ export function RoomHeader({
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-primary-400/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-primary-400" /></div>{room.builderName} <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" /></span>
             <ObserverAvatarStack room={room} />
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Clock className="w-3 h-3 text-slate-500" /></div>{timeAgo(room.updatedAt)}</span>
+            {room.authorshipTimestamp && (
+              <span
+                className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full cursor-help"
+                title={`Authorship established: ${new Date(room.authorshipTimestamp).toLocaleString()}`}
+              >
+                <ShieldCheck className="w-3 h-3" />
+                Authored {timeAgo(room.authorshipTimestamp)}
+              </span>
+            )}
           </div>
         </div>
 

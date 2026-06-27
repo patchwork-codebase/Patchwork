@@ -13,7 +13,8 @@ interface InviteTeamModalProps {
 
 export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<'observer' | 'team_member' | 'expert'>('team_member');
+  const [role, setRole] = useState<'observer' | 'collaborator' | 'team_member' | 'expert' | 'investor' | 'co_founder' | 'org_member'>('team_member');
+  const [reason, setReason] = useState('');
   
   const { 
     invites, 
@@ -32,7 +33,7 @@ export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
       return;
     }
     inviteUser({ email, role }, {
-      onSuccess: () => setEmail("")
+      onSuccess: () => { setEmail(""); setReason(''); }
     });
   };
 
@@ -85,41 +86,49 @@ export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
 
               <div>
                 <label className="block text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-2">Role</label>
-                <div className="grid grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRole('team_member')}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${
-                      role === 'team_member' ? 'border-primary-400 bg-primary-400/5 text-primary-400' : 'border-slate-100 hover:border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    <ShieldCheck className="w-5 h-5 mb-1" />
-                    <span className="text-[12px] font-bold">Team Member</span>
-                    <span className="text-[10px] text-center mt-1 opacity-70">Can build & edit</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('expert')}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${
-                      role === 'expert' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-100 hover:border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    <UserPlus className="w-5 h-5 mb-1" />
-                    <span className="text-[12px] font-bold">Expert</span>
-                    <span className="text-[10px] text-center mt-1 opacity-70">Invited consultant</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('observer')}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${
-                      role === 'observer' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 hover:border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    <User className="w-5 h-5 mb-1" />
-                    <span className="text-[12px] font-bold">Observer</span>
-                    <span className="text-[10px] text-center mt-1 opacity-70">View & react only</span>
-                  </button>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: 'observer', icon: '👁️', label: 'Observer', desc: 'View & react only' },
+                    { value: 'collaborator', icon: '🤝', label: 'Collaborator', desc: 'View & contribute' },
+                    { value: 'team_member', icon: '👥', label: 'Team Member', desc: 'Full room access' },
+                    { value: 'expert', icon: '⭐', label: 'Expert', desc: 'Review access' },
+                    { value: 'investor', icon: '💼', label: 'Investor', desc: 'Investor content' },
+                    { value: 'co_founder', icon: '🚀', label: 'Co-Founder', desc: 'Co-founder access' },
+                    { value: 'org_member', icon: '🏢', label: 'Org Member', desc: 'Org access' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setRole(opt.value)}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left ${
+                        role === opt.value
+                          ? 'border-primary-400 bg-primary-400/5 text-primary-400'
+                          : 'border-slate-100 hover:border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      <span className="text-lg shrink-0">{opt.icon}</span>
+                      <div>
+                        <p className="text-[12px] font-bold leading-tight">{opt.label}</p>
+                        <p className="text-[10px] opacity-70">{opt.desc}</p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="invite-reason" className="block text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Reason for Invitation <span className="font-normal text-slate-400">(Optional)</span>
+                </label>
+                <input
+                  id="invite-reason"
+                  type="text"
+                  value={reason}
+                  onChange={e => setReason(e.target.value)}
+                  placeholder="e.g. I'd love your technical feedback on the architecture"
+                  maxLength={200}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-400 transition-all"
+                />
               </div>
 
               <button

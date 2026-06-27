@@ -129,7 +129,8 @@ export default function CreateRoom() {
       primaryLink: '',
       projectStage: 'Ideation',
       primaryGoal: 'Just sharing my journey',
-      isPrivate: false
+      visibility: 'public' as 'public' | 'unlisted' | 'private' | 'org_only' | 'nda_protected',
+      ndaText: '' as string,
     };
   });
   
@@ -345,7 +346,9 @@ export default function CreateRoom() {
           primary_link: form.primaryLink.trim() || null,
           project_stage: form.projectStage,
           primary_goal: form.primaryGoal,
-          is_private: form.isPrivate
+          visibility: form.visibility,
+          is_private: ['private', 'org_only', 'nda_protected'].includes(form.visibility),
+          nda_text: form.visibility === 'nda_protected' && form.ndaText.trim() ? form.ndaText.trim() : null,
         };
 
         const { error } = await supabase
@@ -632,35 +635,95 @@ export default function CreateRoom() {
               />
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-4 transition-all hover:border-primary-400/30 hover:bg-primary-400/5">
-              <div className="flex-1">
-                <h4 className="text-[14px] font-bold text-slate-900 mb-1 flex items-center gap-2">
-                  Room Visibility
-                  {form.isPrivate ? (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-100 flex items-center gap-1"><Lock className="w-3 h-3" /> Private</span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">Public</span>
-                  )}
-                </h4>
-                <p className="text-[13px] text-slate-600 font-medium">
-                  {form.isPrivate 
-                    ? "Only people with the direct link can view this room. It will be hidden from the feed." 
-                    : "This room will appear in the global Patchwork feed for anyone to discover."}
-                </p>
+            {/* Room Visibility — 5-level selector */}
+            <div>
+              <label className="block text-[13px] font-bold text-slate-700 mb-3">Room Visibility</label>
+              <div className="grid grid-cols-1 gap-2">
+                {([
+                  {
+                    value: 'public',
+                    icon: '🌍',
+                    label: 'Public',
+                    description: 'Visible to everyone. Appears in the Patchwork feed.',
+                    color: 'border-emerald-200 bg-emerald-50',
+                    activeColor: 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500',
+                    badgeColor: 'bg-emerald-100 text-emerald-700',
+                  },
+                  {
+                    value: 'unlisted',
+                    icon: '🔗',
+                    label: 'Unlisted',
+                    description: 'Accessible via direct link only. Not searchable or listed.',
+                    color: 'border-slate-200 bg-slate-50',
+                    activeColor: 'border-slate-500 bg-slate-50 ring-1 ring-slate-500',
+                    badgeColor: 'bg-slate-100 text-slate-700',
+                  },
+                  {
+                    value: 'private',
+                    icon: '🔒',
+                    label: 'Private',
+                    description: 'Invitation only. Hidden from search and feed. Requires invite to enter.',
+                    color: 'border-slate-200 bg-slate-50',
+                    activeColor: 'border-slate-800 bg-slate-50 ring-1 ring-slate-800',
+                    badgeColor: 'bg-slate-800 text-slate-100',
+                  },
+                  {
+                    value: 'org_only',
+                    icon: '🏢',
+                    label: 'Organization Only',
+                    description: 'Accessible only by verified members of your organization.',
+                    color: 'border-blue-200 bg-blue-50',
+                    activeColor: 'border-blue-500 bg-blue-50 ring-1 ring-blue-500',
+                    badgeColor: 'bg-blue-100 text-blue-700',
+                  },
+                  {
+                    value: 'nda_protected',
+                    icon: '📜',
+                    label: 'NDA Protected',
+                    description: 'Requires acceptance of a digital NDA before entering. Access is recorded.',
+                    color: 'border-primary-400/30 bg-primary-400/5',
+                    activeColor: 'border-primary-400 bg-primary-400/5 ring-1 ring-primary-400',
+                    badgeColor: 'bg-primary-400/10 text-primary-400',
+                  },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, visibility: opt.value }))}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3 ${
+                      form.visibility === opt.value ? opt.activeColor : opt.color
+                    }`}
+                  >
+                    <span className="text-xl shrink-0 mt-0.5">{opt.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[13px] font-bold text-slate-900">{opt.label}</span>
+                        {form.visibility === opt.value && (
+                          <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${opt.badgeColor}`}>Selected</span>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-slate-500 font-medium leading-snug">{opt.description}</p>
+                    </div>
+                  </button>
+                ))}
               </div>
-              <button
-                type="button"
-                onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 ${form.isPrivate ? 'bg-slate-800' : 'bg-emerald-500'}`}
-                role="switch"
-                aria-checked={form.isPrivate}
-              >
-                <span className="sr-only">Toggle visibility</span>
-                <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.isPrivate ? 'translate-x-5' : 'translate-x-0'}`}
-                />
-              </button>
+
+              {/* Custom NDA text — only shown when nda_protected is selected */}
+              {form.visibility === 'nda_protected' && (
+                <div className="mt-4">
+                  <label className="block text-[13px] font-bold text-slate-700 mb-2">
+                    Custom NDA Text
+                    <span className="ml-2 text-[11px] font-normal text-slate-400">(Optional — leave blank to use the Patchwork standard NDA)</span>
+                  </label>
+                  <textarea
+                    value={form.ndaText}
+                    onChange={e => setForm(f => ({ ...f, ndaText: e.target.value }))}
+                    rows={5}
+                    placeholder="Enter your custom NDA terms here, or leave blank to use the Patchwork standard confidentiality agreement..."
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed"
+                  />
+                </div>
+              )}
             </div>
           </motion.div>
         );

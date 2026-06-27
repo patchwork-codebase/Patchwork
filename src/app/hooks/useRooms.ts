@@ -38,19 +38,29 @@ export function useRoomDetails(roomId?: string, userId?: string) {
 
       const { data: roomData, error: roomError } = await supabase
         .from('rooms')
-        .select('*, users!builder_id(is_verified_expert)')
+        .select(`
+          *,
+          users!builder_id(
+            is_verified_expert,
+            organization_name,
+            organization_logo_url
+          )
+        `)
         .eq('id', roomId)
         .maybeSingle();
 
       if (roomError) throw roomError;
       if (!roomData) return null;
 
-      // Strict Privacy Check
-      if (roomData.is_private) {
-        if (!userId) return null; // Unauthenticated users cannot see private rooms
-        
+      // Strict Privacy Check — works with both legacy is_private and new visibility
+      const visibility = roomData.visibility ?? (roomData.is_private ? 'private' : 'public');
+      const isRestricted = ['private', 'org_only', 'nda_protected'].includes(visibility);
+
+      if (isRestricted) {
+        if (!userId) return null; // Unauthenticated users cannot see restricted rooms
+
         if (roomData.builder_id !== userId) {
-          // Not the builder, check if they are an explicitly invited observer
+          // Not the builder — check if they are an approved observer
           const { data: observerData } = await supabase
             .from('room_observers')
             .select('observer_id')
@@ -58,7 +68,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
             .eq('observer_id', userId)
             .maybeSingle();
 
-          if (!observerData) return null; // Not authorized -> hide room completely
+          if (!observerData) return null; // Not authorized — hide room completely
         }
       }
 
@@ -78,11 +88,20 @@ export function useRoomDetails(roomId?: string, userId?: string) {
 
       if (reactionsError) throw reactionsError;
 
+      const usersObj = Array.isArray(roomData.users) ? roomData.users[0] : roomData.users;
       return {
         ...normalizeRow(roomData),
-        builderIsVerifiedExpert: !!(roomData.users?.is_verified_expert),
-        builderOrgName: roomData.users?.organization_name,
-        builderOrgLogo: roomData.users?.organization_logo_url,
+        // Always expose canonical visibility
+        visibility: (roomData.visibility ?? (roomData.is_private ? 'private' : 'public')) as Room['visibility'],
+        // IP Protection fields
+        contentPermissions: roomData.content_permissions ?? null,
+        protectionFlags: roomData.protection_flags ?? null,
+        ndaText: roomData.nda_text ?? null,
+        authorshipTimestamp: roomData.authorship_timestamp ?? null,
+        // Builder info
+        builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
+        builderOrgName: (usersObj as any)?.organization_name ?? null,
+        builderOrgLogo: (usersObj as any)?.organization_logo_url ?? null,
         updates: (updatesData || []).map(normalizeRow),
         reactions: (reactionsData || []).map(normalizeRow)
       };
@@ -179,7 +198,7 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
           updates(content, created_at)
         `)
         .eq('status', 'active')
-        .eq('is_private', false);
+        .eq('visibility', 'public');
 
       if (searchQuery) {
         queryBuilder = queryBuilder.or(`title.ilike.%${searchQuery}%,builder_name.ilike.%${searchQuery}%`);

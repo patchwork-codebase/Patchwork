@@ -77,8 +77,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
         title: title.trim(),
         description: description.trim() || null,
         media_url: uploadedMediaUrl || (mediaPreview && mediaPreview.startsWith('http') ? mediaPreview : null),
-        external_link: externalLink.trim() || null,
-        is_private: isPrivate
+        external_link: externalLink.trim() || null
       };
 
       if (initialDecision?.id) {

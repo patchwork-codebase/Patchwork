@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile, Loader2 } from "lucide-react";
+import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile, Loader2, LayoutDashboard, Layers, Activity, Users, Clock, ShieldCheck } from "lucide-react";
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
@@ -26,6 +26,11 @@ import { RequestJoinModal } from "./RequestJoinModal";
 import { RoomComposer } from "./RoomComposer";
 import { OfficialRoomModal } from "./OfficialRoomModal";
 import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
+import { NdaGateModal } from "./NdaGateModal";
+import { BuildTimelineCard } from "./BuildTimelineCard";
+import { RoomAccessAuditTab } from "./RoomAccessAuditTab";
+import { useCheckNdaAccepted } from "../../hooks/useNda";
+import { useLogRoomAccess } from "../../hooks/useRoomAccessLog";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-primary-400/10 text-primary-400 border border-primary-400/20', desc: 'Incisive, direct critique' },
@@ -50,7 +55,7 @@ export default function BuildRoom() {
   const [hasAttemptedAcceptInvite, setHasAttemptedAcceptInvite] = useState(false);
 
   const [reactionModal, setReactionModal] = useState<{ open: boolean; updateId: string | null }>({ open: false, updateId: null });
-  const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions' | 'team'>('updates');
+  const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'updates' | 'reactions' | 'team' | 'timeline' | 'audit'>('updates');
   const [closingRoom, setClosingRoom] = useState(false);
   const [linkedinShareOpen, setLinkedinShareOpen] = useState(false);
   const [requestExpertModalOpen, setRequestExpertModalOpen] = useState(false);
@@ -63,6 +68,37 @@ export default function BuildRoom() {
 
   const isBuilder = room && profile?.role === 'builder' && room.builderId === user?.id;
   const joined = room?.observerCount !== undefined; // simplified
+
+  // IP Protection hooks
+  const { data: ndaAccepted, isLoading: ndaLoading } = useCheckNdaAccepted(
+    room?.visibility === 'nda_protected' && !isBuilder && !!user ? id : undefined
+  );
+  const logAccess = useLogRoomAccess();
+  const [ndaGateOpen, setNdaGateOpen] = useState(false);
+
+  // Open NDA gate if room is nda_protected, user is not builder, and NDA not yet accepted
+  useEffect(() => {
+    if (
+      room &&
+      room.visibility === 'nda_protected' &&
+      !isBuilder &&
+      user &&
+      !ndaLoading &&
+      ndaAccepted === false
+    ) {
+      setNdaGateOpen(true);
+    } else {
+      setNdaGateOpen(false);
+    }
+  }, [room, isBuilder, user, ndaAccepted, ndaLoading]);
+
+  // Log room view on first load (fire-and-forget)
+  useEffect(() => {
+    if (room && user && !isBuilder) {
+      logAccess.mutate({ roomId: room.id, action: 'viewed' });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.id, user?.id]);
 
   const [showOfficialModal, setShowOfficialModal] = useState(false);
 
@@ -260,6 +296,18 @@ export default function BuildRoom() {
   return (
     <>
       <OfficialRoomModal open={showOfficialModal} onClose={handleCloseOfficialModal} />
+
+      {/* NDA Gate — shown to non-builders who haven't accepted the NDA yet */}
+      {ndaGateOpen && room && (
+        <NdaGateModal
+          roomId={room.id}
+          roomTitle={room.title}
+          builderName={room.builderName}
+          customNdaText={room.ndaText}
+          onAccepted={() => setNdaGateOpen(false)}
+        />
+      )}
+
       <div className="max-w-[1000px] w-full mx-auto px-4 sm:px-6 py-6 md:py-10 relative">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
@@ -278,31 +326,46 @@ export default function BuildRoom() {
           setRequestExpertModalOpen={setRequestExpertModalOpen}
         />
 
-        <div className="flex items-center gap-2 border-b border-white/[0.06] mb-8 pb-px mt-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
-          {[
-            { key: 'updates', label: 'Updates', count: room.updates.length, show: true },
-            { key: 'overview', label: 'Overview', count: null, show: true },
-            { key: 'workspace', label: 'Product Workspace', count: null, show: true },
-            { key: 'reactions', label: 'Reactions', count: room.reactions.length, show: true },
-            { key: 'team', label: 'Team Members', count: room.observerCount, show: room.isPrivate }
-          ].filter(t => t.show).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`px-5 py-3 text-[14px] font-bold border-b-2 transition-all flex items-center gap-2 focus-ring ${
-                activeTab === tab.key
-                  ? 'border-primary-400 text-primary-400'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
-              }`}
-            >
-              {tab.label}
-              {tab.count !== null && (
-                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold tracking-widest ${
-                  activeTab === tab.key ? 'bg-primary-400/20 text-primary-400 ring-1 ring-primary-400/30' : 'bg-white/5 text-slate-500'
-                }`}>{tab.count}</span>
-              )}
-            </button>
-          ))}
+        <div className="relative mb-8 w-full group/tabs">
+          {/* Scroll fade hints for mobile/desktop to indicate scrollability */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none opacity-100 transition-opacity" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none opacity-100 transition-opacity" />
+          
+          <div className="flex items-center gap-1.5 md:gap-2 bg-slate-50/80 p-1.5 rounded-2xl overflow-x-auto scrollbar-hide whitespace-nowrap border border-slate-200/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] relative z-0 snap-x">
+            {[
+              { key: 'updates', label: 'Updates', icon: <MessageCircle className="w-4 h-4" />, count: room.updates.length, show: true },
+              { key: 'overview', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4" />, count: null, show: true },
+              { key: 'workspace', label: 'Workspace', icon: <Layers className="w-4 h-4" />, count: null, show: true },
+              { key: 'reactions', label: 'Reactions', icon: <Smile className="w-4 h-4" />, count: room.reactions.length, show: true },
+              { key: 'team', label: 'Team', icon: <Users className="w-4 h-4" />, count: room.observerCount, show: room.isPrivate || room.visibility !== 'public' },
+              { key: 'timeline', label: 'Timeline', icon: <Clock className="w-4 h-4" />, count: null, show: true },
+              { key: 'audit', label: 'Access Log', icon: <ShieldCheck className="w-4 h-4" />, count: null, show: !!isBuilder },
+            ].filter(t => t.show).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`snap-start px-4 md:px-5 py-2.5 text-[13px] font-bold rounded-xl transition-all flex items-center gap-2 focus-ring select-none relative group ${
+                  activeTab === tab.key
+                    ? 'bg-white text-primary-600 ring-1 ring-slate-200 shadow-sm'
+                    : 'bg-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                }`}
+              >
+                <span className={`transition-colors ${activeTab === tab.key ? 'text-primary-500' : 'text-slate-400 group-hover:text-slate-500'}`}>
+                  {tab.icon}
+                </span>
+                {tab.label}
+                {tab.count !== null && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold tracking-widest ml-1 transition-colors ${
+                    activeTab === tab.key 
+                      ? 'bg-primary-50 text-primary-600 ring-1 ring-primary-100' 
+                      : 'bg-slate-200/70 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-600'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {activeTab === 'overview' && (
@@ -315,6 +378,19 @@ export default function BuildRoom() {
 
         {activeTab === 'team' && (
           <RoomTeamTab roomId={id!} isBuilder={isBuilder} roomTitle={room.title} builderName={room.builderName} />
+        )}
+
+        {activeTab === 'timeline' && (
+          <BuildTimelineCard
+            roomId={id!}
+            roomTitle={room.title}
+            builderName={room.builderName}
+            authorshipTimestamp={room.authorshipTimestamp}
+          />
+        )}
+
+        {activeTab === 'audit' && isBuilder && (
+          <RoomAccessAuditTab roomId={id!} />
         )}
 
         {activeTab === 'updates' && (
@@ -347,7 +423,7 @@ export default function BuildRoom() {
               </div>
             )}
 
-            <div className="h-[800px]">
+            <div className={`h-[800px] ${room.protectionFlags?.disableCopy ? 'select-none' : ''}`}>
               <RoomFeed 
                 room={room} 
                 user={user} 

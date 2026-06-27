@@ -115,9 +115,10 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
     try {
       const payload = {
         room_id: roomId,
+        builder_id: user.id,
+        type: 'decision',
         title: suggestedDecision.extractedText.slice(0, 50) + (suggestedDecision.extractedText.length > 50 ? '...' : ''),
         description: suggestedDecision.extractedText,
-        impact: 'Medium',
         created_at: new Date().toISOString()
       };
       const { error } = await supabase.from('room_decisions').insert(payload);

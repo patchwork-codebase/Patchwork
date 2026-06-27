@@ -75,7 +75,10 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
     primaryLink: '',
     projectStage: '',
     primaryGoal: '',
-    isPrivate: false
+    visibility: 'public' as 'public' | 'unlisted' | 'private' | 'org_only' | 'nda_protected',
+    disableDownloads: false,
+    disableCopy: false,
+    watermark: false,
   });
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -91,7 +94,10 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         primaryLink: room.primaryLink || '',
         projectStage: room.projectStage || 'Ideation',
         primaryGoal: room.primaryGoal || '',
-        isPrivate: room.isPrivate || false
+        visibility: room.visibility ?? (room.isPrivate ? 'private' : 'public'),
+        disableDownloads: room.protectionFlags?.disableDownloads ?? false,
+        disableCopy: room.protectionFlags?.disableCopy ?? false,
+        watermark: room.protectionFlags?.watermark ?? false,
       });
       setTags(room.tags || []);
     }
@@ -171,7 +177,13 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
         primary_link: form.primaryLink.trim() || null,
         project_stage: form.projectStage,
         primary_goal: form.primaryGoal,
-        is_private: form.isPrivate
+        visibility: form.visibility,
+        is_private: ['private', 'org_only', 'nda_protected'].includes(form.visibility),
+        protection_flags: {
+          disableDownloads: form.disableDownloads,
+          disableCopy: form.disableCopy,
+          watermark: form.watermark,
+        },
       };
 
       const { error } = await supabase.from('rooms').update(payload).eq('id', room.id);
@@ -289,38 +301,76 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                 />
               </div>
 
+              {/* Visibility Selector */}
               <div>
-                <div 
-                  onClick={() => setForm(f => ({ ...f, isPrivate: !f.isPrivate }))}
-                  className="bg-ink/30 rounded-xl p-5 border border-white/[0.05] flex items-start justify-between gap-4 cursor-pointer hover:bg-ink/50 transition-colors"
-                >
-                  <div>
-                    <h4 className="text-[14px] font-bold text-white mb-1 flex items-center gap-2">
-                      Room Visibility
-                      {form.isPrivate ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary-500/20 text-primary-400">Private</span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/10 text-slate-300">Public</span>
-                      )}
-                    </h4>
-                    <p className="text-[13px] text-slate-400 font-medium">
-                      {form.isPrivate 
-                        ? "Only people with the direct link can view this room." 
-                        : "This room will appear in the global Patchwork feed for anyone to discover."}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 ${form.isPrivate ? 'bg-primary-400' : 'bg-slate-700'}`}
-                    role="switch"
-                    aria-checked={form.isPrivate}
-                  >
-                    <span className="sr-only">Toggle visibility</span>
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.isPrivate ? 'translate-x-5' : 'translate-x-0'}`}
-                    />
-                  </button>
+                <label className="block text-[13px] font-bold text-slate-300 mb-3">Room Visibility</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {([
+                    { value: 'public', icon: '🌍', label: 'Public', desc: 'Visible to everyone. In feed.' },
+                    { value: 'unlisted', icon: '🔗', label: 'Unlisted', desc: 'Direct link only. Not listed.' },
+                    { value: 'private', icon: '🔒', label: 'Private', desc: 'Invitation only. Hidden.' },
+                    { value: 'org_only', icon: '🏢', label: 'Org Only', desc: 'Verified org members only.' },
+                    { value: 'nda_protected', icon: '📜', label: 'NDA Protected', desc: 'NDA required. Access is recorded.' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, visibility: opt.value }))}
+                      className={`w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                        form.visibility === opt.value
+                          ? 'border-primary-400 bg-primary-400/10'
+                          : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <span className="text-lg shrink-0">{opt.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-bold text-white">{opt.label}</span>
+                          {form.visibility === opt.value && (
+                            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary-400/20 text-primary-400">Selected</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium">{opt.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Protection Flags */}
+              <div>
+                <label className="block text-[13px] font-bold text-slate-300 mb-3">Content Protection</label>
+                <div className="space-y-2">
+                  {([
+                    { key: 'disableDownloads', label: 'Disable Downloads', desc: 'Prevent observers from downloading files', icon: '🛇' },
+                    { key: 'disableCopy', label: 'Disable Copy', desc: 'Prevent text selection and copying', icon: '📋' },
+                    { key: 'watermark', label: 'Watermark Files', desc: 'Add watermarks with name, timestamp, and room ID', icon: '🌊' },
+                  ] as const).map(flag => (
+                    <div
+                      key={flag.key}
+                      onClick={() => setForm(f => ({ ...f, [flag.key]: !f[flag.key as keyof typeof f] }))}
+                      className={`p-3.5 rounded-xl border flex items-start justify-between gap-3 cursor-pointer transition-all ${
+                        form[flag.key as keyof typeof form]
+                          ? 'border-primary-400/40 bg-primary-400/10'
+                          : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-lg">{flag.icon}</span>
+                        <div>
+                          <p className="text-[13px] font-bold text-white">{flag.label}</p>
+                          <p className="text-[11px] text-slate-500 font-medium">{flag.desc}</p>
+                        </div>
+                      </div>
+                      <div className={`relative shrink-0 inline-flex h-5 w-9 rounded-full border-2 border-transparent transition-colors ${
+                        form[flag.key as keyof typeof form] ? 'bg-primary-400' : 'bg-slate-700'
+                      }`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                          form[flag.key as keyof typeof form] ? 'translate-x-4' : 'translate-x-0'
+                        }`} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
