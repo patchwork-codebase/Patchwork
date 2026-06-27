@@ -22,6 +22,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { DesktopSidebar } from "./DesktopSidebar";
 
 import { GlobalHeader } from "./GlobalHeader";
+import { PwaInstallPrompt } from "./PwaInstallPrompt";
 
 export default function Layout() {
   const { user, profile, signOut, loading, refreshProfile } = useAuth();
@@ -221,6 +222,7 @@ export default function Layout() {
           </div>
         </main>
       </div>
+      <PwaInstallPrompt />
       <ScrollRestoration getKey={(location) => location.pathname} />
     </div>
   );
