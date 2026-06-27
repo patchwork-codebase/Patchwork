@@ -129,25 +129,22 @@ export function ActiveRoomsList({ rooms, loading, setTab, selectedRoomId, setSel
                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none group-hover:bg-slate-100 transition-colors" />
                   
                   <div className="flex flex-col gap-2 w-full relative">
-                    {/* Title row — full width, never compete with tag */}
-                    <div className="flex items-start gap-2 min-w-0">
-                      <div className={`w-2 h-2 rounded-full mt-[5px] shrink-0 ${isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'}`} />
-                      <div className="flex flex-col gap-1">
-                        {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
-                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full w-fit">
-                            Pinned by Patchwork
-                          </div>
-                        )}
-                        <div className={`text-[14px] sm:text-[15px] font-extrabold transition-colors font-display leading-snug line-clamp-3 group-hover:underline break-words ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-700 group-hover:text-primary-400'}`}>
-                          {room.title}
-                        </div>
-                      </div>
+                    {/* Title — always first */}
+                    <div className={`text-[14px] sm:text-[15px] font-extrabold transition-colors font-display leading-snug line-clamp-3 group-hover:underline break-words ${selectedRoomId === room.id ? 'text-slate-900' : 'text-slate-700 group-hover:text-primary-400'}`}>
+                      {room.title}
                     </div>
 
-                    {/* Tag — always below title, never on same row */}
-                    <span className={`self-start text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color} border border-current/10`}>
-                      {tag}
-                    </span>
+                    {/* Tag + Pinned badge on same row */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color} border border-current/10`}>
+                        {tag}
+                      </span>
+                      {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
+                        <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full">
+                          Pinned by Patchwork
+                        </div>
+                      )}
+                    </div>
 
                     {/* Meta row */}
                     <div className="flex items-center justify-between gap-2">

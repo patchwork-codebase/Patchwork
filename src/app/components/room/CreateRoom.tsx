@@ -384,16 +384,16 @@ export default function CreateRoom() {
             className="space-y-8"
           >
             {/* Templates Section */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-              <h3 className="text-[14px] font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary-400" /> Start from a template
+            <div>
+              <h3 className="text-[13px] font-bold text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-primary-400" /> Start from a template
               </h3>
               {loadingTemplates ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
                 </div>
               ) : (
-                <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3">
                   {templates.map(tpl => {
                     const IconMatch = {
                       FileText: FileText,
@@ -417,7 +417,7 @@ export default function CreateRoom() {
                           setTags(tpl.recommended_tags || []);
                           toast.success(`Applied ${tpl.name} template!`);
                         }}
-                        className={`text-left p-4 rounded-xl border transition-all shrink-0 w-[240px] snap-center sm:w-auto sm:shrink sm:snap-align-none ${isSelected ? 'border-primary-400 bg-primary-400/5 ring-1 ring-primary-400' : 'border-slate-200 bg-white hover:border-primary-400/50 hover:shadow-sm'}`}
+                        className={`text-left p-4 rounded-xl border transition-all shrink-0 w-[220px] snap-center sm:w-auto sm:shrink sm:snap-align-none ${isSelected ? 'border-primary-400 bg-primary-400/5 ring-1 ring-primary-400' : 'border-slate-200 bg-white hover:border-primary-400/50 hover:shadow-sm'}`}
                       >
                         <div className="flex items-center gap-2 mb-2">
                           <IconMatch className={`w-4 h-4 ${isSelected ? 'text-primary-400' : 'text-slate-500'}`} />

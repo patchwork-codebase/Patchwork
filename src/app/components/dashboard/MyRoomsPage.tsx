@@ -138,28 +138,21 @@ export default function MyRoomsPage() {
                   <div className="absolute top-0 right-0 w-48 h-48 bg-slate-50 rounded-full blur-[50px] -mr-24 -mt-24 pointer-events-none group-hover:bg-primary-500/5 transition-colors duration-500" />
 
                   <div className="flex flex-col gap-3 relative">
-                    <div className="flex items-start gap-2.5">
-                      <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
-                        isShipped ? 'bg-primary-400 shadow-[0_0_8px_rgba(108,92,231,0.4)]'
-                        : isPaused ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]'
-                        : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'
-                      }`} />
-                      <div className="flex flex-col gap-1">
-                        {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
-                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full w-fit">
-                            Pinned by Patchwork
-                          </div>
-                        )}
-                        <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
-                          {room.title}
-                        </h2>
-                      </div>
-                    </div>
+                    {/* Title first */}
+                    <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
+                      {room.title}
+                    </h2>
 
-                    <div className="flex flex-wrap items-center gap-2 pl-5">
+                    {/* Tag + Pinned badge on same row */}
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${tStyle.bg} ${tStyle.color}`}>
                         {tag}
                       </span>
+                      {room.id === PATCHWORK_OFFICIAL_ROOM_ID && (
+                        <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full">
+                          Pinned by Patchwork
+                        </div>
+                      )}
                       <span className="capitalize px-2 py-0.5 bg-slate-100 rounded-md text-slate-600 text-[11px] font-bold">
                         {isShipped ? <span className="text-primary-400">Shipped</span>
                           : room.status === 'draft' ? <span className="text-amber-500">Draft</span>
