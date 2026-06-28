@@ -85,7 +85,7 @@ export function LandingHero({
           </h1>
 
           <p className="max-w-2xl text-lg sm:text-xl text-slate-400 leading-relaxed">
-            {"Stream your work-in-progress publicly or securely to your team. Gather structured peer reviews, and automatically generate a Build Log as living proof-of-work.".split(" ").map((word, i) => (
+            {"Patchwork helps you capture every decision, every iteration, and every milestone, so your journey becomes as valuable as what you build.".split(" ").map((word, i) => (
               <motion.span
                 key={i}
                 initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
