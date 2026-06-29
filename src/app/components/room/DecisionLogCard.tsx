@@ -6,6 +6,7 @@ import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { SmartImage } from "../ui/SmartImage";
 import { LogDecisionModal } from "./LogDecisionModal";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -275,8 +276,8 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       )}
                       
                       {decision.media_url && (
-                        <div className="mb-3 rounded-xl overflow-hidden border border-slate-200">
-                          <img src={decision.media_url} alt="Decision context" className="max-h-[300px] w-full object-cover" />
+                        <div className="mb-3 w-fit rounded-xl overflow-hidden border border-slate-200">
+                          <SmartImage src={decision.media_url} aspectRatio="auto" alt="Decision context" />
                         </div>
                       )}
 

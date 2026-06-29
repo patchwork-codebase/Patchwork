@@ -5,6 +5,7 @@ import type { Room } from "../../types";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { SmartImage } from "../ui/SmartImage";
 
 const SUGGESTED_TAGS = ['design', 'engineering', 'product', 'research', 'writing', 'growth'];
 
@@ -235,7 +236,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                 >
                   {form.coverImage ? (
                     <>
-                      <img src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                      <SmartImage src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <span className="text-white text-sm font-bold flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Change Image</span>
                       </div>

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Send, ImageIcon, Code, Smile, Sparkles, Hammer } from "lucide-react";
 import EmojiPicker from 'emoji-picker-react';
 import { AnimatePresence } from "motion/react";
+import { SmartImage } from "../ui/SmartImage";
 
 interface RoomComposerProps {
   roomId: string;
@@ -224,9 +225,9 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
         </div>
       
       {mediaPreview && (
-        <div className="relative w-fit mb-4 group/preview">
+        <div className="relative w-[200px] mb-4 group/preview">
           <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-            <img src={mediaPreview} alt="Upload preview" className="max-h-[200px] object-cover" />
+            <SmartImage src={mediaPreview} aspectRatio="auto" alt="Upload preview" className="max-h-[200px] object-cover" />
           </div>
         </div>
       )}

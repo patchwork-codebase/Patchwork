@@ -34,6 +34,7 @@ interface Room {
 
 
 import { useProfile } from "../../hooks/useProfile";
+import { useFollow } from "../../hooks/useFollow";
 import { useUserRooms } from "../../hooks/useRooms";
 import { useQueryClient } from "@tanstack/react-query";
 import { EditProfileForm } from "./EditProfileForm";
@@ -53,6 +54,7 @@ export default function UserProfile() {
   const { data: expertApp } = useExpertApplication(user?.id);
   
   const { data: profile, isLoading: profileLoading } = useProfile(id);
+  const { isFollowing, isLoading: followLoading, toggleFollow } = useFollow(id, user?.id);
   const { 
     data: roomsData, 
     isLoading: roomsLoading,
@@ -77,19 +79,17 @@ export default function UserProfile() {
     skills: [] as string[],
     expert_available: true,
     expert_open_slots: 3,
-    expert_avg_response_hours: 48
+    expert_avg_response_hours: 48,
+    email_notifications_enabled: true,
+    in_app_notifications_enabled: true
   });
   const [skillInput, setSkillInput] = useState('');
   const [saving, setSaving] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followLoading, setFollowLoading] = useState(false);
-
   const loading = profileLoading || roomsLoading;
   const isOwn = user?.id === id;
 
   useEffect(() => {
     if (profile) {
-      setIsFollowing(profile.isFollowing || false);
       setEditForm({ 
         name: profile.name || '', 
         bio: profile.bio || '', 
@@ -104,37 +104,12 @@ export default function UserProfile() {
         skills: profile.skills || [],
         expert_available: profile.expertAvailable ?? true,
         expert_open_slots: profile.expertOpenSlots ?? 3,
-        expert_avg_response_hours: profile.expertAvgResponseHours ?? 48
+        expert_avg_response_hours: profile.expertAvgResponseHours ?? 48,
+        email_notifications_enabled: profile.emailNotificationsEnabled ?? true,
+        in_app_notifications_enabled: profile.inAppNotificationsEnabled ?? true
       });
     }
   }, [profile]);
-
-  const handleFollowToggle = async () => {
-    if (!id || !user || isOwn) return;
-    setFollowLoading(true);
-    try {
-      if (isFollowing) {
-        const { error } = await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('follows')
-          .insert({ follower_id: user.id, following_id: id });
-        if (error) throw error;
-      }
-      setIsFollowing(!isFollowing);
-      queryClient.invalidateQueries({ queryKey: ['profile', id] });
-      toast.success(isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
-    } catch (err: unknown) {
-      toast.error(`Failed to update follow status: ${(err instanceof Error ? err.message : String(err))}`);
-    } finally {
-      setFollowLoading(false);
-    }
-  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -273,7 +248,7 @@ export default function UserProfile() {
               )
             ) : (
               <button
-                onClick={handleFollowToggle}
+                onClick={toggleFollow}
                 disabled={followLoading || !user}
                 className={`flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all disabled:opacity-50 ${
                   isFollowing 

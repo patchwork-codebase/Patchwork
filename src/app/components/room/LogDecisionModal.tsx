@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, CheckCircle, Zap, Target, AlertTriangle, ImageIcon, Link as LinkIcon, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
+import { SmartImage } from "../ui/SmartImage";
 
 interface LogDecisionModalProps {
   isOpen: boolean;
@@ -211,9 +212,9 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
                   className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors resize-none h-24 mb-3"
                 />
                 {mediaPreview && (
-                  <div className="relative w-fit mb-3 group/preview">
+                  <div className="relative w-[150px] mb-3 group/preview">
                     <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#1A1820]">
-                      <img src={mediaPreview} alt="Upload preview" className="max-h-[120px] object-cover" />
+                      <SmartImage src={mediaPreview} aspectRatio="auto" alt="Upload preview" className="max-h-[120px] object-cover" />
                     </div>
                     <button 
                       type="button" 

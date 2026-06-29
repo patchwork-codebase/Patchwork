@@ -423,7 +423,7 @@ export default function BuildRoom() {
               </div>
             )}
 
-            <div className={`h-[800px] ${room.protectionFlags?.disableCopy ? 'select-none' : ''}`}>
+            <div className={`w-full min-h-[500px] pb-10 ${room.protectionFlags?.disableCopy ? 'select-none' : ''}`}>
               <RoomFeed 
                 room={room} 
                 user={user} 

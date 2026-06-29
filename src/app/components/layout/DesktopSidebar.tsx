@@ -41,7 +41,7 @@ export function DesktopSidebar({
   // Observer sidebar uses the same white sidebar shell as builders, with observer-specific nav items
   if (isObserver) {
     return (
-      <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
+      <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-white/40 dark:border-slate-800/50 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
         <nav className="p-5 flex-1 overflow-y-auto">
 
@@ -111,7 +111,7 @@ export function DesktopSidebar({
         </nav>
 
         {/* Profile card at the very bottom */}
-        <div className="border-t border-slate-200 p-4 bg-slate-50/50">
+        <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
           <div className="relative">
             <button
               onClick={() => setProfileMenuOpen(o => !o)}
@@ -183,7 +183,7 @@ export function DesktopSidebar({
   }
 
   return (
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white border-r border-slate-200 flex-col sticky top-[60px] h-[calc(100vh-60px)] z-30">
+        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-white/40 dark:border-slate-800/50 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
           <nav className="p-5 flex-1 overflow-y-auto">
 
@@ -301,7 +301,7 @@ export function DesktopSidebar({
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-slate-200 p-4 bg-slate-50/50">
+          <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
             <div className="relative">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}

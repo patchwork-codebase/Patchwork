@@ -5,6 +5,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from "../auth/AuthContext";
 import { usePostUpdate } from "../../hooks/usePostUpdate";
 import type { Room, Profile } from "../../types";
+import { SmartImage } from "../ui/SmartImage";
 
 interface ComposerProps {
   user: { id: string; email?: string } | null;
@@ -64,7 +65,7 @@ export function Composer({
   if (profile?.role !== 'builder') return null;
 
   return (
-    <div className="hidden sm:flex bg-white border border-slate-200 shadow-sm rounded-[16px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6">
+    <div className="hidden sm:flex bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-white/40 dark:border-slate-800/50 shadow-sm rounded-[24px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6 transition-all duration-300 focus-within:shadow-xl focus-within:-translate-y-1 focus-within:bg-white/80 dark:focus-within:bg-slate-900/60 relative">
       <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
         <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
       </div>
@@ -78,9 +79,9 @@ export function Composer({
         />
 
         {mediaPreview && (
-          <div className="relative w-fit mb-4 group/preview mt-3">
+          <div className="relative w-[200px] mb-4 group/preview mt-3">
             <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-              <img src={mediaPreview} alt="Upload preview" className="max-h-[200px] object-cover" />
+              <SmartImage src={mediaPreview} aspectRatio="auto" alt="Upload preview" className="max-h-[200px] object-cover" />
             </div>
             <button
               type="button"

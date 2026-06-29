@@ -248,6 +248,42 @@ export function EditProfileForm({
                     </div>
                   )}
 
+                  {/* Notification Settings Form */}
+                  <div className="pt-6 mt-2 border-t border-slate-200 space-y-5">
+                    <div>
+                      <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-1">Notification Preferences</h3>
+                      <p className="text-[12px] text-slate-600">Choose how you want to be notified about activity.</p>
+                    </div>
+                    
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-3">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={editForm.email_notifications_enabled !== false}
+                            onChange={(e) => setEditForm((f: any) => ({ ...f, email_notifications_enabled: e.target.checked }))}
+                          />
+                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                        </label>
+                        <span className="text-[13px] font-bold text-slate-900">Email Notifications</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={editForm.in_app_notifications_enabled !== false}
+                            onChange={(e) => setEditForm((f: any) => ({ ...f, in_app_notifications_enabled: e.target.checked }))}
+                          />
+                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                        </label>
+                        <span className="text-[13px] font-bold text-slate-900">In-App Notifications</span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
   );
 }

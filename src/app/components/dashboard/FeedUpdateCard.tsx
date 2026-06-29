@@ -8,6 +8,7 @@ import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
+import { SmartImage } from "../ui/SmartImage";
 import { ReplyComposer } from "./ReplyComposer";
 import type { Room, Profile } from "../../types";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
@@ -52,6 +53,7 @@ interface FeedUpdateCardProps {
   queryClient: any;
   
   toggleComments: (id: string) => void;
+  setExpandedComments: React.Dispatch<React.SetStateAction<string[]>>;
   setFullyExpandedComments: React.Dispatch<React.SetStateAction<string[]>>;
   setReplyingTo: (id: string | null) => void;
   handleToggleReaction: (updateId: string, roomId: string, type: 'sharp' | 'pushback' | 'tellmemore', currentReactions: any[]) => void;
@@ -76,6 +78,7 @@ export function FeedUpdateCard({
   deletingUpdateId,
   queryClient,
   toggleComments,
+  setExpandedComments,
   setFullyExpandedComments,
   setReplyingTo,
   handleToggleReaction,
@@ -102,7 +105,7 @@ export function FeedUpdateCard({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
       onClick={() => toggleComments(update.id)}
-      className="bg-transparent border-b border-slate-200/60 px-4 py-5 sm:p-6 sm:px-8 hover:bg-slate-50/50 transition-all cursor-pointer relative focus-ring"
+      className="w-full max-w-full bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-white/40 dark:border-slate-800/50 shadow-sm rounded-[28px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/40 dark:hover:shadow-black/20 hover:bg-white/80 dark:hover:bg-slate-900/60 transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') toggleComments(update.id);
@@ -175,7 +178,7 @@ export function FeedUpdateCard({
             <span className="truncate hover:underline cursor-pointer">{roomTitle}</span>
           </div>
 
-          <div className="mt-1">
+          <div className="mt-1 w-full max-w-full">
             {update.content && (
               update.content.includes("figma.com/") ? (
                 <div className="my-3 rounded-[20px] overflow-hidden border border-slate-200/60 shadow-sm bg-slate-50 relative group">
@@ -193,8 +196,8 @@ export function FeedUpdateCard({
             )}
 
             {update.mediaUrl && (
-              <div className="mt-3 rounded-[20px] overflow-hidden border border-slate-200/60 bg-slate-50 relative group">
-                <img src={update.mediaUrl} alt="Update media" className="w-full object-cover max-h-[600px] hover:scale-[1.02] transition-transform duration-500" />
+              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-200/60 bg-slate-50 relative group">
+                <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
               </div>
             )}
 
@@ -283,7 +286,7 @@ export function FeedUpdateCard({
                         <span className="font-bold text-[13px] text-slate-900">{reply.observerName}</span>
                         <span className="text-[11px] text-slate-400">{timeAgo(reply.createdAt)}</span>
                       </div>
-                      <p className="text-[14px] text-slate-700 leading-relaxed">{reply.content}</p>
+                      <p className="text-[14px] text-slate-700 leading-relaxed">{reply.text || reply.content}</p>
                     </div>
                   </div>
                 ))}

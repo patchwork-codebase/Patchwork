@@ -42,7 +42,7 @@ export function RoomCard({ room }: RoomCardProps) {
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => navigate(`/dashboard/room/${room.id}`)}
-      className="group bg-white border border-slate-200 hover:border-primary-400/50 rounded-[28px] flex flex-col cursor-pointer transition-colors hover:shadow-xl hover:shadow-primary-400/10 relative overflow-hidden"
+      className="group bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-white/40 dark:border-slate-800/50 hover:border-primary-400/50 rounded-[32px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/10 hover:bg-white/80 dark:hover:bg-slate-900/60 relative overflow-hidden"
     >
       {/* Cover Banner */}
       <div

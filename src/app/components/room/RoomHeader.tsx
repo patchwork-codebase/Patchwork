@@ -3,6 +3,7 @@ import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCi
 import { timeAgo, getObserverCount } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
+import { SmartImage } from "../ui/SmartImage";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
 import {
   AlertDialog,
@@ -49,8 +50,8 @@ export function RoomHeader({
   return (
     <div className="bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] mb-8 shadow-sm relative overflow-hidden">
       {room.coverImage && (
-        <div className="w-full h-48 sm:h-64 md:h-72 relative border-b border-slate-100">
-          <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover" />
+        <div className="w-full relative border-b border-slate-100">
+          <SmartImage src={room.coverImage} aspectRatio="banner" alt={room.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
         </div>
       )}

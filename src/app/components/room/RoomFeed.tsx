@@ -2,13 +2,14 @@ import { useRef, useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { useSearchParams } from "react-router";
 import { Hammer, Trash2, Zap } from "lucide-react";
-import { timeAgo } from "../../utils/helpers";
+import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 import { analyzeFeedbackSignal } from "../../../utils/feedbackEngine";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { SmartArtifactCard } from "../ui/SmartArtifactCard";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { SmartImage } from "../ui/SmartImage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,9 +24,9 @@ import {
 import type { Room, Reaction, Update, ReactionConfig } from "../../types";
 
 const CATEGORY_BADGE: Record<string, string> = {
-  Bug:           'bg-rose-50 text-rose-600 border-rose-200',
-  Idea:          'bg-emerald-50 text-emerald-600 border-emerald-200',
-  Critique:      'bg-amber-50 text-amber-600 border-amber-200',
+  Bug: 'bg-rose-50 text-rose-600 border-rose-200',
+  Idea: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+  Critique: 'bg-amber-50 text-amber-600 border-amber-200',
   Encouragement: 'bg-blue-50 text-blue-600 border-blue-200',
   Uncategorized: 'bg-slate-50 text-slate-500 border-slate-200',
 };
@@ -114,8 +115,8 @@ export function RoomFeed({
   }
 
   const sortedUpdates = [...room.updates].reverse();
-  const initialTopMostItemIndex = updateIdToScroll 
-    ? Math.max(0, sortedUpdates.findIndex((u: any) => u.id === updateIdToScroll)) 
+  const initialTopMostItemIndex = updateIdToScroll
+    ? Math.max(0, sortedUpdates.findIndex((u: any) => u.id === updateIdToScroll))
     : 0;
 
   return (
@@ -129,16 +130,20 @@ export function RoomFeed({
         const isTarget = update.id === updateIdToScroll;
 
         return (
-          <div key={update.id} id={`update-${update.id}`} className={`bg-white border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 ${isTarget ? 'border-primary-400 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400' : 'border-slate-200 shadow-sm'}`} tabIndex={0}>
+          <div key={update.id} id={`update-${update.id}`} className={`w-full max-w-full bg-white border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 ${isTarget ? 'border-primary-400 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400' : 'border-slate-200 shadow-sm'}`} tabIndex={0}>
             {isTarget && (
               <div className="absolute inset-0 bg-primary-400/5 pointer-events-none animate-pulse" />
             )}
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
+
             <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-400 flex items-center justify-center text-white text-[15px] font-extrabold font-display shadow-inner">
-                  {update.authorName[0]?.toUpperCase()}
+                <div className="w-10 h-10 rounded-xl border border-slate-200 shadow-sm overflow-hidden shrink-0">
+                  <img 
+                    src={getAvatarUrl(update.authorId || update.authorName)} 
+                    alt={update.authorName}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
                   <div className="text-[15px] font-extrabold text-slate-900 font-display flex items-center gap-1.5">
@@ -157,45 +162,45 @@ export function RoomFeed({
                       </>
                     )}
                     {update.authorId === user?.id && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button
-                              onClick={(e) => e.stopPropagation()}
-                              disabled={deletingUpdateId === update.id}
-                              className="text-slate-500 hover:text-rose-400 transition-colors p-2.5 sm:p-2 -m-2 sm:-m-1 rounded-lg hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-0 sm:min-h-0"
-                              title="Delete update"
-                            >
-                              {deletingUpdateId === update.id ? (
-                                <span className="w-3 h-3 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
-                              ) : (
-                                <Trash2 className="w-3 h-3" />
-                              )}
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent 
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-[#0E0C16] border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.8)] sm:rounded-[24px]"
+                            disabled={deletingUpdateId === update.id}
+                            className="text-slate-500 hover:text-rose-400 transition-colors p-2.5 sm:p-2 -m-2 sm:-m-1 rounded-lg hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-0 sm:min-h-0"
+                            title="Delete update"
                           >
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-[20px] font-display font-extrabold text-white">Delete this update?</AlertDialogTitle>
-                              <AlertDialogDescription className="text-slate-400 text-[14px] font-medium leading-relaxed mt-2">
-                                This action cannot be undone. This will permanently remove your update from the timeline.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="mt-6 border-t border-white/[0.05] pt-4">
-                              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteUpdate(update.id);
-                                }}
-                                className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 font-bold transition-all"
-                              >
-                                Delete Update
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                            {deletingUpdateId === update.id ? (
+                              <span className="w-3 h-3 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-[#0E0C16] border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.8)] sm:rounded-[24px]"
+                        >
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-[20px] font-display font-extrabold text-white">Delete this update?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-slate-400 text-[14px] font-medium leading-relaxed mt-2">
+                              This action cannot be undone. This will permanently remove your update from the timeline.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter className="mt-6 border-t border-white/[0.05] pt-4">
+                            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteUpdate(update.id);
+                              }}
+                              className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 font-bold transition-all"
+                            >
+                              Delete Update
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 </div>
@@ -209,13 +214,13 @@ export function RoomFeed({
                 </button>
               )}
             </div>
-            
+
             {isFigmaUrl ? (
-               <FigmaEmbed content={update.content} />
+              <FigmaEmbed content={update.content} />
             ) : (
-              <ReadMoreText 
-                content={update.content} 
-                className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap font-medium border-l-[3px] border-primary-400/40 pl-4 sm:pl-5 mb-4 relative z-10" 
+              <ReadMoreText
+                content={update.content}
+                className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words font-medium border-l-[3px] border-primary-400/40 pl-4 sm:pl-5 mb-4 relative z-10"
               />
             )}
 
@@ -231,11 +236,11 @@ export function RoomFeed({
               ));
             })()}
 
-            {update.mediaUrl && (
-              <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
-                <img src={update.mediaUrl} alt="Update media" className="w-full h-auto object-cover max-h-[400px] sm:max-h-[500px]" />
-              </div>
-            )}
+              {update.mediaUrl && (
+                <div className="mb-6 w-full max-w-full relative z-10 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
+                  <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" />
+                </div>
+              )}
 
             {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
 
@@ -244,8 +249,8 @@ export function RoomFeed({
                 acc[r.type] = (acc[r.type] || 0) + 1;
                 return acc;
               }, {} as Record<string, number>);
-              
-              const textReactions = updateReactions.filter((r: Reaction) => r.text && r.text.trim().length > 0);
+
+              const textReactions = updateReactions.filter((r: Reaction) => r.text && r.text.trim().length > 0 && r.text !== r.type);
               const isExpanded = expandedUpdates[update.id];
               const visibleReactions = isExpanded ? textReactions : textReactions.slice(0, 3);
               const hiddenCount = textReactions.length - visibleReactions.length;
@@ -273,12 +278,11 @@ export function RoomFeed({
                         const hasText = r.text && r.text.trim().length > 0;
                         const analysis = hasText ? analyzeFeedbackSignal(r.text as string, false) : { category: 'Uncategorized', signalScore: 0 };
                         const isHighSignal = analysis.signalScore >= 70;
-                        
+
                         return (
-                          <div key={r.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
-                              isHighSignal
-                                ? 'bg-amber-50/50 border-amber-200 shadow-sm'
-                                : 'bg-slate-50 border-slate-200'
+                          <div key={r.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${isHighSignal
+                              ? 'bg-amber-50/50 border-amber-200 shadow-sm'
+                              : 'bg-slate-50 border-slate-200'
                             }`}>
                             <div className="text-xl mt-0.5">{cfg.emoji}</div>
                             <div className="flex-1 min-w-0">
@@ -293,7 +297,7 @@ export function RoomFeed({
                                 </span>
                                 <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
                                 {isBuilder && r.type === 'tellmemore' && (
-                                  <button 
+                                  <button
                                     onClick={() => {
                                       setNewUpdate(`> Replying to Tell Me More from @${r.observerName}:\n\n`);
                                       updateTextAreaRef.current?.focus();
@@ -305,12 +309,12 @@ export function RoomFeed({
                                   </button>
                                 )}
                               </div>
-                              <p className="text-[13px] text-slate-700 leading-relaxed font-medium">{r.text}</p>
+                              <p className="text-[13px] text-slate-700 leading-relaxed font-medium break-words">{r.text}</p>
                             </div>
                           </div>
                         );
                       })}
-                      
+
                       {hiddenCount > 0 && (
                         <button
                           onClick={() => setExpandedUpdates((prev: Record<string, boolean>) => ({ ...prev, [update.id]: true }))}

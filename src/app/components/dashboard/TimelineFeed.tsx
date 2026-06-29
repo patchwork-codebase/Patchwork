@@ -445,6 +445,7 @@ export function TimelineFeed({
                   deletingUpdateId={deletingUpdateId}
                   queryClient={queryClient}
                   toggleComments={toggleComments}
+                  setExpandedComments={setExpandedComments}
                   setFullyExpandedComments={setFullyExpandedComments}
                   setReplyingTo={setReplyingTo}
                   handleToggleReaction={handleToggleReaction}

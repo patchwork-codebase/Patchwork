@@ -376,7 +376,7 @@ export default function AuthPage() {
 
         {/* Removed Tab Switcher for cleaner UI */}
 
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm sm:max-w-md bg-white/5 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/10 dark:border-slate-800/50 p-8 sm:p-10 rounded-[32px] shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
           <AnimatePresence mode="wait">
             {/* ── LOGIN FORM ── */}
             {tab === 'login' && (

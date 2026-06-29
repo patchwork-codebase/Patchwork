@@ -4,6 +4,7 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { ArrowLeft, Plus, X, ArrowRight, Sparkles, Image as ImageIcon, ChevronDown, Lock, FileText, Users, Rocket, LayoutTemplate, Crosshair, Loader2, Check, Hammer } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
+import { SmartImage } from "../ui/SmartImage";
 
 const SUGGESTED_TAGS = ['design', 'engineering', 'product', 'research', 'writing', 'growth'];
 
@@ -440,7 +441,7 @@ export default function CreateRoom() {
               >
                 {form.coverImage ? (
                   <>
-                    <img src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                    <SmartImage src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <span className="text-white text-sm font-bold flex items-center gap-2">
                         <ImageIcon className="w-4 h-4" /> Change Image

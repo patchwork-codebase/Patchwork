@@ -115,7 +115,21 @@ export default function Notifications() {
                 icon = '📝';
                 bg = 'bg-primary-400/10';
                 color = 'text-primary-400';
-                linkTo = `/build-room/${n.metadata?.room_id}/decision/${n.reference_id}`;
+                linkTo = `/dashboard/room/${n.metadata?.room_id}?updateId=${n.reference_id}`;
+              } else if (n.type === 'decision_updated') {
+                const roomTitle = n.metadata?.room_title || 'a room';
+                text = `updated a Decision Log in "${roomTitle}"`;
+                icon = '📝';
+                bg = 'bg-primary-400/10';
+                color = 'text-primary-400';
+                linkTo = `/dashboard/room/${n.metadata?.room_id}?updateId=${n.reference_id}`;
+              } else if (n.type === 'update_posted') {
+                const roomTitle = n.metadata?.room_title || 'a room';
+                text = `posted a new update in "${roomTitle}"`;
+                icon = '🔔';
+                bg = 'bg-primary-400/10';
+                color = 'text-primary-400';
+                linkTo = `/dashboard/room/${n.metadata?.room_id}?updateId=${n.reference_id}`;
               } else {
                 const roomTitle = n.metadata?.room_title || 'your room';
                 text = `started following "${roomTitle}"`;
@@ -133,9 +147,14 @@ export default function Notifications() {
                     <div className="text-[14px] text-slate-700 leading-snug">
                       <strong className="text-slate-900 font-bold">{actorName}</strong> {text}
                     </div>
-                    {isDecision && n.metadata?.decision_text && (
+                    {(isDecision || n.type === 'decision_updated') && n.metadata?.decision_text && (
                       <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl line-clamp-2">
                         {n.metadata.decision_text}...
+                      </div>
+                    )}
+                    {n.type === 'update_posted' && n.metadata?.update_text && (
+                      <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl line-clamp-2">
+                        {n.metadata.update_text}...
                       </div>
                     )}
                     {isReaction && n.metadata?.reaction_text && n.metadata.reaction_type !== 'like' && (

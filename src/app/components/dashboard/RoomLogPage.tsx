@@ -13,6 +13,7 @@ import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { ReadMoreText } from "../ui/ReadMoreText";
+import { SmartImage } from "../ui/SmartImage";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -363,7 +364,7 @@ export default function RoomLogPage() {
                 const reactionCounts = updateReactions.reduce((acc: any, r: any) => { acc[r.type] = (acc[r.type] || 0) + 1; return acc; }, {} as Record<string, number>);
                 const isFirst = idx === 0;
                 return (
-                  <div key={update.id} className={`bg-white border rounded-[20px] p-5 sm:p-6 shadow-sm relative ${isFirst ? 'border-primary-400/30 ring-1 ring-primary-400/10' : 'border-slate-200'}`}>
+                  <div key={update.id} className={`w-full max-w-full bg-white border rounded-[20px] p-5 sm:p-6 shadow-sm relative ${isFirst ? 'border-primary-400/30 ring-1 ring-primary-400/10' : 'border-slate-200'}`}>
                     {isFirst && (
                       <div className="absolute top-4 right-4">
                         <span className="text-[9px] font-bold text-primary-400 bg-primary-400/10 border border-primary-400/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Final update</span>
@@ -386,8 +387,8 @@ export default function RoomLogPage() {
                     </div>
                     <ReadMoreText text={update.content} maxLength={300} className="text-[14px] text-slate-700 leading-relaxed font-medium" />
                     {update.mediaUrl && (
-                      <div className="mt-3 rounded-xl overflow-hidden border border-slate-200">
-                        <img src={update.mediaUrl} alt="Update media" className="w-full max-h-[300px] object-cover" />
+                      <div className="mt-3 w-full max-w-full rounded-xl overflow-hidden border border-slate-200">
+                        <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" />
                       </div>
                     )}
                     {Object.keys(reactionCounts).length > 0 && (
@@ -412,7 +413,7 @@ export default function RoomLogPage() {
       )}
 
       {activeSection === 'reactions' && (() => {
-        const textReactions = reactions.filter((r: any) => r.text?.trim());
+        const textReactions = reactions.filter((r: any) => r.text?.trim() && r.text !== r.type);
         
         // Calculate Room Pulse
         const pulse = { Bug: 0, Idea: 0, Critique: 0, Encouragement: 0, Uncategorized: 0 };
