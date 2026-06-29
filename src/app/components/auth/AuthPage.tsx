@@ -395,10 +395,15 @@ export default function AuthPage() {
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    {error}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: [0, -10, 10, -5, 5, 0] }}
+                    transition={{ duration: 0.4 }}
+                    className="flex items-center gap-3 bg-rose-950/40 border border-rose-500/30 text-rose-200 text-[13.5px] font-semibold px-4 py-3.5 rounded-xl shadow-lg shadow-rose-950/20"
+                  >
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{error}</span>
+                  </motion.div>
                 )}
 
                 <div className="relative">
@@ -470,10 +475,15 @@ export default function AuthPage() {
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] font-medium px-4 py-3 rounded-xl">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    {error}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: [0, -10, 10, -5, 5, 0] }}
+                    transition={{ duration: 0.4 }}
+                    className="flex items-center gap-3 bg-rose-950/40 border border-rose-500/30 text-rose-200 text-[13.5px] font-semibold px-4 py-3.5 rounded-xl shadow-lg shadow-rose-950/20"
+                  >
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{error}</span>
+                  </motion.div>
                 )}
 
                 {/* Role selector */}
