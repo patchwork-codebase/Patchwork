@@ -66,9 +66,9 @@ const features = [
     icon: <MessageSquareCode className="h-6 w-6" />,
     title: "Structured Reactions",
     desc: "No noise, just signal. Observers react with three precise indicators: Sharp, Push back, or Tell me more.",
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
+    color: "text-sage-600 dark:text-sage-300",
+    bg: "bg-sage-100 dark:bg-sage-950/20",
+    border: "border-sage-300/30",
     size: "sm",
   },
   {

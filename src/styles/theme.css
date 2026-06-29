@@ -34,6 +34,16 @@
   --amber: #F59E0B;
   --red: #EF4444;
 
+  /* Sage Green scale */
+  --sage-50: #f1f7f4;
+  --sage-100: #e0eee6;
+  --sage-200: #c5ded1;
+  --sage-300: #a6cdba;
+  --sage-400: #7fb69b;
+  --sage-500: #5e9b7d;
+  --sage-600: #497a61;
+  --sage-950: #1b3224;
+
   /* Font families */
   --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'DM Mono', monospace;
@@ -329,6 +339,15 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-sage: var(--sage-300);
+  --color-sage-50: var(--sage-50);
+  --color-sage-100: var(--sage-100);
+  --color-sage-200: var(--sage-200);
+  --color-sage-300: var(--sage-300);
+  --color-sage-400: var(--sage-400);
+  --color-sage-500: var(--sage-500);
+  --color-sage-600: var(--sage-600);
+  --color-sage-950: var(--sage-950);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);

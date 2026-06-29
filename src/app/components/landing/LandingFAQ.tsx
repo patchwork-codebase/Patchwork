@@ -32,7 +32,9 @@ export function LandingFAQ({ activeFaq, setActiveFaq }: LandingFAQProps) {
                     return (
                       <div
                         key={idx}
-                        className="rounded-2xl border border-white/10 bg-[#0E0C15] overflow-hidden transition"
+                        className={`rounded-2xl border overflow-hidden transition-all duration-300 ${
+                          isOpen ? "border-sage/40 bg-[#0E0C15] shadow-lg shadow-sage-950/5" : "border-white/10 bg-[#0E0C15]"
+                        }`}
                       >
                         <button
                           onClick={() => setActiveFaq(isOpen ? null : idx)}
@@ -49,7 +51,7 @@ export function LandingFAQ({ activeFaq, setActiveFaq }: LandingFAQProps) {
 
                         {/* Dynamic Height collapse */}
                         {isOpen && (
-                          <div className="border-t border-white/10 bg-[#1C1A24] px-6 py-5 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+                          <div className="border-t border-white/10 bg-sage-950/20 px-6 py-5 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
                             {faq.a}
                           </div>
                         )}

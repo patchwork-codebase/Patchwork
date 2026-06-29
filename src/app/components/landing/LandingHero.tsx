@@ -77,7 +77,7 @@ export function LandingHero({
                 initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.8, delay: 0.4 + (i * 0.1), ease: [0.16, 1, 0.3, 1] }}
-                className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-[#DDD8FF] inline-block"
+                className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-sage-300 inline-block"
               >
                 {word}
               </motion.span>

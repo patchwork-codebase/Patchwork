@@ -145,7 +145,7 @@ export function LandingWorkflow({
                       selectedWorkflowStep === 1 ? 'bg-[#1C1A24] text-slate-400 border border-white/5' :
                       selectedWorkflowStep === 2 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
                       selectedWorkflowStep === 3 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                      'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      'bg-sage-500/10 text-sage-300 border border-sage-500/20'
                     }`}>
                       {workflowSteps[selectedWorkflowStep - 1].mockup.tag}
                     </span>

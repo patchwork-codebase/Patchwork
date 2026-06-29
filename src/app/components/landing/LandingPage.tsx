@@ -35,7 +35,6 @@ import { LandingHero } from "./LandingHero";
 import { LandingFeatures } from "./LandingFeatures";
 import { LandingWorkflow } from "./LandingWorkflow";
 import { LandingShowcase } from "./LandingShowcase";
-import { LandingCalculator } from "./LandingCalculator";
 import { LandingFAQ } from "./LandingFAQ";
 import { LandingCTA } from "./LandingCTA";
 import { LandingFooter } from "./LandingFooter";
@@ -94,9 +93,7 @@ export default function LandingPage() {
 
   const [selectedWorkflowStep, setSelectedWorkflowStep] = useState(1);
 
-  const [calcUpdates, setCalcUpdates] = useState(3);
-  const [calcReactions, setCalcReactions] = useState(15);
-  const [calcObservers, setCalcObservers] = useState(10);
+
 
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
@@ -197,13 +194,7 @@ export default function LandingPage() {
     ? showcaseBuilders
     : showcaseBuilders.filter(b => b.domain === selectedShowcaseDomain);
 
-  // Reputation Calculator Math
-  const calculateReputation = () => {
-    const updatePoints = calcUpdates * 10;
-    const reactionPoints = calcReactions * 5;
-    const observerPoints = calcObservers * 15;
-    return updatePoints + reactionPoints + observerPoints;
-  };
+
 
   // Handle Newsletter Submission
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -423,16 +414,7 @@ export default function LandingPage() {
               userShowcaseReactions={userShowcaseReactions}
             />
 
-            {/* ─── Reputation Calculator (Gamification) ─────────────────────── */}
-            <LandingCalculator 
-              calcUpdates={calcUpdates}
-              setCalcUpdates={setCalcUpdates}
-              calcReactions={calcReactions}
-              setCalcReactions={setCalcReactions}
-              calcObservers={calcObservers}
-              setCalcObservers={setCalcObservers}
-              calculateReputation={calculateReputation}
-            />
+
 
             {/* ─── FAQ Section ────────────────────────────────────────────────── */}
             <LandingFAQ 
