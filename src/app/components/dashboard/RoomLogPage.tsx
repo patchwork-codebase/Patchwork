@@ -10,6 +10,8 @@ import { SmartArtifactCard } from '../../components/room/SmartArtifactCard';
 import { extractKeywords } from '../../utils/keywordExtractor';
 import { useRoomDetails } from "../../hooks/useRooms";
 import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
+import { ReactionPicker } from './ReactionPicker';
+import { ReputationBadge } from '../ui/ReputationBadge';
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { ReadMoreText } from "../ui/ReadMoreText";
@@ -545,6 +547,7 @@ export default function RoomLogPage() {
                       )}
                       <img src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="observer" />
                       <span className="text-[12px] font-bold text-slate-800">{r.observerName}</span>
+                      <ReputationBadge score={r.observerReputation || 0} />
                       <span className="text-[10px] text-slate-400 font-mono ml-auto">{timeAgo(r.createdAt)}</span>
                     </div>
                     <p className="text-[13px] sm:text-[14px] text-slate-700 leading-relaxed font-medium">{r.text}</p>

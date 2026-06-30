@@ -134,6 +134,7 @@ export interface Profile {
   name: string;
   role: 'builder' | 'observer' | 'admin';
   reputation?: number;
+  domain_reputation?: Record<string, number>;
   bio?: string | null;
   avatarUrl?: string | null;
   githubUrl?: string | null;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Zap, Eye, MessagesSquare, CheckCircle2, Flame, ArrowUpRight } from "lucide-react";
+import { Zap, Eye, MessagesSquare, CheckCircle2, Flame, ArrowUpRight, Compass } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { useObservedRooms, useObserverStats } from "../../hooks/useRooms";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
@@ -32,6 +32,31 @@ export default function ObserverHub() {
   });
 
   const followedRooms = roomsData?.pages.flat() || [];
+
+  const { data: similarRooms, isLoading: similarLoading } = useQuery({
+    queryKey: ['similar-problems', user?.id, followedRooms.length],
+    queryFn: async () => {
+      if (!followedRooms || followedRooms.length === 0) return [];
+      // Extract unique tags from followed rooms to find similar problems
+      const tags = followedRooms.flatMap((r: any) => r.tags || []);
+      const uniqueTags = Array.from(new Set(tags));
+      if (uniqueTags.length === 0) return [];
+
+      // Naive approach: find rooms with the most prominent tag that the user is NOT already following
+      const followedIds = followedRooms.map((r: any) => r.id);
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('id, title, description, tags, builder_name, update_count, status')
+        .eq('is_private', false)
+        .contains('tags', [uniqueTags[0]])
+        .not('id', 'in', `(${followedIds.join(',')})`)
+        .order('update_count', { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && followedRooms.length > 0
+  });
 
   return (
     <div className="max-w-[1100px] mx-auto px-6 py-8">
@@ -154,6 +179,41 @@ export default function ObserverHub() {
                   </div>
                 </Link>
               ))}
+            </div>
+          </div>
+
+          {/* ── SIMILAR PROBLEMS ── */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
+                Similar problems <Compass className="w-5 h-5 text-emerald-500" />
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {similarLoading ? (
+                <div className="col-span-full p-8 text-center text-slate-600 font-medium">Discovering similar rooms...</div>
+              ) : similarRooms && similarRooms.length > 0 ? (
+                similarRooms.map((room: any) => (
+                  <Link key={room.id} to={`/dashboard/room/${room.id}`} className="bg-white border border-slate-200 shadow-sm hover:border-emerald-500/30 rounded-[20px] p-5 flex flex-col justify-between hover:bg-slate-50 transition-all group">
+                    <div>
+                      <div className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider mb-3 inline-block">
+                        {room.tags?.[0] || 'Similar'}
+                      </div>
+                      <h3 className="text-[15px] font-bold text-slate-900 group-hover:text-emerald-500 transition-colors mb-1 leading-snug">{room.title}</h3>
+                      <p className="text-[12px] text-slate-500 font-medium truncate mb-4">by {room.builder_name || 'Builder'}</p>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+                      <span className="text-[11px] font-bold text-slate-600">{room.update_count || 0} updates</span>
+                      <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-full p-8 text-center bg-slate-50 border border-slate-200 rounded-[20px]">
+                  <p className="text-[13px] text-slate-500 font-medium">Follow more rooms to get personalized discovery suggestions!</p>
+                </div>
+              )}
             </div>
           </div>
 

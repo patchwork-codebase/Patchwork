@@ -35,6 +35,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithLinkedin: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
   ensureValidSession: () => Promise<Session>;
   withVerification: (action: () => void) => void;
@@ -396,13 +398,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
 
+  async function resetPassword(email: string) {
+    const { data, error } = await supabase.functions.invoke('send-password-reset-email', {
+      body: { email }
+    });
+
+    if (error) {
+      console.error('Failed to call send-password-reset-email edge function:', error);
+      throw new Error('Failed to dispatch password reset email.');
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+  }
+
+  async function updatePassword(password: string) {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  }
+
   return (
     <AuthContext.Provider value={{ 
       user, session, profile, loading, token, 
       signUp, signIn, signOut, refreshProfile, ensureValidSession,
       withVerification,
       signInWithGoogle,
-      signInWithLinkedin
+      signInWithLinkedin,
+      resetPassword,
+      updatePassword
     }}>
       {children}
     </AuthContext.Provider>

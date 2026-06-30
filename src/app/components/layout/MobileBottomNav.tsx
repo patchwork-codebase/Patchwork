@@ -40,6 +40,7 @@ export function MobileBottomNav({
             {/* Home */}
             <Link
               to="/dashboard"
+              preventScrollReset={true}
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'overview' && (
@@ -59,6 +60,7 @@ export function MobileBottomNav({
             {/* Feed */}
             <Link
               to="/dashboard?tab=feed"
+              preventScrollReset={true}
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'feed' && (
@@ -77,6 +79,7 @@ export function MobileBottomNav({
             {/* My Rooms */}
             <Link
               to="/dashboard/rooms"
+              preventScrollReset={true}
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'rooms' && (
@@ -97,6 +100,7 @@ export function MobileBottomNav({
             {/* Explore */}
             <Link
               to="/dashboard/explore"
+              preventScrollReset={true}
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
             >
               {activeSection === 'explore' && (

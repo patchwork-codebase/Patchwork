@@ -431,7 +431,8 @@ export default function ObserverDashboardView({
                   const initials = (room.builderName || room.title || "?")
                     .split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
                   const colorClass = getColorClass(room.builderId || room.title);
-                  const isActive = room.status === "active";
+                  const latestUpdateDate = room.latestUpdate?.createdAt ? new Date(room.latestUpdate.createdAt) : null;
+                  const isActive = latestUpdateDate ? (Date.now() - latestUpdateDate.getTime() < 6 * 60 * 60 * 1000) : false;
                   return (
                     <Link
                       key={room.id}
@@ -441,15 +442,18 @@ export default function ObserverDashboardView({
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[11px] shrink-0 relative ${colorClass}`}>
                         {initials}
                         {isActive && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white" />
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-white"></span>
+                          </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[13px] font-bold text-slate-900 truncate group-hover:text-primary-400 transition-colors">
                           {room.title}
                         </div>
-                        <div className={`text-[11px] font-mono ${isActive ? "text-emerald-500" : "text-slate-400"}`}>
-                          {isActive ? `Active · Day ${room.updateCount ?? 0} updates` : room.status}
+                        <div className={`text-[11px] font-mono ${isActive ? "text-emerald-500 font-bold" : "text-slate-400"}`}>
+                          {isActive ? `Live · Updated ${timeAgo(room.latestUpdate.createdAt)}` : `Day ${room.updateCount ?? 0}`}
                         </div>
                       </div>
                     </Link>

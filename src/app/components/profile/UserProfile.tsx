@@ -166,7 +166,7 @@ export default function UserProfile() {
       <div className="bg-white border border-slate-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-10 mb-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
         
-        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
+        <div className={`flex flex-col ${editing ? '' : 'md:flex-row'} items-center md:items-start justify-between gap-6 relative z-10`}>
           <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 w-full flex-1">
             <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-sm overflow-hidden shrink-0 relative ring-1 ring-slate-200">
               <img

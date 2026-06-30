@@ -91,6 +91,14 @@ export const router = createBrowserRouter([
         lazy: () => import("./components/auth/AuthPage").then(m => ({ Component: m.default })),
       },
       {
+        path: "/forgot-password",
+        lazy: () => import("./components/auth/ForgotPasswordPage").then(m => ({ Component: m.default })),
+      },
+      {
+        path: "/reset-password",
+        lazy: () => import("./components/auth/ResetPasswordPage").then(m => ({ Component: m.default })),
+      },
+      {
         path: "/verify-email",
         lazy: () => import("./components/auth/VerifyEmail").then(m => ({ Component: m.default })),
       },

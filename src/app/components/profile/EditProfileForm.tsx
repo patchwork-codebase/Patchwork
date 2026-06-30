@@ -107,7 +107,7 @@ export function EditProfileForm({
   };
 
   return (
-                <div className="space-y-4 max-w-md mx-auto sm:mx-0 text-left">
+                <div className="space-y-4 w-full text-left">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Name</label>
                     <input

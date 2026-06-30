@@ -457,6 +457,12 @@ export default function AuthPage() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                
+                <div className="flex justify-end">
+                  <Link to="/forgot-password" className="text-[13px] font-bold text-primary-500 hover:text-primary-600 transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
 
                 <motion.button
                   whileHover={{ scale: loading ? 1 : 1.02 }}

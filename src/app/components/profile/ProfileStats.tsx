@@ -10,7 +10,6 @@ export function ProfileStats({ profile, roomsCount }: ProfileStatsProps) {
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">
       {[
         { label: 'Rooms', value: roomsCount, color: 'text-emerald-400', bg: 'bg-emerald-400/5', border: 'border-emerald-400/10' },
-        { label: 'Reputation', value: profile.reputation, color: 'text-amber-400', bg: 'bg-amber-400/5', border: 'border-amber-400/10' },
         { label: 'Role', value: profile.role, color: 'text-primary-400', bg: 'bg-primary-500/5', border: 'border-primary-500/10', capitalize: true },
       ].map((s, idx) => (
         <div key={s.label} className={`border ${s.border} ${s.bg} rounded-[16px] md:rounded-[20px] p-4 md:p-6 text-center backdrop-blur-sm ${idx === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
