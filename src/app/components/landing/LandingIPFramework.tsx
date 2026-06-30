@@ -1,27 +1,35 @@
 import { motion } from "motion/react";
-import { Shield, Lock, Eye, FileSignature, ArrowRight } from "lucide-react";
+import { Shield, Lock, Eye, FileSignature, ArrowRight, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router";
 
 const features = [
   {
-    icon: <Shield className="w-6 h-6 text-emerald-400" />,
-    title: "Immutable Proof of Authorship",
-    description: "Every decision is cryptographically hashed with timestamp and authorship data, creating an immutable log of when and who made the call."
+    icon: <Shield className="w-5 h-5 text-emerald-600" />,
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+    title: "Immutable Proof",
+    description: "Cryptographically hashed decisions with timestamp and authorship data."
   },
   {
-    icon: <Lock className="w-6 h-6 text-primary-400" />,
-    title: "Granular Access Controls",
-    description: "Keep stealth features completely private while sharing public progress. You control exactly who sees what in your build room."
+    icon: <Lock className="w-5 h-5 text-indigo-600" />,
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    title: "Granular Access",
+    description: "Keep stealth features private while sharing public progress."
   },
   {
-    icon: <FileSignature className="w-6 h-6 text-amber-400" />,
+    icon: <FileSignature className="w-5 h-5 text-amber-600" />,
+    bg: "bg-amber-50",
+    border: "border-amber-200",
     title: "Digital NDAs",
-    description: "Invited observers must digitally accept your Non-Disclosure Agreement before gaining access to private or restricted room content."
+    description: "Invited observers must digitally accept your NDA before access."
   },
   {
-    icon: <Eye className="w-6 h-6 text-blue-400" />,
-    title: "Comprehensive Audit Logs",
-    description: "Track exactly who views, downloads, or interacts with your protected content. Total transparency on how your IP is accessed."
+    icon: <Eye className="w-5 h-5 text-blue-600" />,
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    title: "Audit Logs",
+    description: "Total transparency on who views or interacts with your content."
   }
 ];
 
@@ -29,52 +37,55 @@ export function LandingIPFramework() {
   const navigate = useNavigate();
 
   return (
-    <section id="ip-framework" className="py-24 relative overflow-hidden bg-[#0A0812]">
-      {/* Background decorations */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+    <section id="ip-framework" className="py-24 sm:py-32 relative overflow-hidden bg-white border-y border-slate-200/50">
+      <div className="absolute inset-0 bg-[radial-gradient(slate-200_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.3]" />
       
-      <div className="max-w-[1200px] mx-auto px-6 relative z-10">
-        <div className="flex flex-col md:flex-row gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
           
-          <div className="flex-1 space-y-6 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-400 bg-primary-400/10 px-3 py-1.5 rounded-full border border-primary-400/20 mx-auto md:mx-0">
-              <Shield className="w-4 h-4" />
-              Built for Stealth & Security
+          {/* Left Text Content */}
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold uppercase tracking-widest border border-slate-200">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              Enterprise-Grade Security
             </div>
             
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white font-display tracking-tight leading-tight">
-              Protect your ideas with our <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">IP Protection Framework</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
+              Protect your ideas with our <span className="relative whitespace-nowrap">
+                <span className="relative z-10 text-slate-900">IP Framework</span>
+                <span className="absolute bottom-0 left-0 w-full h-3 bg-emerald-200 -z-10 -rotate-1" />
+              </span>
             </h2>
             
-            <p className="text-slate-400 text-lg leading-relaxed max-w-xl mx-auto md:mx-0">
+            <p className="text-slate-600 text-lg leading-relaxed font-medium max-w-lg">
               Building in public shouldn't mean giving away your intellectual property. Patchwork uses cryptographic hashing and digital agreements to ensure your ideas remain yours, forever.
             </p>
             
             <button 
               onClick={() => navigate('/ip-framework')}
-              className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-900 px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-full font-extrabold transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
             >
-              Read the Full IP Framework
+              Read the Full Framework
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+          {/* Right Cards Grid */}
+          <div className="grid sm:grid-cols-2 gap-4">
             {features.map((feature, idx) => (
               <motion.div 
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-white/[0.02] border border-white/[0.05] hover:border-white/10 p-6 rounded-2xl transition-colors"
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+                className="bg-white group hover:bg-slate-50 border border-slate-200 hover:border-slate-300 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-default"
               >
-                <div className="w-12 h-12 rounded-xl bg-white/[0.03] flex items-center justify-center mb-4 border border-white/[0.05]">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 border ${feature.bg} ${feature.border} group-hover:scale-110 transition-transform duration-300`}>
                   {feature.icon}
                 </div>
-                <h3 className="text-white font-bold text-[15px] mb-2">{feature.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="text-slate-900 font-extrabold text-[15px] mb-2">{feature.title}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed font-medium">{feature.description}</p>
               </motion.div>
             ))}
           </div>
