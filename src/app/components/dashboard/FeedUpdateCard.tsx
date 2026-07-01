@@ -208,7 +208,7 @@ export function FeedUpdateCard({
             )}
           </div>
 
-          <div className="flex items-center gap-6 mt-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4">
             {(['sharp', 'pushback', 'tellmemore'] as const).map((type) => {
               const icons = { sharp: '✦', pushback: '↩', tellmemore: '?' };
               const activeColors = { sharp: 'text-primary-500', pushback: 'text-rose-500', tellmemore: 'text-emerald-600' };

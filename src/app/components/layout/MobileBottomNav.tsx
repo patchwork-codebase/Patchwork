@@ -34,25 +34,34 @@ export function MobileBottomNav({
       {/* ── MOBILE BOTTOM NAV ─────────────────────────────── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
         {/* Safe-area spacer + glass bar */}
-        <div className="bg-white/95 backdrop-blur-2xl border-t border-slate-200/60 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
-          <nav className="flex items-stretch justify-around px-1 pt-1 pb-1">
+        <div className="bg-white/95 backdrop-blur-3xl border-t border-slate-200/50 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
+          <nav className="flex items-stretch justify-around px-2 pt-2 pb-2">
 
             {/* Home */}
             <Link
               to="/dashboard"
               preventScrollReset={true}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
+              className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] rounded-2xl active:scale-[0.92] transition-transform duration-200 ease-out select-none touch-manipulation"
             >
               {activeSection === 'overview' && (
-                <div className="absolute inset-0 bg-primary-500/10 rounded-xl" />
+                <motion.div
+                  layoutId="mobileNavIndicator"
+                  className="absolute inset-0 bg-gradient-to-b from-primary-500/15 to-transparent rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
               )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'overview' ? 'text-primary-500 scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill={activeSection === 'overview' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <motion.div 
+                animate={{ scale: activeSection === 'overview' ? 1.15 : 1, y: activeSection === 'overview' ? -2 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className={`relative z-10 ${activeSection === 'overview' ? 'text-primary-500' : 'text-slate-400'}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill={activeSection === 'overview' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'overview' ? 'text-primary-500' : 'text-slate-400'}`}>
+              </motion.div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'overview' ? 'text-primary-600' : 'text-slate-400'}`}>
                 Home
               </span>
             </Link>
@@ -61,17 +70,26 @@ export function MobileBottomNav({
             <Link
               to="/dashboard?tab=feed"
               preventScrollReset={true}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
+              className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] rounded-2xl active:scale-[0.92] transition-transform duration-200 ease-out select-none touch-manipulation"
             >
               {activeSection === 'feed' && (
-                <div className="absolute inset-0 bg-primary-500/10 rounded-xl" />
+                <motion.div
+                  layoutId="mobileNavIndicator"
+                  className="absolute inset-0 bg-gradient-to-b from-primary-500/15 to-transparent rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
               )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'feed' ? 'text-primary-500 scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeWidth={activeSection === 'feed' ? '2.5' : '2'} />
+              <motion.div 
+                animate={{ scale: activeSection === 'feed' ? 1.15 : 1, y: activeSection === 'feed' ? -2 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className={`relative z-10 ${activeSection === 'feed' ? 'text-primary-500' : 'text-slate-400'}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeWidth={activeSection === 'feed' ? '2.8' : '2.2'} />
                 </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'feed' ? 'text-primary-500' : 'text-slate-400'}`}>
+              </motion.div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'feed' ? 'text-primary-600' : 'text-slate-400'}`}>
                 Feed
               </span>
             </Link>
@@ -80,19 +98,28 @@ export function MobileBottomNav({
             <Link
               to="/dashboard/rooms"
               preventScrollReset={true}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
+              className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] rounded-2xl active:scale-[0.92] transition-transform duration-200 ease-out select-none touch-manipulation"
             >
               {activeSection === 'rooms' && (
-                <div className="absolute inset-0 bg-primary-500/10 rounded-xl" />
+                <motion.div
+                  layoutId="mobileNavIndicator"
+                  className="absolute inset-0 bg-gradient-to-b from-primary-500/15 to-transparent rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
               )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'rooms' ? 'text-primary-500 scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 12L9 6l-6 6 1.5 1.5L9 9l4.5 4.5L15 12Z" strokeWidth={activeSection === 'rooms' ? '2.5' : '2'} />
+              <motion.div 
+                animate={{ scale: activeSection === 'rooms' ? 1.15 : 1, y: activeSection === 'rooms' ? -2 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className={`relative z-10 ${activeSection === 'rooms' ? 'text-primary-500' : 'text-slate-400'}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 12L9 6l-6 6 1.5 1.5L9 9l4.5 4.5L15 12Z" strokeWidth={activeSection === 'rooms' ? '2.8' : '2.2'} />
                   <path d="M15 12l4.5 4.5-1.5 1.5L13.5 13.5" />
                   <path d="M9 6l3-3 3 3" />
                 </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'rooms' ? 'text-primary-500' : 'text-slate-400'}`}>
+              </motion.div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'rooms' ? 'text-primary-600' : 'text-slate-400'}`}>
                 Rooms
               </span>
             </Link>
@@ -101,18 +128,27 @@ export function MobileBottomNav({
             <Link
               to="/dashboard/explore"
               preventScrollReset={true}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
+              className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] rounded-2xl active:scale-[0.92] transition-transform duration-200 ease-out select-none touch-manipulation"
             >
               {activeSection === 'explore' && (
-                <div className="absolute inset-0 bg-primary-500/10 rounded-xl" />
+                <motion.div
+                  layoutId="mobileNavIndicator"
+                  className="absolute inset-0 bg-gradient-to-b from-primary-500/15 to-transparent rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
               )}
-              <div className={`relative z-10 transition-all duration-200 ${activeSection === 'explore' ? 'text-primary-500 scale-110' : 'text-slate-400'}`}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <motion.div 
+                animate={{ scale: activeSection === 'explore' ? 1.15 : 1, y: activeSection === 'explore' ? -2 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className={`relative z-10 ${activeSection === 'explore' ? 'text-primary-500' : 'text-slate-400'}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
                 </svg>
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'explore' ? 'text-primary-500' : 'text-slate-400'}`}>
+              </motion.div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'explore' ? 'text-primary-600' : 'text-slate-400'}`}>
                 Explore
               </span>
             </Link>
@@ -120,20 +156,29 @@ export function MobileBottomNav({
             {/* Profile */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] rounded-xl active:scale-95 transition-transform duration-100 select-none touch-manipulation"
+              className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] rounded-2xl active:scale-[0.92] transition-transform duration-200 ease-out select-none touch-manipulation"
             >
               {mobileMenuOpen && (
-                <div className="absolute inset-0 bg-primary-500/10 rounded-xl" />
+                <motion.div
+                  layoutId="mobileNavIndicator"
+                  className="absolute inset-0 bg-gradient-to-b from-primary-500/15 to-transparent rounded-2xl"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
               )}
-              <div className="relative z-10">
-                <div className={`w-7 h-7 rounded-full overflow-hidden transition-all duration-200 ${mobileMenuOpen ? 'ring-2 ring-primary-500 ring-offset-1 ring-offset-white' : 'ring-1 ring-slate-200'}`}>
+              <motion.div 
+                animate={{ scale: mobileMenuOpen ? 1.15 : 1, y: mobileMenuOpen ? -2 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="relative z-10"
+              >
+                <div className={`w-7 h-7 rounded-full overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-white shadow-md' : 'ring-1 ring-slate-200'}`}>
                   <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                 </div>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-1 ring-white" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" />
                 )}
-              </div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${mobileMenuOpen ? 'text-primary-500' : 'text-slate-400'}`}>
+              </motion.div>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${mobileMenuOpen ? 'text-primary-600' : 'text-slate-400'}`}>
                 Profile
               </span>
             </button>
