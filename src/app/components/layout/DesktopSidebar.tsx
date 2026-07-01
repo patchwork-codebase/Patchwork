@@ -4,6 +4,32 @@ import { motion, AnimatePresence } from "motion/react";
 import { DashboardIcon, HammerIcon, ZapIcon, ActivityIcon, EyeIcon, CompassIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, UserIcon, LogOutIcon, LightbulbIcon } from "./LayoutIcons";
 import { useObserverStats } from "../../hooks/useRooms";
 
+const NavItem = ({ to, icon, label, active, badge }: any) => (
+  <Link
+    to={to}
+    className={`relative flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border border-transparent focus-ring ${
+      active ? 'text-primary-500 font-bold' : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-50'
+    }`}
+  >
+    {active && (
+      <motion.div
+        layoutId="desktopSidebarActive"
+        className="absolute inset-0 bg-primary-500/15 border border-primary-500/30 rounded-xl z-0"
+        transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+      />
+    )}
+    <div className="flex items-center gap-2.5 relative z-10">
+      {icon}
+      {label}
+    </div>
+    {badge !== undefined && (
+      <span className="relative z-10 text-[10px] font-mono font-bold bg-white shadow-sm border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">
+        {badge}
+      </span>
+    )}
+  </Link>
+);
+
 interface DesktopSidebarProps {
   activeSection: string;
   avatarUrl: string;
@@ -43,65 +69,22 @@ export function DesktopSidebar({
     return (
       <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-white/40 dark:border-slate-800/50 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
-        <nav className="p-5 flex-1 overflow-y-auto">
+        <nav className="p-5 flex-1 overflow-y-auto custom-scrollbar">
 
           <div className="mb-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
             Discover
           </div>
 
-          <Link
-            to="/dashboard"
-            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' || activeSection === 'feed' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-          >
-            <DashboardIcon />
-            Live feed
-          </Link>
+          <NavItem to="/dashboard" icon={<DashboardIcon />} label="Live feed" active={activeSection === 'overview' || activeSection === 'feed'} />
+          <NavItem to="/dashboard/explore" icon={<CompassIcon />} label="Explore builders" active={activeSection === 'explore'} />
+          <NavItem to="/dashboard/build-logs" icon={<ZapIcon />} label="Best builds" active={activeSection === 'logs'} />
 
-          <Link
-            to="/dashboard/explore"
-            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'explore' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-          >
-            <CompassIcon />
-            Explore builders
-          </Link>
-
-          <Link
-            to="/dashboard/build-logs"
-            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-          >
-            <ZapIcon />
-            Best builds
-          </Link>
-
-          <div className="mb-2 mt-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+          <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
             Your activity
           </div>
 
-          <Link
-            to="/dashboard/rooms"
-            className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'rooms' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-          >
-            <div className="flex items-center gap-2.5">
-              <EyeIcon />
-              Following
-            </div>
-            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">
-              {stats?.roomsFollowed ?? 0}
-            </span>
-          </Link>
-
-          <Link
-            to="/dashboard/observer"
-            className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-          >
-            <div className="flex items-center gap-2.5">
-              <ActivityIcon />
-              My reactions
-            </div>
-            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">
-              {stats?.totalReactions ?? 0}
-            </span>
-          </Link>
+          <NavItem to="/dashboard/rooms" icon={<EyeIcon />} label="Following" active={activeSection === 'rooms'} badge={stats?.roomsFollowed ?? 0} />
+          <NavItem to="/dashboard/observer" icon={<ActivityIcon />} label="My reactions" active={activeSection === 'observer'} badge={stats?.totalReactions ?? 0} />
 
           <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
             <Link to="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
@@ -185,113 +168,53 @@ export function DesktopSidebar({
   return (
         <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-white/40 dark:border-slate-800/50 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
-          <nav className="p-5 flex-1 overflow-y-auto">
+          <nav className="p-5 flex-1 overflow-y-auto custom-scrollbar">
 
             {/* workspace section */}
             <div className="mb-2 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
               Primary
             </div>
 
-            <Link
-              to="/dashboard"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'overview' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <DashboardIcon />
-              Dashboard
-            </Link>
-
-            <Link
-              to="/dashboard/rooms"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'rooms' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <div className="flex items-center gap-2.5">
-                <HammerIcon />
-                My rooms
-              </div>
-            </Link>
-
-            <Link
-              to="/dashboard/build-logs"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-5 border ${activeSection === 'logs' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <ZapIcon />
-              Build logs
-            </Link>
+            <NavItem to="/dashboard" icon={<DashboardIcon />} label="Dashboard" active={activeSection === 'overview'} />
+            <NavItem to="/dashboard/rooms" icon={<HammerIcon />} label="My rooms" active={activeSection === 'rooms'} />
+            <NavItem to="/dashboard/build-logs" icon={<ZapIcon />} label="Build logs" active={activeSection === 'logs'} />
 
             {/* discovery section */}
             <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
               Secondary
             </div>
 
-            <Link
-              to="/dashboard?tab=feed"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'feed' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <ActivityIcon />
-              Global timeline
-            </Link>
-
-            <Link
-              to="/dashboard/observer"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'observer' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <EyeIcon />
-              Observer hub
-            </Link>
-
-            <Link
-              to="/dashboard/explore"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'explore' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <CompassIcon />
-              Explore builders
-            </Link>
-
+            <NavItem to="/dashboard?tab=feed" icon={<ActivityIcon />} label="Global timeline" active={activeSection === 'feed'} />
+            <NavItem to="/dashboard/observer" icon={<EyeIcon />} label="Observer hub" active={activeSection === 'observer'} />
+            <NavItem to="/dashboard/explore" icon={<CompassIcon />} label="Explore builders" active={activeSection === 'explore'} />
+            
             <Link
               to="/dashboard/discovery"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mt-1 border ${activeSection === 'discovery' ? 'bg-amber-500/15 text-amber-600 font-bold border-amber-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
+              className={`relative flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 mt-1 border-transparent focus-ring ${
+                activeSection === 'discovery' ? 'text-amber-600 font-bold' : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-50'
+              }`}
             >
-              <LightbulbIcon />
-              Discovery mode
+              {activeSection === 'discovery' && (
+                <motion.div
+                  layoutId="desktopSidebarActive"
+                  className="absolute inset-0 bg-amber-500/15 border border-amber-500/30 rounded-xl z-0"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <div className="flex items-center gap-2.5 relative z-10">
+                <LightbulbIcon />
+                Discovery mode
+              </div>
             </Link>
-
-
-            {/* <Link
-              to="/learning-hub"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'learning-hub' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <CompassIcon />
-              Learning Hub
-            </Link> */}
 
             {/* product ops section */}
             <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
               Product Ops
             </div>
 
-            <Link
-              to="/dashboard/roadmap"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'roadmap' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <RoadmapIcon />
-              Roadmap view
-            </Link>
-
-            <Link
-              to="/dashboard/milestones"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border ${activeSection === 'milestones' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <MilestonesIcon />
-              Milestones
-            </Link>
-
-            <Link
-              to="/dashboard/analytics"
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition border ${activeSection === 'analytics' ? 'bg-primary-500/15 text-primary-400 font-bold border-primary-500/30' : 'text-slate-600 font-medium border-transparent hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              <AnalyticsIcon />
-              Analytics
-            </Link>
+            <NavItem to="/dashboard/roadmap" icon={<RoadmapIcon />} label="Roadmap view" active={activeSection === 'roadmap'} />
+            <NavItem to="/dashboard/milestones" icon={<MilestonesIcon />} label="Milestones" active={activeSection === 'milestones'} />
+            <NavItem to="/dashboard/analytics" icon={<AnalyticsIcon />} label="Analytics" active={activeSection === 'analytics'} />
 
             <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
               <Link to="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>

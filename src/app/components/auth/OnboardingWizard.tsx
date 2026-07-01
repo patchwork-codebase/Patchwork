@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Country, State, City } from "country-state-city";
+// import { Country, State, City } from "country-state-city";
 import { useAuth } from "./AuthContext";
 import { AuthRedirectGuard } from "./AuthRedirectGuard";
 import { motion, AnimatePresence } from "motion/react";
@@ -134,6 +134,13 @@ export default function OnboardingWizard() {
       navigate('/login');
     }
   }, [user, authLoading, navigate]);
+
+  const [geoData, setGeoData] = useState<any>(null);
+  useEffect(() => {
+    if (step === 2 && !geoData) {
+      import("country-state-city").then(m => setGeoData(m));
+    }
+  }, [step, geoData]);
 
   // Sync initial userRole from profile once loaded
   useEffect(() => {
@@ -370,7 +377,7 @@ export default function OnboardingWizard() {
                     setStateIso('');
                     setCity('');
                   }}
-                  options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
+                  options={geoData ? geoData.Country.getAllCountries().map((c: any) => ({ value: c.isoCode, label: c.name })) : []}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -381,16 +388,16 @@ export default function OnboardingWizard() {
                       setStateIso(val);
                       setCity('');
                     }}
-                    disabled={!countryIso}
-                    options={countryIso ? State.getStatesOfCountry(countryIso).map(s => ({ value: s.isoCode, label: s.name })) : []}
+                    disabled={!countryIso || !geoData}
+                    options={countryIso && geoData ? geoData.State.getStatesOfCountry(countryIso).map((s: any) => ({ value: s.isoCode, label: s.name })) : []}
                   />
 
                   <SearchableSelect
                     label="City"
                     value={city}
                     onChange={setCity}
-                    disabled={!stateIso}
-                    options={stateIso ? City.getCitiesOfState(countryIso, stateIso).map(c => ({ value: c.name, label: c.name })) : []}
+                    disabled={!stateIso || !geoData}
+                    options={stateIso && geoData ? geoData.City.getCitiesOfState(countryIso, stateIso).map((c: any) => ({ value: c.name, label: c.name })) : []}
                   />
                 </div>
 

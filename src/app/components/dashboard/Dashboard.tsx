@@ -23,6 +23,7 @@ import { MobileActionSheet } from "./MobileActionSheet";
 import { ComposerSheet } from "./ComposerSheet";
 import { ObserverProgressionPanel } from "../observer/ObserverProgressionPanel";
 import ObserverDashboardView from "../observer/ObserverDashboardView";
+import { SEO } from "../seo/SEO";
 
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -166,19 +167,24 @@ export default function Dashboard() {
 
   if (isObserver) {
     return (
-      <ObserverDashboardView
-        user={user}
-        profile={profile}
-        dbUpdates={dbUpdates}
-        observerStats={observerStats}
-        refreshProfile={refreshProfile}
-        queryClient={queryClient}
-      />
+      <>
+        <SEO title={`Dashboard | ${firstName} - Patchwork`} />
+        <ObserverDashboardView
+          user={user}
+          profile={profile}
+          dbUpdates={dbUpdates}
+          observerStats={observerStats}
+          refreshProfile={refreshProfile}
+          queryClient={queryClient}
+        />
+      </>
     );
   }
 
   return (
-    <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
+    <>
+      <SEO title={`Dashboard | ${firstName} - Patchwork`} />
+      <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
 
       {/* ── EMAIL VERIFICATION BANNER ─── shown until email is verified */}
       <EmailVerificationBanner />
@@ -356,5 +362,6 @@ export default function Dashboard() {
         role={profile?.role || 'builder'}
       />
     </div>
+    </>
   );
 }

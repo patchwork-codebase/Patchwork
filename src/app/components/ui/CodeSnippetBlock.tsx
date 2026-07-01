@@ -3,7 +3,28 @@ import { Copy, Check } from 'lucide-react';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SyntaxHighlighter = React.lazy(() => 
-  import('react-syntax-highlighter').then(m => ({ default: m.Prism }))
+  Promise.all([
+    import('react-syntax-highlighter/dist/esm/prism-light'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/javascript'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/typescript'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/jsx'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/tsx'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/css'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/python'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/json'),
+    import('react-syntax-highlighter/dist/esm/languages/prism/bash')
+  ]).then(([PrismLight, js, ts, jsx, tsx, css, py, json, bash]) => {
+    const Prism = PrismLight.default;
+    Prism.registerLanguage('javascript', js.default);
+    Prism.registerLanguage('typescript', ts.default);
+    Prism.registerLanguage('jsx', jsx.default);
+    Prism.registerLanguage('tsx', tsx.default);
+    Prism.registerLanguage('css', css.default);
+    Prism.registerLanguage('python', py.default);
+    Prism.registerLanguage('json', json.default);
+    Prism.registerLanguage('bash', bash.default);
+    return { default: Prism };
+  })
 );
 
 export function CodeSnippetBlock({ code }: { code: string }) {

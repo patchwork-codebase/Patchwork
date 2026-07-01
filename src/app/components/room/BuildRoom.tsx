@@ -31,6 +31,7 @@ import { BuildTimelineCard } from "./BuildTimelineCard";
 import { RoomAccessAuditTab } from "./RoomAccessAuditTab";
 import { useCheckNdaAccepted } from "../../hooks/useNda";
 import { useLogRoomAccess } from "../../hooks/useRoomAccessLog";
+import { SEO } from "../seo/SEO";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
   sharp: { emoji: '⚡', label: 'Sharp', color: 'bg-white/[0.03] border-white/[0.08] text-white', badge: 'bg-primary-400/10 text-primary-400 border border-primary-400/20', desc: 'Incisive, direct critique' },
@@ -295,6 +296,10 @@ export default function BuildRoom() {
 
   return (
     <>
+      <SEO 
+        title={`${room.title} | Patchwork`}
+        description={`Follow the build log for ${room.title} by ${room.builderName} on Patchwork.`}
+      />
       <OfficialRoomModal open={showOfficialModal} onClose={handleCloseOfficialModal} />
 
       {/* NDA Gate — shown to non-builders who haven't accepted the NDA yet */}

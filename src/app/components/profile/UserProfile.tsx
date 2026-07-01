@@ -45,6 +45,7 @@ import { ProfileStats } from "./ProfileStats";
 import { OrganizationSettingsCard } from "./OrganizationSettingsCard";
 import { SocialLinksCard } from "./SocialLinksCard";
 import { SkillsCard } from "./SkillsCard";
+import { SEO } from "../seo/SEO";
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
@@ -155,7 +156,13 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative overflow-x-hidden">
+    <>
+      <SEO 
+        title={`${profile.name} (@${profile.name?.split(' ')[0]?.toLowerCase() || 'user'}) | Patchwork`}
+        description={profile.bio || `Check out ${profile.name}'s profile and rooms on Patchwork.`}
+        image={getAvatarUrl(profile.id || profile.name)}
+      />
+      <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative overflow-x-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 hover:text-slate-900 mb-6 sm:mb-8 transition-colors group">
@@ -361,5 +368,6 @@ export default function UserProfile() {
         )}
       </div>
     </div>
+    </>
   );
 }
