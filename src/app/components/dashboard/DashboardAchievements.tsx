@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { useProofOfWork } from '../../hooks/useProofOfWork';
-import { Award, ArrowRight } from 'lucide-react';
+import { Award, ArrowRight, Info } from 'lucide-react';
 import { useProfile } from '../../hooks/useProfile';
 
 interface DashboardAchievementsProps {
@@ -125,7 +125,15 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
               <div className="flex justify-between items-center mb-4">
                  <div className="flex items-center gap-4">
                    <PremiumBadgeSVG points={lvl.points_required} colorTheme={lvl.color_theme || 'blue'} completed={isCompleted} />
-                   <span className="font-black text-slate-900 text-[17px] tracking-tight">{lvl.title}</span>
+                   <div className="flex items-center gap-2 relative group/tooltip">
+                     <span className="font-black text-slate-900 text-[17px] tracking-tight cursor-default">{lvl.title}</span>
+                     <Info className="w-4 h-4 text-slate-300 cursor-help hover:text-slate-500 transition-colors" />
+                     
+                     <div className="absolute bottom-full left-0 mb-2 w-56 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 bg-slate-900 text-white text-[12px] p-3 rounded-xl shadow-xl z-20 pointer-events-none translate-y-1 group-hover/tooltip:translate-y-0">
+                       <div className="absolute -bottom-1 left-6 w-3 h-3 bg-slate-900 rotate-45"></div>
+                       {lvl.description || `Earn ${lvl.points_required} points to unlock this milestone.`}
+                     </div>
+                   </div>
                  </div>
                  <div className="text-[12px] font-black text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
                    {Math.min(currentReputation, lvl.points_required)} <span className="text-indigo-400 font-bold">/ {lvl.points_required}</span>

@@ -4,6 +4,7 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { LinkDocModal } from "../room/LinkDocModal";
+import { getAvatarUrl } from "../../utils/helpers";
 
 function getDomainColor(domain: string) {
   switch (domain?.toLowerCase()) {
@@ -118,8 +119,19 @@ export function TopObservers() {
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase.rpc('get_top_observers', { p_builder_id: user.id });
-      if (error) return [];
-      return data || [];
+      if (error || !data) return [];
+      
+      const observerIds = data.map((o: any) => o.observer_id);
+      if (observerIds.length > 0) {
+        const { data: usersData } = await supabase.from('users').select('id, avatar_url').in('id', observerIds);
+        if (usersData) {
+          return data.map((obs: any) => {
+            const match = usersData.find((u: any) => u.id === obs.observer_id);
+            return { ...obs, avatar_url: match?.avatar_url || obs.avatar };
+          });
+        }
+      }
+      return data;
     },
     enabled: !!user,
   });
@@ -150,13 +162,7 @@ export function TopObservers() {
           return (
             <div key={i} className="flex items-center justify-between group py-1">
               <div className="flex items-center gap-3 min-w-0">
-                {obs.avatar ? (
-                  <img src={obs.avatar} alt={obs.name} className={`w-10 h-10 rounded-xl border ${style.border} object-cover shrink-0`} />
-                ) : (
-                  <div className={`w-10 h-10 rounded-xl border ${style.border} flex items-center justify-center font-bold text-[13px] ${style.bg} ${style.text} shrink-0`}>
-                    {initials}
-                  </div>
-                )}
+                <img src={obs.avatar || obs.avatar_url || getAvatarUrl(obs.observer_id)} alt={obs.name} className={`w-10 h-10 rounded-xl border ${style.border} object-cover shrink-0`} />
                 <div className="min-w-0 flex-1 pr-2">
                   <div className="font-semibold text-[14px] text-slate-900 truncate">{obs.name}</div>
                   <div className="text-[12px] text-slate-500 font-mono mt-0.5 truncate">
