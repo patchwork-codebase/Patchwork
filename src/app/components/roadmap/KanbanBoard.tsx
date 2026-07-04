@@ -21,6 +21,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useRoadmapItems, useCreateRoadmapItem, useUpdateRoadmapItem, useDeleteRoadmapItem, RoadmapItem } from '../../hooks/useRoadmap';
 import { Loader2, Plus, GripVertical, Calendar, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion } from 'motion/react';
 
 // --- Sortable Item Component ---
 function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; onDelete: (id: string) => void }) {
@@ -40,10 +41,11 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
   };
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       style={style}
-      className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 relative group hover:border-slate-300 transition-colors cursor-grab active:cursor-grabbing"
+      whileHover={isDragging ? undefined : { scale: 1.02, y: -2 }}
+      className={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 relative group hover:border-slate-300 hover:shadow-md transition-colors cursor-grab ${isDragging ? 'cursor-grabbing shadow-lg border-primary-300' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -71,12 +73,12 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
             onDelete(item.id);
           }}
           onPointerDown={(e) => e.stopPropagation()} // Prevent drag start when clicking delete
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-rose-50 text-rose-500 rounded"
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-rose-50 text-rose-500 rounded relative z-10"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

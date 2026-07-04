@@ -31,6 +31,7 @@ import { BuildTimelineCard } from "./BuildTimelineCard";
 import { RoomAccessAuditTab } from "./RoomAccessAuditTab";
 import { useCheckNdaAccepted } from "../../hooks/useNda";
 import { useLogRoomAccess } from "../../hooks/useRoomAccessLog";
+import { useRoomPresence } from "../../hooks/useRoomPresence";
 import { SEO } from "../seo/SEO";
 
 const REACTION_CONFIG: Record<string, { emoji: string; label: string; color: string; badge: string; desc: string }> = {
@@ -50,6 +51,7 @@ export default function BuildRoom() {
   const navigate = useNavigate();
 
   const { data: room, isLoading: loading } = useRoomDetails(id, user?.id);
+  const { viewers, typingUsers, sendTypingEvent } = useRoomPresence(id, user);
   const joinPrivateRoomMutation = useJoinPrivateRoom();
   const inviteToken = searchParams.get('invite_token') || searchParams.get('invite');
   const [hasAttemptedJoin, setHasAttemptedJoin] = useState(false);
@@ -329,6 +331,7 @@ export default function BuildRoom() {
           handleCloseRoom={handleCloseRoom} 
           copyLogLink={copyLogLink}
           setRequestExpertModalOpen={setRequestExpertModalOpen}
+          viewers={viewers}
         />
 
         <div className="relative mb-8 w-full group/tabs">
@@ -413,6 +416,7 @@ export default function BuildRoom() {
                 newUpdate={newUpdate}
                 setNewUpdate={setNewUpdate}
                 updateTextAreaRef={updateTextAreaRef}
+                sendTypingEvent={sendTypingEvent}
               />
             )}
 
@@ -442,6 +446,7 @@ export default function BuildRoom() {
                 setNewUpdate={setNewUpdate}
                 updateTextAreaRef={updateTextAreaRef}
                 REACTION_CONFIG={REACTION_CONFIG}
+                typingUsers={typingUsers}
               />
             </div>
           </>

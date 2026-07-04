@@ -5,6 +5,7 @@ import { Loader2, Link as LinkIcon, ShieldAlert, ArrowRight } from 'lucide-react
 import { toast } from 'sonner';
 import { supabase } from '../auth/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { motion } from 'motion/react';
 
 export function DependencyMap() {
   const { user } = useAuth();
@@ -147,7 +148,7 @@ export function DependencyMap() {
             {blockedItems.map(item => {
               const itemDeps = dependencies?.filter(d => d.item_id === item.id) || [];
               return (
-                <div key={item.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <motion.div whileHover={{ scale: 1.01, y: -2 }} key={item.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                   <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-transparent flex items-center justify-between">
                     <div className="font-bold text-slate-900 text-[15px]">{item.title}</div>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 text-rose-600 rounded-lg text-[12px] font-bold border border-rose-100/50">
@@ -177,7 +178,7 @@ export function DependencyMap() {
                       );
                     })}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

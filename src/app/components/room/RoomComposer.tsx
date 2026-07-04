@@ -17,9 +17,10 @@ interface RoomComposerProps {
   newUpdate: string;
   setNewUpdate: React.Dispatch<React.SetStateAction<string>>;
   updateTextAreaRef: React.MutableRefObject<HTMLTextAreaElement | null>;
+  sendTypingEvent?: (isTyping: boolean) => void;
 }
 
-export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpdate, updateTextAreaRef }: RoomComposerProps) {
+export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpdate, updateTextAreaRef, sendTypingEvent }: RoomComposerProps) {
   const [searchParams] = useSearchParams();
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [codeSnippet, setCodeSnippet] = useState('');
@@ -38,6 +39,16 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
       updateTextAreaRef.current.focus();
     }
   }, [quickUpdateMode, room, profile]);
+
+  useEffect(() => {
+    if (sendTypingEvent) {
+      if (newUpdate.trim().length > 0) {
+        sendTypingEvent(true);
+      } else {
+        sendTypingEvent(false);
+      }
+    }
+  }, [newUpdate, sendTypingEvent]);
 
   const handlePostUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

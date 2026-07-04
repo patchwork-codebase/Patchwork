@@ -6,6 +6,7 @@ import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase, useAuth } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { fireConfetti } from "../ui/Confetti";
 import { useQuery } from "@tanstack/react-query";
 
 interface Milestone {
@@ -161,6 +162,23 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   }));
 
   const allMilestones = [...linearMilestones, ...clickUpMilestones, ...jiraMilestones].sort((a, b) => a.status === 'done' ? 1 : -1);
+
+  const previousDoneCount = useRef(0);
+  // Initialize previous count on first mount with actual data, to avoid confetti on page load
+  useEffect(() => {
+    previousDoneCount.current = allMilestones.filter(m => m.status === 'done').length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dbMilestones.length, dbClickUp.length, dbJira.length]);
+
+  useEffect(() => {
+    const currentDoneCount = allMilestones.filter(m => m.status === 'done').length;
+    if (currentDoneCount > previousDoneCount.current && previousDoneCount.current > 0) {
+      fireConfetti();
+    }
+    if (currentDoneCount !== previousDoneCount.current && allMilestones.length > 0) {
+      previousDoneCount.current = currentDoneCount;
+    }
+  }, [allMilestones]);
 
   const handleSync = async () => {
     if (isObserver) return;

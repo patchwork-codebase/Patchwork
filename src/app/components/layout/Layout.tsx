@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate, Outlet, useSearchParams, ScrollRestoration, useNavigation } from "react-router";
+import { Link, useLocation, useNavigate, useOutlet, useSearchParams, ScrollRestoration, useNavigation } from "react-router";
 import { Suspense } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -25,6 +25,7 @@ import { GlobalHeader } from "./GlobalHeader";
 import { PwaInstallPrompt } from "./PwaInstallPrompt";
 
 export default function Layout() {
+  const outlet = useOutlet();
   const { user, profile, signOut, loading, refreshProfile } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -219,7 +220,18 @@ export default function Layout() {
                 </div>
               </div>
             }>
-              <Outlet />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  {outlet}
+                </motion.div>
+              </AnimatePresence>
             </Suspense>
           </div>
         </main>

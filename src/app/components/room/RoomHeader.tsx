@@ -1,10 +1,11 @@
 import { Link } from "react-router";
 import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Sparkles, Lock } from "lucide-react";
-import { timeAgo, getObserverCount } from "../../utils/helpers";
+import { timeAgo, getObserverCount, getAvatarUrl } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { SmartImage } from "../ui/SmartImage";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
+import type { PresenceUser } from "../../hooks/useRoomPresence";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,7 @@ interface RoomHeaderProps {
   handleCloseRoom: () => void;
   copyLogLink: () => void;
   setRequestExpertModalOpen: (open: boolean) => void;
+  viewers: PresenceUser[];
 }
 
 export function RoomHeader({
@@ -41,7 +43,8 @@ export function RoomHeader({
   setLinkedinShareOpen,
   handleCloseRoom,
   copyLogLink,
-  setRequestExpertModalOpen
+  setRequestExpertModalOpen,
+  viewers
 }: RoomHeaderProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [accessModalOpen, setAccessModalOpen] = useState(false);
@@ -126,6 +129,42 @@ export function RoomHeader({
           <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-600 flex-wrap font-medium mt-1">
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-primary-400/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-primary-400" /></div>{room.builderName} <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" /></span>
             <ObserverAvatarStack room={room} />
+            
+            {viewers.length > 0 && (
+              <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+                <div className="flex -space-x-1.5">
+                  {viewers.slice(0, 3).map((v) => (
+                    <div key={v.id} className="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-slate-100 relative">
+                      <img 
+                        src={v.avatar_url || getAvatarUrl(v.id)} 
+                        alt={v.name} 
+                        title={`${v.name} (viewing)`} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          if (!target.src.includes('dicebear')) {
+                            target.src = getAvatarUrl(v.id);
+                          }
+                        }}
+                      />
+                    </div>
+                  ))}
+                  {viewers.length > 3 && (
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600 z-10">
+                      +{viewers.length - 3}
+                    </div>
+                  )}
+                </div>
+                <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-wider ml-1">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                  </span>
+                  Live
+                </span>
+              </div>
+            )}
+            
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Clock className="w-3 h-3 text-slate-500" /></div>{timeAgo(room.updatedAt)}</span>
             {room.authorshipTimestamp && (
               <span

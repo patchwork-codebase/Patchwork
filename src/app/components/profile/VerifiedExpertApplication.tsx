@@ -7,6 +7,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "../auth/AuthContext";
 import { useSaveExpertApplication, useExpertApplication } from "../../../hooks/useExpertApplication";
+import { fireConfetti } from "../ui/Confetti";
 
 const DOMAINS = [
   "Product", "Engineering", "Design", "Growth", "AI", "Fintech",
@@ -150,6 +151,7 @@ export default function VerifiedExpertApplication() {
     setSubmitting(true);
     try {
       await save({ payload: buildPayload(), submit: true });
+      fireConfetti();
       toast.success("Application submitted! We'll review it within 3–5 business days.");
       navigate(`/dashboard/profile/${user?.id}`);
     } catch (err: unknown) {
