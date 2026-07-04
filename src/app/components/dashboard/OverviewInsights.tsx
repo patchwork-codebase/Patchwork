@@ -121,16 +121,6 @@ export function TopObservers() {
       const { data, error } = await supabase.rpc('get_top_observers', { p_builder_id: user.id });
       if (error || !data) return [];
       
-      const observerIds = data.map((o: any) => o.observer_id);
-      if (observerIds.length > 0) {
-        const { data: usersData } = await supabase.from('users').select('id, avatar_url').in('id', observerIds);
-        if (usersData) {
-          return data.map((obs: any) => {
-            const match = usersData.find((u: any) => u.id === obs.observer_id);
-            return { ...obs, avatar_url: match?.avatar_url || obs.avatar };
-          });
-        }
-      }
       return data;
     },
     enabled: !!user,
