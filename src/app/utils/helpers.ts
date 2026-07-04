@@ -54,3 +54,22 @@ export function getObserverCount(room: {
   }
   return room.observerCount ?? 0;
 }
+
+/**
+ * Generates a URL to add a certification to a user's LinkedIn profile.
+ */
+export function generateLinkedInCertUrl(title: string, dateIso: string, credentialUrl: string, orgId?: string) {
+  const baseUrl = "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME";
+  const name = encodeURIComponent(title);
+  
+  const date = new Date(dateIso);
+  const issueYear = date.getFullYear();
+  const issueMonth = date.getMonth() + 1; // 1-12
+  
+  let url = `${baseUrl}&name=${name}&issueYear=${issueYear}&issueMonth=${issueMonth}&certUrl=${encodeURIComponent(credentialUrl)}`;
+  if (orgId) {
+    url += `&organizationId=${orgId}`;
+  }
+  
+  return url;
+}

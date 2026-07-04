@@ -124,8 +124,30 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
         description: suggestedDecision.extractedText,
         created_at: new Date().toISOString()
       };
-      const { error } = await supabase.from('room_decisions').insert(payload);
+      const { data: newDecision, error } = await supabase.from('room_decisions').insert(payload).select().single();
       if (error) throw error;
+      
+      // Notify followers
+      if (newDecision?.id) {
+        const { data: followers } = await supabase.from('follows').select('follower_id').eq('following_id', user.id);
+        if (followers && followers.length > 0) {
+          const notifications = followers.map(f => ({
+            user_id: f.follower_id,
+            actor_id: user.id,
+            type: 'decision',
+            reference_id: newDecision.id,
+            metadata: {
+              room_id: roomId,
+              room_title: room?.name || 'a room',
+              decision_text: payload.title
+            },
+            read: false,
+            created_at: new Date().toISOString()
+          }));
+          await supabase.from('notifications').insert(notifications);
+        }
+      }
+
       toast.success('Decision automatically logged!');
       setSuggestedDecision(null);
     } catch (err: unknown) {

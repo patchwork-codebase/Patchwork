@@ -77,6 +77,8 @@ export default function Layout() {
       ? 'milestones'
     : location.pathname.startsWith('/dashboard/analytics')
       ? 'analytics'
+    : location.pathname.startsWith('/dashboard/achievements')
+      ? 'achievements'
     : location.pathname.startsWith('/dashboard/discovery')
       ? 'discovery'
       : activeTab;

@@ -47,6 +47,7 @@ import { SocialLinksCard } from "./SocialLinksCard";
 import { SkillsCard } from "./SkillsCard";
 import { SEO } from "../seo/SEO";
 
+
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
   const { user, token, refreshProfile } = useAuth();
@@ -283,6 +284,7 @@ export default function UserProfile() {
       <ExpertCard profile={profile} />
 
       <ProfileStats profile={profile} roomsCount={rooms.length} />
+
 
       {/* Editable Profile Extensions (Only visible to owner) */}
       {isOwn && !editing && (

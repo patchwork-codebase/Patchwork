@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { DashboardIcon, HammerIcon, ZapIcon, ActivityIcon, EyeIcon, CompassIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, UserIcon, LogOutIcon, LightbulbIcon } from "./LayoutIcons";
+import { DashboardIcon, HammerIcon, ZapIcon, ActivityIcon, EyeIcon, CompassIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, UserIcon, LogOutIcon, LightbulbIcon, AwardIcon } from "./LayoutIcons";
 import { useObserverStats } from "../../hooks/useRooms";
 
 const NavItem = ({ to, icon, label, active, badge }: any) => (
@@ -94,8 +94,8 @@ export function DesktopSidebar({
         </nav>
 
         {/* Profile card at the very bottom */}
-        <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
-          <div className="relative">
+        <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30">
+          <div className="relative z-50">
             <button
               onClick={() => setProfileMenuOpen(o => !o)}
               className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
@@ -121,7 +121,8 @@ export function DesktopSidebar({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
+                    style={{ backgroundColor: '#ffffff' }}
+                    className="absolute bottom-full left-0 right-0 mb-2 border border-slate-200 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
                   >
                     <div className="p-3 border-b border-slate-100">
                       <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
@@ -187,6 +188,7 @@ export function DesktopSidebar({
             <NavItem to="/dashboard?tab=feed" icon={<ActivityIcon />} label="Global timeline" active={activeSection === 'feed'} />
             <NavItem to="/dashboard/observer" icon={<EyeIcon />} label="Observer hub" active={activeSection === 'observer'} />
             <NavItem to="/dashboard/explore" icon={<CompassIcon />} label="Explore builders" active={activeSection === 'explore'} />
+            <NavItem to="/dashboard/achievements" icon={<AwardIcon />} label="Achievements" active={activeSection === 'achievements'} />
             
             <Link
               to="/dashboard/discovery"
@@ -212,7 +214,9 @@ export function DesktopSidebar({
               Product Ops
             </div>
 
-            <NavItem to="/dashboard/roadmap" icon={<RoadmapIcon />} label="Roadmap view" active={activeSection === 'roadmap'} />
+            {import.meta.env.DEV && (
+              <NavItem to="/dashboard/roadmap" icon={<RoadmapIcon />} label="Roadmap view" active={activeSection === 'roadmap'} />
+            )}
             <NavItem to="/dashboard/milestones" icon={<MilestonesIcon />} label="Milestones" active={activeSection === 'milestones'} />
             <NavItem to="/dashboard/analytics" icon={<AnalyticsIcon />} label="Analytics" active={activeSection === 'analytics'} />
 
@@ -224,8 +228,8 @@ export function DesktopSidebar({
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
-            <div className="relative">
+          <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30">
+            <div className="relative z-50">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}
                 className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
@@ -260,7 +264,8 @@ export function DesktopSidebar({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-20 backdrop-blur-xl"
+                      style={{ backgroundColor: '#ffffff' }}
+                      className="absolute bottom-full left-0 right-0 mb-2 border border-slate-200 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
                     >
                       <div className="p-3 border-b border-slate-100">
                         <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>

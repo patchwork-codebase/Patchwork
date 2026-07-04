@@ -3,6 +3,7 @@ import { ArrowRight, MapPin, Clock, Flame } from "lucide-react";
 import { getAvatarUrl } from "../../utils/helpers";
 import React, { useRef } from "react";
 import { MagneticButton } from "../ui/MagneticButton";
+import { ScrollHandIndicator } from "./ScrollHandIndicator";
 
 interface LandingHeroProps {
   showOnboarding: () => void;
@@ -35,19 +36,86 @@ export function LandingHero({
     offset: ["start start", "end start"]
   });
 
-  // A subtle tilt that flattens out as you scroll down
+  // Subtle tilt and layout shifts
   const rotateX = useTransform(scrollYProgress, [0, 0.5], [15, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [0.95, 1]);
   const translateY = useTransform(scrollYProgress, [0, 0.5], [50, 0]);
 
+  // Cloth wrinkling effect physics
+  const displacementRef = useRef<SVGFEDisplacementMapElement>(null);
+  
+  React.useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let velocity = 0;
+    let scaleVal = 0;
+    let animationFrameId: number;
+
+    const updateFilter = () => {
+      const currentScrollY = window.scrollY;
+      const deltaY = currentScrollY - lastScrollY;
+      
+      // Calculate velocity
+      velocity = deltaY;
+      
+      // Calculate target scale (wrinkle intensity) based on scroll velocity and position
+      // Only wrinkle when grabbing/scrolling down near the top
+      let targetScale = 0;
+      if (currentScrollY > 10 && currentScrollY < 600) {
+        // The faster you pull, the more it wrinkles. Max scale 150 for dramatic effect.
+        targetScale = Math.min(Math.max(velocity * 3.5, 0), 150);
+      }
+
+      // Smoothly interpolate current scale to target scale
+      scaleVal += (targetScale - scaleVal) * 0.15;
+
+      // Apply to DOM directly for performance
+      if (displacementRef.current) {
+        displacementRef.current.setAttribute("scale", scaleVal.toString());
+      }
+
+      lastScrollY = currentScrollY;
+      animationFrameId = requestAnimationFrame(updateFilter);
+    };
+
+    animationFrameId = requestAnimationFrame(updateFilter);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
   return (
     <section ref={containerRef} id="hero" className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-32 bg-transparent">
-      {/* Dark mode background gradients */}
-      <div className="absolute top-[-10%] left-[20%] w-[60%] h-[40%] rounded-full bg-[radial-gradient(circle,rgba(108,92,231,0.15)_0%,transparent_60%)] pointer-events-none blur-3xl" />
-      <div className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(139,124,248,0.1)_0%,transparent_60%)] pointer-events-none blur-3xl" />
       
-      {/* Subtle grid mesh */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_80%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+      {/* SVG Cloth Wrinkle Filter Definition */}
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <filter id="cloth-wrinkle" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="3" result="noise" />
+          {/* We use colorMatrix to create a bias towards pulling upward/center if needed, but standard turbulence is fine */}
+          <feDisplacementMap 
+            ref={displacementRef}
+            in="SourceGraphic" 
+            in2="noise" 
+            scale="0" 
+            xChannelSelector="R" 
+            yChannelSelector="G" 
+          />
+        </filter>
+      </svg>
+
+      <ScrollHandIndicator />
+      
+      {/* Apply the filter to a wrapper around the background elements so the UI itself wrinkles slightly */}
+      <div 
+        className="absolute inset-0 pointer-events-none" 
+        style={{ filter: "url(#cloth-wrinkle)", transform: "translateZ(0)" }}
+      >
+        {/* Dark mode background gradients */}
+        <div className="absolute top-[-10%] left-[20%] w-[60%] h-[40%] rounded-full bg-[radial-gradient(circle,rgba(108,92,231,0.15)_0%,transparent_60%)] blur-3xl" />
+        <div className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(139,124,248,0.1)_0%,transparent_60%)] blur-3xl" />
+        
+        {/* Subtle grid mesh */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_80%_at_50%_0%,#000_70%,transparent_100%)]" />
+      </div>
+      
+
 
       <div className="mx-auto max-w-7xl px-6 relative z-10">
         

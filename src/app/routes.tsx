@@ -106,6 +106,10 @@ export const router = createBrowserRouter([
         path: "/observer-onboarding",
         lazy: () => import("./components/observer/ObserverOnboarding").then(m => ({ Component: m.default })),
       },
+      {
+        path: "/credentials/:id",
+        lazy: () => import("./components/pow/CredentialPage").then(m => ({ Component: m.default })),
+      },
       // {
       //   path: "/learning-hub",
       //   lazy: () => import("./components/learning-hub/LearningHub").then(m => ({ Component: m.default })),
@@ -154,6 +158,7 @@ export const router = createBrowserRouter([
           { path: "analytics", lazy: () => import("./components/dashboard/AnalyticsPage").then(m => ({ Component: m.default })) },
           { path: "discovery", lazy: () => import("./components/discovery/DiscoveryHub").then(m => ({ Component: m.default })) },
           { path: "discovery/:id", lazy: () => import("./components/discovery/DiscoveryDashboard").then(m => ({ Component: m.default })) },
+          { path: "achievements", lazy: () => import("./components/pow/AchievementsPage").then(m => ({ Component: m.default })) },
         ],
       },
     ]

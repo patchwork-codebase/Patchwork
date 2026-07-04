@@ -81,20 +81,40 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
         external_link: externalLink.trim() || null
       };
 
+      let decisionId = initialDecision?.id;
+
       if (initialDecision?.id) {
         const { error } = await supabase.from('room_decisions').update(payload).eq('id', initialDecision.id);
         if (error) throw error;
         toast.success("Decision updated successfully!");
       } else {
-        const { error } = await supabase.from('room_decisions').insert(payload);
+        const { data: newDecision, error } = await supabase.from('room_decisions').insert(payload).select().single();
         if (error) throw error;
+        decisionId = newDecision?.id;
         toast.success("Decision logged successfully!");
       }
 
-      if (initialDecision) {
-        // do not duplicate toast
-      } else {
-        // do not duplicate toast
+      // Notify followers
+      if (decisionId) {
+        const { data: room } = await supabase.from('rooms').select('name').eq('id', roomId).single();
+        const { data: followers } = await supabase.from('follows').select('follower_id').eq('following_id', userId);
+        
+        if (followers && followers.length > 0) {
+          const notifications = followers.map(f => ({
+            user_id: f.follower_id,
+            actor_id: userId,
+            type: initialDecision?.id ? 'decision_updated' : 'decision',
+            reference_id: decisionId,
+            metadata: {
+              room_id: roomId,
+              room_title: room?.name || 'a room',
+              decision_text: payload.title
+            },
+            read: false,
+            created_at: new Date().toISOString()
+          }));
+          await supabase.from('notifications').insert(notifications);
+        }
       }
       
       setTitle("");

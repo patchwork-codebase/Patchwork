@@ -4,6 +4,7 @@ import { TopObservers, LinkedDocsPanel, ObserverReactions } from "./OverviewInsi
 import { ActiveRoomPanel } from "./ActiveRoomPanel";
 import { PendingDraftsList } from "./PendingDraftsList";
 import { RequestsAndInvites } from "./RequestsAndInvites";
+import { DashboardAchievements } from "./DashboardAchievements";
 import { useRecentActivity, useRoomObservers } from "../../hooks/useDashboardStats";
 
 interface DashboardOverviewProps {
@@ -65,6 +66,7 @@ export function DashboardOverview({
             reactions={reactions}
             queryClient={queryClient}
           />
+          <DashboardAchievements user={user} />
           <ObserverReactions />
         </div>
       </div>
