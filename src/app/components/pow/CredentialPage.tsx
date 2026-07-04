@@ -38,10 +38,10 @@ export default function CredentialPage() {
     queryKey: ['credential_profile', credential?.user_id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', credential!.user_id)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -70,7 +70,7 @@ export default function CredentialPage() {
 
   // Use real data if available, otherwise fallback to the authenticated user's profile for the demo view
   const actualProfile = profile || authProfile;
-  const recipientName = actualProfile?.full_name || "Akinrodolu Seun";
+  const recipientName = actualProfile?.name || actualProfile?.full_name || "Akinrodolu Seun";
   const recipientRole = actualProfile?.bio?.slice(0, 50) || "Senior Product Manager";
   const avatarId = credential?.user_id || user?.id || "default";
   const avatarUrl = actualProfile?.avatar_url || getAvatarUrl(avatarId);
@@ -118,65 +118,70 @@ export default function CredentialPage() {
         {/* Left Column: Certificate View */}
         <div className="lg:col-span-8 flex flex-col">
           {/* Certificate Container */}
-          <div id="certificate-container" className="bg-white border-4 border-slate-100 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.04)] p-5 md:p-8 lg:p-12 relative flex-1 min-h-[600px] flex flex-col justify-between overflow-hidden">
-            {/* Subtle Watermark/Texture */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] border-[2px] border-slate-900/5 rounded-full pointer-events-none blur-[1px]"></div>
-            
-            {/* Top Left Logo */}
-            <div className="flex items-center gap-2.5 font-black text-3xl tracking-tight text-slate-900 mb-12">
-              <div className="bg-primary-500 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm text-white">
-                <HammerIcon />
-              </div>
-              Patchwork
-            </div>
-
-            {/* Content */}
-            <div className="max-w-xl md:pr-64 relative z-10">
-              <div className="text-slate-400 text-sm font-bold mb-4 uppercase tracking-wider">{certificateDate}</div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 font-display tracking-tight break-words">
-                {recipientName}
-              </h1>
-              <p className="text-slate-500 text-[17px] leading-relaxed mb-12 max-w-[500px]">
-                is hereby awarded this certificate of achievement in recognition of:<br/>
-                <strong className="text-slate-900 font-bold text-lg inline-block mt-1">{certificateTitle}</strong><br/>
-                authorized by the Patchwork Team.
-              </p>
-
-              {/* Signature */}
-              <div className="mt-12">
-                <div className="w-56 h-14 border-b border-slate-300 mb-2 relative">
-                  <svg className="absolute bottom-1 left-2 w-full h-16 opacity-80" viewBox="0 0 200 60" preserveAspectRatio="xMidYMid meet">
-                    <path 
-                      d="M 10 40 C 15 20, 25 15, 30 20 C 35 25, 30 40, 35 45 C 40 50, 45 40, 50 30 C 55 10, 65 15, 60 40 C 55 60, 40 55, 55 35 C 70 15, 80 15, 90 25 C 100 35, 105 25, 115 15 C 120 10, 125 10, 130 20 C 135 30, 125 45, 130 50 C 135 55, 145 40, 150 30 C 160 10, 175 10, 170 30 C 165 50, 180 50, 190 35" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2.5" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      className="text-slate-800" 
-                    />
-                  </svg>
-                </div>
-                <div className="text-xs text-slate-400 font-bold">Akinrodolu Oluwaseun</div>
-                <div className="text-[10px] text-slate-400">Founder</div>
-              </div>
-            </div>
-
-            {/* Right Ribbon Graphic */}
-            <div className="hidden md:flex print:flex absolute top-0 right-8 w-56 h-3/4 bg-slate-50 border-x border-b border-slate-200 shadow-sm flex-col items-center pt-16 z-0" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)", WebkitPrintColorAdjust: "exact" }}>
-              <div className="text-slate-400 text-xs font-bold tracking-widest mb-12 text-center px-4">MILESTONE CERTIFICATE</div>
+          <div id="certificate-container" className="bg-white border-[8px] md:border-[12px] border-slate-50 p-2 md:p-5 relative flex-1 min-h-[600px] flex flex-col overflow-hidden shadow-sm">
+            <div className="border-[2px] border-slate-200 relative flex-1 flex flex-col justify-between p-6 sm:p-8 md:p-16 overflow-hidden items-center text-center bg-white">
               
-              {/* 3D Gold Ribbon Graphic */}
-              <div className="relative w-32 h-32 flex items-center justify-center mt-4">
-                 <div className={`absolute inset-0 bg-gradient-to-br ${credential?.badge?.badge_type === 'recognition' ? 'from-amber-200 via-amber-400 to-amber-600' : 'from-blue-200 via-blue-400 to-blue-600'} rounded-full shadow-lg border-4 border-white flex items-center justify-center transform hover:scale-105 transition-transform cursor-pointer group`}>
-                    <Award className="w-14 h-14 text-white drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
-                 </div>
+              {/* Subtle geometric background pattern */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000), linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}></div>
+              
+              {/* Top Section */}
+              <div className="w-full flex flex-col items-center relative z-10 mb-12">
+                <div className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.25em] mb-6">Patchwork Community Achievement</div>
+                <h2 className="text-4xl md:text-5xl font-serif text-slate-800 italic" style={{ letterSpacing: '-0.02em' }}>Certificate of Recognition</h2>
               </div>
-            </div>
 
-            <div className="mt-16 text-right text-[10px] text-slate-400 relative z-10">
-              Verified Certificate ID: <span className="font-bold text-slate-500">{certId}</span>
+              {/* Main Content */}
+              <div className="max-w-3xl relative z-10 flex-1 flex flex-col justify-center items-center mb-12">
+                <div className="w-12 h-[2px] bg-slate-200 mb-8"></div>
+                <p className="text-slate-500 text-sm md:text-[15px] mb-8 tracking-[0.2em] uppercase">This is to certify that</p>
+                <h1 className="text-4xl sm:text-5xl md:text-[5.5rem] font-serif text-slate-900 mb-10 leading-none break-words text-center" style={{ letterSpacing: '-0.03em', wordBreak: 'break-word' }}>
+                  {recipientName}
+                </h1>
+                <p className="text-slate-600 text-base md:text-xl leading-relaxed font-serif italic mb-8 max-w-xl mx-auto px-4 md:px-0">
+                  Has successfully achieved the milestone of
+                </p>
+                <strong className="text-slate-900 font-bold text-lg md:text-xl inline-block px-10 py-4 bg-slate-50/80 border border-slate-200 uppercase tracking-widest shadow-sm">{certificateTitle}</strong>
+              </div>
+
+              {/* Bottom Section */}
+              <div className="w-full flex flex-col md:flex-row justify-between items-center md:items-end relative z-10 mt-auto px-2 md:px-8 gap-8 md:gap-0">
+                <div className="text-center md:text-left w-full md:w-48 order-2 md:order-1">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-2">Awarded On</div>
+                  <div className="text-sm md:text-base font-serif text-slate-800">{certificateDate}</div>
+                </div>
+
+                {/* Foil Stamp */}
+                <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shrink-0 order-1 md:order-2">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${credential?.badge?.badge_type === 'recognition' ? 'from-amber-200 via-amber-400 to-amber-600' : 'from-slate-200 via-slate-400 to-slate-700'} rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border-2 border-white/50 flex items-center justify-center transform hover:scale-105 transition-transform cursor-pointer group`} style={{ WebkitPrintColorAdjust: "exact" }}>
+                    <div className="absolute inset-2 border-[1px] border-dashed border-white/60 rounded-full"></div>
+                    <Award className="w-10 h-10 md:w-12 md:h-12 text-white drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                </div>
+
+                {/* Signature */}
+                <div className="text-center md:text-right flex flex-col items-center md:items-end w-full md:w-48 order-3 md:order-3">
+                  <div className="w-48 h-12 border-b border-slate-300 mb-3 relative flex items-end justify-center md:justify-end">
+                    <svg className="absolute bottom-1 w-32 h-16 opacity-80" viewBox="0 0 200 60" preserveAspectRatio="xMidYMid meet">
+                      <path 
+                        d="M 10 40 C 15 20, 25 15, 30 20 C 35 25, 30 40, 35 45 C 40 50, 45 40, 50 30 C 55 10, 65 15, 60 40 C 55 60, 40 55, 55 35 C 70 15, 80 15, 90 25 C 100 35, 105 25, 115 15 C 120 10, 125 10, 130 20 C 135 30, 125 45, 130 50 C 135 55, 145 40, 150 30 C 160 10, 175 10, 170 30 C 165 50, 180 50, 190 35" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2.5" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-slate-800" 
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-1">Akinrodolu Oluwaseun</div>
+                  <div className="text-[11px] text-slate-400 italic font-serif">Founder, Patchwork</div>
+                </div>
+              </div>
+
+              {/* ID Bottom edge */}
+              <div className="absolute bottom-4 left-0 w-full text-center text-[9px] text-slate-300 tracking-[0.2em] font-mono">
+                CERTIFICATE ID: {certId}
+              </div>
             </div>
           </div>
 
@@ -218,10 +223,21 @@ export default function CredentialPage() {
           {/* About certificate */}
           <section>
             <h3 className="font-bold text-slate-900 mb-3 text-sm">About certificate</h3>
-            <div className="bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 min-h-[120px] transition-shadow hover:shadow-[0_15px_35px_rgba(0,0,0,0.06)]">
+            <div className="bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-5 min-h-[120px] flex flex-col gap-3 transition-shadow hover:shadow-[0_15px_35px_rgba(0,0,0,0.06)]">
+              <h4 className="font-bold text-slate-900 text-sm">{certificateTitle}</h4>
               <p className="text-sm text-slate-600 leading-relaxed">
-                {certificateTitle}
+                {credential?.badge?.description || "This certificate represents a significant milestone within the Patchwork ecosystem, recognizing outstanding contribution, consistent participation, and proven expertise in collaborative building environments. Verified through cryptographic proof-of-work, it stands as a testament to the recipient's dedication."}
               </p>
+              
+              <div className="mt-2 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border border-emerald-100">
+                  <CheckCircle className="w-3 h-3" />
+                  Verified Credential
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                  {credential?.badge?.points_required ? `${credential.badge.points_required} Points` : 'Milestone'}
+                </span>
+              </div>
             </div>
           </section>
 
@@ -244,8 +260,11 @@ export default function CredentialPage() {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button 
                   onClick={() => window.open(generateLinkedInCertUrl(certificateTitle, certificateDate, window.location.href), '_blank')}
-                  className="bg-[#0A66C2] hover:bg-[#004182] text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition shadow-sm">
-                  <Linkedin className="w-4 h-4 fill-current" /> Add to Profile
+                  className="bg-[#3065C4] hover:bg-[#2552a1] text-white flex items-center justify-center gap-3 py-2 px-4 rounded-[8px] text-[14px] font-bold transition shadow-sm">
+                  <div className="bg-white rounded-[4px] p-0.5 flex items-center justify-center shrink-0">
+                    <Linkedin className="w-[18px] h-[18px] text-[#3065C4] fill-current stroke-[0.5]" />
+                  </div>
+                  Add to Profile
                 </button>
                 <button className="bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition shadow-sm">
                   <span className="font-serif italic text-base leading-none">X</span> Share on X

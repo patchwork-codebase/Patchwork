@@ -16,10 +16,12 @@ export default function AchievementsPage() {
   const levelInfo = calculateLevel(currentPoints, allBadges);
   const nextLevel = levelInfo?.nextLevel;
 
-  const earnedMilestones = userBadges?.filter(ub => ub.badge?.badge_type === 'achievement') || [];
-  const earnedRecognitions = userBadges?.filter(ub => ub.badge?.badge_type === 'recognition') || [];
+  const getBadge = (ub: any) => Array.isArray(ub.badge) ? ub.badge[0] : ub.badge;
 
-  const earnedBadgeIds = userBadges?.map(ub => ub.badge?.id).filter(Boolean) || [];
+  const earnedMilestones = userBadges?.filter(ub => getBadge(ub)?.badge_type === 'achievement') || [];
+  const earnedRecognitions = userBadges?.filter(ub => getBadge(ub)?.badge_type === 'recognition') || [];
+
+  const earnedBadgeIds = userBadges?.map(ub => getBadge(ub)?.id).filter(Boolean) || [];
   const lockedMilestones = allBadges?.filter(b => b.badge_type === 'achievement' && !earnedBadgeIds.includes(b.id)) || [];
   const lockedRecognitions = allBadges?.filter(b => b.badge_type === 'recognition' && !earnedBadgeIds.includes(b.id)) || [];
 
@@ -87,11 +89,11 @@ export default function AchievementsPage() {
             <div className="space-y-4">
               {earnedMilestones.length > 0 ? earnedMilestones.map((ub) => (
                 <div key={ub.id} className="bg-white/80 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:bg-white transition-all duration-300">
-                  <HexagonSVG completed={true} number={ub.badge?.points_required ? Math.floor(ub.badge.points_required / 50) : 1} />
+                  <HexagonSVG completed={true} number={getBadge(ub)?.points_required ? Math.floor(getBadge(ub).points_required / 50) : 1} />
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-slate-900 text-[15px]">{ub.badge?.title}</h3>
-                    <p className="text-slate-500 text-[13px] mt-0.5 mb-2">{ub.badge?.description}</p>
+                    <h3 className="font-bold text-slate-900 text-[15px]">{getBadge(ub)?.title}</h3>
+                    <p className="text-slate-500 text-[13px] mt-0.5 mb-2">{getBadge(ub)?.description}</p>
                     <Link to={`/credentials/${ub.id}`} className="text-[12px] font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1 group w-max">
                       See credentials <ArrowUpRight className="w-3.5 h-3.5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
@@ -99,7 +101,7 @@ export default function AchievementsPage() {
 
                   <div className="shrink-0 mt-4 sm:mt-0">
                     <button 
-                      onClick={() => window.open(generateLinkedInCertUrl(ub.badge?.title || '', ub.issued_at, `${window.location.origin}/credentials/${ub.id}`), '_blank')}
+                      onClick={() => window.open(generateLinkedInCertUrl(getBadge(ub)?.title || '', ub.issued_at, `${window.location.origin}/credentials/${ub.id}`), '_blank')}
                       className="flex items-center gap-2 bg-[#0A66C2] hover:bg-[#004182] text-white px-4 py-2.5 rounded-xl text-[13px] font-bold transition w-full sm:w-auto justify-center">
                       <Linkedin className="w-4 h-4 fill-current" /> Add to Profile
                     </button>
@@ -159,11 +161,12 @@ export default function AchievementsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               {earnedRecognitions.map((ub) => (
                 <div key={ub.id} className="bg-white/80 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-4 md:p-5 flex flex-col items-center text-center hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:bg-white transition-all duration-300">
                   <MedalSVG text="★" />
-                  <h4 className="font-bold text-slate-900 text-[11px] md:text-[12px] leading-tight mb-2 px-1">{ub.badge?.title}</h4>
+                  <h4 className="font-bold text-slate-900 text-[11px] md:text-[12px] leading-tight mb-1 px-1">{getBadge(ub)?.title}</h4>
+                  <p className="text-[10px] md:text-[11px] text-slate-500 mb-2 px-1">{getBadge(ub)?.description}</p>
                   <div className="text-[9px] md:text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-bold mb-4">
                     {ub.issued_at && !isNaN(new Date(ub.issued_at).getTime()) 
                       ? new Date(ub.issued_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) 
@@ -175,7 +178,7 @@ export default function AchievementsPage() {
                       Credentials <ArrowUpRight className="w-3 h-3 ml-0.5" />
                     </Link>
                     <button 
-                      onClick={() => window.open(generateLinkedInCertUrl(ub.badge?.title || '', ub.issued_at, `${window.location.origin}/credentials/${ub.id}`), '_blank')}
+                      onClick={() => window.open(generateLinkedInCertUrl(getBadge(ub)?.title || '', ub.issued_at, `${window.location.origin}/credentials/${ub.id}`), '_blank')}
                       className="flex items-center justify-center gap-1.5 bg-[#0A66C2] hover:bg-[#004182] text-white px-2 py-1.5 rounded-md text-[11px] font-bold transition w-full 2xl:w-auto">
                       <Linkedin className="w-3 h-3 fill-current" /> Add
                     </button>
@@ -193,7 +196,8 @@ export default function AchievementsPage() {
               {lockedRecognitions.map((badge) => (
                 <div key={`locked-${badge.id}`} className="bg-white/50 backdrop-blur-md border border-white shadow-sm rounded-3xl p-4 md:p-5 flex flex-col items-center text-center opacity-60 grayscale transition-all">
                   <MedalSVG text="?" />
-                  <h4 className="font-bold text-slate-900 text-[11px] md:text-[12px] leading-tight mb-2 px-1">{badge.title}</h4>
+                  <h4 className="font-bold text-slate-900 text-[11px] md:text-[12px] leading-tight mb-1 px-1">{badge.title}</h4>
+                  <p className="text-[10px] md:text-[11px] text-slate-500 mb-2 px-1">{badge.description}</p>
                   <div className="text-[9px] md:text-[10px] text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full font-bold mt-auto mb-1">
                     Locked
                   </div>

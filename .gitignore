@@ -20,3 +20,6 @@ reset_apps.js
 test_email.js
 test_welcome_email.js
 default_shadcn_theme.css
+test-db.ts
+seed-badges.ts
+seed-badges-raw.ts
