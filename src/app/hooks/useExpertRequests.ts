@@ -15,7 +15,7 @@ export interface ExpertRequest {
   status: 'pending' | 'accepted' | 'declined' | 'completed';
   created_at: string;
   rooms?: { title: string };
-  users?: { name: string; avatar_url: string }; // Builder info
+  users?: { name: string; avatar: string }; // Builder info
 }
 
 export function useExpertRequests(expertId?: string) {
@@ -29,7 +29,7 @@ export function useExpertRequests(expertId?: string) {
         .select(`
           *,
           rooms ( title ),
-          users!builder_id ( name, avatar_url )
+          users!builder_id ( name, avatar )
         `)
         .eq('expert_id', expertId)
         .order('created_at', { ascending: false });

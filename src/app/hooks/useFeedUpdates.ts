@@ -48,7 +48,7 @@ export function useFeedUpdates() {
 
       const { data, error } = await supabase
         .from('updates')
-        .select('*, rooms(title, tags), users!author_id(is_verified_expert, organization_name, organization_logo_url, avatar_url)')
+        .select('*, rooms(title, tags), users!author_id(is_verified_expert, organization_name, organization_logo_url, avatar)')
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -69,7 +69,7 @@ export function useFeedUpdates() {
         const normalized = normalizeRow<FeedUpdate>(row as Record<string, unknown>);
         // Hoist is_verified_expert and org branding from the joined users row
         normalized.authorIsVerifiedExpert = !!(row.users?.is_verified_expert);
-        normalized.authorAvatar = row.users?.avatar_url;
+        normalized.authorAvatar = row.users?.avatar;
         normalized.authorOrgName = row.users?.organization_name;
         normalized.authorOrgLogo = row.users?.organization_logo_url;
         normalized.reactions = reactionsData.filter(r => r.updateId === row.id);

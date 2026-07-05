@@ -114,7 +114,7 @@ export default function ExpertReviewHub() {
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 mb-1">{roomTitle}</h3>
                         <div className="flex items-center gap-2 mb-3">
-                          <img loading="lazy" src={req.users?.avatar_url || getAvatarUrl(req.builder_id)} alt={builderName} className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 object-cover" />
+                          <img loading="lazy" src={req.users?.avatar || getAvatarUrl(req.builder_id)} alt={builderName} className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 object-cover" />
                           <p className="text-sm text-slate-500">Requested by <span className="text-slate-700 font-medium">{builderName}</span></p>
                         </div>
                         <p className="text-sm text-slate-500 line-clamp-2">{req.build_summary}</p>
