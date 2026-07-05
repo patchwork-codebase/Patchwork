@@ -71,8 +71,7 @@ export function useSaveExpertApplication(userId: string | undefined) {
         user_id: userId,
         status: submit ? "pending" : "draft",
         updated_at: new Date().toISOString(),
-        ...(submit ? { submitted_at: new Date().toISOString() } : {}),
-      } as any;
+      } as Partial<ExpertApplication> & { user_id: string };
 
       if (existing?.id) {
         const { error } = await supabase

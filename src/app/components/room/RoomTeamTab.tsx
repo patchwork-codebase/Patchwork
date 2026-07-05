@@ -96,7 +96,7 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {members.map(member => {
-              const isOwner = data?.ownerOrg?.builder_id === member.id;
+              const isOwner = data?.ownerOrg?.builderId === member.id;
               
               let displayRole = 'Observer';
               let shouldInheritOrg = false;
@@ -120,13 +120,13 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="relative shrink-0">
                       <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
-                        <img src={member.avatar || getAvatarUrl(member.id)} alt={member.name} className="w-full h-full object-cover" />
+                        <img loading="lazy" src={member.avatar || getAvatarUrl(member.id)} alt={member.name} className="w-full h-full object-cover" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-[14px] text-slate-900 truncate flex items-center gap-1.5">
                         {member.name}
-                        {(!orgName || !orgVerified) && <VerifiedTick isVerified={member.is_verified_expert} className="w-4 h-4 shrink-0" />}
+                        {(!orgName || !orgVerified) && <VerifiedTick isVerified={member.isVerifiedExpert} className="w-4 h-4 shrink-0" />}
                       </h3>
                       
                       <OrganizationBadge 
@@ -226,7 +226,7 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[11px] font-mono font-bold uppercase text-slate-500">{invite.role}</span>
                         <span className="text-slate-300">•</span>
-                        <span className="text-[11px] text-slate-500 font-medium">Invited {timeAgo((invite as any).createdAt || invite.created_at)}</span>
+                        <span className="text-[11px] text-slate-500 font-medium">Invited {timeAgo(invite.createdAt)}</span>
                       </div>
                     </div>
                   </div>

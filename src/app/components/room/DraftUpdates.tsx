@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../auth/AuthContext';
 import { useGithubDrafts } from '../../hooks/useGithub';
-import { Github, Check, X, GitCommit, FileText, Loader2, ArrowRight } from 'lucide-react';
+import { Github, Check, X, GitCommit, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 

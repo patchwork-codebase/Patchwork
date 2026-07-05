@@ -162,7 +162,7 @@ export default function BuildLogs() {
                     <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
                       <div className="flex items-center gap-2 mb-2">
                         {room.builderAvatarUrl ? (
-                          <img src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                          <img loading="lazy" src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
                         ) : (
                           <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
                             {room.builderName?.substring(0, 2) || '??'}

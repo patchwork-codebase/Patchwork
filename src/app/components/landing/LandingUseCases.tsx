@@ -139,7 +139,7 @@ const PMStage = () => {
           >
             <div className="flex items-center justify-between mb-3">
               <span className="px-2 py-1 bg-primary-50 text-primary-600 text-[10px] font-bold uppercase rounded-md tracking-wide">Critical</span>
-              <img src={getAvatarUrl("pm-user")} className="w-6 h-6 rounded-full bg-slate-100" alt="avatar" />
+              <img loading="lazy" src={getAvatarUrl("pm-user")} className="w-6 h-6 rounded-full bg-slate-100" alt="avatar" />
             </div>
             <h5 className="text-[15px] font-bold text-slate-900 mb-2 leading-snug">Revamp Checkout Flow</h5>
             <p className="text-[13px] text-slate-600 leading-relaxed mb-4">Based on user interviews, moving KYC to step 1.</p>
@@ -370,7 +370,7 @@ export function LandingUseCases() {
                               {useCase.description}
                             </p>
                             <div className="mt-4 flex items-center gap-2">
-                              <img src={useCase.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300" />
+                              <img loading="lazy" src={useCase.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300" />
                               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Live Demo &rarr;</span>
                             </div>
                           </motion.div>

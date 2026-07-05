@@ -46,7 +46,7 @@ export function OrganizationSettingsCard({ profile }: OrganizationSettingsCardPr
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
             {profile?.organizationLogoUrl ? (
-              <img src={profile.organizationLogoUrl} alt={profile.organizationName} className="w-full h-full object-cover" />
+              <img loading="lazy" src={profile.organizationLogoUrl} alt={profile.organizationName} className="w-full h-full object-cover" />
             ) : (
               <Building2 className="w-6 h-6 text-slate-400" />
             )}

@@ -42,7 +42,7 @@ export function RoomCard({ room }: RoomCardProps) {
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => navigate(`/dashboard/room/${room.id}`)}
-      className="group bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-white/40 dark:border-slate-800/50 hover:border-primary-400/50 rounded-[32px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/10 hover:bg-white/80 dark:hover:bg-slate-900/60 relative overflow-hidden"
+      className="group bg-white/60 backdrop-blur-md border border-white/40 hover:border-primary-400/50 rounded-[32px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/10 hover:bg-white/80 relative overflow-hidden"
     >
       {/* Cover Banner */}
       <div
@@ -51,7 +51,7 @@ export function RoomCard({ room }: RoomCardProps) {
         }`}
       >
         {hasCover && (
-          <img
+          <img loading="lazy"
             src={room.coverImage!}
             alt={room.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -77,7 +77,7 @@ export function RoomCard({ room }: RoomCardProps) {
       <div className="px-6 relative">
         <div className="absolute -top-6 left-6 p-1 bg-white rounded-2xl shadow-sm z-10">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 relative">
-            <img
+            <img loading="lazy"
               src={getAvatarUrl(room.builderId || room.builderName)}
               className="w-full h-full object-cover"
               alt="Builder avatar"

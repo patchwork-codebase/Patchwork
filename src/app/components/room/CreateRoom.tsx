@@ -245,7 +245,7 @@ export default function CreateRoom() {
     if (clean && !tags.includes(clean) && tags.length < 5) {
       setTags(t => [...t, clean]);
     }
-    setForm(f => ({ ...f, tagInput: '' }));
+    setForm((f: any) => ({ ...f, tagInput: '' }));
   }
 
   function removeTag(tag: string) {
@@ -260,7 +260,7 @@ export default function CreateRoom() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setForm(f => ({ ...f, coverImage: reader.result as string }));
+      reader.onloadend = () => setForm((f: any) => ({ ...f, coverImage: reader.result as string }));
       reader.readAsDataURL(file);
     }
   };
@@ -309,7 +309,7 @@ export default function CreateRoom() {
           toast.loading("Uploading cover image...", { id: "upload" });
           
           try {
-            const res = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-image`, {
+            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-image`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -413,7 +413,7 @@ export default function CreateRoom() {
                         onClick={() => {
                           setSelectedTemplate(tpl.id);
                           if (!form.description.trim()) {
-                            setForm(f => ({ ...f, description: tpl.template_context.replace(/\\n/g, '\n') }));
+                            setForm((f: any) => ({ ...f, description: tpl.template_context.replace(/\\n/g, '\n') }));
                           }
                           setTags(tpl.recommended_tags || []);
                           toast.success(`Applied ${tpl.name} template!`);
@@ -475,7 +475,7 @@ export default function CreateRoom() {
                   onChange={e => {
                     const newTitle = e.target.value;
                     const newSlug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                    setForm(f => ({ ...f, title: newTitle, slug: newSlug }));
+                    setForm((f: any) => ({ ...f, title: newTitle, slug: newSlug }));
                     setSlugError('');
                   }}
                   placeholder="e.g. Redesigning merchant onboarding flow"
@@ -497,7 +497,7 @@ export default function CreateRoom() {
                     type="text" required
                     value={form.slug}
                     onChange={e => {
-                      setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }));
+                      setForm((f: any) => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }));
                       setSlugError('');
                     }}
                     placeholder="room-slug"
@@ -530,7 +530,7 @@ export default function CreateRoom() {
               <label className="block text-[13px] font-bold text-slate-700 mb-2">Description</label>
               <textarea
                 value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))}
                 placeholder="What are you building? Give observers context."
                 rows={4}
                 maxLength={500}
@@ -546,7 +546,7 @@ export default function CreateRoom() {
               <input
                 type="text"
                 value={form.primaryLink}
-                onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
+                onChange={e => setForm((f: any) => ({ ...f, primaryLink: e.target.value }))}
                 placeholder="https://github.com/your/repo or your live site"
                 className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
               />
@@ -572,7 +572,7 @@ export default function CreateRoom() {
                 <input
                   type="text"
                   value={form.tagInput}
-                  onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
+                  onChange={e => setForm((f: any) => ({ ...f, tagInput: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (form.tagInput.trim()) addTag(form.tagInput); } }}
                   placeholder="Add a tag..."
                   className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
@@ -616,7 +616,7 @@ export default function CreateRoom() {
               <CustomSelect
                 label="Project Stage"
                 value={form.projectStage}
-                onChange={(val) => setForm(f => ({ ...f, projectStage: val }))}
+                onChange={(val) => setForm((f: any) => ({ ...f, projectStage: val }))}
                 options={[
                   { value: "Ideation", label: "Ideation (Just starting)" },
                   { value: "Prototyping", label: "Prototyping (Building MVP)" },
@@ -627,7 +627,7 @@ export default function CreateRoom() {
               <CustomSelect
                 label="Primary Goal"
                 value={form.primaryGoal}
-                onChange={(val) => setForm(f => ({ ...f, primaryGoal: val }))}
+                onChange={(val) => setForm((f: any) => ({ ...f, primaryGoal: val }))}
                 options={[
                   { value: "Seeking technical feedback", label: "Seeking technical feedback" },
                   { value: "Seeking design critique", label: "Seeking design critique" },
@@ -690,7 +690,7 @@ export default function CreateRoom() {
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setForm(f => ({ ...f, visibility: opt.value }))}
+                    onClick={() => setForm((f: any) => ({ ...f, visibility: opt.value }))}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3 ${
                       form.visibility === opt.value ? opt.activeColor : opt.color
                     }`}
@@ -718,7 +718,7 @@ export default function CreateRoom() {
                   </label>
                   <textarea
                     value={form.ndaText}
-                    onChange={e => setForm(f => ({ ...f, ndaText: e.target.value }))}
+                    onChange={(e) => setForm((f: any) => ({ ...f, ndaText: e.target.value }))}
                     rows={5}
                     placeholder="Enter your custom NDA terms here, or leave blank to use the Patchwork standard confidentiality agreement..."
                     className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed"

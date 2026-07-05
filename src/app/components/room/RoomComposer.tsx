@@ -29,7 +29,10 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
   const [postingUpdate, setPostingUpdate] = useState(false);
   const [suggestedDecision, setSuggestedDecision] = useState<{ isDecision: boolean; extractedText: string | null } | null>(null);
   const [loggingDecision, setLoggingDecision] = useState(false);
-  const [updateType, setUpdateType] = useState<'general' | 'decision' | 'scrap' | 'pivot' | 'blocker' | 'insight' | 'open_question' | 'shipped'>('general');
+  const [updateType, setUpdateType] = useState<'general' | 'decision' | 'scrap' | 'pivot' | 'blocker' | 'insight' | 'open_question' | 'shipped' | 'crossroad'>('general');
+  const [crossroadTradeoff, setCrossroadTradeoff] = useState('');
+  const [crossroadOptionA, setCrossroadOptionA] = useState('');
+  const [crossroadOptionB, setCrossroadOptionB] = useState('');
   
   const isPostingRef = useRef(false);
   const quickUpdateMode = searchParams.get('action') === 'post';
@@ -80,7 +83,17 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
         media_url: uploadedMediaUrl,
         code_snippet: codeSnippet.trim() || null,
         update_type: updateType,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        ...(updateType === 'crossroad' ? {
+          crossroad_data: {
+            context: crossroadTradeoff, // We used crossroadTradeoff for context in UI, let's fix that mapping
+            tradeoff: crossroadTradeoff,
+            options: [
+              { title: crossroadOptionA, description: '' },
+              { title: crossroadOptionB, description: '' }
+            ]
+          }
+        } : {})
       };
 
       const { error: insertError } = await supabase.from('updates').insert(updatePayload);
@@ -219,6 +232,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
             { value: 'insight',       label: '💡 Insight',     color: 'bg-amber-50 text-amber-600 border-amber-200' },
             { value: 'open_question', label: '❓ Open question', color: 'bg-blue-50 text-blue-600 border-blue-200' },
             { value: 'shipped',       label: '🚀 Shipped',     color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+            { value: 'crossroad',     label: '🛤️ Crossroad',    color: 'bg-indigo-500/10 text-indigo-500 border-indigo-400/30' },
           ] as const;
           return (
             <div className="mb-3">
@@ -256,6 +270,43 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
           newUpdate.length >= 480 ? 'text-rose-400' : 'text-slate-400'
         }`}>{newUpdate.length}/500</span>
         </div>
+
+        {updateType === 'crossroad' && (
+          <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 mb-4 animate-in fade-in slide-in-from-top-2">
+             <div className="mb-3">
+               <label className="block text-[11px] font-bold uppercase tracking-wider text-indigo-400 mb-1">The Core Trade-off</label>
+               <input
+                 type="text"
+                 value={crossroadTradeoff}
+                 onChange={e => setCrossroadTradeoff(e.target.value)}
+                 placeholder="e.g., Speed vs Scale. Do we ship faster but incur debt, or build it right?"
+                 className="w-full px-4 py-2.5 bg-white border border-indigo-100 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all"
+               />
+             </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+               <div>
+                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Option A</label>
+                 <input
+                   type="text"
+                   value={crossroadOptionA}
+                   onChange={e => setCrossroadOptionA(e.target.value)}
+                   placeholder="e.g., Build custom auth"
+                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all"
+                 />
+               </div>
+               <div>
+                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Option B</label>
+                 <input
+                   type="text"
+                   value={crossroadOptionB}
+                   onChange={e => setCrossroadOptionB(e.target.value)}
+                   placeholder="e.g., Use Supabase auth"
+                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all"
+                 />
+               </div>
+             </div>
+          </div>
+        )}
       
       {mediaPreview && (
         <div className="relative w-[200px] mb-4 group/preview">

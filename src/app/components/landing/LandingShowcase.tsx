@@ -72,7 +72,7 @@ export function LandingShowcase({
                           {/* Card Top: Builder Profile */}
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
                             <div className="flex items-center gap-3 sm:gap-4">
-                              <img 
+                              <img loading="lazy" 
                                 src={getAvatarUrl(builder.id)}
                                 alt={builder.name}
                                 className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl object-cover shadow-sm bg-slate-100"

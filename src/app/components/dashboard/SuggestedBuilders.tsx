@@ -73,7 +73,7 @@ function SuggestedBuilderCard({
       </button>
       
       <div className="w-[60px] h-[60px] rounded-full overflow-hidden border border-slate-100 mb-3 mt-1">
-        <img src={getAvatarUrl(builder.id || builder.email)} className="w-full h-full object-cover" />
+        <img loading="lazy" src={getAvatarUrl(builder.id || builder.email)} className="w-full h-full object-cover" />
       </div>
       
       <div className="text-[13px] font-bold text-slate-900 truncate w-full mb-0.5">

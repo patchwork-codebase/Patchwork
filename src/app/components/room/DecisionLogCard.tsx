@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus, Smile, Edit2, Trash2, Lock } from "lucide-react";
+import { CheckCircle, MessageCircle, Send, Plus, Smile, Edit2, Trash2, Lock } from "lucide-react";
 import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
@@ -235,7 +235,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
             </div>
           ) : (
             allDecisions.map((decision, index) => {
-              const style = TYPE_STYLES[decision.type || 'decision'];
+              const style = (TYPE_STYLES as any)[decision.type || 'decision'];
               const itemReactions = reactions.filter(r => r.update_id === decision.id || r.updateId === decision.id);
               const itemReplies = itemReactions.filter(r => r.type === 'reply' || r.text);
               
@@ -335,7 +335,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                           >
                             {itemReplies.map((reply: any) => (
                               <div key={reply.id} className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                                <img 
+                                <img loading="lazy" 
                                   src={getAvatarUrl(reply.observer_id || reply.observerId)} 
                                   onClick={(e) => {
                                     e.stopPropagation();

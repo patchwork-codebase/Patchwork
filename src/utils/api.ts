@@ -1,4 +1,4 @@
-import { publicAnonKey } from "/utils/supabase/info";
+
 
 const API_BASE = window.location.origin + "/api/v1";
 
@@ -15,7 +15,7 @@ export async function apiCall(path: string, opts: RequestInit = {}, token?: stri
   try {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token || publicAnonKey}`,
+      Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       ...(opts.headers as Record<string, string> || {}),
     };
     

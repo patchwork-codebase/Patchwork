@@ -10,6 +10,7 @@ interface LogDecisionModalProps {
   isOpen: boolean;
   onClose: () => void;
   roomId: string;
+  userId?: string;
   onSuccess: () => void;
   initialDecision?: any;
 }

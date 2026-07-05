@@ -71,7 +71,7 @@ export function LandingTicker() {
                 }}
                 className="rounded-full overflow-hidden bg-white/40 border border-[#1B3224]/10 backdrop-blur-md flex items-center justify-center p-1 cursor-pointer transition-all duration-350 shadow-sm"
               >
-                <img 
+                <img loading="lazy" 
                   src={getAvatarUrl(pos.seed)} 
                   alt={`Builder ${pos.seed}`} 
                   className="w-full h-full object-cover rounded-full bg-white/20" 
@@ -95,7 +95,7 @@ export function LandingTicker() {
                 }}
                 className="rounded-full overflow-hidden bg-white/40 border border-[#1B3224]/10 backdrop-blur-md flex items-center justify-center p-1 cursor-pointer transition-all duration-350 shadow-sm"
               >
-                <img 
+                <img loading="lazy" 
                   src={getAvatarUrl(pos.seed)} 
                   alt={`Builder ${pos.seed}`} 
                   className="w-full h-full object-cover rounded-full bg-white/20" 
@@ -143,7 +143,7 @@ export function LandingTicker() {
                 key={`mob-${idx}`}
                 className="w-10 h-10 rounded-full overflow-hidden bg-white/40 border border-[#1B3224]/10 backdrop-blur-md flex items-center justify-center p-0.5 shadow-sm"
               >
-                <img 
+                <img loading="lazy" 
                   src={getAvatarUrl(seed)} 
                   alt={`Builder ${seed}`} 
                   className="w-full h-full object-cover rounded-full bg-white/20" 

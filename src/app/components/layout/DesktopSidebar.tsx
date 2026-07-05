@@ -67,7 +67,7 @@ export function DesktopSidebar({
   // Observer sidebar uses the same white sidebar shell as builders, with observer-specific nav items
   if (isObserver) {
     return (
-      <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-white/40 dark:border-slate-800/50 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 backdrop-blur-xl border-r border-white/40 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
         <nav className="p-5 flex-1 overflow-y-auto custom-scrollbar">
 
@@ -94,14 +94,14 @@ export function DesktopSidebar({
         </nav>
 
         {/* Profile card at the very bottom */}
-        <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30">
+        <div className="border-t border-white/40 p-4 bg-white/30">
           <div className="relative z-50">
             <button
               onClick={() => setProfileMenuOpen(o => !o)}
               className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
             >
               <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+                <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-bold text-slate-900 truncate">{userDisplayName}</div>
@@ -167,7 +167,7 @@ export function DesktopSidebar({
   }
 
   return (
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-white/40 dark:border-slate-800/50 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 backdrop-blur-xl border-r border-white/40 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
 
           <nav className="p-5 flex-1 overflow-y-auto custom-scrollbar">
 
@@ -228,7 +228,7 @@ export function DesktopSidebar({
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-white/40 dark:border-slate-800/50 p-4 bg-white/30 dark:bg-slate-900/30">
+          <div className="border-t border-white/40 p-4 bg-white/30">
             <div className="relative z-50">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}
@@ -236,7 +236,7 @@ export function DesktopSidebar({
               >
                 {/* Avatar */}
                 <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+                  <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-slate-900 truncate">

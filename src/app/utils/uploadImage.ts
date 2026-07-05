@@ -1,4 +1,3 @@
-import { supabase } from '../components/auth/AuthContext';
 
 /**
  * Uploads a base64 image to the Supabase edge function and returns the secure URL.
@@ -8,7 +7,7 @@ export async function uploadImage(base64Image: string): Promise<string> {
     throw new Error("Invalid image format. Expected base64 string.");
   }
   
-  const res = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-image`, {
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-image`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

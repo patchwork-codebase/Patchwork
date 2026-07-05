@@ -7,11 +7,14 @@ import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
 import { PATCHWORK_OFFICIAL_ROOM_ID } from '../constants/patchwork';
 import type { Room, Update, Reaction } from '../types';
 
-export function parseBuilderInfo(usersObj: any) {
+import type { QueryClient, QueryKey } from '@tanstack/react-query';
+
+export function parseBuilderInfo(usersObj: unknown) {
   if (!usersObj) return { builderIsVerifiedExpert: false, builderOrgName: null, builderOrgLogo: null, builderAvatarUrl: null };
   const obj = Array.isArray(usersObj) ? usersObj[0] : usersObj;
+  const safeObj = obj as Record<string, unknown>;
   return {
-    builderIsVerifiedExpert: !!obj?.is_verified_expert,
+    builderIsVerifiedExpert: !!safeObj?.is_verified_expert,
     builderOrgName: obj?.organization_name ?? null,
     builderOrgLogo: obj?.organization_logo_url ?? null,
     builderAvatarUrl: obj?.avatar_url ?? null,
@@ -26,9 +29,8 @@ function removeStaleChannel(name: string) {
   const existing = supabase.getChannels().find(c => c.topic === `realtime:${name}`);
   if (existing) supabase.removeChannel(existing);
 }
-
 const debounceTimers = new Map<string, NodeJS.Timeout>();
-function debouncedInvalidate(queryClient: any, queryKey: any[]) {
+function debouncedInvalidate(queryClient: QueryClient, queryKey: QueryKey) {
   const keyStr = JSON.stringify(queryKey);
   const existing = debounceTimers.get(keyStr);
   if (existing) clearTimeout(existing);
@@ -37,7 +39,10 @@ function debouncedInvalidate(queryClient: any, queryKey: any[]) {
     queryClient.invalidateQueries({ queryKey });
     debounceTimers.delete(keyStr);
   }, 1500); // 1.5s debounce for realtime events
+  
+  debounceTimers.set(keyStr, timer);
 }
+
 
 export function useRoomDetails(roomId?: string, userId?: string) {
   const queryClient = useQueryClient();
@@ -85,7 +90,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
 
       const usersObj = Array.isArray(roomData.users) ? roomData.users[0] : roomData.users;
       return {
-        ...normalizeRow(roomData),
+        ...normalizeRow<Record<string, unknown>>(roomData as Record<string, unknown>),
         visibility: (roomData.visibility ?? (roomData.is_private ? 'private' : 'public')) as Room['visibility'],
         contentPermissions: roomData.content_permissions ?? null,
         protectionFlags: roomData.protection_flags ?? null,
@@ -95,7 +100,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         // These will be hydrated by separate queries below, but we initialize them here for compat
         updates: [],
         reactions: []
-      };
+      } as unknown as Room;
     },
     enabled: !!roomId,
   });
@@ -111,7 +116,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         .eq('room_id', roomId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+      return (data || []).map(row => normalizeRow<Update>(row));
     },
     enabled: !!roomId,
   });
@@ -127,7 +132,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         .eq('room_id', roomId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(normalizeRow);
+      return (data || []).map(row => normalizeRow<Reaction>(row));
     },
     enabled: !!roomId,
   });
@@ -245,16 +250,12 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
 
       if (error) throw error;
       return (data || []).map(row => {
-        const usersObj = Array.isArray(row.users) ? row.users[0] : row.users;
         const updatesObj = Array.isArray(row.updates) ? row.updates[0] : row.updates;
         return {
-          ...normalizeRow(row),
-          builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
-          builderOrgName: (usersObj as any)?.organization_name,
-          builderOrgLogo: (usersObj as any)?.organization_logo_url,
-          builderAvatarUrl: (usersObj as any)?.avatar_url,
-          latestUpdate: updatesObj ? normalizeRow(updatesObj) : null,
-        };
+          ...normalizeRow<Record<string, unknown>>(row as Record<string, unknown>),
+          ...parseBuilderInfo(row.users),
+          latestUpdate: updatesObj ? normalizeRow<Update>(updatesObj) : undefined,
+        } as unknown as Room;
       });
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -315,16 +316,12 @@ export function useUserRooms(userId?: string) {
 
       if (error) throw error;
       return (data || []).map(row => {
-        const usersObj = Array.isArray(row.users) ? row.users[0] : row.users;
         const updatesObj = Array.isArray(row.updates) ? row.updates[0] : row.updates;
         return {
-          ...normalizeRow(row),
-          builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
-          builderOrgName: (usersObj as any)?.organization_name,
-          builderOrgLogo: (usersObj as any)?.organization_logo_url,
-          builderAvatarUrl: (usersObj as any)?.avatar_url,
-          latestUpdate: updatesObj ? normalizeRow(updatesObj) : null,
-        };
+          ...normalizeRow<Record<string, unknown>>(row as Record<string, unknown>),
+          ...parseBuilderInfo(row.users),
+          latestUpdate: updatesObj ? normalizeRow<Update>(updatesObj) : undefined,
+        } as unknown as Room;
       });
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -413,17 +410,13 @@ export function useObservedRooms(userId?: string) {
       return (data || []).map(row => {
         const room = Array.isArray(row.rooms) ? row.rooms[0] : row.rooms;
         if (!room) return null;
-        const usersObj = Array.isArray(room.users) ? room.users[0] : room.users;
         const updatesObj = Array.isArray(room.updates) ? room.updates[0] : room.updates;
         return {
-          ...normalizeRow(room),
-          builderIsVerifiedExpert: !!((usersObj as any)?.is_verified_expert),
-          builderOrgName: (usersObj as any)?.organization_name,
-          builderOrgLogo: (usersObj as any)?.organization_logo_url,
-          builderAvatarUrl: (usersObj as any)?.avatar_url,
-          latestUpdate: updatesObj ? normalizeRow(updatesObj) : null,
-        };
-      }).filter(Boolean);
+          ...normalizeRow<Record<string, unknown>>(room as Record<string, unknown>),
+          ...parseBuilderInfo(room.users),
+          latestUpdate: updatesObj ? normalizeRow<Update>(updatesObj) : undefined,
+        } as unknown as Room;
+      }).filter((room): room is Room => Boolean(room));
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 12 ? allPages.length : undefined;
@@ -520,7 +513,7 @@ export function useUpdateRoomAccess() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data, { roomId }) => {
+    onSuccess: (_, { roomId }) => {
       queryClient.invalidateQueries({ queryKey: ['room-details', roomId] });
     }
   });

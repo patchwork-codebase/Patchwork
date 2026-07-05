@@ -92,7 +92,7 @@ export default function Layout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0E0C16] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
         <div className="flex items-center gap-2.5 text-slate-600 font-mono text-[13px]">
           <div className="w-4.5 h-4.5 rounded-full border-2 border-primary-500/20 border-t-primary-500 animate-spin" />
           Loading Patchwork…
@@ -116,7 +116,7 @@ export default function Layout() {
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAF9] dark:bg-[#0E0C16] text-slate-900 dark:text-slate-100 pb-[env(safe-area-inset-bottom)] lg:pb-0">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
       {/* Global Navigation Progress Bar */}
       {navigation.state === 'loading' && (
         <div className="fixed top-0 left-0 w-full h-1 z-[100] bg-primary-400/20 overflow-hidden">
@@ -142,7 +142,7 @@ export default function Layout() {
 
       {/* ── UNVERIFIED EMAIL BANNER ───────────────────────── */}
       {profile && !profile.emailVerified && (
-        <div className="w-full bg-amber-500/10 dark:bg-amber-500/5 border-b border-amber-500/20 dark:border-amber-500/10 px-4 py-2.5 flex items-center justify-between gap-3 z-40">
+        <div className="w-full bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between gap-3 z-40">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-amber-400 shrink-0" aria-hidden>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -192,7 +192,7 @@ export default function Layout() {
           handleSignOut={handleSignOut}
         />
 
-        <main className="flex-1 min-w-0 min-h-[calc(100vh-60px)] bg-[#FAFAF9] dark:bg-[#0E0C16] pb-28">
+        <main className="flex-1 min-w-0 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
           <div className="h-full">
 
             <Suspense fallback={

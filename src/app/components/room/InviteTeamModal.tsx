@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, Mail, User, Loader2, UserPlus, ShieldCheck, Trash2, RefreshCw } from "lucide-react";
+import { X, Send, Mail, Loader2, UserPlus, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { Room } from "../../types";
 import { usePendingInvites } from "../../hooks/usePendingInvites";
@@ -19,7 +19,7 @@ export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
   const { 
     invites, 
     isFetching, 
-    inviteUser, 
+    inviteUser,
     isInviting, 
     revokeInvite, 
     resendInvite,

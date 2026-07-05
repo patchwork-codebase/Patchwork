@@ -33,7 +33,7 @@ export function LandingWorkflow({
             className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden relative shadow-sm"
             style={{ zIndex: 20 - i }}
           >
-            <img src={getAvatarUrl(`wf-user-${i}`)} className="w-full h-full object-cover" alt="User" />
+            <img loading="lazy" src={getAvatarUrl(`wf-user-${i}`)} className="w-full h-full object-cover" alt="User" />
             {extra === "expert" && i === 3 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary-400 rounded-full border border-white flex items-center justify-center">
                 <ShieldCheck className="w-2 h-2 text-white" />

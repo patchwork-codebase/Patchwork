@@ -93,7 +93,7 @@ export function RecentActivityList({
                     }}
                     className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-mono overflow-hidden shadow-sm cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
                   >
-                    <img src={getAvatarUrl(obs.name)} alt="Avatar" className="w-full h-full object-cover scale-110" />
+                    <img loading="lazy" src={getAvatarUrl(obs.name)} alt="Avatar" className="w-full h-full object-cover scale-110" />
                   </div>
                   <span className="text-[13px] font-bold text-slate-900">
                     {obs.name}

@@ -65,9 +65,9 @@ export function Composer({
   if (profile?.role !== 'builder') return null;
 
   return (
-    <div className="hidden sm:flex bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-white/40 dark:border-slate-800/50 shadow-sm rounded-[24px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6 transition-all duration-300 focus-within:shadow-xl focus-within:-translate-y-1 focus-within:bg-white/80 dark:focus-within:bg-slate-900/60 relative">
+    <div className="hidden sm:flex bg-white/60 backdrop-blur-md border border-white/40 shadow-sm rounded-[24px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6 transition-all duration-300 focus-within:shadow-xl focus-within:-translate-y-1 focus-within:bg-white/80 relative">
       <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+        <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
       </div>
       <div className="flex-1 min-w-0">
         <textarea 

@@ -67,12 +67,29 @@ export interface Update {
   authorName: string;
   content: string;
   type?: string;
+  updateType?: string;
+  open?: boolean;
   mediaUrl?: string | null;
   codeSnippet?: string | null;
   figmaUrl?: string | null;
   draft?: boolean;
+  crossroadData?: any; // Structured data for crossroad trade-offs
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface CrossroadVote {
+  id: string;
+  updateId: string;
+  userId: string;
+  optionTitle: string;
+  rationale?: string | null;
+  createdAt: string;
+  user?: {
+    name: string;
+    avatarUrl?: string | null;
+    isVerifiedExpert?: boolean;
+  };
 }
 
 export interface Reaction {

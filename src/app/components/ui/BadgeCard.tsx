@@ -1,4 +1,3 @@
-import React from 'react';
 import * as Icons from 'lucide-react';
 import { Badge, UserBadge } from '../../types/pow';
 

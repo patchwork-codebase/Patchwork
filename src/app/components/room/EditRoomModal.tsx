@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ChevronDown, Image as ImageIcon, Lock, Sparkles, Save } from "lucide-react";
+import { X, ChevronDown, Image as ImageIcon, Sparkles, Save } from "lucide-react";
 import type { Room } from "../../types";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";

@@ -213,7 +213,7 @@ export default function RoomLogPage() {
               <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" />Built over {days} day{days !== 1 ? 's' : ''}</span>
               {room.builderName && (
                 <Link to={`/dashboard/profile/${room.builderId}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
-                  <img src={getAvatarUrl(room.builderId || room.builderName)} className="w-4 h-4 rounded-full" alt="builder" />
+                  <img loading="lazy" src={getAvatarUrl(room.builderId || room.builderName)} className="w-4 h-4 rounded-full" alt="builder" />
                   {room.builderName}
                   {!room.builderOrgName && (
                     <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" />
@@ -324,7 +324,7 @@ export default function RoomLogPage() {
             {topObservers.map((obs, i) => (
               <div key={obs.id} onClick={() => navigate(`/dashboard/profile/${obs.id}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
                 <span className="text-[11px] font-mono font-bold text-slate-300 w-4">{i + 1}</span>
-                <img src={getAvatarUrl(obs.id)} className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-primary-400/30 transition-all" alt="observer" />
+                <img loading="lazy" src={getAvatarUrl(obs.id)} className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-primary-400/30 transition-all" alt="observer" />
                 <span className="text-[13px] font-bold text-slate-800 flex-1 truncate group-hover:text-primary-400 transition-colors flex items-center gap-2">
                   {obs.name}
                   {i === 0 && <span className="bg-amber-100 text-amber-700 text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold">Top Observer</span>}
@@ -374,7 +374,7 @@ export default function RoomLogPage() {
                     )}
                     <div className="flex flex-col mb-3 gap-1">
                       <div className="flex items-center gap-2">
-                        <img src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
+                        <img loading="lazy" src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
                         <div className="flex items-center gap-1.5 flex-wrap flex-1">
                           <span className="text-[13px] font-bold text-slate-800">{update.authorName}</span>
                           {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />}
@@ -545,7 +545,7 @@ export default function RoomLogPage() {
                           <Zap className="w-2.5 h-2.5" /> High Signal
                         </span>
                       )}
-                      <img src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="observer" />
+                      <img loading="lazy" src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="observer" />
                       <span className="text-[12px] font-bold text-slate-800">{r.observerName}</span>
                       <ReputationBadge score={r.observerReputation || 0} />
                       <span className="text-[10px] text-slate-400 font-mono ml-auto">{timeAgo(r.createdAt)}</span>

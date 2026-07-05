@@ -522,7 +522,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                       >
                         {itemReplies.map((reply: any) => (
                           <div key={reply.id} className={`flex items-start gap-3 p-3 rounded-2xl border ${isNested ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-white/[0.05]'}`}>
-                            <img 
+                            <img loading="lazy" 
                               src={getAvatarUrl(reply.observer_id || reply.observerId)} 
                               onClick={(e) => {
                                 e.stopPropagation();

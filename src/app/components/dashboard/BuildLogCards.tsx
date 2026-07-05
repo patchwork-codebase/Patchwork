@@ -39,7 +39,7 @@ export function ActiveBuildCard({ room, isObserver, handleArchiveRoom, archiving
           
           <div className="flex items-center gap-2 mt-1 w-full">
             {room.builderAvatarUrl ? (
-              <img src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+              <img loading="lazy" src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
             ) : (
               <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
                 {room.builderName?.substring(0, 2) || '??'}
@@ -133,7 +133,7 @@ export function ShippedBuildCard({ log }: { log: Room }) {
             <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
             <div className="flex items-center gap-2 mb-2">
               {log.builderAvatarUrl ? (
-                <img src={log.builderAvatarUrl} alt={log.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                <img loading="lazy" src={log.builderAvatarUrl} alt={log.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
                   {log.builderName?.substring(0, 2) || '??'}
@@ -188,7 +188,7 @@ export function CompletedBuildCard({ log }: { log: Room }) {
             <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1">{log.title}</h3>
             <div className="flex items-center gap-2 mb-1.5">
               {log.builderAvatarUrl ? (
-                <img src={log.builderAvatarUrl} alt={log.builderName} className="w-4 h-4 rounded-full object-cover border border-slate-200" />
+                <img loading="lazy" src={log.builderAvatarUrl} alt={log.builderName} className="w-4 h-4 rounded-full object-cover border border-slate-200" />
               ) : (
                 <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center text-[8px] font-bold text-slate-500 uppercase border border-slate-200">
                   {log.builderName?.substring(0, 2) || '??'}

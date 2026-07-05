@@ -91,7 +91,7 @@ export function ComposerSheet({ isOpen, onClose, myRooms, selectedRoomId, setSel
             {mediaPreview && (
               <div className="relative w-[120px] mb-4 group mt-1">
                 <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative aspect-video flex items-center justify-center">
-                  <img src={mediaPreview} alt="Upload preview" className="max-h-[120px] w-full h-full object-cover rounded-xl" />
+                  <img loading="lazy" src={mediaPreview} alt="Upload preview" className="max-h-[120px] w-full h-full object-cover rounded-xl" />
                   <button
                     type="button"
                     onClick={() => setMediaPreview(null)}

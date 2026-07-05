@@ -105,7 +105,7 @@ export function FeedUpdateCard({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
       onClick={() => toggleComments(update.id)}
-      className="w-full max-w-full bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-white/40 dark:border-slate-800/50 shadow-sm rounded-[28px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/40 dark:hover:shadow-black/20 hover:bg-white/80 dark:hover:bg-slate-900/60 transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
+      className="w-full max-w-full bg-white/60 backdrop-blur-md border border-white/40 shadow-sm rounded-[28px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/40 hover:bg-white/80 transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') toggleComments(update.id);
@@ -119,7 +119,7 @@ export function FeedUpdateCard({
           }}
           className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 ring-1 ring-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
         >
-          <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          <img loading="lazy" src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col">
@@ -280,7 +280,7 @@ export function FeedUpdateCard({
               >
                 {comments.slice(0, fullyExpandedComments.includes(update.id) ? comments.length : 3).map((reply: any) => (
                   <div key={reply.id} className="flex gap-3">
-                    <img src={getAvatarUrl(reply.observerId || reply.observerName)} className="w-8 h-8 rounded-full" alt="Reply avatar" />
+                    <img loading="lazy" src={getAvatarUrl(reply.observerId || reply.observerName)} className="w-8 h-8 rounded-full" alt="Reply avatar" />
                     <div className="flex-1 bg-slate-50 rounded-2xl p-3 px-4">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <span className="font-bold text-[13px] text-slate-900">{reply.observerName}</span>

@@ -78,7 +78,7 @@ export function SmartImage({
       )}
       
       {src && (
-        <img
+        <img loading="lazy"
           src={src}
           alt={alt}
           className={imageClasses}

@@ -14,7 +14,7 @@ export function OrganizationBadge({ orgName, orgLogo, isVerified }: Organization
       <span className="truncate">{orgName}</span>
       {isVerified && <VerifiedTick isVerified={true} className="w-3.5 h-3.5 shrink-0" />}
       {orgLogo && (
-        <img 
+        <img loading="lazy" 
           src={orgLogo} 
           alt={orgName} 
           className="w-3.5 h-3.5 rounded-sm object-cover shrink-0 ml-0.5" 

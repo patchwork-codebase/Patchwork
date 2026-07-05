@@ -324,7 +324,7 @@ export default function BuildRoom() {
 
         <RoomHeader 
           room={room} 
-          isBuilder={isBuilder} 
+          isBuilder={!!isBuilder} 
           closingRoom={closingRoom} 
           user={user} 
           setLinkedinShareOpen={setLinkedinShareOpen} 
@@ -377,15 +377,15 @@ export default function BuildRoom() {
         </div>
 
         {activeTab === 'overview' && (
-          <RoomOverviewTab room={room} id={id} user={user} reactions={room.reactions} queryClient={queryClient} isBuilder={isBuilder} />
+          <RoomOverviewTab room={room} id={id as string} user={user} reactions={room.reactions} queryClient={queryClient} isBuilder={!!isBuilder} />
         )}
 
         {activeTab === 'workspace' && (
-          <RoomWorkspaceTab roomId={id} builderId={room.builderId} user={user} />
+          <RoomWorkspaceTab roomId={id as string} builderId={room.builderId} user={user} />
         )}
 
         {activeTab === 'team' && (
-          <RoomTeamTab roomId={id!} isBuilder={isBuilder} roomTitle={room.title} builderName={room.builderName} />
+          <RoomTeamTab roomId={id!} isBuilder={!!isBuilder} roomTitle={room.title} builderName={room.builderName} />
         )}
 
         {activeTab === 'timeline' && (
@@ -436,7 +436,7 @@ export default function BuildRoom() {
               <RoomFeed 
                 room={room} 
                 user={user} 
-                isBuilder={isBuilder} 
+                isBuilder={!!isBuilder} 
                 reactionsByUpdate={reactionsByUpdate} 
                 expandedUpdates={expandedUpdates} 
                 setExpandedUpdates={setExpandedUpdates} 

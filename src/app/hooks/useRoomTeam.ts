@@ -108,7 +108,7 @@ export function useRevokeInvitation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ inviteId, roomId }: { inviteId: string, roomId: string }) => {
+    mutationFn: async ({ inviteId }: { inviteId: string, roomId: string }) => {
       const { error } = await supabase
         .from('room_invitations')
         .update({ status: 'revoked', updated_at: new Date().toISOString() })
@@ -131,7 +131,7 @@ export function useResendInvitation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ roomId, email, role, roomTitle, builderName }: { roomId: string, email: string, role: string, roomTitle: string, builderName: string }) => {
+    mutationFn: async ({ roomId, email, role }: { roomId: string, email: string, role: string, roomTitle: string, builderName: string }) => {
       
       // 1. Generate new token via RPC to resend
       const { data: token, error: rpcError } = await supabase.rpc('invite_user_to_room', {

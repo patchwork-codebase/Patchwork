@@ -203,7 +203,7 @@ export default function Dashboard() {
         {/* Left: avatar + identity */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
-            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+            <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
           <div className="min-w-0 flex-1">
             {/* Greeting + name — single truncating line */}

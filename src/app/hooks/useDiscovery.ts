@@ -146,7 +146,7 @@ export function useCreateDiscoveryProject() {
       if (error) throw error;
       return data as DiscoveryProject;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['discovery_projects'] });
       toast.success('Discovery project created!');
     },

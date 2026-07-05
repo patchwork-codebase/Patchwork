@@ -15,7 +15,7 @@ export function useProfile(userId?: string) {
       if (error) throw error;
       if (!userRow) return null;
 
-      const profileData = normalizeRow(userRow);
+      const profileData = normalizeRow<Profile>(userRow);
 
       const [{ data: followersData, count: followerCount }, { count: followingCount }] = await Promise.all([
         supabase.from('follows').select('follower_id', { count: 'exact' }).eq('following_id', userId).order('created_at', { ascending: false }).limit(5),

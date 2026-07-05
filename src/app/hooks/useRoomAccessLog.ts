@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import type { AccessLogEntry } from '../types';
-import { normalizeRow } from '../utils/helpers';
+
 
 /**
  * Fetches the access audit log for a room.

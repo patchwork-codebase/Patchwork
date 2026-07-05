@@ -172,7 +172,7 @@ export function LandingHero({
                     className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200 relative shadow-sm"
                     style={{ zIndex: 10 - i }}
                   >
-                    <img src={getAvatarUrl(`builder-${i + 15}`)} alt="Builder" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={getAvatarUrl(`builder-${i + 15}`)} alt="Builder" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

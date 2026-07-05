@@ -1,38 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { CheckCircle, Clock, XCircle, Inbox, Activity, Calendar, FileText, ChevronRight } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Inbox, Activity, Calendar, FileText, ChevronRight, Loader2 } from 'lucide-react';
 import { ReviewTemplateForm } from './ReviewTemplateForm';
-
-// Mock Data
-const MOCK_REQUESTS = [
-  {
-    id: 'req-1',
-    builderName: 'Jordan Lee',
-    roomTitle: 'Redesigning the onboarding flow',
-    priority: 'high',
-    status: 'pending',
-    deadline: '2026-06-18T00:00:00Z',
-    buildSummary: 'We are completely overhauling the onboarding to increase activation.',
-  },
-  {
-    id: 'req-2',
-    builderName: 'Sam Smith',
-    roomTitle: 'New AI features',
-    priority: 'medium',
-    status: 'accepted',
-    deadline: '2026-06-20T00:00:00Z',
-    buildSummary: 'Adding generative AI text to our editor.',
-  },
-  {
-    id: 'req-3',
-    builderName: 'Alex Johnson',
-    roomTitle: 'Mobile App V2',
-    priority: 'low',
-    status: 'completed',
-    deadline: '2026-06-10T00:00:00Z',
-    buildSummary: 'React Native rewrite.',
-  }
-];
+import { useExpertRequests } from '../../hooks/useExpertRequests';
+import { getAvatarUrl } from '../../utils/helpers';
 
 export default function ExpertReviewHub() {
   const { profile } = useAuth();
@@ -49,7 +20,9 @@ export default function ExpertReviewHub() {
 
   const isAvailable = capacity.active < capacity.activeLimit && capacity.monthly < capacity.monthlyLimit;
 
-  const filteredRequests = MOCK_REQUESTS.filter(req => {
+  const { data: requests = [], isLoading } = useExpertRequests(profile?.id);
+
+  const filteredRequests = requests.filter(req => {
     if (activeTab === 'incoming') return req.status === 'pending';
     if (activeTab === 'accepted') return req.status === 'accepted';
     if (activeTab === 'completed') return req.status === 'completed';
@@ -105,68 +78,81 @@ export default function ExpertReviewHub() {
               />
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredRequests.length === 0 ? (
-                <div className="text-center py-20 bg-white/[0.02] rounded-2xl border border-dashed border-white/10">
-                  <Inbox className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                  <h3 className="text-white font-bold text-lg">No {activeTab} requests</h3>
-                  <p className="text-slate-400 text-sm">You're all caught up!</p>
+            <div className="flex-1 bg-white border border-slate-200 rounded-[24px] flex flex-col overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)] relative min-h-[500px]">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center flex-1 text-slate-400">
+                <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary-400" />
+                <p>Loading requests...</p>
+              </div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center flex-1 text-slate-400 p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
+                  <Inbox className="w-8 h-8 text-slate-300" />
                 </div>
-              ) : (
-                filteredRequests.map(req => (
-                  <div key={req.id} className="bg-white/[0.02] border border-white/[0.08] hover:border-white/20 transition-all rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
-                          req.priority === 'high' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
-                          req.priority === 'medium' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 
-                          'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                        }`}>
-                          {req.priority} Priority
-                        </span>
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> Due {new Date(req.deadline).toLocaleDateString()}
-                        </span>
+                <h3 className="text-[16px] font-bold text-slate-700 mb-1">No {activeTab} requests</h3>
+                <p className="text-[13px]">You're all caught up! When a builder requests your expertise, it will appear here.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 overflow-y-auto">
+                {filteredRequests.map(req => {
+                  const builderName = req.users?.name || 'Builder';
+                  const roomTitle = req.rooms?.title || 'Unknown Room';
+                  return (
+                    <div key={req.id} className="w-full text-left p-5 sm:p-6 transition-all border-l-4 bg-white border-transparent hover:bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
+                            req.priority === 'high' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
+                            req.priority === 'medium' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 
+                            'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          }`}>
+                            {req.priority} Priority
+                          </span>
+                          <span className="text-xs text-slate-400 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" /> Due {new Date(req.deadline).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-1">{roomTitle}</h3>
+                        <div className="flex items-center gap-2 mb-3">
+                          <img loading="lazy" src={req.users?.avatar_url || getAvatarUrl(req.builder_id)} alt={builderName} className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 object-cover" />
+                          <p className="text-sm text-slate-500">Requested by <span className="text-slate-700 font-medium">{builderName}</span></p>
+                        </div>
+                        <p className="text-sm text-slate-500 line-clamp-2">{req.build_summary}</p>
                       </div>
-                      <h3 className="text-lg font-bold text-white mb-1">{req.roomTitle}</h3>
-                      <p className="text-sm text-slate-400">Requested by <span className="text-slate-300 font-medium">{req.builderName}</span></p>
-                      <p className="text-sm text-slate-500 mt-3 line-clamp-2">{req.buildSummary}</p>
-                    </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
-                      {activeTab === 'incoming' && (
-                        <>
-                          <button className="px-4 py-2 rounded-xl text-sm font-bold text-slate-300 hover:bg-white/10 transition-colors">
-                            Decline
-                          </button>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {activeTab === 'incoming' && (
+                          <>
+                            <button className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors">
+                              Decline
+                            </button>
+                            <button className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-900 hover:bg-slate-50 transition-all shadow-sm border border-slate-200">
+                              Accept Request
+                            </button>
+                          </>
+                        )}
+                        {activeTab === 'accepted' && (
                           <button 
-                            className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-black hover:bg-slate-200 transition-all shadow-lg"
+                            onClick={() => setSelectedRequest(req.id)}
+                            className="px-5 py-2.5 rounded-xl text-sm font-bold bg-primary-500 hover:bg-primary-600 text-white transition-all shadow-sm flex items-center gap-2"
                           >
-                            Accept Request
+                            <FileText className="w-4 h-4" /> Start Review
                           </button>
-                        </>
-                      )}
-                      {activeTab === 'accepted' && (
-                        <button 
-                          onClick={() => setSelectedRequest(req.id)}
-                          className="px-5 py-2.5 rounded-xl text-sm font-bold bg-primary hover:bg-primary/90 text-white transition-all shadow-lg flex items-center gap-2"
-                        >
-                          <FileText className="w-4 h-4" /> Start Review
-                        </button>
-                      )}
-                      {activeTab === 'completed' && (
-                        <button className="px-4 py-2 rounded-xl text-sm font-bold bg-white/5 text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-2">
-                          View Report <ChevronRight className="w-4 h-4" />
-                        </button>
-                      )}
+                        )}
+                        {activeTab === 'completed' && (
+                          <button className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-2">
+                            View Report <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
         </div>
-
         {/* Capacity Sidebar */}
         <div className="w-full md:w-[320px] shrink-0">
           <div className="bg-ink-80 border border-white/[0.08] rounded-2xl p-6 sticky top-8">

@@ -1,20 +1,30 @@
 import React, { useState, Suspense } from 'react';
 import { Copy, Check } from 'lucide-react';
+// @ts-ignore
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SyntaxHighlighter = React.lazy(() => 
   Promise.all([
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/prism-light'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/javascript'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/typescript'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/jsx'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/tsx'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/css'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/python'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/json'),
+    // @ts-ignore
     import('react-syntax-highlighter/dist/esm/languages/prism/bash')
   ]).then(([PrismLight, js, ts, jsx, tsx, css, py, json, bash]) => {
-    const Prism = PrismLight.default;
+    const Prism = PrismLight.default as any;
     Prism.registerLanguage('javascript', js.default);
     Prism.registerLanguage('typescript', ts.default);
     Prism.registerLanguage('jsx', jsx.default);
@@ -25,7 +35,7 @@ const SyntaxHighlighter = React.lazy(() =>
     Prism.registerLanguage('bash', bash.default);
     return { default: Prism };
   })
-);
+) as any;
 
 export function CodeSnippetBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);

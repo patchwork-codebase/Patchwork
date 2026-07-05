@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Award, Medal, Trophy, Star, ArrowUpRight, Hexagon, Linkedin } from 'lucide-react';
+import { Award, Medal, Trophy, Star, ArrowUpRight, Hexagon, Linkedin, Users, Home, TrendingUp, Bug, Lock } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router';
 import { useProfile } from '../../hooks/useProfile';
@@ -51,20 +51,79 @@ export default function AchievementsPage() {
     </div>
   );
 
-  const MedalSVG = ({ text }: { text: string }) => (
-    <div className="w-14 h-14 relative mb-2 flex items-center justify-center drop-shadow-sm">
-      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-        {/* Left ribbon */}
-        <polygon points="20 40, 10 95, 35 80, 45 40" className="fill-amber-600" />
-        {/* Right ribbon */}
-        <polygon points="80 40, 90 95, 65 80, 55 40" className="fill-amber-600" />
-        {/* Circle */}
-        <circle cx="50" cy="40" r="35" className="fill-amber-400 stroke-amber-100 stroke-[4]" />
-        <circle cx="50" cy="40" r="28" className="fill-amber-500" />
-      </svg>
-      <span className="relative z-10 text-white font-black text-lg mb-2">{text}</span>
-    </div>
-  );
+  const RecognitionBadgeSVG = ({ title }: { title: string }) => {
+    let colors = { primary: '#6366f1', secondary: '#4338ca', accent: '#a5b4fc' };
+    let Icon = Users;
+    
+    if (title.includes('Leader')) {
+      colors = { primary: '#10b981', secondary: '#047857', accent: '#6ee7b7' };
+      Icon = Home;
+    } else if (title.includes('1%')) {
+      colors = { primary: '#3b82f6', secondary: '#1d4ed8', accent: '#93c5fd' };
+      Icon = TrendingUp;
+    } else if (title.includes('Bug')) {
+      colors = { primary: '#f59e0b', secondary: '#b45309', accent: '#fcd34d' };
+      Icon = Bug;
+    }
+
+    return (
+      <div className="relative w-[84px] h-[84px] flex items-center justify-center drop-shadow-sm shrink-0">
+        {/* Laurels (Left and Right) */}
+        <svg className="absolute inset-0 w-full h-full text-slate-400 opacity-60" viewBox="0 0 100 100">
+           {/* Left Laurel */}
+           <path d="M 25 80 C 10 65, 10 35, 25 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+           <path d="M 25 70 C 15 65, 15 55, 20 50 C 25 55, 28 65, 25 70" fill="currentColor" />
+           <path d="M 21 55 C 10 50, 10 40, 15 35 C 20 40, 23 50, 21 55" fill="currentColor" />
+           <path d="M 19 40 C 8 35, 8 25, 13 20 C 18 25, 21 35, 19 40" fill="currentColor" />
+           <path d="M 19 25 C 10 20, 10 10, 15 5 C 20 10, 22 20, 19 25" fill="currentColor" />
+
+           {/* Right Laurel */}
+           <path d="M 75 80 C 90 65, 90 35, 75 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+           <path d="M 75 70 C 85 65, 85 55, 80 50 C 75 55, 72 65, 75 70" fill="currentColor" />
+           <path d="M 79 55 C 90 50, 90 40, 85 35 C 80 40, 77 50, 79 55" fill="currentColor" />
+           <path d="M 81 40 C 92 35, 92 25, 87 20 C 82 25, 79 35, 81 40" fill="currentColor" />
+           <path d="M 81 25 C 90 20, 90 10, 85 5 C 80 10, 78 20, 81 25" fill="currentColor" />
+        </svg>
+        
+        {/* Hexagon Base */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" style={{ transform: 'scale(0.8)' }}>
+          <defs>
+            <linearGradient id={`grad-${colors.primary.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colors.accent} />
+              <stop offset="100%" stopColor={colors.secondary} />
+            </linearGradient>
+            <linearGradient id={`inner-${colors.primary.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colors.primary} />
+              <stop offset="100%" stopColor={colors.secondary} />
+            </linearGradient>
+          </defs>
+          
+          <polygon points="50 5, 90 25, 90 75, 50 95, 10 75, 10 25" fill={`url(#grad-${colors.primary.replace('#', '')})`} className="drop-shadow-md" />
+          <polygon points="50 10, 85 28, 85 72, 50 90, 15 72, 15 28" fill={`url(#inner-${colors.primary.replace('#', '')})`} />
+        </svg>
+
+        {/* Ribbon at bottom */}
+        <div className="absolute bottom-2 w-12 h-5 flex items-center justify-center z-20">
+           <svg viewBox="0 0 100 40" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+             <path d="M 0 0 L 100 0 L 90 40 L 50 30 L 10 40 Z" fill={colors.secondary} stroke={colors.accent} strokeWidth="2" />
+           </svg>
+           <span className="relative z-10 text-white font-black text-[10px] leading-none mb-1">p</span>
+        </div>
+
+        {/* Center Icon */}
+        <div className="relative z-10 text-white flex flex-col items-center mt-[-4px]">
+           <Icon className="w-7 h-7 opacity-95 drop-shadow-sm" strokeWidth={1.5} />
+        </div>
+
+        {/* Tiny stars at top */}
+        <div className="absolute top-[16px] flex gap-1 z-20">
+           <Star className="w-1.5 h-1.5 text-white fill-current opacity-80" />
+           <Star className="w-2 h-2 text-white fill-current -mt-0.5" />
+           <Star className="w-1.5 h-1.5 text-white fill-current opacity-80" />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-slate-50 relative">
@@ -161,45 +220,46 @@ export default function AchievementsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div className="flex flex-col gap-4">
               {earnedRecognitions.map((ub) => (
-                <div key={ub.id} className="bg-white/80 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-4 md:p-5 flex flex-col items-center text-center hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:bg-white transition-all duration-300">
-                  <MedalSVG text="★" />
-                  <h4 className="font-bold text-slate-900 text-[11px] md:text-[12px] leading-tight mb-1 px-1">{getBadge(ub)?.title}</h4>
-                  <p className="text-[10px] md:text-[11px] text-slate-500 mb-2 px-1">{getBadge(ub)?.description}</p>
-                  <div className="text-[9px] md:text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-bold mb-4">
-                    {ub.issued_at && !isNaN(new Date(ub.issued_at).getTime()) 
-                      ? new Date(ub.issued_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) 
-                      : 'Recently'}
+                <div key={ub.id} className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-5 hover:shadow-md transition-all duration-300">
+                  <div className="shrink-0 flex items-center justify-center mx-auto sm:mx-0">
+                     <RecognitionBadgeSVG title={getBadge(ub)?.title || ''} />
                   </div>
-                  
-                  <div className="mt-auto w-full flex flex-col 2xl:flex-row items-center justify-between border-t border-slate-100 pt-3 gap-2">
-                    <Link to={`/credentials/${ub.id}`} className="text-[11px] font-bold text-teal-600 hover:text-teal-700 flex items-center group leading-tight">
-                      Credentials <ArrowUpRight className="w-3 h-3 ml-0.5" />
-                    </Link>
-                    <button 
-                      onClick={() => window.open(generateLinkedInCertUrl(getBadge(ub)?.title || '', ub.issued_at, `${window.location.origin}/credentials/${ub.id}`), '_blank')}
-                      className="flex items-center justify-center gap-1.5 bg-[#0A66C2] hover:bg-[#004182] text-white px-2 py-1.5 rounded-md text-[11px] font-bold transition w-full 2xl:w-auto">
-                      <Linkedin className="w-3 h-3 fill-current" /> Add
-                    </button>
+                  <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-100 sm:pl-5">
+                     <h3 className="text-[17px] font-bold text-slate-900 mb-0.5 tracking-tight">{getBadge(ub)?.title}</h3>
+                     <p className="text-slate-500 text-[13.5px] mb-2 leading-relaxed">{getBadge(ub)?.description}</p>
+                     
+                     <div className="flex items-center justify-center sm:justify-start gap-4 mt-4 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
+                       <div className="text-[11px] font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                         {ub.issued_at && !isNaN(new Date(ub.issued_at).getTime()) ? new Date(ub.issued_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'Recently'}
+                       </div>
+                       <Link to={`/credentials/${ub.id}`} className="text-[12px] font-bold text-teal-600 hover:text-teal-700 flex items-center group leading-tight">
+                         View <ArrowUpRight className="w-3 h-3 ml-0.5" />
+                       </Link>
+                     </div>
                   </div>
                 </div>
               ))}
 
               {earnedRecognitions.length === 0 && lockedRecognitions.length === 0 && (
-                <div className="col-span-2 lg:col-span-3 bg-white/50 backdrop-blur-md border border-white rounded-3xl p-6 text-center shadow-sm">
+                <div className="bg-white/50 backdrop-blur-md border border-white rounded-3xl p-6 text-center shadow-sm">
                    <p className="text-slate-500 text-[13px]">Community recognition badges will appear here once earned.</p>
                 </div>
               )}
 
               {/* Locked Recognitions */}
               {lockedRecognitions.map((badge) => (
-                <div key={`locked-${badge.id}`} className="bg-white/50 backdrop-blur-md border border-white shadow-sm rounded-3xl p-4 md:p-5 flex flex-col items-center text-center opacity-60 grayscale transition-all">
-                  <MedalSVG text="?" />
-                  <h4 className="font-bold text-slate-900 text-[11px] md:text-[12px] leading-tight mb-1 px-1">{badge.title}</h4>
-                  <p className="text-[10px] md:text-[11px] text-slate-500 mb-2 px-1">{badge.description}</p>
-                  <div className="text-[9px] md:text-[10px] text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full font-bold mt-auto mb-1">
-                    Locked
+                <div key={`locked-${badge.id}`} className="bg-white/95 backdrop-blur-md rounded-[20px] p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-5 transition-all">
+                  <div className="shrink-0 flex items-center justify-center mx-auto sm:mx-0 opacity-95">
+                     <RecognitionBadgeSVG title={badge.title} />
+                  </div>
+                  <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-100 sm:pl-5">
+                     <h3 className="text-[17px] font-bold text-slate-900 mb-0.5 tracking-tight">{badge.title}</h3>
+                     <p className="text-slate-500 text-[13.5px] mb-3 leading-relaxed">{badge.description}</p>
+                     <div className="inline-flex items-center justify-center gap-1.5 bg-slate-100/80 text-slate-500 px-3 py-1 rounded-full text-[12px] font-bold">
+                       <Lock className="w-3 h-3" /> Locked
+                     </div>
                   </div>
                 </div>
               ))}

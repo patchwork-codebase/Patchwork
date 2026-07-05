@@ -1,4 +1,3 @@
-import { useRef, useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { useSearchParams } from "react-router";
 import { Hammer, Trash2, Zap } from "lucide-react";
@@ -10,6 +9,7 @@ import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { SmartArtifactCard } from "../ui/SmartArtifactCard";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { SmartImage } from "../ui/SmartImage";
+import { CrossroadCard } from "./CrossroadCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,11 +68,11 @@ interface RoomFeedProps {
   reactionsByUpdate: Record<string, Reaction[]>;
   expandedUpdates: Record<string, boolean>;
   setExpandedUpdates: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  setReactionModal: (update: Update | null) => void;
+  setReactionModal: (state: { open: boolean; updateId: string | null }) => void;
   deletingUpdateId: string | null;
   handleDeleteUpdate: (updateId: string) => void;
   setNewUpdate: (content: string) => void;
-  updateTextAreaRef: React.RefObject<HTMLTextAreaElement>;
+  updateTextAreaRef: React.RefObject<HTMLTextAreaElement | null>;
   REACTION_CONFIG: ReactionConfig;
   typingUsers?: PresenceUser[];
 }
@@ -95,7 +95,7 @@ export function RoomFeed({
   const [searchParams] = useSearchParams();
   const updateIdToScroll = searchParams.get('updateId');
 
-  if (room.updates.length === 0) {
+  if (!room.updates || room.updates.length === 0) {
     return (
       <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
         <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-primary-400" />
@@ -117,7 +117,7 @@ export function RoomFeed({
     );
   }
 
-  const sortedUpdates = [...room.updates].reverse();
+  const sortedUpdates = [...(room.updates || [])].reverse();
   const initialTopMostItemIndex = updateIdToScroll
     ? Math.max(0, sortedUpdates.findIndex((u: any) => u.id === updateIdToScroll))
     : 0;
@@ -128,7 +128,7 @@ export function RoomFeed({
         <div className="flex items-center gap-2 mb-6 ml-6 md:ml-0 md:justify-center animate-in fade-in slide-in-from-top-2">
           <div className="flex -space-x-2">
             {typingUsers.map(u => (
-              <img 
+              <img loading="lazy" 
                 key={u.id} 
                 src={u.avatar_url || getAvatarUrl(u.id)} 
                 alt={u.name} 
@@ -159,6 +159,10 @@ export function RoomFeed({
         initialTopMostItemIndex={initialTopMostItemIndex}
         data={sortedUpdates}
         itemContent={(index, update) => {
+          if (update.updateType === 'crossroad' || update.update_type === 'crossroad') {
+            return <CrossroadCard key={update.id} update={update} />;
+          }
+
           const updateReactions = reactionsByUpdate[update.id] || [];
           const isFigmaUrl = update.content.includes("figma.com/");
           const isTarget = update.id === updateIdToScroll;
@@ -173,7 +177,7 @@ export function RoomFeed({
               <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl border border-slate-200 shadow-sm overflow-hidden shrink-0">
-                    <img 
+                    <img loading="lazy" 
                       src={getAvatarUrl(update.authorId || update.authorName)} 
                       alt={update.authorName}
                       className="w-full h-full object-cover"
@@ -310,7 +314,7 @@ export function RoomFeed({
                         {visibleReactions.map((r: Reaction) => {
                           const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                           const hasText = r.text && r.text.trim().length > 0;
-                          const analysis = hasText ? analyzeFeedbackSignal(r.text as string, false) : { category: 'Uncategorized', signalScore: 0 };
+                          const analysis = hasText ? analyzeFeedbackSignal(r.text as string, false) : { category: 'Uncategorized', signalScore: 0 } as any;
                           const isHighSignal = analysis.signalScore >= 70;
 
                           return (

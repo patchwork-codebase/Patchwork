@@ -11,7 +11,7 @@ export function toCamelCase(key: string) {
 }
 
 export function normalizeRow<T>(row: unknown): T {
-  if (!row || typeof row !== 'object') return row;
+  if (!row || typeof row !== 'object') return row as T;
   return Object.entries(row).reduce((result: any, [key, value]) => {
     const camelKey = toCamelCase(key);
     if (Array.isArray(value)) {

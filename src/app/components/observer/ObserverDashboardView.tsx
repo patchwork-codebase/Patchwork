@@ -11,6 +11,7 @@ import type { FeedUpdate } from "../../hooks/useFeedUpdates";
 import type { QueryClient } from "@tanstack/react-query";
 import { ObserverProgressionPanel } from "./ObserverProgressionPanel";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { CrossroadCard } from "../room/CrossroadCard";
 
 interface ObserverDashboardViewProps {
   user: any;
@@ -187,7 +188,7 @@ export default function ObserverDashboardView({
       {/* ── HEADER — compact on mobile ── */}
       <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
-          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+          <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
         </div>
         <div className="flex-1 min-w-0">
           <h1 className="font-bold text-[18px] sm:text-[26px] text-slate-900 leading-tight tracking-tight m-0 truncate">
@@ -304,6 +305,20 @@ export default function ObserverDashboardView({
                   return serverCount;
                 };
 
+                if (upd.updateType === 'crossroad') {
+                  return (
+                    <motion.div
+                      key={upd.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="mb-6"
+                    >
+                      <CrossroadCard update={upd} />
+                    </motion.div>
+                  );
+                }
+
                 return (
                   <motion.div
                     key={upd.id}
@@ -315,10 +330,12 @@ export default function ObserverDashboardView({
                     {/* Header */}
                     <div className="flex justify-between items-start gap-3 mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div
-                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-[12px] shrink-0 ${getColorClass(upd.authorName)}`}
-                        >
-                          {upd.authorName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0 border border-slate-200 overflow-hidden bg-slate-100">
+                          {upd.authorAvatar ? (
+                            <img loading="lazy" src={upd.authorAvatar} alt={upd.authorName} className="w-full h-full object-cover" />
+                          ) : (
+                            <img loading="lazy" src={getAvatarUrl(upd.authorId)} alt={upd.authorName} className="w-full h-full object-cover" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">

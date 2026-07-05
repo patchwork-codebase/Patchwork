@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { apiCall } from "../../../utils/api";
-import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Twitter, Github, Linkedin, Share, UserPlus, UserMinus, Users, ChevronDown, ShieldCheck, Star, Clock, CheckCircle, TrendingUp, Check } from "lucide-react";
+import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Share, UserPlus, UserMinus, ShieldCheck, Clock, Check } from "lucide-react";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { getAvatarUrl, getObserverCount, timeAgo } from "../../utils/helpers";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
@@ -177,7 +177,7 @@ export default function UserProfile() {
         <div className={`flex flex-col ${editing ? '' : 'md:flex-row'} items-center md:items-start justify-between gap-6 relative z-10`}>
           <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 w-full flex-1">
             <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-sm overflow-hidden shrink-0 relative ring-1 ring-slate-200">
-              <img
+              <img loading="lazy"
                 src={getAvatarUrl(profile.id || profile.name)}
                 alt={profile.name}
                 className="w-full h-full object-cover scale-110"

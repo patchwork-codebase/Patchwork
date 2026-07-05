@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ChevronRight, ChevronLeft, Send, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -11,48 +11,7 @@ interface RequestExpertReviewModalProps {
   roomId: string;
 }
 
-// Mock data for experts
-const MOCK_EXPERTS: ExpertProfile[] = [
-  {
-    id: "exp-1",
-    name: "Sarah Chen",
-    avatar: "https://i.pravatar.cc/150?u=1",
-    title: "Senior Product Designer",
-    company: "Figma",
-    domains: ["UX Design", "Prototyping", "Design Systems"],
-    reviewsCompleted: 42,
-    rating: 4.9,
-    activeSlots: 2,
-    monthlySlots: 10,
-    typicalResponseTime: "24h"
-  },
-  {
-    id: "exp-2",
-    name: "Alex Rivera",
-    avatar: "https://i.pravatar.cc/150?u=2",
-    title: "Staff Engineer",
-    company: "Vercel",
-    domains: ["React", "Performance", "Architecture"],
-    reviewsCompleted: 89,
-    rating: 4.95,
-    activeSlots: 0,
-    monthlySlots: 20,
-    typicalResponseTime: "48h"
-  },
-  {
-    id: "exp-3",
-    name: "Jamie Doe",
-    avatar: "https://i.pravatar.cc/150?u=3",
-    title: "Product Manager",
-    company: "Stripe",
-    domains: ["Growth", "Monetization", "Strategy"],
-    reviewsCompleted: 15,
-    rating: 4.7,
-    activeSlots: 5,
-    monthlySlots: 5,
-    typicalResponseTime: "12h"
-  }
-];
+// Removed MOCK_EXPERTS to ensure live data is always used
 
 export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExpertReviewModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
@@ -100,12 +59,11 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
           }));
           setExperts(mappedExperts);
         } else {
-          // If no experts found in DB (e.g. testing), optionally fallback to MOCK or empty
-          setExperts(MOCK_EXPERTS);
+          setExperts([]);
         }
       } catch (err) {
         console.error("Failed to load experts", err);
-        setExperts(MOCK_EXPERTS); // Fallback on failure
+        setExperts([]); // Fallback on failure
       } finally {
         setLoadingExperts(false);
       }
@@ -149,8 +107,21 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Mocking network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Insert into expert_review_requests
+      const { error } = await supabase.from('expert_review_requests').insert({
+        builder_id: user.id,
+        expert_id: selectedExpert.id,
+        room_id: roomId,
+        build_summary: form.buildSummary,
+        specific_challenge: form.specificChallenge,
+        questions: form.questions,
+        priority: form.priority,
+        is_public: form.isPublic,
+        deadline: form.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending'
+      });
+
+      if (error) throw error;
 
       toast.success("Review request sent successfully!");
       onClose();
@@ -227,7 +198,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
             ) : (
               <form id="request-review-form" onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10 mb-6">
-                  <img src={selectedExpert?.avatar} className="w-12 h-12 rounded-full" alt="" />
+                  <img loading="lazy" src={selectedExpert?.avatar} className="w-12 h-12 rounded-full" alt="" />
                   <div>
                     <h4 className="text-white font-bold">{selectedExpert?.name}</h4>
                     <p className="text-slate-400 text-sm">Reviewing your build</p>
