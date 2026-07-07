@@ -406,17 +406,32 @@ export default function CredentialPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="flex flex-col gap-3 pt-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => {
+                      const text = `I just earned the ${certificateTitle} milestone on Patchwork! Check out my builder profile and journey:\n\n${window.location.href}`;
+                      window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
+                    }}
+                    className="bg-[#0A66C2] hover:bg-[#004182] text-white flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[13px] font-bold transition shadow-sm">
+                    <Linkedin className="w-4 h-4 fill-current shrink-0" /> Share Post
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const text = `I just earned the ${certificateTitle} milestone on @JoinPatchwork! Check out my builder journey:`;
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+                    }}
+                    className="bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[13px] font-bold transition shadow-sm">
+                    <span className="font-serif italic text-base leading-none shrink-0">X</span> Share on X
+                  </button>
+                </div>
                 <button 
                   onClick={() => window.open(generateLinkedInCertUrl(certificateTitle, certificateDate, window.location.href), '_blank')}
-                  className="bg-[#3065C4] hover:bg-[#2552a1] text-white flex items-center justify-center gap-3 py-2 px-4 rounded-[8px] text-[14px] font-bold transition shadow-sm">
-                  <div className="bg-white rounded-[4px] p-0.5 flex items-center justify-center shrink-0">
-                    <Linkedin className="w-[18px] h-[18px] text-[#3065C4] fill-current stroke-[0.5]" />
+                  className="bg-white hover:bg-slate-50 border border-slate-200 text-[#0A66C2] flex items-center justify-center gap-3 py-3 px-4 rounded-xl text-[13px] font-bold transition shadow-sm">
+                  <div className="bg-[#0A66C2] rounded-[4px] p-0.5 flex items-center justify-center shrink-0">
+                    <Linkedin className="w-[14px] h-[14px] text-white fill-current stroke-[0.5]" />
                   </div>
-                  Add to Profile
-                </button>
-                <button className="bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition shadow-sm">
-                  <span className="font-serif italic text-base leading-none">X</span> Share on X
+                  Add to LinkedIn Profile
                 </button>
               </div>
             </div>
