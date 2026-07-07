@@ -66,6 +66,8 @@ export default function Layout() {
     ? 'explore'
     : location.pathname.startsWith('/learning-hub')
       ? 'learning-hub'
+    : location.pathname.startsWith('/dashboard/experts')
+      ? 'experts'
     : location.pathname.startsWith('/dashboard/rooms')
       ? 'rooms'
     : location.pathname.startsWith('/dashboard/build-logs')

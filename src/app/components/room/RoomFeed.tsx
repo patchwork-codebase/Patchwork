@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { useSearchParams } from "react-router";
 import { Hammer, Trash2, Zap } from "lucide-react";
@@ -117,13 +118,40 @@ export function RoomFeed({
     );
   }
 
-  const sortedUpdates = [...(room.updates || [])].reverse();
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+
+  const sortedUpdates = [...(room.updates || [])].sort((a, b) => {
+    const aTime = new Date(a.createdAt).getTime();
+    const bTime = new Date(b.createdAt).getTime();
+    return sortOrder === 'desc' ? bTime - aTime : aTime - bTime;
+  });
+
   const initialTopMostItemIndex = updateIdToScroll
     ? Math.max(0, sortedUpdates.findIndex((u: any) => u.id === updateIdToScroll))
     : 0;
 
   return (
     <>
+      <div className="flex justify-end mb-4">
+        <div className="flex bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0">
+          <button
+            onClick={() => setSortOrder('desc')}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+              sortOrder === 'desc' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Latest
+          </button>
+          <button
+            onClick={() => setSortOrder('asc')}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+              sortOrder === 'asc' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Oldest
+          </button>
+        </div>
+      </div>
       {typingUsers.length > 0 && (
         <div className="flex items-center gap-2 mb-6 ml-6 md:ml-0 md:justify-center animate-in fade-in slide-in-from-top-2">
           <div className="flex -space-x-2">

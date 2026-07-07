@@ -53,6 +53,8 @@ interface TimelineFeedProps {
   activeTab: 'overview' | 'feed' | 'mine';
   queryClient: QueryClient;
   loading?: boolean;
+  feedSortOrder: 'desc' | 'asc';
+  setFeedSortOrder: (order: 'desc' | 'asc') => void;
 }
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
@@ -85,6 +87,8 @@ export function TimelineFeed({
   activeTab,
   queryClient,
   loading,
+  feedSortOrder,
+  setFeedSortOrder,
 }: TimelineFeedProps) {
   const { session, withVerification } = useAuth();
   
@@ -94,7 +98,6 @@ export function TimelineFeed({
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
   const [activeDomainFilter, setActiveDomainFilter] = useState('All');
   const [activeViewToggle, setActiveViewToggle] = useState<'all' | 'media' | 'launches'>('all');
-  const [feedSort, setFeedSort] = useState<'latest' | 'trending'>('latest');
 
   const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
   const navigate = useNavigate();
@@ -293,17 +296,15 @@ export function TimelineFeed({
       });
     }
 
-    // 4. Sorting (Trending vs Latest)
-    if (activeTab === 'feed' && feedSort === 'trending') {
-      result = [...result].sort((a, b) => {
-        const aInteractions = (a.reactions?.length || 0);
-        const bInteractions = (b.reactions?.length || 0);
-        return bInteractions - aInteractions;
-      });
-    }
+    // 4. Sorting
+    // dbUpdates is already sorted by the useFeedUpdates hook (either desc or asc).
+    // If we wanted local sorting fallback:
+    /* if (feedSortOrder === 'asc') {
+         result = [...result].reverse();
+       } */
     
     return result;
-  }, [dbUpdates, myRooms, activeTab, activeDomainFilter, feedSort, rooms]);
+  }, [dbUpdates, myRooms, activeTab, activeDomainFilter, feedSortOrder, rooms, activeViewToggle]);
 
   return (
     <div className="max-w-[700px] w-full mx-auto">
@@ -334,8 +335,8 @@ export function TimelineFeed({
             setActiveDomainFilter={setActiveDomainFilter}
             activeViewToggle={activeViewToggle}
             setActiveViewToggle={setActiveViewToggle}
-            feedSort={feedSort}
-            setFeedSort={setFeedSort}
+            feedSort={feedSortOrder}
+            setFeedSort={setFeedSortOrder as any}
           />
         )}
       </div>

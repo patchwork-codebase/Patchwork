@@ -147,6 +147,7 @@ export const router = createBrowserRouter([
           { path: "profile/:id", lazy: () => import("./components/profile/UserProfile").then(m => ({ Component: m.default })) },
           { path: "observer", lazy: () => import("./components/observer/ObserverHub").then(m => ({ Component: m.default })) },
           { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },
+          ...(import.meta.env.DEV ? [{ path: "experts", lazy: () => import("./components/explore/ExpertsDirectory").then(m => ({ Component: m.default })) }] : []),
           { path: "logs", loader: () => redirect("/dashboard/build-logs") },
           { path: "build-logs", lazy: () => import("./components/dashboard/BuildLogs").then(m => ({ Component: m.default })) },
           { path: "build-logs/:roomId", lazy: () => import("./components/dashboard/RoomLogPage").then(m => ({ Component: m.default })) },

@@ -50,13 +50,15 @@ export default function Dashboard() {
   const { data: myRoomsData, isLoading: myRoomsLoading } = useUserRooms(user?.id || undefined);
   const { data: observedRoomsData, isLoading: observedRoomsLoading } = useObservedRooms(user?.id || undefined);
 
+  const [feedSortOrder, setFeedSortOrder] = useState<'desc' | 'asc'>('desc');
+
   const {
     data: dbUpdatesData,
     isLoading: dbUpdatesLoading,
     fetchNextPage: fetchNextUpdates,
     hasNextPage: hasNextUpdates,
     isFetchingNextPage: isFetchingNextUpdates
-  } = useFeedUpdates();
+  } = useFeedUpdates(feedSortOrder);
 
   const { data: officialRoomData } = useOfficialRoom();
 
@@ -339,6 +341,8 @@ export default function Dashboard() {
           activeTab={activeTab}
           queryClient={queryClient}
           loading={loading}
+          feedSortOrder={feedSortOrder}
+          setFeedSortOrder={setFeedSortOrder}
         />
       )}
 

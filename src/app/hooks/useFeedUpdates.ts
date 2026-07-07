@@ -35,11 +35,11 @@ import { normalizeRow } from '../utils/helpers';
 import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
 import type { Reaction } from '../types';
 
-export function useFeedUpdates() {
+export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
   const queryClient = useQueryClient();
 
   const query = useInfiniteQuery<FeedUpdate[], Error>({
-    queryKey: ['feed-updates'],
+    queryKey: ['feed-updates', sortOrder],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       const pageSize = 10;
@@ -49,7 +49,7 @@ export function useFeedUpdates() {
       const { data, error } = await supabase
         .from('updates')
         .select('*, rooms(title, tags), users!author_id(is_verified_expert, organization_name, organization_logo_url, avatar)')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: sortOrder === 'asc' })
         .range(from, to);
 
       if (error) throw error;

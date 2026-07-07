@@ -5,8 +5,8 @@ interface TimelineFiltersProps {
   setActiveDomainFilter: (domain: string) => void;
   activeViewToggle: 'all' | 'media' | 'launches';
   setActiveViewToggle: (view: 'all' | 'media' | 'launches') => void;
-  feedSort: 'latest' | 'trending';
-  setFeedSort: (sort: 'latest' | 'trending') => void;
+  feedSort: 'desc' | 'asc';
+  setFeedSort: (sort: 'desc' | 'asc') => void;
 }
 
 export function TimelineFilters({
@@ -50,20 +50,20 @@ export function TimelineFilters({
         </div>
         <div className="flex bg-white border border-slate-200 rounded-full p-1 shadow-sm shrink-0 snap-start">
           <button
-            onClick={() => setFeedSort('latest')}
+            onClick={() => setFeedSort('desc')}
             className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-              feedSort === 'latest' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              feedSort === 'desc' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
             Latest
           </button>
           <button
-            onClick={() => setFeedSort('trending')}
+            onClick={() => setFeedSort('asc')}
             className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-              feedSort === 'trending' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              feedSort === 'asc' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            Trending
+            Oldest
           </button>
         </div>
       </div>

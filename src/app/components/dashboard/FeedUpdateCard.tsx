@@ -63,7 +63,7 @@ interface FeedUpdateCardProps {
   handleReplyClick: (e: React.MouseEvent, id: string) => void;
 }
 
-export function FeedUpdateCard({
+export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   update,
   fullRoom,
   rooms,
@@ -305,4 +305,29 @@ export function FeedUpdateCard({
       </div>
     </motion.div>
   );
-}
+}, (prevProps, nextProps) => {
+  if (prevProps.update.id !== nextProps.update.id) return false;
+  if (prevProps.activeTab !== nextProps.activeTab) return false;
+  if (prevProps.isFollowing !== nextProps.isFollowing) return false;
+  if (prevProps.deletingUpdateId !== nextProps.deletingUpdateId) return false;
+  if (prevProps.replyingTo !== nextProps.replyingTo) return false;
+  if (prevProps.profile?.emailVerified !== nextProps.profile?.emailVerified) return false;
+
+  const prevExp = prevProps.expandedComments.includes(prevProps.update.id);
+  const nextExp = nextProps.expandedComments.includes(nextProps.update.id);
+  if (prevExp !== nextExp) return false;
+
+  const prevFull = prevProps.fullyExpandedComments.includes(prevProps.update.id);
+  const nextFull = nextProps.fullyExpandedComments.includes(nextProps.update.id);
+  if (prevFull !== nextFull) return false;
+
+  const types = ['sharp', 'pushback', 'tellmemore'];
+  for (const type of types) {
+    const key = `${prevProps.update.id}-${type}`;
+    if (prevProps.optimisticToggles[key] !== nextProps.optimisticToggles[key]) return false;
+  }
+
+  if (prevProps.update.reactions?.length !== nextProps.update.reactions?.length) return false;
+
+  return true;
+});

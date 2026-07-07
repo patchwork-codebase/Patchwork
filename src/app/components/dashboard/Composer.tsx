@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Code, ImageIcon, Lock, Smile } from "lucide-react";
-import EmojiPicker from 'emoji-picker-react';
+import { Suspense, lazy } from 'react';
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 import { useAuth } from "../auth/AuthContext";
 import { usePostUpdate } from "../../hooks/usePostUpdate";
 import type { Room, Profile } from "../../types";
@@ -128,12 +129,14 @@ export function Composer({
                           transition={{ duration: 0.15 }}
                           className="absolute z-50 mt-2"
                         >
-                          <EmojiPicker 
-                            onEmojiClick={(emojiData) => {
-                              setUpdateContent(prev => prev + emojiData.emoji);
-                              setShowEmojiPicker(false);
-                            }}
-                          />
+                          <Suspense fallback={<div className="w-[300px] h-[400px] flex items-center justify-center bg-white rounded-xl shadow-lg border border-slate-200"><div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" /></div>}>
+                            <EmojiPicker 
+                              onEmojiClick={(emojiData) => {
+                                setUpdateContent(prev => prev + emojiData.emoji);
+                                setShowEmojiPicker(false);
+                              }}
+                            />
+                          </Suspense>
                         </motion.div>
                       </>
                     )}

@@ -4,7 +4,7 @@ import { AnimatePresence } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile, Loader2, LayoutDashboard, Layers, Activity, Users, Clock, ShieldCheck } from "lucide-react";
-import EmojiPicker from 'emoji-picker-react';
+
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
 import { DraftUpdates } from "./DraftUpdates";

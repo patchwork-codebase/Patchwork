@@ -77,6 +77,9 @@ export function DesktopSidebar({
 
           <NavItem to="/dashboard" icon={<DashboardIcon />} label="Live feed" active={activeSection === 'overview' || activeSection === 'feed'} />
           <NavItem to="/dashboard/explore" icon={<CompassIcon />} label="Explore builders" active={activeSection === 'explore'} />
+          {import.meta.env.DEV && (
+            <NavItem to="/dashboard/experts" icon={<AwardIcon />} label="Expert directory" active={activeSection === 'experts'} />
+          )}
           <NavItem to="/dashboard/build-logs" icon={<ZapIcon />} label="Best builds" active={activeSection === 'logs'} />
 
           <div className="mb-2 mt-6 px-3 text-[11px] uppercase tracking-widest text-slate-500 font-bold">
@@ -188,6 +191,9 @@ export function DesktopSidebar({
             <NavItem to="/dashboard?tab=feed" icon={<ActivityIcon />} label="Global timeline" active={activeSection === 'feed'} />
             <NavItem to="/dashboard/observer" icon={<EyeIcon />} label="Observer hub" active={activeSection === 'observer'} />
             <NavItem to="/dashboard/explore" icon={<CompassIcon />} label="Explore builders" active={activeSection === 'explore'} />
+            {import.meta.env.DEV && (
+              <NavItem to="/dashboard/experts" icon={<AwardIcon />} label="Expert directory" active={activeSection === 'experts'} />
+            )}
             <NavItem to="/dashboard/achievements" icon={<AwardIcon />} label="Achievements" active={activeSection === 'achievements'} />
             
             <Link

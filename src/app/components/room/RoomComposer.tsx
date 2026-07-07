@@ -5,7 +5,8 @@ import { uploadImage } from "../../utils/uploadImage";
 import { supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
 import { Send, ImageIcon, Code, Smile, Sparkles, Hammer } from "lucide-react";
-import EmojiPicker from 'emoji-picker-react';
+import { Suspense, lazy } from 'react';
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 import { AnimatePresence } from "motion/react";
 import { SmartImage } from "../ui/SmartImage";
 
@@ -367,12 +368,14 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
                     onClick={() => setShowEmojiPicker(false)} 
                   />
                   <div className="absolute z-50 mt-2 bottom-full mb-2">
-                    <EmojiPicker 
-                      onEmojiClick={(emojiData) => {
-                        setNewUpdate(prev => prev + emojiData.emoji);
-                        setShowEmojiPicker(false);
-                      }}
-                    />
+                    <Suspense fallback={<div className="w-[300px] h-[400px] flex items-center justify-center bg-white rounded-xl shadow-lg border border-slate-200"><div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" /></div>}>
+                      <EmojiPicker 
+                        onEmojiClick={(emojiData) => {
+                          setNewUpdate(prev => prev + emojiData.emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                      />
+                    </Suspense>
                   </div>
                 </>
               )}

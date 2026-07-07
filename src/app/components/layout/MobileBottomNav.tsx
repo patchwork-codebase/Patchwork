@@ -247,6 +247,15 @@ export function MobileBottomNav({
                   >
                     <LightbulbIcon /> Discovery Mode
                   </Link>
+                  {import.meta.env.DEV && (
+                    <Link
+                      to="/dashboard/experts"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                    >
+                      <AwardIcon /> Expert Directory
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
