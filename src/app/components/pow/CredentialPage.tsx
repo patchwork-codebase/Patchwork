@@ -8,6 +8,7 @@ import { UserBadge } from '../../types/pow';
 import { getAvatarUrl, generateLinkedInCertUrl } from '../../utils/helpers';
 import { useProfile } from '../../hooks/useProfile';
 import { useState } from 'react';
+import html2canvas from 'html2canvas';
 
 export default function CredentialPage() {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +51,7 @@ export default function CredentialPage() {
 
   const certId = credential?.id || "minutes-1000-0f8922";
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
 
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -58,6 +60,26 @@ export default function CredentialPage() {
       window.print();
       setIsDownloading(false);
     }, 500);
+  };
+
+  const handleDownloadImage = async () => {
+    setIsDownloadingImage(true);
+    try {
+      const element = document.getElementById('certificate-container');
+      if (!element) return;
+      
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      const link = document.createElement('a');
+      link.download = `patchwork-certificate-${certId}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('Failed to generate image', error);
+    } finally {
+      setIsDownloadingImage(false);
+    }
   };
 
   if (loadingCred || loadingProfile) {
@@ -334,10 +356,10 @@ export default function CredentialPage() {
             </div>
           )}
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <button 
               onClick={handleDownload} 
-              disabled={isDownloading}
+              disabled={isDownloading || isDownloadingImage}
               className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition disabled:opacity-50"
             >
               {isDownloading ? (
@@ -348,6 +370,22 @@ export default function CredentialPage() {
               ) : (
                 <>
                   <Download className="w-4 h-4" /> Download PDF certificate
+                </>
+              )}
+            </button>
+            <button 
+              onClick={handleDownloadImage} 
+              disabled={isDownloading || isDownloadingImage}
+              className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition disabled:opacity-50"
+            >
+              {isDownloadingImage ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-slate-600 border-t-transparent rounded-full animate-spin"></div>
+                  Generating Image...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" /> Download as Image
                 </>
               )}
             </button>
