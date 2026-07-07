@@ -8,7 +8,7 @@ import { UserBadge } from '../../types/pow';
 import { getAvatarUrl, generateLinkedInCertUrl } from '../../utils/helpers';
 import { useProfile } from '../../hooks/useProfile';
 import { useState } from 'react';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 
 export default function CredentialPage() {
   const { id } = useParams<{ id: string }>();
@@ -68,8 +68,7 @@ export default function CredentialPage() {
       const element = document.getElementById('certificate-container');
       if (!element) return;
       
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = await htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2 });
       
       const link = document.createElement('a');
       link.download = `patchwork-certificate-${certId}.png`;
