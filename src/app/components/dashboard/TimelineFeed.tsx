@@ -470,6 +470,7 @@ export function TimelineFeed({
           </div>
         ) : null}
       </div>
+      </div>
 
       {/* RIGHT SIDEBAR (Desktop Only) */}
       <div className="hidden lg:flex flex-col gap-6 sticky top-24">
