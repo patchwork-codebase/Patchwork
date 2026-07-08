@@ -20,7 +20,6 @@ import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { Composer } from "./Composer";
 import { ReplyComposer } from "./ReplyComposer";
 import { SuggestedBuilders } from "./SuggestedBuilders";
-import { ActivityFeedCard } from "./ActivityFeedCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -393,37 +392,30 @@ export function TimelineFeed({
 
             return (
               <>
-                {update._isActivity ? (
-                  <ActivityFeedCard
-                    activity={update}
-                    rooms={rooms}
-                  />
-                ) : (
-                  <FeedUpdateCard
-                    update={update}
-                    fullRoom={fullRoom}
-                    rooms={rooms}
-                    user={user}
-                    profile={profile}
-                    isFollowing={isFollowing}
-                    activeTab={activeTab}
-                    optimisticToggles={optimisticToggles}
-                    expandedComments={expandedComments}
-                    fullyExpandedComments={fullyExpandedComments}
-                    replyingTo={replyingTo}
-                    deletingUpdateId={deletingUpdateId}
-                    queryClient={queryClient}
-                    toggleComments={toggleComments}
-                    setExpandedComments={setExpandedComments}
-                    setFullyExpandedComments={setFullyExpandedComments}
-                    setReplyingTo={setReplyingTo}
-                    handleToggleReaction={handleToggleReaction}
-                    handleFollowRoom={handleFollowRoom}
-                    handleUnfollowRoom={handleUnfollowRoom}
-                    handleDeleteUpdate={handleDeleteUpdate}
-                    handleReplyClick={handleReplyClick}
-                  />
-                )}
+                <FeedUpdateCard
+                  update={update}
+                  fullRoom={fullRoom}
+                  rooms={rooms}
+                  user={user}
+                  profile={profile}
+                  isFollowing={isFollowing}
+                  activeTab={activeTab}
+                  optimisticToggles={optimisticToggles}
+                  expandedComments={expandedComments}
+                  fullyExpandedComments={fullyExpandedComments}
+                  replyingTo={replyingTo}
+                  deletingUpdateId={deletingUpdateId}
+                  queryClient={queryClient}
+                  toggleComments={toggleComments}
+                  setExpandedComments={setExpandedComments}
+                  setFullyExpandedComments={setFullyExpandedComments}
+                  setReplyingTo={setReplyingTo}
+                  handleToggleReaction={handleToggleReaction}
+                  handleFollowRoom={handleFollowRoom}
+                  handleUnfollowRoom={handleUnfollowRoom}
+                  handleDeleteUpdate={handleDeleteUpdate}
+                  handleReplyClick={handleReplyClick}
+                />
               {idx === 1 && (
                 <div className="block lg:hidden mb-6">
                   <SuggestedBuilders currentUserId={user?.id} />
@@ -477,7 +469,6 @@ export function TimelineFeed({
             </div>
           </div>
         ) : null}
-      </div>
       </div>
 
       {/* RIGHT SIDEBAR (Desktop Only) */}
