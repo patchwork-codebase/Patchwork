@@ -346,7 +346,7 @@ export default function CredentialPage() {
                        </div>
                        <div>
                          <div className="text-[12px] font-bold text-slate-800 mb-0.5">Verify Credential</div>
-                         <div className="text-[11px] text-slate-500">patchwork.build/verify</div>
+                         <div className="text-[11px] text-slate-500">patchwork.xyz/verify</div>
                        </div>
                     </div>
                   </div>
