@@ -209,10 +209,30 @@ export default function Dashboard() {
           </div>
           <div className="min-w-0 flex-1">
             {/* Greeting + name — single truncating line */}
-            <h1 className="font-bold text-[16px] sm:text-[24px] text-slate-900 leading-snug tracking-tight m-0 flex items-center gap-1 truncate">
+            <h1 className="font-bold text-[16px] sm:text-[24px] text-slate-900 leading-snug tracking-tight m-0 flex items-center gap-2">
               <span className="truncate">{greeting}, <span className="text-primary-400">{firstName}</span></span>
               <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-3.5 h-3.5 sm:w-5 sm:h-5 shrink-0" />
-              <span className="shrink-0 text-[14px] sm:text-base">👋</span>
+              <motion.span 
+                className="shrink-0 text-[20px] sm:text-[28px] inline-block origin-bottom-right cursor-pointer"
+                initial={{ scale: 0, rotate: 0 }}
+                animate={{ 
+                  scale: [0, 1.8, 1.8, 1.8, 1],
+                  rotate: [0, 15, -15, 15, -15, 0] 
+                }}
+                transition={{
+                  duration: 1.5,
+                  ease: "easeInOut",
+                  times: [0, 0.2, 0.4, 0.6, 0.8, 1]
+                }}
+                whileHover={{ 
+                  scale: 1.3, 
+                  rotate: [0, 15, -15, 15, -15, 0], 
+                  transition: { duration: 0.6 } 
+                }}
+                whileTap={{ scale: 0.9 }}
+              >
+                👋
+              </motion.span>
             </h1>
             {/* Handle + badges — flex wrap on desktop */}
             <div className="flex sm:flex-wrap items-center gap-1.5 mt-1 overflow-x-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
