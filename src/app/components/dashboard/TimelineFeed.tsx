@@ -37,6 +37,7 @@ import { QUERY_KEYS } from "../../constants";
 import type { QueryClient } from "@tanstack/react-query";
 import { FeedUpdateCard } from "./FeedUpdateCard";
 import { TimelineFilters } from "./TimelineFilters";
+import { TrendingTopics } from "./TrendingTopics";
 
 interface TimelineFeedProps {
   user: { id: string; email?: string } | null;
@@ -307,7 +308,8 @@ export function TimelineFeed({
   }, [dbUpdates, myRooms, activeTab, activeDomainFilter, feedSortOrder, rooms, activeViewToggle]);
 
   return (
-    <div className="max-w-[700px] w-full mx-auto">
+    <div className="w-full max-w-[1050px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+      <div className="max-w-[700px] w-full mx-auto lg:mx-0">
       <Composer 
         user={user}
         profile={profile}
@@ -414,7 +416,11 @@ export function TimelineFeed({
                   handleDeleteUpdate={handleDeleteUpdate}
                   handleReplyClick={handleReplyClick}
                 />
-              {idx === 1 && <SuggestedBuilders currentUserId={user?.id} />}
+              {idx === 1 && (
+                <div className="block lg:hidden mb-6">
+                  <SuggestedBuilders currentUserId={user?.id} />
+                </div>
+              )}
             </>
             );
           }}
@@ -463,6 +469,12 @@ export function TimelineFeed({
             </div>
           </div>
         ) : null}
+      </div>
+
+      {/* RIGHT SIDEBAR (Desktop Only) */}
+      <div className="hidden lg:flex flex-col gap-6 sticky top-24">
+        <TrendingTopics updates={dbUpdates} rooms={rooms} />
+        <SuggestedBuilders currentUserId={user?.id} />
       </div>
     </div>
   );
