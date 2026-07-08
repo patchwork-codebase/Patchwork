@@ -110,6 +110,10 @@ export const router = createBrowserRouter([
         path: "/credentials/:id",
         lazy: () => import("./components/pow/CredentialPage").then(m => ({ Component: m.default })),
       },
+      {
+        path: "/verify",
+        lazy: () => import("./components/pow/VerifyCredentialPage").then(m => ({ Component: m.default })),
+      },
       // {
       //   path: "/learning-hub",
       //   lazy: () => import("./components/learning-hub/LearningHub").then(m => ({ Component: m.default })),
