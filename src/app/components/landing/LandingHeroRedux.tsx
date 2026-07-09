@@ -86,7 +86,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
       </div>
 
       {/* Storytelling Text */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-[800px] pb-24">
+      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-[800px] pb-40 pt-24">
         {/* Storytelling Text */}
         <motion.h1 
           initial={{ opacity: 0, y: 40 }}
