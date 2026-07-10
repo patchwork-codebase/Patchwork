@@ -1,7 +1,8 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router";
-import { CheckCircle, Trash2, Heart, MessageCircle, Share2, ImageIcon, Code } from "lucide-react";
+import { CheckCircle, Trash2, Heart, MessageCircle, Share2, ImageIcon, Code, Send } from "lucide-react";
+import { toast } from "sonner";
 import { getAvatarUrl, timeAgo } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
@@ -208,41 +209,59 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4">
-            {(['sharp', 'pushback', 'tellmemore'] as const).map((type) => {
-              const icons = { sharp: '✦', pushback: '↩', tellmemore: '?' };
-              const activeColors = { sharp: 'text-primary-500', pushback: 'text-rose-500', tellmemore: 'text-emerald-600' };
-              const activeBg = { sharp: 'bg-primary-500/10', pushback: 'bg-rose-500/10', tellmemore: 'bg-emerald-500/10' };
-              const key = `${update.id}-${type}`;
-              const hasOptimistic = optimisticToggles[key] !== undefined;
-              const serverActive = update.reactions?.some((r: any) => r.type === type && r.observerId === user?.id) || false;
-              const isActive = hasOptimistic ? optimisticToggles[key] : serverActive;
-              let count = update.reactions?.filter((r: any) => r.type === type).length || 0;
-              if (hasOptimistic) { if (optimisticToggles[key] && !serverActive) count += 1; else if (!optimisticToggles[key] && serverActive) count -= 1; }
-              
-              return (
-                <button
-                  key={type}
-                  onClick={(e) => { e.stopPropagation(); handleToggleReaction(update.id, update.roomId, type, update.reactions || []); }}
-                  className={`flex items-center gap-1.5 transition-all group p-1.5 -ml-1.5 rounded-full ${isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive ? activeBg[type] : 'bg-slate-100 group-hover:bg-slate-200'}`}>
-                     <span className={`text-[14px] font-bold ${isActive ? activeColors[type] : 'text-slate-500'}`}>{icons[type]}</span>
-                  </div>
-                  {count > 0 && <span className="text-[13px] font-bold">{count}</span>}
-                </button>
-              );
-            })}
-
-            <button 
-              onClick={(e) => handleReplyClick(e, update.id)}
-              className="flex items-center gap-1.5 text-slate-500 hover:text-primary-500 transition-colors p-1.5 rounded-full hover:bg-primary-50 group"
-            >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 group-hover:bg-primary-100 transition-colors">
-                <MessageCircle className="w-4 h-4 group-hover:text-primary-500" />
+          <div className="mt-4">
+            {/* Stacked Avatars above buttons - only if there are reactions */}
+            {update.reactions && update.reactions.length > 0 && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex -space-x-1.5">
+                  {Array.from(new Set(update.reactions.map((r: any) => r.observerId).filter(Boolean)))
+                    .slice(0, 3)
+                    .map((observerId: any) => (
+                      <img key={observerId} src={getAvatarUrl(observerId)} className="w-5 h-5 rounded-full ring-2 ring-white bg-slate-100 object-cover" alt="reactor" />
+                    ))
+                  }
+                </div>
+                <span className="text-[12px] text-slate-400">{update.reactions.length} reaction{update.reactions.length !== 1 ? 's' : ''}</span>
               </div>
-              {comments.length > 0 && <span className="text-[13px] font-bold">{comments.length}</span>}
-            </button>
+            )}
+
+            {/* Reaction Buttons - single row, no wrap */}
+            <div className="flex items-center gap-1">
+              {(['sharp', 'pushback', 'tellmemore'] as const).map((type) => {
+                const icons = { sharp: '✦', pushback: '↩', tellmemore: '?' };
+                const activeColors = { sharp: 'text-primary-500', pushback: 'text-rose-500', tellmemore: 'text-emerald-600' };
+                const activeBg = { sharp: 'bg-primary-500/10', pushback: 'bg-rose-500/10', tellmemore: 'bg-emerald-500/10' };
+                const key = `${update.id}-${type}`;
+                const hasOptimistic = optimisticToggles[key] !== undefined;
+                const serverActive = update.reactions?.some((r: any) => r.type === type && r.observerId === user?.id) || false;
+                const isActive = hasOptimistic ? optimisticToggles[key] : serverActive;
+                let count = update.reactions?.filter((r: any) => r.type === type).length || 0;
+                if (hasOptimistic) { if (optimisticToggles[key] && !serverActive) count += 1; else if (!optimisticToggles[key] && serverActive) count -= 1; }
+                
+                return (
+                  <button
+                    key={type}
+                    onClick={(e) => { e.stopPropagation(); handleToggleReaction(update.id, update.roomId, type, update.reactions || []); }}
+                    className={`flex items-center gap-1 transition-all group px-2 py-1.5 rounded-full ${isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                  >
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors shrink-0 ${isActive ? activeBg[type] : 'bg-slate-100 group-hover:bg-slate-200'}`}>
+                       <span className={`text-[13px] font-bold ${isActive ? activeColors[type] : 'text-slate-500'}`}>{icons[type]}</span>
+                    </div>
+                    {count > 0 && <span className="text-[12px] font-bold">{count}</span>}
+                  </button>
+                );
+              })}
+
+              <button 
+                onClick={(e) => handleReplyClick(e, update.id)}
+                className="flex items-center gap-1 text-slate-500 hover:text-primary-500 transition-colors px-2 py-1.5 rounded-full hover:bg-primary-50 group"
+              >
+                <div className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-100 group-hover:bg-primary-100 transition-colors shrink-0">
+                  <MessageCircle className="w-3.5 h-3.5 group-hover:text-primary-500" />
+                </div>
+                {comments.length > 0 && <span className="text-[12px] font-bold">{comments.length}</span>}
+              </button>
+            </div>
           </div>
 
           <AnimatePresence>

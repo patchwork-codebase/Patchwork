@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { supabase } from "../auth/AuthContext";
 import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { ThumbsUp, MessageCircle, RefreshCw, Send } from "lucide-react";
 
 interface ShowcaseCard {
   id: string;
@@ -166,18 +167,51 @@ export function LandingNetworkShowcase() {
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Latest Update
-                      </span>
-                      <span className="text-[11px] text-slate-400">
-                        {timeAgo(card.createdAt)}
-                      </span>
+                  <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100 flex flex-col gap-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                          Latest Update
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          {timeAgo(card.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-slate-700 leading-relaxed line-clamp-3">
+                        {card.content}
+                      </p>
                     </div>
-                    <p className="text-[13px] text-slate-700 leading-relaxed line-clamp-3">
-                      {card.content}
-                    </p>
+
+                    {/* Interaction Row */}
+                    <div className="flex items-center gap-4 pt-2 border-t border-slate-200/50 mt-1">
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                           <span className="text-[14px] font-bold text-slate-500">✦</span>
+                        </div>
+                        <span className="text-[13px] font-bold">{Math.floor(Math.random() * 20) + 5}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                           <span className="text-[14px] font-bold text-slate-500">↩</span>
+                        </div>
+                        <span className="text-[13px] font-bold">{Math.floor(Math.random() * 10) + 1}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
+                           <span className="text-[14px] font-bold text-emerald-600">?</span>
+                        </div>
+                        <span className="text-[13px] font-bold">{Math.floor(Math.random() * 10) + 1}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <div className="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center">
+                          <MessageCircle className="w-4 h-4 text-primary-500" />
+                        </div>
+                        <span className="text-[13px] font-bold">{Math.floor(Math.random() * 15) + 2}</span>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               );
