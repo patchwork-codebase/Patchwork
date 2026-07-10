@@ -207,8 +207,10 @@ export default function OnboardingWizard() {
       if (returnTo) {
         localStorage.removeItem('authRedirectUrl');
         navigate(returnTo);
+      } else if (role === 'observer') {
+        navigate('/dashboard/observer?welcome=true');
       } else {
-        navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
+        navigate('/dashboard?welcome=true');
       }
     } catch (err: unknown) {
       toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to save profile. Please try again.');

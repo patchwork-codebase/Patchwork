@@ -7,6 +7,7 @@ import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, Ref
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import VerificationSuccessModal from "./VerificationSuccessModal";
+import { NewUserWelcomeBanner } from "./NewUserWelcomeBanner";
 import { useRooms, useUserRooms, useObservedRooms, useObserverStats, useOfficialRoom } from "../../hooks/useRooms";
 import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
@@ -42,6 +43,9 @@ export default function Dashboard() {
 
   const { data: notificationsData } = useNotifications(user?.id);
   const unreadCount = notificationsData?.filter(n => !n.read).length || 0;
+
+  // Welcome banner state — shown once after onboarding
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => searchParams.get('welcome') === 'true');
 
   const {
     data: roomsData,
@@ -199,6 +203,19 @@ export default function Dashboard() {
           userName={profile.name}
         />
       )}
+
+      {/* WELCOME BANNER - shown after onboarding */}
+      <AnimatePresence>
+        {showWelcomeBanner && !isObserver && (
+          <NewUserWelcomeBanner
+            userName={profile?.name?.split(' ')[0] || 'Builder'}
+            onDismiss={() => {
+              setShowWelcomeBanner(false);
+              setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('welcome'); return next; });
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* HEADER */}
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
