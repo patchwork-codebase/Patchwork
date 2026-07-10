@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Hammer, ArrowRight, Sparkles, Users } from "lucide-react";
+import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 import { ActiveRoomsList } from "./ActiveRoomsList";
 import { RecentActivityList } from "./RecentActivityList";
 import { TopObservers, LinkedDocsPanel, ObserverReactions } from "./OverviewInsights";
@@ -43,7 +44,9 @@ export function DashboardOverview({
   const selectedRoomTitle = allMyRooms.find(r => r.id === selectedRoomId)?.title || 'Active Room';
 
   const isLoading = myRoomsLoading || observedRoomsLoading;
-  const hasNoRooms = !isLoading && allMyRooms.length === 0;
+  // Exclude the official Patchwork room — every user has it, so it shouldn't count
+  const userOwnRooms = allMyRooms.filter(r => r.id !== PATCHWORK_OFFICIAL_ROOM_ID);
+  const hasNoRooms = !isLoading && userOwnRooms.length === 0;
 
   // Beautiful empty state for new builders
   if (hasNoRooms) {

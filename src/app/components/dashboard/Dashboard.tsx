@@ -44,8 +44,9 @@ export default function Dashboard() {
   const { data: notificationsData } = useNotifications(user?.id);
   const unreadCount = notificationsData?.filter(n => !n.read).length || 0;
 
-  // Welcome banner state — shown once after onboarding
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => searchParams.get('welcome') === 'true');
+  // Welcome banner state — shown once after onboarding OR for brand-new users with no rooms
+  const isNewUser = !!(profile && !profile.signup_completed_at);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => searchParams.get('welcome') === 'true' || isNewUser);
 
   const {
     data: roomsData,
