@@ -72,6 +72,8 @@ export default function Dashboard() {
   const observedRooms = observedRoomsData?.pages.flat() || [];
   const dbUpdates = dbUpdatesData?.pages.flat() || [];
 
+  const hasPersonalRooms = myRooms.some(r => r.id !== PATCHWORK_OFFICIAL_ROOM_ID);
+
   const allMyRoomsRaw = [...myRooms, ...observedRooms].reduce((acc, current) => {
     if (!acc.find(item => item.id === current.id)) {
       acc.push(current);
@@ -199,7 +201,7 @@ export default function Dashboard() {
 
       {/* WELCOME BANNER - shown after onboarding */}
       <AnimatePresence>
-        {showWelcomeBanner && !isObserver && (
+        {showWelcomeBanner && !isObserver && !myRoomsLoading && !hasPersonalRooms && (
           <NewUserWelcomeBanner
             userName={profile?.name?.split(' ')[0] || 'Builder'}
             onDismiss={() => {
