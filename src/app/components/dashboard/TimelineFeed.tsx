@@ -213,7 +213,14 @@ export function TimelineFeed({
           if (error) throw error;
           toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
         }
-        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
+        // Invalidate all feed-updates queries (any sortOrder variant)
+        await queryClient.invalidateQueries({ queryKey: ['feed-updates'], exact: false });
+        // Clear the optimistic toggle now that server data is fresh
+        setOptimisticToggles(prev => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
       } catch (err: unknown) {
         // Revert optimistic toggle on failure
         setOptimisticToggles(prev => ({
