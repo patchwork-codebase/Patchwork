@@ -99,8 +99,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   const isLaunch = fullRoom?.updateCount === 1;
 
   return (
-    <motion.div
-      layout
+    <div
       onClick={() => toggleComments(update.id)}
       className="w-full max-w-full bg-white/60 backdrop-blur-md border border-white/40 shadow-sm rounded-[28px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md hover:shadow-slate-200/20 hover:bg-white transition-all duration-200 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
@@ -318,7 +317,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           </AnimatePresence>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }, (prevProps, nextProps) => {
   if (prevProps.update.id !== nextProps.update.id) return false;

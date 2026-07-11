@@ -43,7 +43,7 @@ export function useNotifications(userId?: string) {
         .from('notifications')
         .select(`
           *,
-          actor:users!notifications_actor_id_fkey(id, name, avatar_url)
+          actor:users!notifications_actor_id_fkey(id, name)
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })

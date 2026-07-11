@@ -30,8 +30,7 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
   const parentRoomTitle = rooms?.find(r => r.id === parent.roomId)?.title || parent.rooms?.title || 'Unknown Room';
 
   return (
-    <motion.div
-      layout
+    <div
       className="w-full max-w-full bg-white/60 backdrop-blur-md border border-white/40 shadow-sm rounded-[28px] mb-4 p-4 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md hover:shadow-slate-200/20 hover:bg-white transition-all duration-200 relative group focus-ring"
     >
       {/* 1. Context Header */}
@@ -109,6 +108,6 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
         </div>
       </div>
 
-    </motion.div>
+    </div>
   );
 });
