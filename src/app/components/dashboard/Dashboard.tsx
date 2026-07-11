@@ -4,7 +4,7 @@ import { useAuth, supabase, sendVerificationEmailDirect } from "../auth/AuthCont
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw, Bell, Eye, Hammer } from "lucide-react";
-import { OnboardingChecklist } from "./OnboardingChecklist";
+
 import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import VerificationSuccessModal from "./VerificationSuccessModal";
 import { NewUserWelcomeBanner } from "./NewUserWelcomeBanner";
@@ -32,7 +32,7 @@ const IconPlus = () => (
   </svg>
 );
 
-import { timeAgo, getAvatarUrl, STORAGE_KEYS } from "../../utils/helpers";
+import { timeAgo, getAvatarUrl } from "../../utils/helpers";
 
 export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
@@ -196,14 +196,6 @@ export default function Dashboard() {
       {/* ── EMAIL VERIFICATION BANNER ─── shown until email is verified */}
       <EmailVerificationBanner />
 
-      {/* Onboarding Checklist */}
-      {user && profile && !profile.signup_completed_at && !(profile as any).signupCompletedAt && localStorage.getItem(STORAGE_KEYS.checklistDismissed(user.id)) !== 'true' && (
-        <OnboardingChecklist
-          role={(profile.role as 'builder' | 'observer') || 'builder'}
-          userId={user.id}
-          userName={profile.name}
-        />
-      )}
 
       {/* WELCOME BANNER - shown after onboarding */}
       <AnimatePresence>
