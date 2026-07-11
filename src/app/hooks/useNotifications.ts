@@ -7,21 +7,26 @@ export interface NotificationMetadata {
   reaction_text?: string;
   room_title?: string;
   room_id?: string;
+  room_slug?: string;
   update_id?: string;
   decision_text?: string;
+  update_text?: string;
+  actor_id?: string;
 }
 
 export interface Notification {
   id: string;
   user_id: string;
   actor_id: string;
-  type: 'reaction' | 'room_follow' | 'decision';
+  type: 'reaction' | 'room_follow' | 'decision' | 'decision_updated' | 'update_posted';
   reference_id: string;
   read: boolean;
   metadata: NotificationMetadata;
   created_at: string;
   actor?: {
+    id: string;
     name: string;
+    avatar_url?: string | null;
   };
 }
 
@@ -38,7 +43,7 @@ export function useNotifications(userId?: string) {
         .from('notifications')
         .select(`
           *,
-          actor:users!notifications_actor_id_fkey(name)
+          actor:users!notifications_actor_id_fkey(id, name, avatar_url)
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
