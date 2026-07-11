@@ -11,7 +11,7 @@ interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 export function SmartImage({
-  src,
+  src: rawSrc,
   alt = '',
   className = '',
   containerClassName = '',
@@ -21,6 +21,26 @@ export function SmartImage({
   ...props
 }: SmartImageProps) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+
+  // Automatically optimize Cloudinary URLs by injecting transform parameters
+  const optimizeImageUrl = (url: string | undefined) => {
+    if (!url) return url;
+    
+    // Cloudinary optimization
+    if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+      // Avoid double optimizing if already has transformations
+      if (url.includes('/upload/f_auto') || url.includes('/upload/q_auto')) {
+        return url;
+      }
+      
+      // Inject f_auto,q_auto,w_800 to serve smaller WebP/AVIF images
+      return url.replace('/upload/', '/upload/f_auto,q_auto,w_800/');
+    }
+    
+    return url;
+  };
+
+  const src = optimizeImageUrl(rawSrc);
 
   useEffect(() => {
     if (!src) {
@@ -77,12 +97,14 @@ export function SmartImage({
         </div>
       )}
       
-      {src && (
-        <img loading="lazy"
+      {status !== 'error' && (
+        <img
           src={src}
           alt={alt}
           className={imageClasses}
-          style={{ maxWidth: '100%', width: '100%', overflow: 'hidden', display: 'block' }}
+          style={isAuto ? undefined : { maxWidth: '100%', width: '100%', overflow: 'hidden', display: 'block' }}
+          loading="lazy"
+          decoding="async"
           {...props}
         />
       )}

@@ -432,51 +432,56 @@ export function TimelineFeed({
             </>
             );
           }}
-        />
-        )}
-
-        {hasNextUpdates ? (
-          <div className="flex justify-center p-6 border-t border-slate-200 bg-slate-50">
-            <button
-              onClick={() => fetchNextUpdates()}
-              disabled={isFetchingNextUpdates}
-              className="px-6 py-2.5 bg-primary-400/10 hover:bg-primary-400/20 active:scale-95 border border-primary-400/20 text-primary-400 hover:text-white rounded-full text-[13px] font-bold transition-all disabled:opacity-50 flex items-center gap-2 focus-ring"
-            >
-              {isFetchingNextUpdates ? (
+          components={{
+            Footer: () => (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Loading...
+                  {hasNextUpdates ? (
+                    <div className="flex justify-center p-6 border-t border-slate-200 bg-slate-50">
+                      <button
+                        onClick={() => fetchNextUpdates()}
+                        disabled={isFetchingNextUpdates}
+                        className="px-6 py-2.5 bg-primary-400/10 hover:bg-primary-400/20 active:scale-95 border border-primary-400/20 text-primary-400 hover:text-white rounded-full text-[13px] font-bold transition-all disabled:opacity-50 flex items-center gap-2 focus-ring"
+                      >
+                        {isFetchingNextUpdates ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More Updates"
+                        )}
+                      </button>
+                    </div>
+                  ) : !loading && filteredUpdates.length > 0 ? (
+                    <div className="mt-8 mb-12 p-8 sm:p-12 text-center bg-white border border-slate-200 rounded-[24px] shadow-sm flex flex-col items-center">
+                      <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mb-4 text-primary-500">
+                        <Sparkles className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-[18px] font-display font-extrabold text-slate-900 mb-2">You're all caught up!</h3>
+                      <p className="text-[14px] text-slate-500 max-w-md mx-auto mb-6">
+                        You've seen all the latest updates. Why not discover more rooms or post an update of your own?
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <Link to="/dashboard/explore" className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-full text-[13px] font-bold transition-all shadow-sm">
+                          Explore Rooms
+                        </Link>
+                        <button 
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-[13px] font-bold transition-all"
+                        >
+                          Back to top
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                 </>
-              ) : (
-                "Load More Updates"
-              )}
-            </button>
-          </div>
-        ) : !loading && filteredUpdates.length > 0 ? (
-          <div className="mt-8 mb-12 p-8 sm:p-12 text-center bg-white border border-slate-200 rounded-[24px] shadow-sm flex flex-col items-center">
-            <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mb-4 text-primary-500">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <h3 className="text-[18px] font-display font-extrabold text-slate-900 mb-2">You're all caught up!</h3>
-            <p className="text-[14px] text-slate-500 max-w-md mx-auto mb-6">
-              You've seen all the latest updates. Why not discover more rooms or post an update of your own?
-            </p>
-            <div className="flex items-center gap-3">
-              <Link to="/dashboard/explore" className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-full text-[13px] font-bold transition-all shadow-sm">
-                Explore Rooms
-              </Link>
-              <button 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-[13px] font-bold transition-all"
-              >
-                Back to top
-              </button>
-            </div>
-          </div>
-        ) : null}
+              )
+            }}
+          />
+        )}
       </div>
       </div>
 

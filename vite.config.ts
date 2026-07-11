@@ -99,7 +99,16 @@ export default defineConfig({
             if (id.includes('@supabase')) {
               return 'supabase-vendor';
             }
-            // Let Vite automatically handle chunking for the rest to avoid circular chunk references
+            if (id.includes('framer-motion') || id.includes('motion')) {
+              return 'framer-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'lucide';
+            }
+            if (id.includes('react-virtuoso')) {
+              return 'virtuoso';
+            }
+            // Let Vite automatically handle chunking for the rest
           }
         }
       }
