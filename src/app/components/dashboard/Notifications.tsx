@@ -23,7 +23,7 @@ function getNotifConfig(n: any) {
           ? `/dashboard/room/${n.metadata.room_id}?updateId=${n.metadata.update_id}`
           : null,
         primaryLabel: 'View update',
-        actorLink: n.actor?.id ? `/profile/${n.actor.id}` : null,
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
       };
     }
     case 'room_follow':
@@ -34,7 +34,7 @@ function getNotifConfig(n: any) {
         preview: null,
         primaryLink: n.metadata?.room_id ? `/dashboard/room/${n.metadata.room_id}` : null,
         primaryLabel: 'View room',
-        actorLink: n.actor?.id ? `/profile/${n.actor.id}` : null,
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
       };
     case 'decision':
     case 'decision_updated':
@@ -49,7 +49,7 @@ function getNotifConfig(n: any) {
           ? `/dashboard/room/${n.metadata.room_id}?updateId=${n.reference_id}`
           : null,
         primaryLabel: 'View decision',
-        actorLink: n.actor?.id ? `/profile/${n.actor.id}` : null,
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
       };
     case 'update_posted':
       return {
@@ -61,7 +61,7 @@ function getNotifConfig(n: any) {
           ? `/dashboard/room/${n.metadata.room_id}?updateId=${n.reference_id}`
           : null,
         primaryLabel: 'View update',
-        actorLink: n.actor?.id ? `/profile/${n.actor.id}` : null,
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
       };
     default:
       return {
@@ -71,7 +71,7 @@ function getNotifConfig(n: any) {
         preview: null,
         primaryLink: null,
         primaryLabel: null,
-        actorLink: n.actor?.id ? `/profile/${n.actor.id}` : null,
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
       };
   }
 }

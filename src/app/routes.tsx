@@ -164,6 +164,7 @@ export const router = createBrowserRouter([
           { path: "discovery", lazy: () => import("./components/discovery/DiscoveryHub").then(m => ({ Component: m.default })) },
           { path: "discovery/:id", lazy: () => import("./components/discovery/DiscoveryDashboard").then(m => ({ Component: m.default })) },
           { path: "achievements", lazy: () => import("./components/pow/AchievementsPage").then(m => ({ Component: m.default })) },
+          { path: "leaderboard", lazy: () => import("./components/dashboard/LeaderboardPage").then(m => ({ Component: m.default })) },
         ],
       },
     ]

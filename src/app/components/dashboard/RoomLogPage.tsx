@@ -377,12 +377,14 @@ export default function RoomLogPage() {
                         <img loading="lazy" src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
                         <div className="flex items-center gap-1.5 flex-wrap flex-1">
                           <span className="text-[13px] font-bold text-slate-800">{update.authorName}</span>
-                          {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />}
-                          <OrganizationBadge 
-                            orgName={(update as any).authorOrgName} 
-                            orgLogo={(update as any).authorOrgLogo} 
-                            isVerified={!!(update as any).authorIsVerifiedExpert} 
-                          />
+                          {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />}
+                          {update.authorOrgName && (
+                            <OrganizationBadge 
+                              orgName={update.authorOrgName} 
+                              orgLogo={update.authorOrgLogo} 
+                              isVerified={!!update.authorIsVerifiedExpert} 
+                            />
+                          )}
                         </div>
                         <span className="text-[11px] text-slate-400 font-mono ml-auto">{timeAgo(update.createdAt)}</span>
                       </div>

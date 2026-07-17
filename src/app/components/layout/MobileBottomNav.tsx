@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { User as UserIcon, Compass as CompassIcon, LogOut as LogOutIcon, Lightbulb as LightbulbIcon, FileText as FileTextIcon, Award as AwardIcon } from "lucide-react";
+import { UserAvatar } from "../ui/UserAvatar";
 
 
 interface MobileBottomNavProps {
@@ -9,7 +10,6 @@ interface MobileBottomNavProps {
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (val: boolean) => void;
   unreadCount: number;
-  avatarUrl: string;
   userDisplayName: string;
   user: any;
   profile: any;
@@ -22,7 +22,6 @@ export function MobileBottomNav({
   mobileMenuOpen,
   setMobileMenuOpen,
   unreadCount,
-  avatarUrl,
   userDisplayName,
   user,
   profile,
@@ -172,7 +171,7 @@ export function MobileBottomNav({
                 className="relative z-10"
               >
                 <div className={`w-7 h-7 rounded-full overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-white shadow-md' : 'ring-1 ring-slate-200'}`}>
-                  <img loading="lazy" src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                  <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover" />
                 </div>
                 {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" />
@@ -210,7 +209,7 @@ export function MobileBottomNav({
               <div className="px-5 pb-5">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
-                    <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>

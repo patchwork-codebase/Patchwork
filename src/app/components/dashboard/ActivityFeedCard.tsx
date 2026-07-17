@@ -1,7 +1,8 @@
 import React from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router";
-import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { SmartImage } from "../ui/SmartImage";
@@ -24,9 +25,6 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
   const parent = activity.parentUpdate;
   if (!parent) return null;
 
-  const observerAvatarUrl = getAvatarUrl(activity.authorId || activity.authorName);
-  const builderAvatarUrl = getAvatarUrl(parent.authorId || parent.authorName);
-  
   const parentRoomTitle = rooms?.find(r => r.id === parent.roomId)?.title || parent.rooms?.title || 'Unknown Room';
 
   return (
@@ -35,7 +33,7 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
     >
       {/* 1. Context Header */}
       <div className="flex items-center gap-2 mb-4">
-        <img src={observerAvatarUrl} alt="Observer" className="w-6 h-6 rounded-full ring-1 ring-slate-200" />
+        <UserAvatar userId={activity.authorId} name={activity.authorName} avatarUrl={activity.authorAvatar} className="w-6 h-6 rounded-full ring-1 ring-slate-200 object-cover" />
         <span className="text-[13px] text-slate-500 font-medium">
           <strong className="text-slate-800 cursor-pointer hover:underline" onClick={() => navigate(`/dashboard/profile/${activity.authorId}`)}>
             {activity.authorName}
@@ -52,18 +50,20 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
         className="ml-0 sm:ml-10 bg-slate-50/80 border border-slate-200/60 rounded-[20px] p-4 mb-4 hover:border-primary-200 hover:bg-white transition-colors cursor-pointer relative z-10"
       >
         <div className="flex items-start gap-3 mb-2">
-          <img src={builderAvatarUrl} alt="Builder" className="w-8 h-8 rounded-full ring-1 ring-slate-200 shrink-0" />
+          <UserAvatar userId={parent.authorId} name={parent.authorName} avatarUrl={parent.authorAvatar} className="w-8 h-8 rounded-full ring-1 ring-slate-200 shrink-0 object-cover" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="font-bold text-[14px] text-slate-900 truncate hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/profile/${parent.authorId}`); }}>
                 {parent.authorName}
               </span>
-              {!(parent as any).authorOrgName && <VerifiedTick isVerified={!!(parent as any).authorIsVerifiedExpert} className="w-3 h-3 shrink-0" />}
-              <OrganizationBadge 
-                orgName={(parent as any).authorOrgName} 
-                orgLogo={(parent as any).authorOrgLogo} 
-                isVerified={!!(parent as any).authorIsVerifiedExpert} 
-              />
+              {!parent?.authorOrgName && <VerifiedTick isVerified={!!parent?.authorIsVerifiedExpert} className="w-3 h-3 shrink-0" />}
+              {parent?.authorOrgName && (
+                <OrganizationBadge 
+                orgName={parent.authorOrgName} 
+                orgLogo={parent.authorOrgLogo} 
+                isVerified={!!parent.authorIsVerifiedExpert} 
+                />
+              )}
               <span className="text-slate-400 text-[13px] mx-1">·</span>
               <span className="text-[13px] text-slate-500 hover:underline truncate">{parentRoomTitle}</span>
               <span className="text-[12px] text-slate-400 ml-auto whitespace-nowrap">{timeAgo(parent.createdAt)}</span>
@@ -98,7 +98,7 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
 
       {/* 3. The Comment */}
       <div className="ml-0 sm:ml-[2.1rem] flex gap-3 relative z-10">
-        <img src={observerAvatarUrl} className="w-8 h-8 rounded-full ring-2 ring-white hidden sm:block shrink-0" alt="Reply avatar" />
+        <UserAvatar userId={activity.authorId} name={activity.authorName} avatarUrl={activity.authorAvatar} className="w-8 h-8 rounded-full ring-2 ring-white hidden sm:block shrink-0 object-cover" />
         <div className="flex-1 bg-white border border-slate-200/60 rounded-[18px] p-3 px-4 shadow-sm">
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className="font-bold text-[13px] text-slate-900">{activity.authorName}</span>

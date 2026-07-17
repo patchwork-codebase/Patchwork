@@ -25,8 +25,9 @@ export function RequestJoinModal({ open, onClose, roomId }: RequestJoinModalProp
       
       setSuccess(true);
       toast.success("Join request sent to the builder");
-    } catch (err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)) || "Failed to send join request");
+    } catch (err: any) {
+      const errorMessage = err?.message || (err instanceof Error ? err.message : String(err)) || "Failed to send join request";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

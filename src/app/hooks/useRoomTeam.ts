@@ -61,12 +61,17 @@ export function useRoomTeam(roomId?: string) {
       // Ignore RLS errors for non-builders fetching invitations
       const invitations = invitationsError ? [] : (invitationsData || []).map(normalizeRow) as TeamInvitation[];
 
-      // 3. Fetch Room Owner's (Builder) org details
+      // 3. Fetch Room Owner's (Builder) details and their org
       const { data: roomData } = await supabase
         .from('rooms')
         .select(`
           builder_id,
           users:builder_id (
+            id,
+            name,
+            email,
+            avatar,
+            domain,
             is_verified_expert,
             organization_name,
             organization_logo_url
@@ -84,19 +89,36 @@ export function useRoomTeam(roomId?: string) {
         organizationLogoUrl: builderUser?.organization_logo_url
       };
 
-      const members: TeamMember[] = (observersData || []).map((row: any) => {
+      const observers: TeamMember[] = (observersData || []).map((row: any) => {
         const user = Array.isArray(row.users) ? row.users[0] : row.users;
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
+          id: user?.id,
+          name: user?.name || user?.email?.split('@')[0] || 'Unknown User',
+          email: user?.email,
           role: row.role,
-          avatar: user.avatar,
+          avatar: user?.avatar,
           domain: user.domain,
           joinedAt: row.joined_at,
           isVerifiedExpert: !!user.is_verified_expert
         };
       });
+
+      // Always prepend the builder to the members list (they're not in room_observers)
+      const builderMember: TeamMember | null = builderUser ? {
+        id: builderUser.id,
+        name: builderUser.name || builderUser.email?.split('@')[0] || 'Unknown User',
+        email: builderUser.email,
+        role: 'builder',
+        avatar: builderUser.avatar,
+        domain: builderUser.domain,
+        joinedAt: roomData ? new Date().toISOString() : '',
+        isVerifiedExpert: !!builderUser.is_verified_expert
+      } : null;
+
+      const members: TeamMember[] = [
+        ...(builderMember ? [builderMember] : []),
+        ...observers.filter(o => o.id !== roomData?.builder_id) // avoid duplicates
+      ];
 
       return { members, invitations, ownerOrg };
     },

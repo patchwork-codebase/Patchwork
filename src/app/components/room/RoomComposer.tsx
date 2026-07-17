@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router";
-import { getAvatarUrl } from "../../utils/helpers";
 import { uploadImage } from "../../utils/uploadImage";
 import { supabase } from "../auth/AuthContext";
 import { toast } from "sonner";

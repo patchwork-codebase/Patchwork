@@ -47,10 +47,12 @@ export default function BuildRoom() {
   const [searchParams] = useSearchParams();
 
   const { user, profile } = useAuth();
+  const { loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: room, isLoading: loading } = useRoomDetails(id, user?.id);
+  const { data: room, isLoading: roomLoading } = useRoomDetails(id, user?.id);
+  const loading = authLoading || roomLoading;
   const { viewers, typingUsers, sendTypingEvent } = useRoomPresence(id, user);
   const joinPrivateRoomMutation = useJoinPrivateRoom();
   const inviteToken = searchParams.get('invite_token') || searchParams.get('invite');
@@ -145,6 +147,10 @@ export default function BuildRoom() {
         }
       });
     } else if (!loading && !room && id && user && !hasAttemptedJoin && !joinPrivateRoomMutation.isPending && !inviteToken) {
+      // Only attempt to join if auth is resolved AND we're not the builder.
+      // We detect "builder" heuristically: if the join RPC returns FALSE (access denied without token),
+      // we don't want to show the request modal. So we only trigger this for non-builders.
+      // The builder check happens inside join_private_room and returns TRUE, triggering a refetch.
       setHasAttemptedJoin(true);
       joinPrivateRoomMutation.mutate({ roomId: id });
     }

@@ -81,7 +81,7 @@ export function usePostUpdate() {
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
       toast.success("Update posted successfully!");
     },
     onError: (err: unknown) => {

@@ -10,9 +10,9 @@ export function toCamelCase(key: string) {
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 
-export function normalizeRow<T>(row: unknown): T {
+export function normalizeRow<T = unknown>(row: unknown): T {
   if (!row || typeof row !== 'object') return row as T;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
+  return Object.entries(row).reduce((result: Record<string, unknown>, [key, value]) => {
     const camelKey = toCamelCase(key);
     if (Array.isArray(value)) {
       result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
@@ -22,7 +22,7 @@ export function normalizeRow<T>(row: unknown): T {
       result[camelKey] = value;
     }
     return result;
-  }, {});
+  }, {} as Record<string, unknown>) as T;
 }
 
 export function timeAgo(iso: string) {
@@ -35,10 +35,25 @@ export function timeAgo(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+import { avatarStore } from './avatarStore';
+
+export function registerAvatarUrl(userId: string, url: string | null | undefined) {
+  if (userId && url && url.startsWith('http')) {
+    avatarStore.set(userId, url);
+  }
+}
+
 export function getAvatarUrl(seed: string) {
   if (!seed) return "https://api.dicebear.com/9.x/micah/svg?seed=fallback&backgroundColor=transparent";
+  if (seed.startsWith('http')) return seed;
+  
+  // Check global store for a real uploaded photo by this userId
+  const cached = avatarStore.get(seed);
+  if (cached) return cached;
+  
   return `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(seed)}&backgroundColor=transparent`;
 }
+
 
 /**
  * Returns the accurate observer count for a room.

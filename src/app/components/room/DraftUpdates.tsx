@@ -43,7 +43,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
       toast.success('Draft published successfully!');
       refetch();
       queryClient.invalidateQueries({ queryKey: ['room', roomId] });
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
     } catch (err: unknown) {
       toast.error(`Failed to publish draft: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {

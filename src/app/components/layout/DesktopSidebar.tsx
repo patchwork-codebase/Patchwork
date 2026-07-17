@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { DashboardIcon, HammerIcon, ZapIcon, ActivityIcon, EyeIcon, CompassIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, UserIcon, LogOutIcon, LightbulbIcon, AwardIcon } from "./LayoutIcons";
 import { useObserverStats } from "../../hooks/useRooms";
+import { UserAvatar } from "../ui/UserAvatar";
 
 const NavItem = ({ to, icon, label, active, badge }: any) => (
   <Link
@@ -32,7 +33,6 @@ const NavItem = ({ to, icon, label, active, badge }: any) => (
 
 interface DesktopSidebarProps {
   activeSection: string;
-  avatarUrl: string;
   userDisplayName: string;
   profile: any;
   user: any;
@@ -44,7 +44,6 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({
   activeSection,
-  avatarUrl,
   userDisplayName,
   profile,
   user,
@@ -104,7 +103,7 @@ export function DesktopSidebar({
               className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
             >
               <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+                <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover scale-110" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-bold text-slate-900 truncate">{userDisplayName}</div>
@@ -242,7 +241,7 @@ export function DesktopSidebar({
               >
                 {/* Avatar */}
                 <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                  <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+                  <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover scale-110" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-slate-900 truncate">

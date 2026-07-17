@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
-import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
@@ -101,7 +101,6 @@ export function TimelineFeed({
   const [activeDomainFilter, setActiveDomainFilter] = useState('All');
   const [activeViewToggle, setActiveViewToggle] = useState<'all' | 'media' | 'launches'>('all');
 
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
   const navigate = useNavigate();
 
   const handleOverlayClick = () => {
@@ -214,7 +213,7 @@ export function TimelineFeed({
           toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
         }
         // Invalidate all feed-updates queries (any sortOrder variant)
-        await queryClient.invalidateQueries({ queryKey: ['feed-updates'], exact: false });
+        await queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'], exact: false });
         // Clear the optimistic toggle now that server data is fresh
         setOptimisticToggles(prev => {
           const next = { ...prev };
@@ -324,7 +323,7 @@ export function TimelineFeed({
         myRooms={myRooms}
         selectedRoomId={selectedRoomId}
         setSelectedRoomId={setSelectedRoomId}
-        avatarUrl={avatarUrl}
+        // no longer passing avatarUrl string
       />
 
       {/* TIMELINE HEADER */}

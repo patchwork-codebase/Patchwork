@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router";
 import { CheckCircle, Trash2, Heart, MessageCircle, Share2, ImageIcon, Code, Send } from "lucide-react";
 import { toast } from "sonner";
-import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
@@ -92,7 +93,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
   const tStyle = tagStyle(tag);
   const builderName = update.authorName;
-  const updateAvatarUrl = getAvatarUrl(update.authorId || builderName);
+  // updateAvatarUrl removed
   const timeString = timeAgo(update.createdAt);
   const roomTitle = fullRoom?.title || update.rooms?.title || 'Unknown Room';
   const comments = update.reactions?.filter((r: any) => r.type === 'reply') || [];
@@ -115,7 +116,12 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           }}
           className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 ring-1 ring-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
         >
-          <img loading="lazy" src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          <UserAvatar 
+            userId={update.authorId} 
+            name={builderName} 
+            avatarUrl={update.authorAvatar}
+            className="w-full h-full object-cover" 
+          />
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col">
@@ -124,12 +130,14 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
               <span className="font-bold text-[15px] sm:text-[16px] text-slate-900 truncate hover:underline cursor-pointer">
                 {builderName}
               </span>
-              {(!(update as any).authorOrgName) && <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
-              <OrganizationBadge 
-                orgName={(update as any).authorOrgName} 
-                orgLogo={(update as any).authorOrgLogo} 
-                isVerified={!!(update as any).authorIsVerifiedExpert} 
-              />
+              {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
+              {update.authorOrgName && (
+                <OrganizationBadge 
+                  orgName={update.authorOrgName} 
+                  orgLogo={update.authorOrgLogo} 
+                  isVerified={!!update.authorIsVerifiedExpert} 
+                />
+              )}
               <span className="text-slate-400 text-[14px] mx-1 hidden sm:inline">·</span>
               <span className="text-[14px] text-slate-400 hover:underline cursor-pointer truncate hidden sm:inline" onClick={() => navigate(`/dashboard/room/${update.roomId}`)}>
                 {roomTitle}
@@ -212,7 +220,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                   {Array.from(new Set(update.reactions.map((r: any) => r.observerId).filter(Boolean)))
                     .slice(0, 3)
                     .map((observerId: any) => (
-                      <img key={observerId} src={getAvatarUrl(observerId)} className="w-5 h-5 rounded-full ring-2 ring-white bg-slate-100 object-cover" alt="reactor" />
+                      <UserAvatar key={observerId} userId={observerId} className="w-5 h-5 rounded-full ring-2 ring-white bg-slate-100 object-cover" />
                     ))
                   }
                 </div>
@@ -294,7 +302,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
               >
                 {comments.slice(0, fullyExpandedComments.includes(update.id) ? comments.length : 3).map((reply: any) => (
                   <div key={reply.id} className="flex gap-3">
-                    <img loading="lazy" src={getAvatarUrl(reply.observerId || reply.observerName)} className="w-8 h-8 rounded-full" alt="Reply avatar" />
+                    <UserAvatar userId={reply.observerId} name={reply.observerName} avatarUrl={reply.observerAvatar} className="w-8 h-8 rounded-full object-cover shrink-0" />
                     <div className="flex-1 bg-slate-50 rounded-2xl p-3 px-4">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <span className="font-bold text-[13px] text-slate-900">{reply.observerName}</span>

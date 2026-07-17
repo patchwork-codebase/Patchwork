@@ -94,6 +94,21 @@ serve(async (req) => {
           </p>
         </div>
       `;
+    } else if (notification.type === 'roadmap_assignment') {
+      subject = `${actorName} assigned you to a task in ${roomTitle}`;
+      htmlContent = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2 style="color: #6c5ce7;">Patchwork</h2>
+          <p>Hi ${profile.name || ''},</p>
+          <p><strong>${actorName}</strong> assigned you to a roadmap task in <strong>${roomTitle}</strong>:</p>
+          <blockquote style="border-left: 4px solid #e2e8f0; padding-left: 16px; margin: 24px 0; color: #475569; font-style: italic;">
+            ${notification.metadata?.item_title || 'Roadmap Task'}
+          </blockquote>
+          <p style="margin-top: 32px;">
+            <a href="https://patchwork.dev/dashboard/roadmap" style="display:inline-block;padding:12px 24px;background:#6c5ce7;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">View Roadmap</a>
+          </p>
+        </div>
+      `;
     } else {
       subject = `New notification from Patchwork`;
       htmlContent = `

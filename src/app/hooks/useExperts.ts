@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import { ExpertProfile } from '../components/room/ExpertCard';
-import { getAvatarUrl } from '../utils/helpers';
+import { getAvatarUrl, registerAvatarUrl } from '../utils/helpers';
 
 export function useExperts(searchQuery: string = "", domainFilter: string = "All") {
   return useQuery({
@@ -30,11 +30,14 @@ export function useExperts(searchQuery: string = "", domainFilter: string = "All
         );
       }
 
-      const mappedExperts: ExpertProfile[] = filteredData.map(user => ({
-        id: user.id,
-        name: user.name || "Anonymous Expert",
-        avatar: user.avatar || getAvatarUrl(user.id),
-        title: user.job_title || user.expert_level || "Verified Expert",
+      const mappedExperts: ExpertProfile[] = filteredData.map(user => {
+        const avatarUrl = user.avatar_url || user.avatar;
+        registerAvatarUrl(user.id, avatarUrl);
+        return {
+          id: user.id,
+          name: user.name || "Anonymous Expert",
+          avatar: avatarUrl || getAvatarUrl(user.id),
+          title: user.job_title || user.expert_level || "Verified Expert",
         company: user.company || user.organization_name || "",
         domains: user.expert_domains || ["General"],
         reviewsCompleted: user.expert_reviews_completed || 0,
@@ -42,7 +45,8 @@ export function useExperts(searchQuery: string = "", domainFilter: string = "All
         activeSlots: user.expert_open_slots !== undefined ? user.expert_open_slots : 3,
         monthlySlots: 10,
         typicalResponseTime: user.expert_avg_response_hours ? `${user.expert_avg_response_hours}h` : "24h"
-      }));
+        };
+      });
 
       // Sort by active slots (available first) then by rating
       mappedExperts.sort((a, b) => {

@@ -3,7 +3,8 @@ import { useRoomTeam, useRevokeInvitation, useResendInvitation, useUpdateMemberR
 import { Loader2, User, Mail, ShieldAlert, CheckCircle, Clock, XCircle, RefreshCw, X } from 'lucide-react';
 import { VerifiedTick } from '../ui/VerifiedTick';
 import { OrganizationBadge } from '../ui/OrganizationBadge';
-import { timeAgo, getAvatarUrl } from '../../utils/helpers';
+import { timeAgo } from '../../utils/helpers';
+import { UserAvatar } from '../ui/UserAvatar';
 import { motion } from 'motion/react';
 
 interface RoomTeamTabProps {
@@ -101,7 +102,7 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
               let displayRole = 'Observer';
               let shouldInheritOrg = false;
               
-              if (isOwner) {
+              if (isOwner || member.role === 'builder') {
                 displayRole = data?.ownerOrg?.isVerifiedExpert ? 'Verified Builder' : 'Room Owner';
                 shouldInheritOrg = true;
               } else if (member.role === 'team_member' || member.role === 'collaborator') {
@@ -120,7 +121,7 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="relative shrink-0">
                       <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
-                        <img loading="lazy" src={member.avatar || getAvatarUrl(member.id)} alt={member.name} className="w-full h-full object-cover" />
+                        <UserAvatar userId={member.id} name={member.name} avatarUrl={member.avatar || member.avatar_url || member.avatarUrl} className="w-full h-full object-cover" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">

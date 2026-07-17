@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { useSearchParams } from "react-router";
 import { Hammer, Trash2, Zap } from "lucide-react";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { analyzeFeedbackSignal } from "../../../utils/feedbackEngine";
 import { CodeSnippetBlock } from '../ui/CodeSnippetBlock';
 import { ReadMoreText } from "../ui/ReadMoreText";
@@ -156,18 +157,7 @@ export function RoomFeed({
         <div className="flex items-center gap-2 mb-6 ml-6 md:ml-0 md:justify-center animate-in fade-in slide-in-from-top-2">
           <div className="flex -space-x-2">
             {typingUsers.map(u => (
-              <img loading="lazy" 
-                key={u.id} 
-                src={u.avatar_url || getAvatarUrl(u.id)} 
-                alt={u.name} 
-                className="w-6 h-6 rounded-full border-2 border-slate-50 relative z-10" 
-                onError={(e) => {
-                  const target = e.currentTarget as HTMLImageElement;
-                  if (!target.src.includes('dicebear')) {
-                    target.src = getAvatarUrl(u.id);
-                  }
-                }}
-              />
+              <UserAvatar key={u.id} userId={u.id} name={u.name} avatarUrl={u.avatar_url} className="w-6 h-6 rounded-full border-2 border-slate-50 relative z-10 object-cover" />
             ))}
           </div>
           <div className="bg-slate-100 rounded-full px-4 py-1.5 flex items-center gap-2">
@@ -205,11 +195,7 @@ export function RoomFeed({
               <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl border border-slate-200 shadow-sm overflow-hidden shrink-0">
-                    <img loading="lazy" 
-                      src={getAvatarUrl(update.authorId || update.authorName)} 
-                      alt={update.authorName}
-                      className="w-full h-full object-cover"
-                    />
+                    <UserAvatar userId={update.authorId} name={update.authorName} avatarUrl={update.authorId === room.builderId ? (room.builderAvatarUrl || undefined) : undefined} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <div className="text-[15px] font-extrabold text-slate-900 font-display flex items-center gap-1.5">

@@ -4,7 +4,8 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { apiCall } from "../../../utils/api";
 import { Hammer, Eye, Zap, Calendar, Edit2, Save, X, ArrowLeft, Globe, Share, UserPlus, UserMinus, ShieldCheck, Clock, Check } from "lucide-react";
 import { VerifiedTick } from "../ui/VerifiedTick";
-import { getAvatarUrl, getObserverCount, timeAgo } from "../../utils/helpers";
+import { getObserverCount, timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { toast } from "sonner";
 import { ExpertBadge } from "./ExpertBadge";
@@ -161,7 +162,7 @@ export default function UserProfile() {
       <SEO 
         title={`${profile.name} (@${profile.name?.split(' ')[0]?.toLowerCase() || 'user'}) | Patchwork`}
         description={profile.bio || `Check out ${profile.name}'s profile and rooms on Patchwork.`}
-        image={getAvatarUrl(profile.id || profile.name)}
+        image={profile.avatar || profile.avatarUrl || profile.avatar_url || `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(profile.id || profile.name)}&backgroundColor=transparent`}
       />
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-10 relative overflow-x-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
@@ -171,114 +172,114 @@ export default function UserProfile() {
       </Link>
 
       {/* Profile card */}
-      <div className="bg-white border border-slate-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-10 mb-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
-        
-        <div className={`flex flex-col ${editing ? '' : 'md:flex-row'} items-center md:items-start justify-between gap-6 relative z-10`}>
-          <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 w-full flex-1">
-            <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-sm overflow-hidden shrink-0 relative ring-1 ring-slate-200">
-              <img loading="lazy"
-                src={getAvatarUrl(profile.id || profile.name)}
-                alt={profile.name}
-                className="w-full h-full object-cover scale-110"
-                onError={e => {
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  const parent = target.parentElement;
-                  if (parent) {
-                    parent.classList.add('bg-gradient-to-br', 'from-primary-500', 'to-primary-400', 'flex', 'items-center', 'justify-center');
-                    parent.innerHTML = `<span style="color:white;font-size:32px;font-weight:800">${profile.name?.[0]?.toUpperCase() ?? '?'}</span>`;
-                  }
-                }}
-              />
-            </div>
-            <div className="flex-1 min-w-0 w-full">
-              {editing ? (
-                <EditProfileForm 
-                  editForm={editForm}
-                  setEditForm={setEditForm}
-                  skillInput={skillInput}
-                  setSkillInput={setSkillInput}
-                  profile={profile}
-                />
-              ) : (
-                <>
-                  <ProfileDetailsView profile={profile} />
-                </>
-              )}
+      <div className="bg-white border border-slate-200 rounded-[24px] sm:rounded-[32px] mb-8 shadow-sm relative overflow-hidden">
+        {editing ? (
+          <div className="p-5 sm:p-8 md:p-10 relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
+            
+            <div className="flex flex-col items-center md:items-start justify-between gap-6 relative z-10">
+              <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 w-full flex-1">
+                <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-sm overflow-hidden shrink-0 relative ring-1 ring-slate-200">
+                  <UserAvatar 
+                    userId={profile.id} 
+                    name={profile.name} 
+                    avatarUrl={profile.avatar || profile.avatarUrl || profile.avatar_url} 
+                    className="w-full h-full object-cover scale-110" 
+                    lazy={false}
+                  />
+                </div>
+                <div className="flex-1 min-w-0 w-full">
+                  <EditProfileForm 
+                    editForm={editForm}
+                    setEditForm={setEditForm}
+                    skillInput={skillInput}
+                    setSkillInput={setSkillInput}
+                    profile={profile}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 w-full justify-end shrink-0 flex-wrap">
+                <button
+                  onClick={() => setEditing(false)}
+                  className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 hover:bg-slate-100 rounded-full text-[13px] font-bold text-slate-700 transition-colors"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full text-[13px] font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
           </div>
-
-          <div className="flex gap-3 w-full md:w-auto justify-center md:justify-end shrink-0 flex-wrap">
-            <button
-              onClick={handleShare}
-              className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-full text-[13px] font-bold text-slate-700 transition-colors"
-            >
-              <Share className="w-4 h-4" /> Share
-            </button>
-            {isOwn && !profile.isVerifiedExpert && !expertApp && (
-              <Link
-                to="/dashboard/expert-apply"
-                className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-primary-400/30 bg-primary-500/10 hover:bg-primary-500/20 rounded-full text-[13px] font-bold text-primary-400 transition-colors"
+        ) : (
+          <div className="p-5 sm:p-8 md:p-10 relative">
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-wrap justify-end gap-2 z-20">
+              <button
+                onClick={handleShare}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white/80 hover:bg-white backdrop-blur-md border border-slate-200/50 shadow-sm rounded-full text-[12px] font-bold text-slate-700 transition-colors"
               >
-                <ShieldCheck className="w-4 h-4" /> Become Verified Expert
-              </Link>
-            )}
-            {isOwn && expertApp?.status === "pending" && (
-              <span className="flex items-center gap-2 px-5 py-2.5 border border-amber-500/20 bg-amber-500/5 rounded-full text-[13px] font-bold text-amber-400">
-                <Clock className="w-4 h-4" /> Application under review
-              </span>
-            )}
-            {isOwn ? (
-              editing ? (
-                <>
-                  <button
-                    onClick={() => setEditing(false)}
-                    className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 hover:bg-slate-100 rounded-full text-[13px] font-bold text-slate-700 transition-colors"
-                  >
-                    <X className="w-4 h-4" /> Cancel
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-full text-[13px] font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
-                  >
-                    <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </>
-              ) : (
+                <Share className="w-3.5 h-3.5" /> Share
+              </button>
+              {isOwn && !profile.isVerifiedExpert && !expertApp && (
+                <Link
+                  to="/dashboard/expert-apply"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-500/90 hover:bg-primary-500 backdrop-blur-md shadow-sm rounded-full text-[12px] font-bold text-white transition-colors"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" /> Become Expert
+                </Link>
+              )}
+              {isOwn && expertApp?.status === "pending" && (
+                <span className="flex items-center gap-2 px-4 py-2 bg-amber-500/90 backdrop-blur-md shadow-sm rounded-full text-[12px] font-bold text-white">
+                  <Clock className="w-3.5 h-3.5" /> Under review
+                </span>
+              )}
+              {isOwn ? (
                 <button
                   onClick={() => setEditing(true)}
-                  className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-full text-[13px] font-bold text-slate-700 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white/80 hover:bg-white backdrop-blur-md border border-slate-200/50 shadow-sm rounded-full text-[12px] font-bold text-slate-700 transition-colors"
                 >
-                  <Edit2 className="w-4 h-4" /> Edit Profile
+                  <Edit2 className="w-3.5 h-3.5" /> Edit Profile
                 </button>
-              )
-            ) : (
-              <button
-                onClick={toggleFollow}
-                disabled={followLoading || !user}
-                className={`flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all disabled:opacity-50 ${
-                  isFollowing 
-                    ? 'border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:border-red-500/50 hover:text-red-400 group' 
-                    : 'bg-slate-900 text-white hover:bg-slate-800'
-                }`}
-              >
-                {isFollowing ? (
-                  <>
-                    <UserMinus className="w-4 h-4 hidden group-hover:block" />
-                    <span className="hidden group-hover:block">Unfollow</span>
-                    <span className="group-hover:hidden flex items-center gap-2"><Check className="w-4 h-4" /> Following</span>
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4" /> Follow
-                  </>
-                )}
-              </button>
-            )}
+              ) : (
+                <button
+                  onClick={toggleFollow}
+                  disabled={followLoading || !user}
+                  className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full text-[12px] font-bold transition-all disabled:opacity-50 shadow-sm ${
+                    isFollowing 
+                      ? 'border border-slate-200/50 bg-white/80 backdrop-blur-md text-slate-700 hover:bg-white hover:border-red-500/50 hover:text-red-400 group' 
+                      : 'bg-slate-900 text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserMinus className="w-3.5 h-3.5 hidden group-hover:block" />
+                      <span className="hidden group-hover:block">Unfollow</span>
+                      <span className="group-hover:hidden flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Following</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-3.5 h-3.5" /> Follow
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <ProfileDetailsView
+              profile={profile}
+              isOwn={isOwn}
+              onProfileUpdate={() => {
+                queryClient.invalidateQueries({ queryKey: ['profile', id] });
+                if (isOwn) refreshProfile();
+              }}
+            />
           </div>
-        </div>
+        )}
       </div>
 
       <ExpertCard profile={profile} />
@@ -306,9 +307,14 @@ export default function UserProfile() {
 
       {/* Rooms */}
       <div>
-        <h2 className="text-[20px] font-extrabold text-slate-900 mb-6 font-display">
-          {isOwn ? 'My Rooms' : `${profile.name}'s Rooms`}
-        </h2>
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-[20px] font-extrabold text-slate-900 font-display">
+            {isOwn ? 'My Rooms' : `${profile.name}'s Rooms`}
+          </h2>
+          {rooms.length > 0 && (
+            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[12px] font-bold text-slate-600">{rooms.length}</span>
+          )}
+        </div>
         {rooms.length === 0 ? (
           <div className="text-center py-16 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
             <Hammer className="w-12 h-12 mx-auto mb-4 text-slate-600" />
@@ -324,7 +330,7 @@ export default function UserProfile() {
             {rooms.map(room => (
               <Link
                 key={room.id} to={`/dashboard/room/${room.id}`}
-                className="flex flex-col gap-3 bg-white border border-slate-200 rounded-[20px] p-4 sm:p-5 hover:border-primary-500/50 hover:bg-slate-50 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md min-w-0 overflow-hidden"
+                className="flex flex-col gap-3 bg-white border border-slate-200 rounded-[20px] p-4 sm:p-5 hover:border-l-4 hover:border-l-primary-400 hover:border-primary-500/30 hover:bg-primary-50/30 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-md min-w-0 overflow-hidden"
               >
                 <div className="flex-1 min-w-0">
                   <h3 className="font-extrabold text-[15px] sm:text-[16px] text-slate-900 group-hover:text-primary-400 transition-colors font-display mb-2 line-clamp-2 break-words">{room.title}</h3>

@@ -7,6 +7,7 @@ import { useAuth } from "../auth/AuthContext";
 import { usePostUpdate } from "../../hooks/usePostUpdate";
 import type { Room, Profile } from "../../types";
 import { SmartImage } from "../ui/SmartImage";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface ComposerProps {
   user: { id: string; email?: string } | null;
@@ -14,7 +15,7 @@ interface ComposerProps {
   myRooms: Room[];
   selectedRoomId: string;
   setSelectedRoomId: (id: string) => void;
-  avatarUrl: string;
+  // avatarUrl removed
 }
 
 export function Composer({
@@ -23,7 +24,6 @@ export function Composer({
   myRooms,
   selectedRoomId,
   setSelectedRoomId,
-  avatarUrl,
 }: ComposerProps) {
   const { withVerification } = useAuth();
   const [updateContent, setUpdateContent] = useState("");
@@ -67,9 +67,14 @@ export function Composer({
 
   return (
     <div className="hidden sm:flex bg-white/60 backdrop-blur-md border border-white/40 shadow-sm rounded-[24px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6 transition-all duration-300 focus-within:shadow-xl focus-within:-translate-y-1 focus-within:bg-white/80 relative">
-      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-        <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-      </div>
+        <div className="w-10 h-10 rounded-[12px] bg-slate-100 border border-slate-200 overflow-hidden shrink-0 mt-1">
+          <UserAvatar 
+            userId={user?.id || ''} 
+            name={profile?.name || user?.email} 
+            avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url}
+            className="w-full h-full object-cover scale-110" 
+          />
+        </div>
       <div className="flex-1 min-w-0">
         <textarea 
           value={updateContent}

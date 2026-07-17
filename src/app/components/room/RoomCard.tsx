@@ -5,7 +5,8 @@
 import { motion } from "motion/react";
 import { useNavigate } from "react-router";
 import { Clock } from "lucide-react";
-import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
+import { timeAgo, getObserverCount } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
@@ -77,11 +78,7 @@ export function RoomCard({ room }: RoomCardProps) {
       <div className="px-6 relative">
         <div className="absolute -top-6 left-6 p-1 bg-white rounded-2xl shadow-sm z-10">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 relative">
-            <img loading="lazy"
-              src={getAvatarUrl(room.builderId || room.builderName)}
-              className="w-full h-full object-cover"
-              alt="Builder avatar"
-            />
+            <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-full h-full object-cover" />
           </div>
         </div>
       </div>

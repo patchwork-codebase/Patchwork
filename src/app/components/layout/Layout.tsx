@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Bell } from "lucide-react";
 import { useNotifications } from "../../hooks/useNotifications";
 
-import { getAvatarUrl } from "../../utils/helpers";
+// avatarUrl removed
 
 import { HammerIcon, DashboardIcon, SearchIcon, ActivityIcon, EyeIcon, CompassIcon, PlusIcon, LogOutIcon, UserIcon, ZapIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, LightbulbIcon } from "./LayoutIcons";
 
@@ -112,7 +112,7 @@ export default function Layout() {
     navigate('/login');
   }
 
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
+  // avatarUrl removed
 
   const isObserver = profile?.role === 'observer';
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
@@ -171,7 +171,7 @@ export default function Layout() {
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
           unreadCount={unreadCount}
-          avatarUrl={avatarUrl}
+          // avatarUrl removed
           userDisplayName={userDisplayName}
           user={user}
           profile={profile}
@@ -184,7 +184,7 @@ export default function Layout() {
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
         <DesktopSidebar 
           activeSection={activeSection}
-          avatarUrl={avatarUrl}
+          // avatarUrl removed
           userDisplayName={userDisplayName}
           profile={profile}
           user={user}

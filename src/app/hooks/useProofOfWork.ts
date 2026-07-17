@@ -90,7 +90,7 @@ export function useProofOfWork(userId?: string) {
 
   // Mutation to add a reputation event
   const addReputationEvent = useMutation({
-    mutationFn: async ({ action_type, points, room_id, metadata }: { action_type: string, points: number, room_id?: string, metadata?: any }) => {
+    mutationFn: async ({ action_type, points, room_id, metadata }: { action_type: string, points: number, room_id?: string, metadata?: Record<string, unknown> }) => {
       if (!userId) throw new Error("No user ID");
       const { data, error } = await supabase
         .from('reputation_events')

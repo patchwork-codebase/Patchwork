@@ -5,7 +5,8 @@ import { CheckCircle, MessageCircle, Send, Plus, Smile, Edit2, Trash2, Lock } fr
 import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from '../../utils/helpers';
+import { UserAvatar } from '../ui/UserAvatar';
 import { SmartImage } from "../ui/SmartImage";
 import { LogDecisionModal } from "./LogDecisionModal";
 import { useQuery } from "@tanstack/react-query";
@@ -335,15 +336,11 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                           >
                             {itemReplies.map((reply: any) => (
                               <div key={reply.id} className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                                <img loading="lazy" 
-                                  src={getAvatarUrl(reply.observer_id || reply.observerId)} 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const uid = reply.observer_id || reply.observerId;
-                                    if (uid) navigate(`/dashboard/profile/${uid}`);
-                                  }}
-                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" 
-                                  alt="avatar" 
+                                <UserAvatar 
+                                  userId={reply.observer_id || reply.observerId} 
+                                  name={reply.observerName} 
+                                  avatarUrl={reply.observerAvatar} 
+                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all object-cover" 
                                 />
                                 <div>
                                   <div className="flex items-center gap-2 mb-0.5">

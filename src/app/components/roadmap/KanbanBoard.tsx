@@ -19,9 +19,12 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useAuth } from '../auth/AuthContext';
 import { useRoadmapItems, useCreateRoadmapItem, useUpdateRoadmapItem, useDeleteRoadmapItem, RoadmapItem } from '../../hooks/useRoadmap';
-import { Loader2, Plus, GripVertical, Calendar, Trash2 } from 'lucide-react';
+import { Loader2, Plus, GripVertical, Calendar, Trash2, MessageSquare, Flag, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { RoadmapItemModal } from './RoadmapItemModal';
+import { UserAvatar } from '../ui/UserAvatar';
+import { format } from 'date-fns';
 
 // --- Sortable Item Component ---
 function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; onDelete: (id: string) => void }) {
@@ -45,7 +48,7 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
       ref={setNodeRef}
       style={style}
       whileHover={isDragging ? undefined : { scale: 1.02, y: -2 }}
-      className={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 relative group hover:border-slate-300 hover:shadow-md transition-colors cursor-grab ${isDragging ? 'cursor-grabbing shadow-lg border-primary-300' : ''}`}
+      className={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 relative group hover:border-slate-300 hover:shadow-md transition-colors cursor-pointer ${isDragging ? 'cursor-grabbing shadow-lg border-primary-300' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -58,25 +61,64 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
       {item.description && (
         <p className="text-[12px] text-slate-500 line-clamp-2">{item.description}</p>
       )}
-      <div className="flex items-center justify-between mt-1 text-[11px] font-medium text-slate-400">
-        {item.sprint_id ? (
-          <span className="flex items-center gap-1 text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full">
-            <Calendar className="w-3 h-3" /> Sprint
+      <div className="flex flex-wrap gap-1.5 mt-1">
+        {item.labels?.map(label => (
+          <span key={label} className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            {label}
           </span>
-        ) : (
-          <span>Unplanned</span>
-        )}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            onDelete(item.id);
-          }}
-          onPointerDown={(e) => e.stopPropagation()} // Prevent drag start when clicking delete
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-rose-50 text-rose-500 rounded relative z-10"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
+        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400">
+          {item.sprint_id ? (
+             <span className="flex items-center gap-1 text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-full">
+               <Calendar className="w-3 h-3" /> Sprint
+             </span>
+          ) : null}
+          
+          {item.due_date && (
+            <span className="flex items-center gap-1" title="Due Date">
+              <Clock className="w-3 h-3" /> {format(new Date(item.due_date), 'MMM d')}
+            </span>
+          )}
+
+          {item.priority && (
+            <span className={`flex items-center gap-1 ${item.priority === 'urgent' ? 'text-rose-500' : item.priority === 'high' ? 'text-orange-500' : ''}`} title={`Priority: ${item.priority}`}>
+              <Flag className="w-3 h-3" />
+            </span>
+          )}
+
+          {item.roadmap_comments && item.roadmap_comments[0]?.count > 0 && (
+            <span className="flex items-center gap-1" title="Comments">
+              <MessageSquare className="w-3 h-3" /> {item.roadmap_comments[0].count}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {item.roadmap_assignees && item.roadmap_assignees.length > 0 && (
+            <div className="flex -space-x-1.5 overflow-hidden mr-1">
+              {item.roadmap_assignees.map(a => (
+                <div key={a.user_id} className="relative inline-block rounded-full ring-1 ring-white">
+                  <UserAvatar userId={a.user_id} avatarUrl={a.users.avatar} name={a.users.name} className="w-5 h-5 rounded-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onDelete(item.id);
+            }}
+            onPointerDown={(e) => e.stopPropagation()} // Prevent drag start when clicking delete
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-rose-50 text-rose-500 rounded relative z-10"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -112,6 +154,7 @@ export function KanbanBoard() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
   const [addingToCol, setAddingToCol] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<RoadmapItem | null>(null);
 
   const handleDeleteItem = async (itemId: string) => {
     try {
@@ -312,7 +355,9 @@ export function KanbanBoard() {
               <DroppableColumn id={col.id}>
                 <SortableContext items={columns[col.id].map(i => i.id)} strategy={verticalListSortingStrategy}>
                   {columns[col.id].map((item) => (
-                    <SortableItem key={item.id} id={item.id} item={item} onDelete={handleDeleteItem} />
+                    <div key={item.id} onClick={() => setSelectedItem(item)}>
+                      <SortableItem id={item.id} item={item} onDelete={handleDeleteItem} />
+                    </div>
                   ))}
                 </SortableContext>
                 
@@ -352,6 +397,15 @@ export function KanbanBoard() {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      <AnimatePresence>
+        {selectedItem && (
+          <RoadmapItemModal 
+            item={items?.find(i => i.id === selectedItem.id) || selectedItem} 
+            onClose={() => setSelectedItem(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

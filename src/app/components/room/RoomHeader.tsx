@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Lock } from "lucide-react";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { SmartImage } from "../ui/SmartImage";
@@ -135,18 +136,7 @@ export function RoomHeader({
                 <div className="flex -space-x-1.5">
                   {viewers.slice(0, 3).map((v) => (
                     <div key={v.id} className="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-slate-100 relative">
-                      <img loading="lazy" 
-                        src={v.avatar_url || getAvatarUrl(v.id)} 
-                        alt={v.name} 
-                        title={`${v.name} (viewing)`} 
-                        className="w-full h-full object-cover" 
-                        onError={(e) => {
-                          const target = e.currentTarget as HTMLImageElement;
-                          if (!target.src.includes('dicebear')) {
-                            target.src = getAvatarUrl(v.id);
-                          }
-                        }}
-                      />
+                      <UserAvatar userId={v.id} name={v.name} avatarUrl={v.avatar_url} className="w-full h-full object-cover" />
                     </div>
                   ))}
                   {viewers.length > 3 && (

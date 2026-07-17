@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Eye, Flame, CheckCircle2, MessagesSquare, ArrowUpRight, Compass } from "lucide-react";
 import { supabase } from "../auth/AuthContext";
 import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { useObservedRooms, useRooms } from "../../hooks/useRooms";
 import { QUERY_KEYS } from "../../constants";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
@@ -76,7 +77,7 @@ export default function ObserverDashboardView({
   const firstName = profile?.name?.split(" ")[0] || user?.email?.split("@")[0] || "Observer";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || "default");
+  // avatarUrl removed
 
   // ── Classify + filter real feed updates ──────────────────────────
   const classifiedUpdates = useMemo(() => {
@@ -131,7 +132,7 @@ export default function ObserverDashboardView({
         if (error) throw error;
         toast.success("Taste signal recorded!");
       }
-      queryClient.invalidateQueries({ queryKey: ["feed-updates"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-updates-v2"] });
       queryClient.invalidateQueries({ queryKey: ["observer-stats", user.id] });
     } catch (err: any) {
       setOptimisticReactions((prev) => ({ ...prev, [key]: existing ? type : null }));
@@ -188,7 +189,7 @@ export default function ObserverDashboardView({
       {/* ── HEADER — compact on mobile ── */}
       <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
-          <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+          <UserAvatar userId={user?.id || ''} name={profile?.name || user?.email} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover scale-110" />
         </div>
         <div className="flex-1 min-w-0">
           <h1 className="font-bold text-[18px] sm:text-[26px] text-slate-900 leading-tight tracking-tight m-0 truncate">
@@ -331,11 +332,7 @@ export default function ObserverDashboardView({
                     <div className="flex justify-between items-start gap-3 mb-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0 border border-slate-200 overflow-hidden bg-slate-100">
-                          {upd.authorAvatar ? (
-                            <img loading="lazy" src={upd.authorAvatar} alt={upd.authorName} className="w-full h-full object-cover" />
-                          ) : (
-                            <img loading="lazy" src={getAvatarUrl(upd.authorId)} alt={upd.authorName} className="w-full h-full object-cover" />
-                          )}
+                          <UserAvatar userId={upd.authorId} name={upd.authorName} avatarUrl={upd.authorAvatar} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">

@@ -73,7 +73,7 @@ export interface Update {
   codeSnippet?: string | null;
   figmaUrl?: string | null;
   draft?: boolean;
-  crossroadData?: any; // Structured data for crossroad trade-offs
+  crossroadData?: Record<string, unknown>; // Structured data for crossroad trade-offs
   createdAt: string;
   updatedAt?: string;
 }
@@ -101,6 +101,7 @@ export interface Reaction {
   type: string;
   text?: string | null;
   createdAt: string;
+  observerAvatar?: string | null;
 }
 
 export interface Room {

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 
-import { normalizeRow } from '../utils/helpers';
+import { normalizeRow, registerAvatarUrl } from '../utils/helpers';
 import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
 import { PATCHWORK_OFFICIAL_ROOM_ID } from '../constants/patchwork';
 import type { Room, Update, Reaction } from '../types';
@@ -13,11 +13,14 @@ export function parseBuilderInfo(usersObj: unknown) {
   if (!usersObj) return { builderIsVerifiedExpert: false, builderOrgName: null, builderOrgLogo: null, builderAvatarUrl: null };
   const obj = Array.isArray(usersObj) ? usersObj[0] : usersObj;
   const safeObj = obj as Record<string, unknown>;
+  const avatarUrl = (safeObj?.avatar_url || safeObj?.avatar) as string | null;
+  const builderId = safeObj?.id as string | null;
+  if (builderId) registerAvatarUrl(builderId, avatarUrl);
   return {
     builderIsVerifiedExpert: !!safeObj?.is_verified_expert,
     builderOrgName: obj?.organization_name ?? null,
     builderOrgLogo: obj?.organization_logo_url ?? null,
-    builderAvatarUrl: obj?.avatar_url ?? null,
+    builderAvatarUrl: avatarUrl ?? null,
   };
 }
 
@@ -29,26 +32,13 @@ function removeStaleChannel(name: string) {
   const existing = supabase.getChannels().find(c => c.topic === `realtime:${name}`);
   if (existing) supabase.removeChannel(existing);
 }
-const debounceTimers = new Map<string, NodeJS.Timeout>();
-function debouncedInvalidate(queryClient: QueryClient, queryKey: QueryKey) {
-  const keyStr = JSON.stringify(queryKey);
-  const existing = debounceTimers.get(keyStr);
-  if (existing) clearTimeout(existing);
-  
-  const timer = setTimeout(() => {
-    queryClient.invalidateQueries({ queryKey });
-    debounceTimers.delete(keyStr);
-  }, 1500); // 1.5s debounce for realtime events
-  
-  debounceTimers.set(keyStr, timer);
-}
-
-
+// Local debounce timer maps are no longer needed globally.
+// We use local timeouts inside the useEffects to ensure proper cleanup.
 export function useRoomDetails(roomId?: string, userId?: string) {
   const queryClient = useQueryClient();
 
   const query = useQuery<Room | null, Error>({
-    queryKey: QUERY_KEYS.roomDetails(roomId ?? ''),
+    queryKey: [...QUERY_KEYS.roomDetails(roomId ?? ''), userId],
     queryFn: async () => {
       if (!roomId) return null;
 
@@ -57,15 +47,19 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         .select(`
           *,
           users!builder_id(
+            id,
             is_verified_expert,
             organization_name,
-            organization_logo_url
+            organization_logo_url,
+            avatar
           )
         `)
         .eq('id', roomId)
         .maybeSingle();
 
-      if (roomError) throw roomError;
+      console.log('useRoomDetails fetch result:', { roomId, userId, roomData, roomError });
+
+      if (roomError) throw new Error(roomError.message || JSON.stringify(roomError));
       if (!roomData) return null;
 
       // Strict Privacy Check — works with both legacy is_private and new visibility
@@ -84,6 +78,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
             .eq('observer_id', userId)
             .maybeSingle();
 
+          console.log('useRoomDetails observer check:', { observerData });
           if (!observerData) return null; // Not authorized — hide room completely
         }
       }
@@ -115,7 +110,7 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         .select('*')
         .eq('room_id', roomId)
         .order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       return (data || []).map(row => normalizeRow<Update>(row));
     },
     enabled: !!roomId,
@@ -131,8 +126,32 @@ export function useRoomDetails(roomId?: string, userId?: string) {
         .select('*')
         .eq('room_id', roomId)
         .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []).map(row => normalizeRow<Reaction>(row));
+      if (error) throw new Error(error.message || JSON.stringify(error));
+
+      // Safely fetch and register observer avatars (non-fatal)
+      const obsIds = (data || []).map((r: { observer_id: string }) => r.observer_id).filter(Boolean);
+      const obsAvatarMap: Record<string, string> = {};
+      if (obsIds.length > 0) {
+        try {
+          const { data: obsUsers } = await supabase
+            .from('users')
+            .select('id, avatar')
+            .in('id', Array.from(new Set(obsIds)));
+          (obsUsers || []).forEach((u: { id: string; avatar: string | null }) => {
+            const av = u.avatar;
+            if (av) {
+              obsAvatarMap[u.id] = av;
+              registerAvatarUrl(u.id, av);
+            }
+          });
+        } catch { /* non-fatal */ }
+      }
+
+      return (data || []).map(row => {
+        const normalized = normalizeRow<Reaction>(row);
+        normalized.observerAvatar = obsAvatarMap[row.observer_id] || null;
+        return normalized;
+      });
     },
     enabled: !!roomId,
   });
@@ -143,26 +162,33 @@ export function useRoomDetails(roomId?: string, userId?: string) {
     const channelName = CHANNEL_NAMES.roomDetails(roomId);
     removeStaleChannel(channelName);
 
+    let invalidateTimer: NodeJS.Timeout;
+    const invalidate = (keys: QueryKey) => {
+      clearTimeout(invalidateTimer);
+      invalidateTimer = setTimeout(() => queryClient.invalidateQueries({ queryKey: keys }), 1500);
+    };
+
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-        () => debouncedInvalidate(queryClient, QUERY_KEYS.roomDetails(roomId))
+        () => invalidate(QUERY_KEYS.roomDetails(roomId))
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'updates', filter: `room_id=eq.${roomId}` },
-        () => debouncedInvalidate(queryClient, ['room-updates', roomId])
+        () => invalidate(['room-updates', roomId])
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reactions', filter: `room_id=eq.${roomId}` },
-        () => debouncedInvalidate(queryClient, ['room-reactions', roomId])
+        () => invalidate(['room-reactions', roomId])
       )
       .subscribe();
 
     return () => {
+      clearTimeout(invalidateTimer);
       supabase.removeChannel(channel);
     };
   }, [roomId, queryClient]);
@@ -248,7 +274,7 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
         .order('updated_at', { ascending: false })
         .range(from, to);
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       return (data || []).map(row => {
         const updatesObj = Array.isArray(row.updates) ? row.updates[0] : row.updates;
         return {
@@ -267,18 +293,21 @@ export function useRooms(searchQuery: string = "", category: string = "All") {
     const channelName = CHANNEL_NAMES.publicRooms;
     removeStaleChannel(channelName);
 
+    let invalidateTimer: NodeJS.Timeout;
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms' },
         () => {
-          debouncedInvalidate(queryClient, ['rooms']);
+          clearTimeout(invalidateTimer);
+          invalidateTimer = setTimeout(() => queryClient.invalidateQueries({ queryKey: ['rooms'] }), 1500);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(invalidateTimer);
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
@@ -314,7 +343,7 @@ export function useUserRooms(userId?: string) {
         .order('updated_at', { ascending: false })
         .range(from, to);
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       return (data || []).map(row => {
         const updatesObj = Array.isArray(row.updates) ? row.updates[0] : row.updates;
         return {
@@ -339,15 +368,19 @@ export function useUserRooms(userId?: string) {
     const updatesChannelName = `user-rooms-updates-${userId}`;
     removeStaleChannel(updatesChannelName);
 
+    let invalidateTimer: NodeJS.Timeout;
+    const invalidate = () => {
+      clearTimeout(invalidateTimer);
+      invalidateTimer = setTimeout(() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(userId) }), 1500);
+    };
+
     // Refetch when any of the user's rooms are updated (e.g., status change)
     const roomsChannel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rooms', filter: `builder_id=eq.${userId}` },
-        () => {
-          debouncedInvalidate(queryClient, QUERY_KEYS.userRooms(userId));
-        }
+        invalidate
       )
       .subscribe();
 
@@ -358,13 +391,12 @@ export function useUserRooms(userId?: string) {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'updates', filter: `author_id=eq.${userId}` },
-        () => {
-          debouncedInvalidate(queryClient, QUERY_KEYS.userRooms(userId));
-        }
+        invalidate
       )
       .subscribe();
 
     return () => {
+      clearTimeout(invalidateTimer);
       supabase.removeChannel(roomsChannel);
       supabase.removeChannel(updatesChannel);
     };
@@ -404,7 +436,7 @@ export function useObservedRooms(userId?: string) {
         .order('joined_at', { ascending: false })
         .range(from, to);
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       
       // Map to return just the room objects formatted correctly
       return (data || []).map(row => {
@@ -430,18 +462,21 @@ export function useObservedRooms(userId?: string) {
     const channelName = CHANNEL_NAMES.observedRooms(userId);
     removeStaleChannel(channelName);
 
+    let invalidateTimer: NodeJS.Timeout;
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_observers', filter: `observer_id=eq.${userId}` },
         () => {
-          debouncedInvalidate(queryClient, QUERY_KEYS.observedRooms(userId));
+          clearTimeout(invalidateTimer);
+          invalidateTimer = setTimeout(() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.observedRooms(userId) }), 1500);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(invalidateTimer);
       supabase.removeChannel(channel);
     };
   }, [userId, queryClient]);
@@ -496,7 +531,7 @@ export function useRegenerateInviteToken() {
   return useMutation({
     mutationFn: async (roomId: string) => {
       const { data, error } = await supabase.rpc('regenerate_invite_token', { p_room_id: roomId });
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       return data;
     },
     onSuccess: (_, roomId) => {
@@ -510,7 +545,7 @@ export function useUpdateRoomAccess() {
   return useMutation({
     mutationFn: async ({ roomId, whitelistedDomains }: { roomId: string, whitelistedDomains: string[] }) => {
       const { data, error } = await supabase.from('rooms').update({ whitelisted_domains: whitelistedDomains }).eq('id', roomId).select().single();
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       return data;
     },
     onSuccess: (_, { roomId }) => {
@@ -527,11 +562,12 @@ export function useJoinPrivateRoom() {
         p_room_id: roomId,
         p_invite_token: inviteToken || null
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       if (!data) throw new Error("Access denied or invalid invite token.");
       return data;
     },
     onSuccess: (_, { roomId }) => {
+      // Invalidate by prefix so it catches keys with userId appended (e.g. ['room-details', roomId, userId])
       queryClient.invalidateQueries({ queryKey: ['room-details', roomId] });
     }
   });

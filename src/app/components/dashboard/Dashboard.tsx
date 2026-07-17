@@ -32,7 +32,8 @@ const IconPlus = () => (
   </svg>
 );
 
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 
 export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
@@ -143,7 +144,6 @@ export default function Dashboard() {
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
   const handle = `@${firstName.toLowerCase()}`;
   const joinDate = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
 
@@ -217,7 +217,12 @@ export default function Dashboard() {
         {/* Left: avatar + identity */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
-            <img loading="lazy" src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+            <UserAvatar 
+              userId={user?.id || ''} 
+              name={profile?.name || user?.email}
+              avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url}
+              className="w-full h-full object-cover scale-110" 
+            />
           </div>
           <div className="min-w-0 flex-1">
             {/* Greeting + name — single truncating line */}

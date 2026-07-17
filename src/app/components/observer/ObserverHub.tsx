@@ -3,7 +3,8 @@ import { Link } from "react-router";
 import { Zap, Eye, MessagesSquare, CheckCircle2, Flame, ArrowUpRight, Compass } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { useObservedRooms, useObserverStats } from "../../hooks/useRooms";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../auth/AuthContext";
@@ -163,7 +164,7 @@ export default function ObserverHub() {
               ) : trendingBuilders?.map((builder: any) => (
                 <Link key={builder.id} to={`/dashboard/profile/${builder.id}`} className="bg-white border border-slate-200 shadow-sm rounded-[20px] p-5 flex items-start gap-4 hover:bg-slate-50 hover:border-primary-400/30 transition-all">
                   <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0 overflow-hidden">
-                    <img loading="lazy" src={getAvatarUrl(builder.id || builder.email)} alt={builder.name} className="w-full h-full object-cover" />
+                    <UserAvatar userId={builder.id} name={builder.name} avatarUrl={builder.avatar || builder.avatar_url || builder.avatarUrl} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-[15px] text-slate-900 flex items-center gap-1">

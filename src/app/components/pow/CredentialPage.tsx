@@ -5,7 +5,8 @@ import { HammerIcon } from '../layout/LayoutIcons';
 import { useQuery } from '@tanstack/react-query';
 import { supabase, useAuth } from '../auth/AuthContext';
 import { UserBadge } from '../../types/pow';
-import { getAvatarUrl, generateLinkedInCertUrl } from '../../utils/helpers';
+import { generateLinkedInCertUrl } from '../../utils/helpers';
+import { UserAvatar } from '../ui/UserAvatar';
 import { useProfile } from '../../hooks/useProfile';
 import { useState } from 'react';
 import * as htmlToImage from 'html-to-image';
@@ -94,7 +95,7 @@ export default function CredentialPage() {
   const recipientName = actualProfile?.name || actualProfile?.full_name || "Akinrodolu Seun";
   const recipientRole = actualProfile?.bio?.slice(0, 50) || "Senior Product Manager";
   const avatarId = credential?.user_id || user?.id || "default";
-  const avatarUrl = actualProfile?.avatar_url || getAvatarUrl(avatarId);
+  // avatarUrl removed
 
   const certificateDate = credential ? new Date(credential.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "February 23, 2026";
   const certificateTitle = credential?.badge?.title || "Complete 1000 mentorship minutes";
@@ -398,7 +399,7 @@ export default function CredentialPage() {
           <section>
             <h3 className="font-bold text-slate-900 mb-3 text-sm">Certificate recipient</h3>
             <div className="bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 flex items-center gap-4 transition-shadow hover:shadow-[0_15px_35px_rgba(0,0,0,0.06)]">
-              <img loading="lazy" src={avatarUrl} alt={recipientName} className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-sm" />
+              <UserAvatar userId={avatarId} name={recipientName} avatarUrl={actualProfile?.avatar_url || actualProfile?.avatar} className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-sm" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-bold text-slate-900 text-sm truncate">{recipientName}</h4>
                 <p className="text-xs text-slate-500 truncate">{recipientRole}</p>

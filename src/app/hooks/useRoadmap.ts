@@ -10,10 +10,38 @@ export interface RoadmapItem {
   description: string | null;
   status: 'now' | 'next' | 'later' | 'completed';
   position: number;
+  due_date: string | null;
+  priority: 'low' | 'medium' | 'high' | 'urgent' | null;
+  labels: string[];
   created_at: string;
   updated_at: string;
+  // Relationships
+  roadmap_assignees?: { user_id: string; users: { name: string; avatar: string | null } }[];
+  roadmap_comments?: { count: number }[];
 }
 
+export interface RoadmapAssignee {
+  item_id: string;
+  user_id: string;
+  created_at: string;
+  users: {
+    name: string;
+    avatar: string | null;
+  };
+}
+
+export interface RoadmapComment {
+  id: string;
+  item_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  users: {
+    name: string;
+    avatar: string | null;
+  };
+}
 export interface Sprint {
   id: string;
   builder_id: string;
@@ -39,7 +67,11 @@ export function useRoadmapItems(builderId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('roadmap_items')
-        .select('*')
+        .select(`
+          *,
+          roadmap_assignees(user_id, users(name, avatar)),
+          roadmap_comments(count)
+        `)
         .eq('builder_id', builderId)
         .order('position', { ascending: true });
       if (error) throw error;
@@ -108,7 +140,78 @@ export function useDeleteRoadmapItem() {
     },
   });
 }
+// Hooks for Assignees
+export function useAssignRoadmapItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ item_id, user_id }: { item_id: string; user_id: string }) => {
+      const { data, error } = await supabase
+        .from('roadmap_assignees')
+        .insert({ item_id, user_id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
+    },
+  });
+}
 
+export function useUnassignRoadmapItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ item_id, user_id }: { item_id: string; user_id: string }) => {
+      const { data, error } = await supabase
+        .from('roadmap_assignees')
+        .delete()
+        .eq('item_id', item_id)
+        .eq('user_id', user_id);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
+    },
+  });
+}
+
+// Hooks for Comments
+export function useRoadmapComments(itemId: string) {
+  return useQuery({
+    queryKey: ['roadmap_comments', itemId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('roadmap_comments')
+        .select(`*, users(name, avatar)`)
+        .eq('item_id', itemId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data as RoadmapComment[];
+    },
+    enabled: !!itemId,
+  });
+}
+
+export function useAddRoadmapComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ item_id, user_id, content }: { item_id: string; user_id: string; content: string }) => {
+      const { data, error } = await supabase
+        .from('roadmap_comments')
+        .insert({ item_id, user_id, content })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap_comments', variables.item_id] });
+      queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
+    },
+  });
+}
 // Hooks for Sprints
 export function useSprints(builderId: string) {
   return useQuery({

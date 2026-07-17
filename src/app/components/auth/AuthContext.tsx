@@ -15,7 +15,7 @@ export const DEV_AUTH_BYPASS = false;
 
 const API_BASE = window.location.origin + "/api/v1";
 
-import { normalizeRow } from "../../utils/helpers";
+import { normalizeRow, registerAvatarUrl } from "../../utils/helpers";
 
 import { Profile } from "../../types";
 
@@ -83,7 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone_country_code: existing?.phone_country_code || metadata.phone_country_code || '',
         phone_number: existing?.phone_number || metadata.phone_number || '',
         bio: existing?.bio || '',
-        avatar: existing?.avatar || '',
+        avatar: existing?.avatar || existing?.avatarUrl || existing?.avatar_url || '',
+        avatar_url: existing?.avatar_url || existing?.avatarUrl || existing?.avatar || '',
       };
 
       const { error } = await supabase
@@ -148,6 +149,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!p) return null;
       }
       const profile = { ...(p as Profile), emailVerified: isConfirmed };
+      // Register this user's avatar so every getAvatarUrl(userId) call returns the real photo
+      const avatarUrl = (data as any)?.avatar_url || (data as any)?.avatar;
+      registerAvatarUrl(userId, avatarUrl);
       setProfile(profile);
       return profile;
     } catch (err) {

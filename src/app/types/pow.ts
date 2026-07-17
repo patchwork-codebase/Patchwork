@@ -25,7 +25,7 @@ export interface ReputationEvent {
   room_id?: string;
   action_type: string;
   points: number;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
