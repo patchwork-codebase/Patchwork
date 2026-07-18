@@ -223,28 +223,28 @@ export function MobileBottomNav({
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                   >
-                    <UserIcon /> My Profile
+                    <UserIcon className="w-5 h-5 text-slate-400" /> My Profile
                   </Link>
                   <Link
                     to="/dashboard/achievements"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                   >
-                    <AwardIcon /> Achievements
+                    <AwardIcon className="w-5 h-5 text-slate-400" /> Achievements
                   </Link>
                   <Link
                     to="/dashboard/build-logs"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                   >
-                    <FileTextIcon /> Build Logs
+                    <FileTextIcon className="w-5 h-5 text-slate-400" /> Build Logs
                   </Link>
                   <Link
                     to="/dashboard/discovery"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                   >
-                    <LightbulbIcon /> Discovery Mode
+                    <LightbulbIcon className="w-5 h-5 text-slate-400" /> Discovery Mode
                   </Link>
                   {import.meta.env.DEV && (
                     <Link
@@ -252,7 +252,7 @@ export function MobileBottomNav({
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <AwardIcon /> Expert Directory
+                      <AwardIcon className="w-5 h-5 text-slate-400" /> Expert Directory
                     </Link>
                   )}
                   <button
@@ -262,7 +262,7 @@ export function MobileBottomNav({
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors text-left"
                   >
-                    <CompassIcon /> Replay Tour
+                    <CompassIcon className="w-5 h-5 text-slate-400" /> Replay Tour
                   </button>
                   {/* <Link 
                     to="/learning-hub"
@@ -285,7 +285,7 @@ export function MobileBottomNav({
                   }}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"
                 >
-                  <LogOutIcon /> Sign out
+                  <LogOutIcon className="w-4 h-4" /> Sign out
                 </button>
               </div>
             </motion.div>

@@ -4,6 +4,7 @@ import { X, ChevronRight, ChevronLeft, Send, Search } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
+import { UserAvatar } from "../ui/UserAvatar";
 import ExpertCard, { ExpertProfile } from "./ExpertCard";
 import { useUserRooms } from "../../hooks/useRooms";
 
@@ -215,7 +216,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
             ) : (
               <form id="request-review-form" onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 mb-5">
-                  <img loading="lazy" src={selectedExpert?.avatar} className="w-10 h-10 rounded-full border border-slate-200 object-cover" alt="" />
+                  <UserAvatar userId={selectedExpert?.id || ''} name={selectedExpert?.name || ''} avatarUrl={selectedExpert?.avatar} className="w-10 h-10 rounded-full border border-slate-200 object-cover" />
                   <div>
                     <h4 className="text-slate-900 font-bold text-[15px]">{selectedExpert?.name}</h4>
                     <p className="text-slate-500 text-[13px] font-medium">Reviewing your build</p>

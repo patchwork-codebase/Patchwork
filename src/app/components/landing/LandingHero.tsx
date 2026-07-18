@@ -4,6 +4,7 @@ import { getAvatarUrl } from "../../utils/helpers";
 import React, { useRef } from "react";
 import { MagneticButton } from "../ui/MagneticButton";
 import { ScrollHandIndicator } from "./ScrollHandIndicator";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface LandingHeroProps {
   showOnboarding: () => void;
@@ -172,7 +173,7 @@ export function LandingHero({
                     className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-200 relative shadow-sm"
                     style={{ zIndex: 10 - i }}
                   >
-                    <img loading="lazy" src={getAvatarUrl(`builder-${i + 15}`)} alt="Builder" className="w-full h-full object-cover" />
+                    <UserAvatar userId={`builder-${i + 15}`} name="Builder" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

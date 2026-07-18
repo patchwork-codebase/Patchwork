@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { supabase } from "../auth/AuthContext";
 import { getAvatarUrl, timeAgo } from "../../utils/helpers";
 import { ThumbsUp, MessageCircle, RefreshCw, Send } from "lucide-react";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface ShowcaseCard {
   id: string;
@@ -154,11 +155,7 @@ export function LandingNetworkShowcase() {
                   className="absolute w-[240px] sm:w-[280px] bg-white rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-100 p-5 cursor-pointer"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <img
-                      src={card.authorAvatar || getAvatarUrl(card.authorName)}
-                      alt={card.authorName}
-                      className="w-12 h-12 rounded-full ring-4 ring-primary-50 object-cover"
-                    />
+                    <UserAvatar userId={card.authorName} name={card.authorName} avatarUrl={card.authorAvatar} className="w-12 h-12 rounded-full ring-4 ring-primary-50 object-cover" />
                     <div>
                       <h4 className="font-bold text-slate-900 text-[15px]">{card.authorName}</h4>
                       <span className="text-[12px] font-medium text-primary-500 uppercase tracking-wider">

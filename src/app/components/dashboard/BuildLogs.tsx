@@ -7,6 +7,7 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { useUserRooms, useRooms } from "../../hooks/useRooms";
 import { getObserverCount, timeAgo } from "../../utils/helpers";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
+import { UserAvatar } from "../ui/UserAvatar";
 import { QUERY_KEYS } from "../../constants";
 import { ActiveBuildCard, ShippedBuildCard, CompletedBuildCard } from "./BuildLogCards";
 
@@ -162,7 +163,7 @@ export default function BuildLogs() {
                     <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
                       <div className="flex items-center gap-2 mb-2">
                         {room.builderAvatarUrl ? (
-                          <img loading="lazy" src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                          <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
                         ) : (
                           <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
                             {room.builderName?.substring(0, 2) || '??'}

@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Hammer } from "lucide-react";
 import { getAvatarUrl } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 
 const leftPositions = [
   // Top Row (curves slightly up at the edges)
@@ -71,11 +72,7 @@ export function LandingTicker() {
                 }}
                 className="rounded-full overflow-hidden bg-white/40 border border-[#1B3224]/10 backdrop-blur-md flex items-center justify-center p-1 cursor-pointer transition-all duration-350 shadow-sm"
               >
-                <img loading="lazy" 
-                  src={getAvatarUrl(pos.seed)} 
-                  alt={`Builder ${pos.seed}`} 
-                  className="w-full h-full object-cover rounded-full bg-white/20" 
-                />
+                <UserAvatar userId={pos.seed} name={pos.seed} className="w-full h-full object-cover rounded-full bg-white/20" />
               </motion.div>
             ))}
 
@@ -95,11 +92,7 @@ export function LandingTicker() {
                 }}
                 className="rounded-full overflow-hidden bg-white/40 border border-[#1B3224]/10 backdrop-blur-md flex items-center justify-center p-1 cursor-pointer transition-all duration-350 shadow-sm"
               >
-                <img loading="lazy" 
-                  src={getAvatarUrl(pos.seed)} 
-                  alt={`Builder ${pos.seed}`} 
-                  className="w-full h-full object-cover rounded-full bg-white/20" 
-                />
+                <UserAvatar userId={pos.seed} name={pos.seed} className="w-full h-full object-cover rounded-full bg-white/20" />
               </motion.div>
             ))}
           </div>
@@ -143,11 +136,7 @@ export function LandingTicker() {
                 key={`mob-${idx}`}
                 className="w-10 h-10 rounded-full overflow-hidden bg-white/40 border border-[#1B3224]/10 backdrop-blur-md flex items-center justify-center p-0.5 shadow-sm"
               >
-                <img loading="lazy" 
-                  src={getAvatarUrl(seed)} 
-                  alt={`Builder ${seed}`} 
-                  className="w-full h-full object-cover rounded-full bg-white/20" 
-                />
+                <UserAvatar userId={seed} name={seed} className="w-full h-full object-cover rounded-full bg-white/20" />
               </div>
             ))}
           </div>

@@ -5,6 +5,7 @@ import { getAvatarUrl } from "../../utils/helpers";
 import { Link } from "react-router";
 import { Zap, Trophy, Medal, ArrowLeft, Crown } from "lucide-react";
 import { SEO } from "../seo/SEO";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface LeaderboardUser {
   id: string;
@@ -117,12 +118,9 @@ export default function LeaderboardPage() {
                   </div>
 
                   {/* Avatar */}
-                  <img
-                    src={user.avatar || user.avatar_url || user.avatarUrl || getAvatarUrl(user.id || user.name)}
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm shrink-0"
-                    onError={e => { e.currentTarget.src = getAvatarUrl(user.id); }}
-                  />
+                  <div className="w-10 h-10 rounded-full ring-2 ring-white shadow-sm shrink-0 overflow-hidden relative">
+                    <UserAvatar userId={user.id} name={user.name} avatarUrl={user.avatar || user.avatar_url || user.avatarUrl} />
+                  </div>
 
                   {/* Name + Role */}
                   <div className="flex-1 min-w-0">

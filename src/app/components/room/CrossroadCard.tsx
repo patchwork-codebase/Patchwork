@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Share2, MapPin, Zap, MessageCircle, AlertCircle, TrendingUp, Compass, ArrowRight, User } from 'lucide-react';
 import { getAvatarUrl } from '../../utils/helpers';
+import { UserAvatar } from '../ui/UserAvatar';
 import { VerifiedTick } from '../ui/VerifiedTick';
 import { supabase } from '../auth/AuthContext';
 import { toast } from 'sonner';
@@ -23,7 +24,7 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
       const { data, error } = await supabase
         .from('crossroad_votes')
         .select(`
-          id, option_title, rationale, created_at,
+          id, option_title, rationale, created_at, user_id,
           user:profiles(name, avatar_url, is_verified_expert, role)
         `)
         .eq('update_id', update.id)
@@ -206,7 +207,9 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
               {votes.map(r => (
                 <div key={r.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
                    <div className="flex items-center gap-3 mb-3">
-                      <img loading="lazy" src={r.user?.avatar_url || getAvatarUrl(r.user?.name || 'User')} alt={r.user?.name || 'User'} className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200" />
+                      <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 relative">
+                        <UserAvatar userId={r.user_id} name={r.user?.name || 'User'} avatarUrl={r.user?.avatar_url} />
+                      </div>
                       <div>
                          <div className="flex items-center gap-1.5">
                             <span className="text-[13px] font-bold text-slate-900">{r.user?.name || 'User'}</span>

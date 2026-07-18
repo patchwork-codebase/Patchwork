@@ -16,6 +16,7 @@ import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { SmartImage } from "../ui/SmartImage";
+import { UserAvatar } from "../ui/UserAvatar";
 import { useAuth, supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -213,7 +214,9 @@ export default function RoomLogPage() {
               <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" />Built over {days} day{days !== 1 ? 's' : ''}</span>
               {room.builderName && (
                 <Link to={`/dashboard/profile/${room.builderId}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
-                  <img loading="lazy" src={getAvatarUrl(room.builderId || room.builderName)} className="w-4 h-4 rounded-full" alt="builder" />
+                  <div className="w-4 h-4 rounded-full overflow-hidden shrink-0 relative">
+                    <UserAvatar userId={room.builderId} name={room.builderName} avatarUrl={room.builderAvatarUrl} />
+                  </div>
                   {room.builderName}
                   {!room.builderOrgName && (
                     <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" />
@@ -324,7 +327,9 @@ export default function RoomLogPage() {
             {topObservers.map((obs, i) => (
               <div key={obs.id} onClick={() => navigate(`/dashboard/profile/${obs.id}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
                 <span className="text-[11px] font-mono font-bold text-slate-300 w-4">{i + 1}</span>
-                <img loading="lazy" src={getAvatarUrl(obs.id)} className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-primary-400/30 transition-all" alt="observer" />
+                <div className="w-7 h-7 rounded-full ring-2 ring-white shadow-sm group-hover:ring-primary-400/30 transition-all overflow-hidden shrink-0 relative">
+                  <UserAvatar userId={obs.id} name={obs.name} />
+                </div>
                 <span className="text-[13px] font-bold text-slate-800 flex-1 truncate group-hover:text-primary-400 transition-colors flex items-center gap-2">
                   {obs.name}
                   {i === 0 && <span className="bg-amber-100 text-amber-700 text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold">Top Observer</span>}
@@ -374,7 +379,9 @@ export default function RoomLogPage() {
                     )}
                     <div className="flex flex-col mb-3 gap-1">
                       <div className="flex items-center gap-2">
-                        <img loading="lazy" src={getAvatarUrl(update.authorId || update.authorName)} onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="author" />
+                        <div onClick={() => update.authorId && navigate(`/dashboard/profile/${update.authorId}`)} className="w-7 h-7 rounded-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all overflow-hidden shrink-0 relative">
+                          <UserAvatar userId={update.authorId} name={update.authorName} avatarUrl={update.authorAvatarUrl} />
+                        </div>
                         <div className="flex items-center gap-1.5 flex-wrap flex-1">
                           <span className="text-[13px] font-bold text-slate-800">{update.authorName}</span>
                           {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />}
@@ -547,7 +554,9 @@ export default function RoomLogPage() {
                           <Zap className="w-2.5 h-2.5" /> High Signal
                         </span>
                       )}
-                      <img loading="lazy" src={getAvatarUrl(r.observerId)} onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" alt="observer" />
+                      <div onClick={() => r.observerId && navigate(`/dashboard/profile/${r.observerId}`)} className="w-5 h-5 rounded-full cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all overflow-hidden shrink-0 relative">
+                        <UserAvatar userId={r.observerId} name={r.observerName} />
+                      </div>
                       <span className="text-[12px] font-bold text-slate-800">{r.observerName}</span>
                       <ReputationBadge score={r.observerReputation || 0} />
                       <span className="text-[10px] text-slate-400 font-mono ml-auto">{timeAgo(r.createdAt)}</span>

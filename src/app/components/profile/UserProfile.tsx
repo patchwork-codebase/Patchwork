@@ -218,30 +218,39 @@ export default function UserProfile() {
           </div>
         ) : (
           <div className="p-5 sm:p-8 md:p-10 relative">
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-wrap justify-end gap-2 z-20">
+            <ProfileDetailsView
+              profile={profile}
+              isOwn={isOwn}
+              onProfileUpdate={() => {
+                queryClient.invalidateQueries({ queryKey: ['profile', id] });
+                if (isOwn) refreshProfile();
+              }}
+            />
+
+            <div className="mt-6 sm:mt-0 sm:absolute sm:top-6 sm:right-6 flex justify-center sm:justify-end gap-2 z-20 w-full sm:w-auto">
               <button
                 onClick={handleShare}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-white/80 hover:bg-white backdrop-blur-md border border-slate-200/50 shadow-sm rounded-full text-[12px] font-bold text-slate-700 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 sm:bg-white/80 hover:bg-slate-100 sm:hover:bg-white sm:backdrop-blur-md border border-slate-200/50 sm:shadow-sm rounded-full text-[12px] font-bold text-slate-700 transition-colors"
               >
                 <Share className="w-3.5 h-3.5" /> Share
               </button>
               {isOwn && !profile.isVerifiedExpert && !expertApp && (
                 <Link
                   to="/dashboard/expert-apply"
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-500/90 hover:bg-primary-500 backdrop-blur-md shadow-sm rounded-full text-[12px] font-bold text-white transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-500/90 hover:bg-primary-500 sm:backdrop-blur-md sm:shadow-sm rounded-full text-[12px] font-bold text-white transition-colors"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" /> Become Expert
                 </Link>
               )}
               {isOwn && expertApp?.status === "pending" && (
-                <span className="flex items-center gap-2 px-4 py-2 bg-amber-500/90 backdrop-blur-md shadow-sm rounded-full text-[12px] font-bold text-white">
+                <span className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500/90 sm:backdrop-blur-md sm:shadow-sm rounded-full text-[12px] font-bold text-white">
                   <Clock className="w-3.5 h-3.5" /> Under review
                 </span>
               )}
               {isOwn ? (
                 <button
                   onClick={() => setEditing(true)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white/80 hover:bg-white backdrop-blur-md border border-slate-200/50 shadow-sm rounded-full text-[12px] font-bold text-slate-700 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 sm:bg-white/80 hover:bg-slate-100 sm:hover:bg-white sm:backdrop-blur-md border border-slate-200/50 sm:shadow-sm rounded-full text-[12px] font-bold text-slate-700 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" /> Edit Profile
                 </button>
@@ -249,9 +258,9 @@ export default function UserProfile() {
                 <button
                   onClick={toggleFollow}
                   disabled={followLoading || !user}
-                  className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full text-[12px] font-bold transition-all disabled:opacity-50 shadow-sm ${
+                  className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full text-[12px] font-bold transition-all disabled:opacity-50 sm:shadow-sm ${
                     isFollowing 
-                      ? 'border border-slate-200/50 bg-white/80 backdrop-blur-md text-slate-700 hover:bg-white hover:border-red-500/50 hover:text-red-400 group' 
+                      ? 'border border-slate-200/50 bg-slate-50 sm:bg-white/80 sm:backdrop-blur-md text-slate-700 hover:bg-slate-100 sm:hover:bg-white hover:border-red-500/50 hover:text-red-400 group' 
                       : 'bg-slate-900 text-white hover:bg-slate-800'
                   }`}
                 >
@@ -269,15 +278,6 @@ export default function UserProfile() {
                 </button>
               )}
             </div>
-
-            <ProfileDetailsView
-              profile={profile}
-              isOwn={isOwn}
-              onProfileUpdate={() => {
-                queryClient.invalidateQueries({ queryKey: ['profile', id] });
-                if (isOwn) refreshProfile();
-              }}
-            />
           </div>
         )}
       </div>

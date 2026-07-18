@@ -3,12 +3,12 @@ import { avatarStore } from '../utils/avatarStore';
 
 export function useAvatar(userId: string, name?: string | null, initialUrl?: string | null) {
   const [avatarUrl, setAvatarUrl] = useState(() => {
-    // 1. Highest priority: if a valid real image is provided directly
-    if (initialUrl && initialUrl.startsWith('http')) return initialUrl;
-    
-    // 2. Next priority: check the reactive global store
+    // 1. Highest priority: check the reactive global store
     const cached = avatarStore.get(userId);
     if (cached) return cached;
+    
+    // 2. Next priority: if a valid real image is provided directly
+    if (initialUrl && initialUrl.startsWith('http')) return initialUrl;
     
     // 3. Fallback priority: generated Dicebear avatar
     const seed = userId || name || 'default';
@@ -30,7 +30,7 @@ export function useAvatar(userId: string, name?: string | null, initialUrl?: str
     }
     
     return unsubscribe;
-  }, [userId, avatarUrl]);
+  }, [userId]); // removed avatarUrl from deps to prevent unnecessary resubscriptions
 
   return avatarUrl;
 }

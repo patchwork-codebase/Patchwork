@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { Sparkles, TrendingUp, Edit3, ArrowUpRight, CheckCircle2, Clock } from "lucide-react";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { UserAvatar } from "../ui/UserAvatar";
 import { getObserverCount, timeAgo, getAvatarUrl } from "../../utils/helpers";
 import type { Room } from "../../types";
 
@@ -38,13 +39,9 @@ export function ActiveBuildCard({ room, isObserver, handleArchiveRoom, archiving
           <h3 className="m-0 text-[16px] sm:text-[18px] font-extrabold text-slate-900 font-display line-clamp-2 leading-snug break-words">{room.title}</h3>
           
           <div className="flex items-center gap-2 mt-1 w-full">
-            {room.builderAvatarUrl ? (
-              <img loading="lazy" src={room.builderAvatarUrl} alt={room.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
-                {room.builderName?.substring(0, 2) || '??'}
-              </div>
-            )}
+            <div className="w-5 h-5 rounded-full object-cover border border-slate-200 overflow-hidden shrink-0 relative">
+              <UserAvatar userId={room.builderId} name={room.builderName} avatarUrl={room.builderAvatarUrl} />
+            </div>
             <span className="text-[12px] font-bold text-slate-700">{room.builderName}</span>
             {room.builderIsVerifiedExpert && <VerifiedTick isVerified className="w-3.5 h-3.5 -ml-1" />}
             {room.builderOrgName && (
@@ -132,13 +129,9 @@ export function ShippedBuildCard({ log }: { log: Room }) {
           <div className="flex-1 min-w-0">
             <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
             <div className="flex items-center gap-2 mb-2">
-              {log.builderAvatarUrl ? (
-                <img loading="lazy" src={log.builderAvatarUrl} alt={log.builderName} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
-                  {log.builderName?.substring(0, 2) || '??'}
-                </div>
-              )}
+              <div className="w-5 h-5 rounded-full object-cover border border-slate-200 overflow-hidden shrink-0 relative">
+                <UserAvatar userId={log.builderId} name={log.builderName} avatarUrl={log.builderAvatarUrl} />
+              </div>
               <span className="text-[12px] font-bold text-slate-700">{log.builderName}</span>
               {log.projectStage && (
                 <>
@@ -187,13 +180,9 @@ export function CompletedBuildCard({ log }: { log: Room }) {
           <div className="flex-1 min-w-0">
             <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1">{log.title}</h3>
             <div className="flex items-center gap-2 mb-1.5">
-              {log.builderAvatarUrl ? (
-                <img loading="lazy" src={log.builderAvatarUrl} alt={log.builderName} className="w-4 h-4 rounded-full object-cover border border-slate-200" />
-              ) : (
-                <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center text-[8px] font-bold text-slate-500 uppercase border border-slate-200">
-                  {log.builderName?.substring(0, 2) || '??'}
-                </div>
-              )}
+              <div className="w-4 h-4 rounded-full object-cover border border-slate-200 overflow-hidden shrink-0 relative">
+                <UserAvatar userId={log.builderId} name={log.builderName} avatarUrl={log.builderAvatarUrl} />
+              </div>
               <span className="text-[11px] font-bold text-slate-700">{log.builderName}</span>
             </div>
             <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Finished {formatDate(log.updatedAt)}</p>

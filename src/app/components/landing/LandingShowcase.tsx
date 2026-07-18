@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { ChevronDown, MapPin, ArrowUpRight, Flame } from "lucide-react";
 import { getAvatarUrl } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface LandingShowcaseProps {
   domainOptions: any[];
@@ -72,11 +73,7 @@ export function LandingShowcase({
                           {/* Card Top: Builder Profile */}
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
                             <div className="flex items-center gap-3 sm:gap-4">
-                              <img loading="lazy" 
-                                src={getAvatarUrl(builder.avatar || builder.avatar_url || builder.avatarUrl || builder.id)}
-                                alt={builder.name}
-                                className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl object-cover shadow-sm bg-slate-100"
-                              />
+                              <UserAvatar userId={builder.id} name={builder.name} avatarUrl={builder.avatar || builder.avatar_url || builder.avatarUrl} className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl object-cover shadow-sm bg-slate-100" />
                               <div className="min-w-0">
                                 <div className="text-[15px] sm:text-[16px] font-extrabold text-slate-900 flex flex-wrap items-center gap-1.5 sm:gap-2 font-display group-hover:text-primary-600 transition-colors">
                                   <span className="whitespace-nowrap truncate">{builder.name}</span>

@@ -4,6 +4,7 @@ import { CheckCircle, Clock, XCircle, Inbox, Activity, Calendar, FileText, Chevr
 import { ReviewTemplateForm } from './ReviewTemplateForm';
 import { useExpertRequests } from '../../hooks/useExpertRequests';
 import { getAvatarUrl } from '../../utils/helpers';
+import { UserAvatar } from '../ui/UserAvatar';
 
 export default function ExpertReviewHub() {
   const { profile } = useAuth();
@@ -114,7 +115,9 @@ export default function ExpertReviewHub() {
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 mb-1">{roomTitle}</h3>
                         <div className="flex items-center gap-2 mb-3">
-                          <img loading="lazy" src={req.users?.avatar || getAvatarUrl(req.builder_id)} alt={builderName} className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 object-cover" />
+                          <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 relative">
+                            <UserAvatar userId={req.builder_id} name={builderName} avatarUrl={req.users?.avatar} />
+                          </div>
                           <p className="text-sm text-slate-500">Requested by <span className="text-slate-700 font-medium">{builderName}</span></p>
                         </div>
                         <p className="text-sm text-slate-500 line-clamp-2">{req.build_summary}</p>

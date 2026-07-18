@@ -84,7 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone_number: existing?.phone_number || metadata.phone_number || '',
         bio: existing?.bio || '',
         avatar: existing?.avatar || existing?.avatarUrl || existing?.avatar_url || '',
-        avatar_url: existing?.avatar_url || existing?.avatarUrl || existing?.avatar || '',
       };
 
       const { error } = await supabase
@@ -274,10 +273,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    // Global Realtime Sync for Avatars
+    // This ensures that when any user updates their avatar, it instantly propagates
+    // to all other active clients currently viewing them (e.g. in rooms, feed, etc.)
+    const globalUsersChannel = supabase
+      .channel('global-users-avatar')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'users' },
+        (payload: any) => {
+          const newUrl = payload.new?.avatar_url || payload.new?.avatar;
+          if (newUrl) {
+            registerAvatarUrl(payload.new.id, newUrl);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       subscription.unsubscribe();
       channel.close();
       window.removeEventListener('visibilitychange', handleVisibilityChange);
+      supabase.removeChannel(globalUsersChannel);
     };
   }, []);
 

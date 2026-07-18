@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { LinkDocModal } from "../room/LinkDocModal";
 import { getAvatarUrl } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 
 function getDomainColor(domain: string) {
   switch (domain?.toLowerCase()) {
@@ -152,7 +153,9 @@ export function TopObservers() {
           return (
             <div key={i} className="flex items-center justify-between group py-1">
               <div className="flex items-center gap-3 min-w-0">
-                <img loading="lazy" src={obs.avatar || obs.avatar_url || getAvatarUrl(obs.observer_id)} alt={obs.name} className={`w-10 h-10 rounded-xl border ${style.border} object-cover shrink-0`} />
+                <div className={`w-10 h-10 rounded-xl border ${style.border} overflow-hidden shrink-0 relative`}>
+                  <UserAvatar userId={obs.observer_id} name={obs.name} avatarUrl={obs.avatar || obs.avatar_url} />
+                </div>
                 <div className="min-w-0 flex-1 pr-2">
                   <div className="font-semibold text-[14px] text-slate-900 truncate">{obs.name}</div>
                   <div className="text-[12px] text-slate-500 font-mono mt-0.5 truncate">

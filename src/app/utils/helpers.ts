@@ -39,7 +39,9 @@ import { avatarStore } from './avatarStore';
 
 export function registerAvatarUrl(userId: string, url: string | null | undefined) {
   if (userId && url && url.startsWith('http')) {
-    avatarStore.set(userId, url);
+    // Append a timestamp to ensure the URL is unique, bypassing browser caches
+    const cacheBusterUrl = url.includes('?') ? `${url}&_t=${Date.now()}` : `${url}?_t=${Date.now()}`;
+    avatarStore.set(userId, cacheBusterUrl);
   }
 }
 
@@ -53,7 +55,6 @@ export function getAvatarUrl(seed: string) {
   
   return `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(seed)}&backgroundColor=transparent`;
 }
-
 
 /**
  * Returns the accurate observer count for a room.
@@ -88,3 +89,15 @@ export function generateLinkedInCertUrl(title: string, dateIso: string, credenti
   
   return url;
 }
+
+/**
+ * Automatically applies Cloudinary URL transformations for format, quality, and sizing.
+ */
+export function optimizeCloudinaryUrl(url: string, width: number = 800): string {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  if (url.includes('/upload/q_auto')) return url; // Already optimized
+  
+  // Insert transformation parameters right after /upload/
+  return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
+}
+

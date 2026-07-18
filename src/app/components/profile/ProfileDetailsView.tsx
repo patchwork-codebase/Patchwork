@@ -3,7 +3,7 @@ import { Hammer, Eye, Zap, Calendar, Users, Globe, Twitter, Github, Linkedin, Ca
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { ExpertBadge } from "./ExpertBadge";
-import { timeAgo, registerAvatarUrl } from "../../utils/helpers";
+import { timeAgo, registerAvatarUrl, optimizeCloudinaryUrl } from "../../utils/helpers";
 import { UserAvatar } from "../ui/UserAvatar";
 import { uploadImage } from "../../utils/uploadImage";
 import { supabase } from "../auth/AuthContext";
@@ -17,9 +17,7 @@ interface ProfileDetailsViewProps {
 
 export function ProfileDetailsView({ profile, isOwn, onProfileUpdate }: ProfileDetailsViewProps) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const toBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -36,11 +34,22 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate }: ProfileD
     try {
       const base64 = await toBase64(file);
       const url = await uploadImage(base64);
-      const { error } = await supabase.from('users').update({ avatar: url, avatar_url: url }).eq('id', profile.id);
-      if (error && error.code === 'PGRST204') {
-         // if one column doesn't exist, try updating just avatar_url
-         await supabase.from('users').update({ avatar_url: url }).eq('id', profile.id);
+      let dbError = null;
+      
+      // 1. First try updating just the `avatar` column (most likely for this schema)
+      const { error: err1 } = await supabase.from('users').update({ avatar: url }).eq('id', profile.id);
+      
+      if (err1) {
+         // 2. If that fails (e.g. column doesn't exist), try `avatar_url`
+         const { error: err2 } = await supabase.from('users').update({ avatar_url: url }).eq('id', profile.id);
+         
+         if (err2) {
+            // 3. If that also fails, maybe it requires both or something else? Throw the error.
+            dbError = err2;
+         }
       }
+
+      if (dbError) throw dbError;
       // Immediately update cache so all components show the new photo
       registerAvatarUrl(profile.id, url);
       await supabase.auth.updateUser({ data: { avatar_url: url, avatar: url } });
@@ -54,37 +63,17 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate }: ProfileD
     }
   };
 
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile?.id) return;
-    setUploadingCover(true);
-    try {
-      const base64 = await toBase64(file);
-      const url = await uploadImage(base64);
-      const { error } = await supabase.from('users').update({ cover_url: url }).eq('id', profile.id);
-      if (error) throw error;
-      toast.success('Cover photo updated!');
-      onProfileUpdate?.();
-    } catch {
-      toast.error('Failed to upload cover. Please try again.');
-    } finally {
-      setUploadingCover(false);
-      e.target.value = '';
-    }
-  };
-
 
   return (
     <>
       {/* Hidden inputs */}
       <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-      <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
 
       {/* Cover Banner */}
       <div className="relative h-32 sm:h-40 rounded-t-[24px] sm:rounded-t-[32px] overflow-hidden -mx-5 sm:-mx-8 md:-mx-10 -mt-5 sm:-mt-8 md:-mt-10 mb-0">
         {profile?.coverUrl ? (
           <img
-            src={profile.coverUrl}
+            src={optimizeCloudinaryUrl(profile.coverUrl, 1200)}
             alt="Cover"
             className="w-full h-full object-cover"
           />
@@ -93,25 +82,10 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate }: ProfileD
         )}
         {/* Fade to white at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
-        {/* Cover upload button (owner only) */}
-        {isOwn && (
-          <button
-            onClick={() => coverInputRef.current?.click()}
-            disabled={uploadingCover}
-            className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold rounded-full transition-all"
-          >
-            {uploadingCover ? (
-              <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Camera className="w-3 h-3" />
-            )}
-            {uploadingCover ? 'Uploading…' : 'Change cover'}
-          </button>
-        )}
       </div>
 
       {/* Avatar + Name Row */}
-      <div className="flex flex-col md:flex-row items-center md:items-end gap-4 -mt-10 sm:-mt-12 relative z-10 pb-2">
+      <div className="flex flex-col md:flex-row items-center md:items-end gap-3 sm:gap-4 -mt-12 sm:-mt-12 relative z-10 pb-2 px-4 sm:px-0">
         {/* Avatar */}
         <div className="relative shrink-0 group">
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white ring-4 ring-white shadow-[0_0_0_3px_rgba(139,92,246,0.15)] overflow-hidden relative">
@@ -125,17 +99,33 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate }: ProfileD
           </div>
           {/* Avatar upload overlay */}
           {isOwn && (
-            <button
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={uploadingAvatar}
-              className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
-            >
-              {uploadingAvatar ? (
-                <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Camera className="w-5 h-5 text-white drop-shadow" />
-              )}
-            </button>
+            <>
+              {/* Desktop hover overlay */}
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="hidden sm:flex absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 transition-all items-center justify-center opacity-0 group-hover:opacity-100"
+              >
+                {uploadingAvatar ? (
+                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5 text-white drop-shadow" />
+                )}
+              </button>
+              
+              {/* Mobile permanent edit badge */}
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="sm:hidden absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-600 border-[2.5px] border-white flex items-center justify-center text-white shadow-sm active:scale-95 transition-transform"
+              >
+                {uploadingAvatar ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </>
           )}
         </div>
 
@@ -179,7 +169,7 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate }: ProfileD
 
       {/* Bio */}
       {profile?.bio && (
-        <p className="text-[15px] text-slate-700 mt-4 leading-relaxed max-w-xl mx-auto md:mx-0 font-medium">
+        <p className="text-[15px] text-slate-700 mt-4 leading-relaxed max-w-xl mx-auto md:mx-0 font-medium text-center md:text-left">
           {profile.bio}
         </p>
       )}

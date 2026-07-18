@@ -1,5 +1,6 @@
 
 import { BadgeCheck, Star, Clock, Briefcase, ChevronRight } from 'lucide-react';
+import { UserAvatar } from '../ui/UserAvatar';
 
 export interface ExpertProfile {
   id: string;
@@ -43,7 +44,7 @@ export default function ExpertCard({ expert, onSelect, onProfileClick, selected 
       <div className="flex items-start gap-4 mb-4">
         <div className="relative">
           {expert.avatar ? (
-            <img loading="lazy" src={expert.avatar} alt={expert.name} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
+            <UserAvatar userId={expert.id} name={expert.name} avatarUrl={expert.avatar} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
           ) : (
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-sm">
               {expert.name.charAt(0)}

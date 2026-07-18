@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAvatar } from '../../hooks/useAvatar';
+import { optimizeCloudinaryUrl } from '../../utils/helpers';
 
 export interface UserAvatarProps {
   /** The unique ID of the user (highest priority for fetching real avatar) */
@@ -48,7 +49,7 @@ export function UserAvatar({
 
   return (
     <img 
-      src={reactiveUrl}
+      src={optimizeCloudinaryUrl(reactiveUrl, 300)}
       alt={name || "User avatar"}
       className={className}
       onError={() => setHasError(true)}

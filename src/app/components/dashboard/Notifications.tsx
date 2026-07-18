@@ -4,8 +4,9 @@ import { useNotifications } from "../../hooks/useNotifications";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
 import { RequestsAndInvites } from "./RequestsAndInvites";
+import { UserAvatar } from "../ui/UserAvatar";
 
 // Map notification type → display config
 function getNotifConfig(n: any) {
@@ -143,7 +144,6 @@ export default function Notifications() {
             {notifications.map(n => {
               const config = getNotifConfig(n);
               const actorName = n.actor?.name || 'Someone';
-              const actorAvatarUrl = n.actor?.avatar_url || getAvatarUrl(n.actor_id || actorName);
 
               return (
                 <motion.div
@@ -156,14 +156,7 @@ export default function Notifications() {
                     {/* Actor avatar — tappable to profile */}
                     <div className="relative shrink-0">
                       <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
-                        <img
-                          src={actorAvatarUrl}
-                          alt={actorName}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = getAvatarUrl(actorName);
-                          }}
-                        />
+                        <UserAvatar userId={n.actor_id} name={actorName} avatarUrl={n.actor?.avatar_url} className="w-full h-full object-cover" />
                       </div>
                       {/* Notification type badge */}
                       <div className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full ${config.iconBg} border-2 border-white flex items-center justify-center text-[10px]`}>

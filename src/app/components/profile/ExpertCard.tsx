@@ -21,8 +21,8 @@ export function ExpertCard({ profile }: ExpertCardProps) {
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-emerald-400/10 dark:bg-emerald-500/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/4 pointer-events-none transition-transform duration-700 group-hover:scale-110" />
       
       <div className="relative p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5">
             <ExpertBadge tier={profile.expertLevel || "bronze"} size="lg" />
             <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
             <div className="flex flex-col">
@@ -35,7 +35,7 @@ export function ExpertCard({ profile }: ExpertCardProps) {
             </div>
           </div>
           
-          <div className="sm:ml-auto flex items-center gap-2">
+          <div className="sm:ml-auto flex items-center gap-2 self-start sm:self-auto">
             {profile.expertAvailable ? (
               <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 <span className="relative flex h-2 w-2">

@@ -3,6 +3,7 @@ import { Check, Users, Lock, ShieldCheck, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { workflowSteps } from "../../constants/landingData";
 import { getAvatarUrl } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 
 interface LandingWorkflowProps {
   selectedWorkflowStep: number;
@@ -33,7 +34,7 @@ export function LandingWorkflow({
             className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden relative shadow-sm"
             style={{ zIndex: 20 - i }}
           >
-            <img loading="lazy" src={getAvatarUrl(`wf-user-${i}`)} className="w-full h-full object-cover" alt="User" />
+            <UserAvatar userId={`wf-user-${i}`} name="User" className="w-full h-full object-cover" />
             {extra === "expert" && i === 3 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary-400 rounded-full border border-white flex items-center justify-center">
                 <ShieldCheck className="w-2 h-2 text-white" />
