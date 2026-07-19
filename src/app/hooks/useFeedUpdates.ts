@@ -62,18 +62,15 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
       // Also fetch recent replies to surface as top-level Activity items.
       const { data: repliesRaw } = await supabase
         .from('reactions')
-        .select('*')
+        .select('*, users!observer_id(avatar)')
         .eq('type', 'reply')
         .order('created_at', { ascending: sortOrder === 'asc' })
         .range(from, to);
 
-      // Extract all observer IDs to fetch their avatars
-      const observerIdsToFetch = new Set<string>();
-      (repliesRaw || []).forEach((r: { observer_id: string }) => { if (r.observer_id) observerIdsToFetch.add(r.observer_id); });
-
-      const replies = (repliesRaw || []).map(r =>
-        normalizeRow<Reaction & { text: string }>(r as Record<string, unknown>)
-      );
+      const replies = (repliesRaw || []).map((r: any) => {
+        if (r.users?.avatar) registerAvatarUrl(r.observer_id, r.users.avatar);
+        return normalizeRow<Reaction & { text: string }>(r as Record<string, unknown>);
+      });
 
       // Batch-fetch the parent updates for those replies
       const parentUpdateIds = [...new Set(replies.map(r => r.updateId).filter(Boolean))];
@@ -107,41 +104,35 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
         return normalized;
       });
 
-      // Fetch reactions for all standard updates so isActive renders correctly
+      // Fetch reactions for all standard updates and replies so isActive renders correctly
       const updateIds = standardUpdates.map(u => u.id);
-      if (updateIds.length > 0) {
+      const replyIds = replies.map(r => r.id);
+      const allUpdateIds = [...updateIds, ...replyIds, ...parentUpdateIds];
+
+      if (allUpdateIds.length > 0) {
         const { data: rData } = await supabase
           .from('reactions')
-          .select('*')
-          .in('update_id', updateIds);
+          .select('*, users!observer_id(avatar)')
+          .in('update_id', allUpdateIds);
 
-        (rData || []).forEach((r: { observer_id: string }) => { if (r.observer_id) observerIdsToFetch.add(r.observer_id); });
-
-        const reactionsData = (rData || []).map(r =>
-          normalizeRow<Reaction & { text: string }>(r as Record<string, unknown>)
-        );
+        const reactionsData = (rData || []).map((r: any) => {
+          if (r.users?.avatar) registerAvatarUrl(r.observer_id, r.users.avatar);
+          const normalized = normalizeRow<Reaction & { text: string }>(r as Record<string, unknown>);
+          (normalized as any).observerAvatar = r.users?.avatar || null;
+          return normalized;
+        });
 
         standardUpdates.forEach(upd => {
           upd.reactions = reactionsData.filter(r => r.updateId === upd.id) as FeedUpdate['reactions'];
         });
-      }
 
-      // Batch fetch avatars for all commenters found in replies and inline comments
-      if (observerIdsToFetch.size > 0) {
-        try {
-          const { data: observerUsers } = await supabase
-            .from('users')
-            .select('id, avatar')
-            .in('id', Array.from(observerIdsToFetch));
-          
-          (observerUsers || []).forEach((u: { id: string; avatar: string | null }) => {
-            if (u.avatar) {
-              registerAvatarUrl(u.id, u.avatar);
-            }
-          });
-        } catch {
-          // non-fatal, fallback to Dicebear
-        }
+        replies.forEach(reply => {
+          (reply as any).reactions = reactionsData.filter(r => r.updateId === reply.id);
+        });
+
+        Object.values(parentUpdatesMap).forEach(pu => {
+          pu.reactions = reactionsData.filter(r => r.updateId === pu.id) as FeedUpdate['reactions'];
+        });
       }
 
       const activityUpdates = replies.map(reply => {
@@ -157,6 +148,7 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
           createdAt: reply.createdAt,
           _isActivity: true,
           parentUpdate: parentUpdate,
+          reactions: (reply as any).reactions || [],
         } as FeedUpdate;
       });
 

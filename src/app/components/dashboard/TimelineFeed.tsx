@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Link, useNavigate } from 'react-router';
 import { Virtuoso } from "react-virtuoso";
 import { useAuth } from '../auth/AuthContext';
@@ -94,62 +94,12 @@ export function TimelineFeed({
 }: TimelineFeedProps) {
   const { session, withVerification } = useAuth();
   
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [expandedComments, setExpandedComments] = useState<string[]>([]);
-  const [fullyExpandedComments, setFullyExpandedComments] = useState<string[]>([]);
-  const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
   const [activeDomainFilter, setActiveDomainFilter] = useState('All');
   const [activeViewToggle, setActiveViewToggle] = useState<'all' | 'media' | 'launches'>('all');
 
   const navigate = useNavigate();
 
-  const handleOverlayClick = () => {
-    setReplyingTo(null);
-  };
-
-  const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
-
-  const handleDeleteUpdate = async (updateId: string) => {
-    setDeletingUpdateId(updateId);
-    try {
-      const { error, count } = await supabase.from('updates').delete({ count: 'exact' }).eq('id', updateId).eq('author_id', user!.id);
-      if (error) throw error;
-      if (count === 0) throw new Error("Update not found or you don't have permission to delete it.");
-      
-      toast.success("Update deleted");
-      
-      queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: FeedUpdate[]) => 
-            page.filter((u: FeedUpdate) => u.id !== updateId)
-          )
-        };
-      });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
-    } catch (error: unknown) {
-      console.error("Error deleting update:", error);
-      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to delete update");
-    } finally {
-      setDeletingUpdateId(null);
-    }
-  };
-
-  const toggleComments = (id: string) => {
-    setExpandedComments(prev => 
-      prev.includes(id) ? prev.filter(cId => cId !== id) : [...prev, id]
-    );
-  };
-
-  const handleReplyClick = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    withVerification(() => {
-      setReplyingTo(id);
-    });
-  };
-
-  const handleFollowRoom = async (roomId: string, e: React.MouseEvent) => {
+  const handleFollowRoom = React.useCallback(async (roomId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     try {
@@ -160,9 +110,9 @@ export function TimelineFeed({
     } catch (err: unknown) {
       toast.error(`Failed to follow room: ${(err instanceof Error ? err.message : String(err))}`);
     }
-  };
+  }, [user, queryClient]);
 
-  const handleUnfollowRoom = async (roomId: string, e: React.MouseEvent) => {
+  const handleUnfollowRoom = React.useCallback(async (roomId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     try {
@@ -173,110 +123,7 @@ export function TimelineFeed({
     } catch (err: unknown) {
       toast.error(`Failed to unfollow room: ${(err instanceof Error ? err.message : String(err))}`);
     }
-  };
-
-  const handleToggleReaction = async (
-    updateId: string,
-    roomId: string,
-    type: 'sharp' | 'pushback' | 'tellmemore',
-    currentReactions: any[]
-  ) => {
-    withVerification(async () => {
-      if (!user) return;
-      const key = `${updateId}-${type}`;
-      const existing = currentReactions?.find(r => r.type === type && r.observerId === user.id);
-      
-      // Optimistic state toggle
-      setOptimisticToggles(prev => ({
-        ...prev,
-        [key]: !existing
-      }));
-
-      try {
-        if (existing) {
-          const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
-          if (error) throw error;
-          toast.success(`Removed ${type === 'tellmemore' ? 'More' : type} reaction`);
-        } else {
-          const payload = {
-            id: `${roomId}-reaction-${type}-${user.id}-${Date.now()}`,
-            room_id: roomId,
-            update_id: updateId,
-            observer_id: user.id,
-            observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
-            type,
-            text: type, // Schema requires text NOT NULL
-            created_at: new Date().toISOString(),
-          };
-          const { error } = await supabase.from('reactions').insert(payload);
-          if (error) throw error;
-          toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
-        }
-        // Invalidate all feed-updates queries (any sortOrder variant)
-        await queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'], exact: false });
-        // Clear the optimistic toggle now that server data is fresh
-        setOptimisticToggles(prev => {
-          const next = { ...prev };
-          delete next[key];
-          return next;
-        });
-      } catch (err: unknown) {
-        // Revert optimistic toggle on failure
-        setOptimisticToggles(prev => ({
-          ...prev,
-          [key]: !!existing
-        }));
-        toast.error(`Failed to update reaction: ${(err instanceof Error ? err.message : String(err))}`);
-      }
-    });
-  };
-
-  const renderReactionButton = (
-    updateId: string,
-    roomId: string,
-    type: 'sharp' | 'pushback' | 'tellmemore',
-    label: string,
-    icon: string,
-    activeClass: string,
-    serverReactions: any[]
-  ) => {
-    const key = `${updateId}-${type}`;
-    const hasOptimisticOverride = optimisticToggles[key] !== undefined;
-    
-    const existingInServer = serverReactions?.some(r => r.type === type && r.observerId === user?.id) || false;
-    const isActive = hasOptimisticOverride ? optimisticToggles[key] : existingInServer;
-    
-    let count = serverReactions?.filter(r => r.type === type).length || 0;
-    if (hasOptimisticOverride) {
-      if (optimisticToggles[key] && !existingInServer) {
-        count += 1;
-      } else if (!optimisticToggles[key] && existingInServer) {
-        count -= 1;
-      }
-    }
-
-    return (
-      <motion.button
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleToggleReaction(updateId, roomId, type, serverReactions);
-        }}
-        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-colors border flex items-center gap-1 sm:gap-1.5 focus-ring ${
-          isActive 
-            ? activeClass
-            : "bg-white shadow-sm border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300"
-        }`}
-      >
-        <span>{icon}</span>
-        <span>{label}</span>
-        {(!profile || !profile.emailVerified) && <Lock className="w-3 h-3 opacity-60 ml-0.5" />}
-        <span className="opacity-40">·</span>
-        <span>{count}</span>
-      </motion.button>
-    );
-  };
+  }, [user, queryClient]);
 
   const filteredUpdates = useMemo(() => {
     let result = dbUpdates;
@@ -403,6 +250,9 @@ export function TimelineFeed({
                   <ActivityFeedCard
                     activity={update}
                     rooms={rooms}
+                    user={user}
+                    profile={profile}
+                    queryClient={queryClient}
                   />
                 ) : (
                   <FeedUpdateCard
@@ -413,21 +263,9 @@ export function TimelineFeed({
                     profile={profile}
                     isFollowing={isFollowing}
                     activeTab={activeTab}
-                    optimisticToggles={optimisticToggles}
-                    expandedComments={expandedComments}
-                    fullyExpandedComments={fullyExpandedComments}
-                    replyingTo={replyingTo}
-                    deletingUpdateId={deletingUpdateId}
                     queryClient={queryClient}
-                    toggleComments={toggleComments}
-                    setExpandedComments={setExpandedComments}
-                    setFullyExpandedComments={setFullyExpandedComments}
-                    setReplyingTo={setReplyingTo}
-                    handleToggleReaction={handleToggleReaction}
                     handleFollowRoom={handleFollowRoom}
                     handleUnfollowRoom={handleUnfollowRoom}
-                    handleDeleteUpdate={handleDeleteUpdate}
-                    handleReplyClick={handleReplyClick}
                   />
                 )}
               {idx === 1 && (

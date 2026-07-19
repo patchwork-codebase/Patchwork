@@ -12,6 +12,8 @@ import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
 import { SmartImage } from "../ui/SmartImage";
 import { ReplyComposer } from "./ReplyComposer";
+import { ReactionGroup } from "./ReactionGroup";
+import { supabase } from "../auth/AuthContext";
 import type { Room, Profile } from "../../types";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
 import {
@@ -47,22 +49,9 @@ interface FeedUpdateCardProps {
   profile: Profile | null;
   isFollowing: boolean;
   activeTab: 'overview' | 'feed' | 'mine';
-  optimisticToggles: Record<string, boolean>;
-  expandedComments: string[];
-  fullyExpandedComments: string[];
-  replyingTo: string | null;
-  deletingUpdateId: string | null;
   queryClient: any;
-  
-  toggleComments: (id: string) => void;
-  setExpandedComments: React.Dispatch<React.SetStateAction<string[]>>;
-  setFullyExpandedComments: React.Dispatch<React.SetStateAction<string[]>>;
-  setReplyingTo: (id: string | null) => void;
-  handleToggleReaction: (updateId: string, roomId: string, type: 'sharp' | 'pushback' | 'tellmemore', currentReactions: any[]) => void;
   handleFollowRoom: (roomId: string, e: React.MouseEvent) => void;
   handleUnfollowRoom: (roomId: string, e: React.MouseEvent) => void;
-  handleDeleteUpdate: (updateId: string) => void;
-  handleReplyClick: (e: React.MouseEvent, id: string) => void;
 }
 
 export const FeedUpdateCard = React.memo(function FeedUpdateCard({
@@ -73,22 +62,35 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   profile,
   isFollowing,
   activeTab,
-  optimisticToggles,
-  expandedComments,
-  fullyExpandedComments,
-  replyingTo,
-  deletingUpdateId,
   queryClient,
-  toggleComments,
-  setExpandedComments,
-  setFullyExpandedComments,
-  setReplyingTo,
-  handleToggleReaction,
   handleFollowRoom,
   handleUnfollowRoom,
-  handleDeleteUpdate,
-  handleReplyClick,
 }: FeedUpdateCardProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [isFullyExpanded, setIsFullyExpanded] = React.useState(false);
+  const [isReplying, setIsReplying] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  const toggleComments = () => setIsExpanded(prev => !prev);
+  const handleReplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsReplying(prev => !prev);
+  };
+
+  const handleDeleteUpdate = async (updateId: string) => {
+    setIsDeleting(true);
+    try {
+      const { error, count } = await supabase.from('updates').delete({ count: 'exact' }).eq('id', updateId).eq('author_id', user!.id);
+      if (error) throw error;
+      if (count === 0) throw new Error("Update not found or you don't have permission to delete it.");
+      
+      toast.success("Update deleted");
+      queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to delete update");
+      setIsDeleting(false); // only reset on fail, if success it unmounts
+    }
+  };
   const navigate = useNavigate();
   const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
   const tStyle = tagStyle(tag);
@@ -101,11 +103,11 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
 
   return (
     <div
-      onClick={() => toggleComments(update.id)}
-      className="w-full max-w-full bg-white/60 backdrop-blur-md border border-white/40 shadow-sm rounded-[28px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md hover:shadow-slate-200/20 hover:bg-white transition-all duration-200 cursor-pointer relative overflow-hidden group focus-ring"
+      onClick={toggleComments}
+      className="w-full max-w-full bg-white border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') toggleComments(update.id);
+        if (e.key === 'Enter' || e.key === ' ') toggleComments();
       }}
     >
       <div className="flex items-start gap-3 sm:gap-4 mb-3">
@@ -153,10 +155,10 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                   <AlertDialogTrigger asChild>
                     <button
                       onClick={(e) => e.stopPropagation()}
-                      disabled={deletingUpdateId === update.id}
+                      disabled={isDeleting}
                       className="text-slate-400 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-50 relative z-20"
                     >
-                      {deletingUpdateId === update.id ? (
+                      {isDeleting ? (
                         <span className="w-4 h-4 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
                       ) : (
                         <Trash2 className="w-4 h-4" />
@@ -229,46 +231,14 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             )}
 
             {/* Reaction Buttons - single row, no wrap */}
-            <div className="flex items-center gap-1">
-              {(['sharp', 'pushback', 'tellmemore'] as const).map((type) => {
-                const icons = { sharp: '✦', pushback: '↩', tellmemore: '?' };
-                const activeColors = { sharp: 'text-primary-500', pushback: 'text-rose-500', tellmemore: 'text-emerald-600' };
-                const activeBg = { sharp: 'bg-primary-500/10', pushback: 'bg-rose-500/10', tellmemore: 'bg-emerald-500/10' };
-                const key = `${update.id}-${type}`;
-                const hasOptimistic = optimisticToggles[key] !== undefined;
-                const serverActive = update.reactions?.some((r: any) => r.type === type && r.observerId === user?.id) || false;
-                const isActive = hasOptimistic ? optimisticToggles[key] : serverActive;
-                let count = update.reactions?.filter((r: any) => r.type === type).length || 0;
-                if (hasOptimistic) { if (optimisticToggles[key] && !serverActive) count += 1; else if (!optimisticToggles[key] && serverActive) count -= 1; }
-                
-                return (
-                  <button
-                    key={type}
-                    onClick={(e) => { e.stopPropagation(); handleToggleReaction(update.id, update.roomId, type, update.reactions || []); }}
-                    className={`flex items-center gap-1 transition-all group px-2 py-1.5 rounded-full ${isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
-                  >
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors shrink-0 ${isActive ? activeBg[type] : 'bg-slate-100 group-hover:bg-slate-200'}`}>
-                       <span className={`text-[13px] font-bold ${isActive ? activeColors[type] : 'text-slate-500'}`}>{icons[type]}</span>
-                    </div>
-                    {count > 0 && <span className="text-[12px] font-bold">{count}</span>}
-                  </button>
-                );
-              })}
-
-              <button 
-                onClick={(e) => handleReplyClick(e, update.id)}
-                className="flex items-center gap-1 text-slate-500 hover:text-primary-500 transition-colors px-2 py-1.5 rounded-full hover:bg-primary-50 group"
-              >
-                <div className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-100 group-hover:bg-primary-100 transition-colors shrink-0">
-                  <MessageCircle className="w-3.5 h-3.5 group-hover:text-primary-500" />
-                </div>
-                {comments.length > 0 && <span className="text-[12px] font-bold">{comments.length}</span>}
-              </button>
-            </div>
+            <ReactionGroup 
+              targetUpdate={update}
+              onReplyClick={(e) => handleReplyClick(e)}
+            />
           </div>
 
           <AnimatePresence>
-            {replyingTo === update.id && (
+            {isReplying && (
               <motion.div
                 key="reply-composer"
                 initial={{ opacity: 0, height: 0 }}
@@ -281,18 +251,33 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                   user={user} 
                   profile={profile}
                   queryClient={queryClient}
-                  onCancel={() => setReplyingTo(null)}
+                  onCancel={() => setIsReplying(false)}
                   onSuccess={() => {
-                    setReplyingTo(null);
-                    setExpandedComments(prev => update.id && !prev.includes(update.id) ? [...prev, update.id] : prev);
-                    setFullyExpandedComments(prev => update.id && !prev.includes(update.id) ? [...prev, update.id] : prev);
+                    setIsReplying(false);
+                    setIsExpanded(true);
+                    setIsFullyExpanded(true);
+                  }}
+                  onSubmit={async (text) => {
+                    const newReply = {
+                      id: `${update.roomId}-reaction-reply-${user!.id}-${Date.now()}`,
+                      room_id: update.roomId,
+                      update_id: update.id,
+                      observer_id: user!.id,
+                      observer_name: profile?.name || user!.email?.split('@')[0] || 'Observer',
+                      type: 'reply',
+                      text: text,
+                      created_at: new Date().toISOString(),
+                    };
+                    const { error } = await supabase.from('reactions').insert(newReply);
+                    if (error) throw error;
+                    queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
                   }}
                   initialText={`@${update.authorName.toLowerCase().replace(/\s+/g, '')} `}
                 />
               </motion.div>
             )}
             
-            {expandedComments.includes(update.id) && comments.length > 0 && (
+            {isExpanded && comments.length > 0 && (
               <motion.div
                 key="comments-list"
                 initial={{ opacity: 0, height: 0 }}
@@ -300,7 +285,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                 exit={{ opacity: 0, height: 0 }}
                 className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-4 overflow-hidden"
               >
-                {comments.slice(0, fullyExpandedComments.includes(update.id) ? comments.length : 3).map((reply: any) => (
+                {comments.slice(0, isFullyExpanded ? comments.length : 3).map((reply: any) => (
                   <div key={reply.id} className="flex gap-3">
                     <UserAvatar userId={reply.observerId} name={reply.observerName} avatarUrl={reply.observerAvatar} className="w-8 h-8 rounded-full object-cover shrink-0" />
                     <div className="flex-1 bg-slate-50 rounded-2xl p-3 px-4">
@@ -312,9 +297,9 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                     </div>
                   </div>
                 ))}
-                {comments.length > 3 && !fullyExpandedComments.includes(update.id) && (
+                {comments.length > 3 && !isFullyExpanded && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); setFullyExpandedComments(prev => [...prev, update.id]); }}
+                    onClick={(e) => { e.stopPropagation(); setIsFullyExpanded(true); }}
                     className="text-[13px] font-bold text-primary-500 hover:underline self-start ml-11"
                   >
                     View {comments.length - 3} more comments
@@ -331,24 +316,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   if (prevProps.update.id !== nextProps.update.id) return false;
   if (prevProps.activeTab !== nextProps.activeTab) return false;
   if (prevProps.isFollowing !== nextProps.isFollowing) return false;
-  if (prevProps.deletingUpdateId !== nextProps.deletingUpdateId) return false;
-  if (prevProps.replyingTo !== nextProps.replyingTo) return false;
   if (prevProps.profile?.emailVerified !== nextProps.profile?.emailVerified) return false;
-
-  const prevExp = prevProps.expandedComments.includes(prevProps.update.id);
-  const nextExp = nextProps.expandedComments.includes(nextProps.update.id);
-  if (prevExp !== nextExp) return false;
-
-  const prevFull = prevProps.fullyExpandedComments.includes(prevProps.update.id);
-  const nextFull = nextProps.fullyExpandedComments.includes(nextProps.update.id);
-  if (prevFull !== nextFull) return false;
-
-  const types = ['sharp', 'pushback', 'tellmemore'];
-  for (const type of types) {
-    const key = `${prevProps.update.id}-${type}`;
-    if (prevProps.optimisticToggles[key] !== nextProps.optimisticToggles[key]) return false;
-  }
-
   if (prevProps.update.reactions?.length !== nextProps.update.reactions?.length) return false;
 
   return true;

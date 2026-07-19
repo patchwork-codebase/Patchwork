@@ -14,7 +14,8 @@ interface ReplyComposerProps {
   profile: Profile | null;
   queryClient: QueryClient;
   onCancel: () => void;
-  onSuccess: (replyId: string) => void;
+  onSuccess?: () => void;
+  onSubmit: (text: string) => Promise<void>;
   initialText?: string;
 }
 
@@ -25,10 +26,12 @@ export function ReplyComposer({
   queryClient,
   onCancel,
   onSuccess,
+  onSubmit,
   initialText = ""
 }: ReplyComposerProps) {
   const [replyText, setReplyText] = useState(initialText);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const insertFormatting = (prefix: string, suffix: string = '') => {
@@ -50,67 +53,18 @@ export function ReplyComposer({
   };
 
   const submitReply = async () => {
-    if (!replyText.trim() || !user) return;
+    if (!replyText.trim() || !user || isSubmitting) return;
 
-    const newReply = {
-      id: `${update.roomId}-reaction-reply-${user.id}-${Date.now()}`,
-      roomId: update.roomId,
-      updateId: update.id,
-      observerId: user.id,
-      observerName: profile?.name || user.email?.split('@')[0] || 'Observer',
-      type: 'reply',
-      text: replyText.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    // Optimistic update
-    queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
-      if (!oldData) return oldData;
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page: FeedUpdate[]) =>
-          page.map((u: FeedUpdate) =>
-            u.id === update.id
-              ? { ...u, reactions: [...(u.reactions || []), newReply] }
-              : u
-          )
-        ),
-      };
-    });
-
-    onSuccess(newReply.id);
-
+    setIsSubmitting(true);
     try {
-      const dbPayload = {
-        id: newReply.id,
-        room_id: newReply.roomId,
-        update_id: newReply.updateId,
-        observer_id: newReply.observerId,
-        observer_name: newReply.observerName,
-        type: newReply.type,
-        text: newReply.text,
-        created_at: newReply.createdAt,
-      };
-      
-      const { error } = await supabase.from('reactions').insert(dbPayload);
-      if (error) throw error;
+      await onSubmit(replyText.trim());
+      setReplyText("");
+      onSuccess?.();
     } catch (err: unknown) {
       console.error('Error submitting reply:', err);
-      toast.error('Failed to post reply. It will be removed on refresh.');
-      // Revert optimistic update
-      queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: FeedUpdate[]) =>
-            page.map((u: FeedUpdate) =>
-              u.id === update.id
-                ? { ...u, reactions: (u.reactions || []).filter((r) => r.id !== newReply.id) }
-                : u
-            )
-          ),
-        };
-      });
+      toast.error('Failed to post reply.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,10 +117,14 @@ export function ReplyComposer({
         </button>
         <button
           onClick={submitReply}
-          disabled={!replyText.trim()}
+          disabled={!replyText.trim() || isSubmitting}
           className="px-5 py-2 rounded-full bg-primary-500 hover:bg-[#5b4cdb] text-white text-[13px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Reply
+          {isSubmitting ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            'Reply'
+          )}
         </button>
       </div>
     </div>
