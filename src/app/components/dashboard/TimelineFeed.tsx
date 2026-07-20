@@ -20,7 +20,7 @@ import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { Composer } from "./Composer";
 import { ReplyComposer } from "./ReplyComposer";
 import { SuggestedBuilders } from "./SuggestedBuilders";
-import { ActivityFeedCard } from "./ActivityFeedCard";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -246,28 +246,18 @@ export function TimelineFeed({
 
             return (
               <>
-                {update._isActivity ? (
-                  <ActivityFeedCard
-                    activity={update}
-                    rooms={rooms}
-                    user={user}
-                    profile={profile}
-                    queryClient={queryClient}
-                  />
-                ) : (
-                  <FeedUpdateCard
-                    update={update}
-                    fullRoom={fullRoom}
-                    rooms={rooms}
-                    user={user}
-                    profile={profile}
-                    isFollowing={isFollowing}
-                    activeTab={activeTab}
-                    queryClient={queryClient}
-                    handleFollowRoom={handleFollowRoom}
-                    handleUnfollowRoom={handleUnfollowRoom}
-                  />
-                )}
+                <FeedUpdateCard
+                  update={update}
+                  fullRoom={fullRoom}
+                  rooms={rooms}
+                  user={user}
+                  profile={profile}
+                  isFollowing={isFollowing}
+                  activeTab={activeTab}
+                  queryClient={queryClient}
+                  handleFollowRoom={handleFollowRoom}
+                  handleUnfollowRoom={handleUnfollowRoom}
+                />
               {idx === 1 && (
                 <div className="block lg:hidden mb-6">
                   <SuggestedBuilders currentUserId={user?.id} />

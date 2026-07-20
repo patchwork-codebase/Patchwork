@@ -6,6 +6,7 @@ import { UserAvatar } from "../ui/UserAvatar";
 import { uploadImage } from "../../utils/uploadImage";
 import { supabase } from "../auth/AuthContext";
 import { toast } from "sonner";
+import { FollowersListModal } from "./FollowersListModal";
 
 interface ProfileDetailsViewProps {
   profile: any;
@@ -17,6 +18,8 @@ interface ProfileDetailsViewProps {
 export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount = 0 }: ProfileDetailsViewProps) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'followers' | 'following'>('followers');
 
   const toBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -121,17 +124,29 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
 
         {/* Stats Pill */}
         <div className="flex justify-between items-center bg-slate-50/80 backdrop-blur-sm rounded-full p-2.5 sm:p-3 max-w-sm mx-auto border border-slate-100 mb-8 shadow-sm">
-          <div className="flex flex-col items-center flex-1 relative">
+          <div 
+            className="flex flex-col items-center flex-1 relative cursor-pointer hover:bg-slate-100 rounded-xl transition-colors py-1"
+            onClick={() => {
+              setModalType('followers');
+              setModalOpen(true);
+            }}
+          >
             <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-[16px] sm:text-[18px] mb-0.5"><Users className="w-4 h-4 text-primary-500"/> {profile?.followerCount || 0}</div>
             <span className="text-[11px] sm:text-[12px] text-slate-500 font-medium">Followers</span>
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-8 bg-slate-200" />
           </div>
-          <div className="flex flex-col items-center flex-1 relative">
+          <div 
+            className="flex flex-col items-center flex-1 relative cursor-pointer hover:bg-slate-100 rounded-xl transition-colors py-1"
+            onClick={() => {
+              setModalType('following');
+              setModalOpen(true);
+            }}
+          >
             <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-[16px] sm:text-[18px] mb-0.5"><Users className="w-4 h-4 text-primary-500"/> {profile?.followingCount || 0}</div>
             <span className="text-[11px] sm:text-[12px] text-slate-500 font-medium">Following</span>
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-8 bg-slate-200" />
           </div>
-          <div className="flex flex-col items-center flex-1">
+          <div className="flex flex-col items-center flex-1 py-1">
             <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-[16px] sm:text-[18px] mb-0.5"><Trophy className="w-4 h-4 text-primary-500"/> {roomsCount}</div>
             <span className="text-[11px] sm:text-[12px] text-slate-500 font-medium">Projects</span>
           </div>
@@ -169,6 +184,13 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
             <div className="text-[13px] text-slate-500 font-medium mt-4">Connect and showcase your work</div>
         </div>
       </div>
+
+      <FollowersListModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        userId={profile?.id}
+        type={modalType}
+      />
     </>
   );
 }

@@ -208,38 +208,76 @@ export default function ObserverDashboardView({
             <span className="px-2 py-0.5 rounded-full border border-primary-400/20 bg-primary-400/10 text-primary-400 text-[10px] font-mono font-bold uppercase">
               Rep {profile?.reputation || 0}
             </span>
-            <Link
-              to="/dashboard/explore"
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[11px] sm:text-[13px] font-bold shadow-[0_2px_8px_rgba(108,92,231,0.2)] transition-all focus-ring shrink-0"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline sm:inline">Explore builders</span>
-              <span className="inline sm:hidden xs:hidden">Explore</span>
-            </Link>
+            <div className="ml-auto flex items-center gap-2">
+              <Link
+                to="/dashboard/followed-rooms"
+                className="inline-flex sm:hidden items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-full text-[11px] font-bold shadow-sm transition-all shrink-0"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Following</span>
+              </Link>
+              <Link
+                to="/dashboard/explore"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[11px] sm:text-[13px] font-bold shadow-[0_2px_8px_rgba(108,92,231,0.2)] transition-all focus-ring shrink-0"
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline sm:inline">Explore builders</span>
+                <span className="inline sm:hidden xs:hidden">Explore</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── STATS — horizontal scroll on mobile, 4-col on desktop ── */}
       <div className="flex overflow-x-auto gap-3 sm:gap-4 pb-2 sm:pb-0 mb-5 sm:mb-8 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4">
-        {statsCards.map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-            className="bg-white border border-slate-200 rounded-[14px] p-4 flex items-center gap-3 shadow-sm shrink-0 snap-start w-[160px] sm:w-auto sm:flex-col sm:items-start sm:justify-between sm:min-h-[110px] sm:p-5"
-          >
-            <div className={`w-8 h-8 rounded-xl ${s.bg} ${s.color} flex items-center justify-center shrink-0`}>
-              {s.icon}
-            </div>
-            <div className="min-w-0">
-              <div className={`font-bold text-[22px] sm:text-[28px] tracking-tight leading-none ${s.color}`}>{s.value}</div>
-              <div className="text-[10px] sm:text-[11px] text-slate-500 lowercase mt-0.5 font-mono font-medium leading-tight">{s.label}</div>
-              <div className={`text-[10px] font-bold mt-0.5 hidden sm:block ${s.deltaColor}`}>{s.delta}</div>
-            </div>
-          </motion.div>
-        ))}
+        {statsCards.map((s, i) => {
+          const innerContent = (
+            <>
+              <div className={`w-8 h-8 rounded-xl ${s.bg} ${s.color} flex items-center justify-center shrink-0`}>
+                {s.icon}
+              </div>
+              <div className="min-w-0">
+                <div className={`font-bold text-[22px] sm:text-[28px] tracking-tight leading-none ${s.color}`}>{s.value}</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-500 lowercase mt-0.5 font-mono font-medium leading-tight">{s.label}</div>
+                <div className={`text-[10px] font-bold mt-0.5 hidden sm:block ${s.deltaColor}`}>{s.delta}</div>
+              </div>
+            </>
+          );
+
+          const baseClasses = "bg-white border border-slate-200 rounded-[14px] p-4 flex items-center gap-3 shadow-sm shrink-0 snap-start w-[160px] sm:w-auto sm:flex-col sm:items-start sm:justify-between sm:min-h-[110px] sm:p-5";
+          
+          if (s.label === "Followed rooms") {
+            return (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="shrink-0 snap-start w-[160px] sm:w-auto"
+              >
+                <Link 
+                  to="/dashboard/followed-rooms" 
+                  className={`${baseClasses} h-full hover:border-primary-400 hover:shadow-md transition-all cursor-pointer`}
+                >
+                  {innerContent}
+                </Link>
+              </motion.div>
+            );
+          }
+
+          return (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              className={baseClasses}
+            >
+              {innerContent}
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* ── MAIN GRID ── */}
@@ -335,12 +373,12 @@ export default function ObserverDashboardView({
                           <UserAvatar userId={upd.authorId} name={upd.authorName} avatarUrl={upd.authorAvatar} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-extrabold text-[14px] text-slate-900 flex items-center gap-1">
-                              {upd.authorName}
-                              <VerifiedTick isVerified={!!upd.authorIsVerifiedExpert} className="w-3.5 h-3.5" />
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                            <span className="font-extrabold text-[14px] sm:text-[15px] text-slate-900 flex items-center gap-1.5 min-w-0 max-w-full">
+                              <span className="truncate block leading-tight">{upd.authorName}</span>
+                              <VerifiedTick isVerified={!!upd.authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />
                             </span>
-                            <span className="text-[12px] text-slate-500 font-medium truncate">
+                            <span className="text-[12px] text-slate-500 font-medium truncate leading-tight">
                               in {upd.rooms?.title || "Build Room"}
                             </span>
                           </div>
@@ -414,12 +452,14 @@ export default function ObserverDashboardView({
                         );
                       })()}
 
-                      <Link
-                        to={`/dashboard/room/${upd.roomId}`}
-                        className="ml-auto text-[12px] font-bold text-primary-400 hover:underline flex items-center gap-1"
-                      >
-                        View room <ArrowUpRight className="w-3.5 h-3.5" />
-                      </Link>
+                      <div className="flex items-center w-full mt-2 sm:mt-0 sm:w-auto sm:ml-auto justify-end">
+                        <Link
+                          to={`/dashboard/room/${upd.roomId}`}
+                          className="text-[12px] font-bold text-primary-500 hover:text-primary-600 transition-colors flex items-center gap-1 shrink-0 bg-primary-500/5 hover:bg-primary-500/10 px-3 py-1.5 rounded-full"
+                        >
+                          View room <ArrowUpRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
                     </div>
                   </motion.div>
                 );

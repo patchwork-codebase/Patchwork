@@ -427,7 +427,7 @@ export function useObservedRooms(userId?: string) {
             builder_id, builder_name, tags, cover_image, primary_link,
             project_stage, primary_goal, observer_count, update_count,
             created_at, updated_at,
-            users!builder_id(is_verified_expert, organization_name, organization_logo_url),
+            users!builder_id(id, avatar, is_verified_expert, organization_name, organization_logo_url),
             room_observers(observer_id),
             updates(content, created_at)
           )

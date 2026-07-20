@@ -44,8 +44,8 @@ const RouteErrorBoundary = () => {
     <div className="min-h-screen bg-[#0E0C15] flex items-center justify-center p-4">
       <div className="bg-[#1C1A24] border border-white/[0.08] rounded-2xl p-8 max-w-md w-full text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
         <h1 className="text-2xl font-bold text-white mb-3">Something went wrong</h1>
-        <p className="text-slate-400 text-[15px] mb-8 leading-relaxed">
-          {error?.message || "We encountered an unexpected error while trying to load this screen."}
+        <p className="text-slate-400 text-[15px] mb-8 leading-relaxed break-words whitespace-pre-wrap">
+          {error?.message || (typeof error === 'string' ? error : error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : null) || "We encountered an unexpected error while trying to load this screen."}
         </p>
         <button
           onClick={() => {
@@ -148,6 +148,7 @@ export const router = createBrowserRouter([
           { path: "create", lazy: () => import("./components/room/CreateRoom").then(m => ({ Component: m.default })) },
           { path: "room/:id", lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })) },
           { path: "rooms", lazy: () => import("./components/dashboard/MyRoomsPage").then(m => ({ Component: m.default })) },
+          { path: "followed-rooms", lazy: () => import("./components/dashboard/FollowedRoomsPage").then(m => ({ Component: m.default })) },
           { path: "profile/:id", lazy: () => import("./components/profile/UserProfile").then(m => ({ Component: m.default })) },
           { path: "observer", lazy: () => import("./components/observer/ObserverHub").then(m => ({ Component: m.default })) },
           { path: "explore", lazy: () => import("./components/explore/ExplorePage").then(m => ({ Component: m.default })) },

@@ -173,16 +173,36 @@ export default function AchievementsPage() {
               )}
               
               {/* Locked Milestones */}
-              {lockedMilestones.map((badge) => (
-                <div key={`locked-${badge.id}`} className="bg-white/50 backdrop-blur-md border border-white shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 opacity-60 grayscale transition-all">
-                  <HexagonSVG completed={false} isUpcoming={true} />
+              {lockedMilestones.map((badge) => {
+                const progressPercent = Math.min(100, Math.round((currentPoints / (badge.points_required || 1)) * 100));
+                
+                return (
+                <div key={`locked-${badge.id}`} className="bg-white/60 backdrop-blur-md border border-slate-200/60 shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:bg-white/80">
+                  <div className="opacity-50 grayscale shrink-0">
+                    <HexagonSVG completed={false} isUpcoming={true} />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-slate-900 text-[15px]">{badge.title}</h3>
-                    <p className="text-slate-500 text-[13px] mt-0.5 mb-2">{badge.description}</p>
-                    <span className="text-[11px] font-bold text-slate-500 bg-slate-200 px-2.5 py-1 rounded-md inline-block">Locked</span>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <h3 className="font-bold text-slate-900 text-[15px]">{badge.title}</h3>
+                      <span className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md inline-flex items-center gap-1">
+                        <Lock className="w-3 h-3" /> Locked
+                      </span>
+                    </div>
+                    <p className="text-slate-500 text-[13px] mb-3">{badge.description}</p>
+                    
+                    <div className="w-full bg-slate-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                      <div className="bg-blue-400 h-2 rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
+                    </div>
+                    <div className="flex justify-between items-center text-[11.5px]">
+                      <span className="text-slate-500 font-medium">Progress</span>
+                      <span className="text-slate-700 font-bold">{currentPoints} / {badge.points_required} pts</span>
+                    </div>
+                    <p className="text-[11.5px] text-slate-400 mt-2 italic border-t border-slate-100 pt-2">
+                      💡 How to earn: Build consistently, attend sessions, and get endorsed.
+                    </p>
                   </div>
                 </div>
-              ))}
+              )})}
 
               {nextLevel && (
                 <div className="bg-white/50 backdrop-blur-md border border-white shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 opacity-70 grayscale transition-all">
@@ -249,20 +269,36 @@ export default function AchievementsPage() {
               )}
 
               {/* Locked Recognitions */}
-              {lockedRecognitions.map((badge) => (
-                <div key={`locked-${badge.id}`} className="bg-white/95 backdrop-blur-md rounded-[20px] p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-5 transition-all">
-                  <div className="shrink-0 flex items-center justify-center mx-auto sm:mx-0 opacity-95">
+              {lockedRecognitions.map((badge) => {
+                const progressPercent = Math.min(100, Math.round((currentPoints / (badge.points_required || 1)) * 100));
+
+                return (
+                <div key={`locked-${badge.id}`} className="bg-white/80 backdrop-blur-md rounded-[20px] p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-5 transition-all hover:shadow-md hover:bg-white">
+                  <div className="shrink-0 flex items-center justify-center mx-auto sm:mx-0 opacity-50 grayscale">
                      <RecognitionBadgeSVG title={badge.title} />
                   </div>
                   <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-100 sm:pl-5">
-                     <h3 className="text-[17px] font-bold text-slate-900 mb-0.5 tracking-tight">{badge.title}</h3>
-                     <p className="text-slate-500 text-[13.5px] mb-3 leading-relaxed">{badge.description}</p>
-                     <div className="inline-flex items-center justify-center gap-1.5 bg-slate-100/80 text-slate-500 px-3 py-1 rounded-full text-[12px] font-bold">
-                       <Lock className="w-3 h-3" /> Locked
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2">
+                       <h3 className="text-[17px] font-bold text-slate-900 tracking-tight">{badge.title}</h3>
+                       <div className="inline-flex items-center justify-center gap-1.5 bg-slate-100/80 text-slate-500 px-3 py-1 rounded-full text-[12px] font-bold">
+                         <Lock className="w-3 h-3" /> Locked
+                       </div>
                      </div>
+                     <p className="text-slate-500 text-[13.5px] mb-3 leading-relaxed">{badge.description}</p>
+                     
+                     <div className="w-full bg-slate-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                       <div className="bg-teal-400 h-2 rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
+                     </div>
+                     <div className="flex justify-between items-center text-[11.5px] mb-2">
+                       <span className="text-slate-500 font-medium">Progress</span>
+                       <span className="text-slate-700 font-bold">{currentPoints} / {badge.points_required} pts</span>
+                     </div>
+                     <p className="text-[11.5px] text-slate-400 mt-2 italic border-t border-slate-100 pt-2 text-left">
+                       💡 How to earn: Stand out in the community, share knowledge, and lead rooms.
+                     </p>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
             
           </div>

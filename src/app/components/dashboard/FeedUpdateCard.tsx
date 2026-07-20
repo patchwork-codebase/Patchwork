@@ -9,10 +9,10 @@ import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
-import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
 import { SmartImage } from "../ui/SmartImage";
 import { ReplyComposer } from "./ReplyComposer";
 import { ReactionGroup } from "./ReactionGroup";
+import { ThreadedReply } from "./ThreadedReply";
 import { supabase } from "../auth/AuthContext";
 import type { Room, Profile } from "../../types";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
@@ -95,10 +95,18 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
   const tStyle = tagStyle(tag);
   const builderName = update.authorName;
-  // updateAvatarUrl removed
   const timeString = timeAgo(update.createdAt);
   const roomTitle = fullRoom?.title || update.rooms?.title || 'Unknown Room';
-  const comments = update.reactions?.filter((r: any) => r.type === 'reply') || [];
+
+  const allReactions = update.reactions || [];
+  const replies = allReactions
+    .filter((r: any) => r.type === 'reply')
+    .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const emojiReactions = allReactions.filter((r: any) => r.type !== 'reply');
+
+  const [showAllReplies, setShowAllReplies] = React.useState(false);
+  const visibleReplies = showAllReplies ? replies : replies.slice(-1);
+
   const isLaunch = fullRoom?.updateCount === 1;
 
   return (
@@ -215,22 +223,20 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           </div>
 
           <div className="mt-4">
-            {/* Stacked Avatars above buttons - only if there are reactions */}
-            {update.reactions && update.reactions.length > 0 && (
+            {emojiReactions.length > 0 && (
               <div className="flex items-center gap-1.5 mb-2">
                 <div className="flex -space-x-1.5">
-                  {Array.from(new Set(update.reactions.map((r: any) => r.observerId).filter(Boolean)))
+                  {Array.from(new Set(emojiReactions.map((r: any) => r.observerId).filter(Boolean)))
                     .slice(0, 3)
                     .map((observerId: any) => (
                       <UserAvatar key={observerId} userId={observerId} className="w-5 h-5 rounded-full ring-2 ring-white bg-slate-100 object-cover" />
                     ))
                   }
                 </div>
-                <span className="text-[12px] text-slate-400">{update.reactions.length} reaction{update.reactions.length !== 1 ? 's' : ''}</span>
+                <span className="text-[12px] text-slate-400">{emojiReactions.length} reaction{emojiReactions.length !== 1 ? 's' : ''}</span>
               </div>
             )}
 
-            {/* Reaction Buttons - single row, no wrap */}
             <ReactionGroup 
               targetUpdate={update}
               onReplyClick={(e) => handleReplyClick(e)}
@@ -252,15 +258,8 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                   profile={profile}
                   queryClient={queryClient}
                   onCancel={() => setIsReplying(false)}
-                  onSuccess={() => {
-                    setIsReplying(false);
-                    setIsExpanded(true);
-                    setIsFullyExpanded(true);
-                  }}
                   onSubmit={async (text) => {
                     const newReply = {
-                      id: `${update.roomId}-reaction-reply-${user!.id}-${Date.now()}`,
-                      room_id: update.roomId,
                       update_id: update.id,
                       observer_id: user!.id,
                       observer_name: profile?.name || user!.email?.split('@')[0] || 'Observer',
@@ -271,43 +270,39 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                     const { error } = await supabase.from('reactions').insert(newReply);
                     if (error) throw error;
                     queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
+                    queryClient.invalidateQueries({ queryKey: ['room-reactions', update.roomId] });
+                    setIsReplying(false);
+                    setShowAllReplies(true);
                   }}
                   initialText={`@${update.authorName.toLowerCase().replace(/\s+/g, '')} `}
                 />
               </motion.div>
             )}
-            
-            {isExpanded && comments.length > 0 && (
-              <motion.div
-                key="comments-list"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-4 overflow-hidden"
-              >
-                {comments.slice(0, isFullyExpanded ? comments.length : 3).map((reply: any) => (
-                  <div key={reply.id} className="flex gap-3">
-                    <UserAvatar userId={reply.observerId} name={reply.observerName} avatarUrl={reply.observerAvatar} className="w-8 h-8 rounded-full object-cover shrink-0" />
-                    <div className="flex-1 bg-slate-50 rounded-2xl p-3 px-4">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-bold text-[13px] text-slate-900">{reply.observerName}</span>
-                        <span className="text-[11px] text-slate-400">{timeAgo(reply.createdAt)}</span>
-                      </div>
-                      <p className="text-[14px] text-slate-700 leading-relaxed">{reply.text || reply.content}</p>
-                    </div>
-                  </div>
-                ))}
-                {comments.length > 3 && !isFullyExpanded && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setIsFullyExpanded(true); }}
-                    className="text-[13px] font-bold text-primary-500 hover:underline self-start ml-11"
-                  >
-                    View {comments.length - 3} more comments
-                  </button>
-                )}
-              </motion.div>
-            )}
           </AnimatePresence>
+
+          {/* Threaded Replies Section */}
+          {replies.length > 0 && (
+            <div className="mt-3 relative pl-2">
+              <div className="absolute left-6 top-0 bottom-6 w-px bg-slate-200/60 -z-10" />
+              
+              {replies.length > 1 && !showAllReplies && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAllReplies(true);
+                  }}
+                  className="relative ml-2 flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-primary-600 transition-colors py-2 group"
+                >
+                  <div className="w-4 h-px bg-slate-200 group-hover:bg-primary-200 transition-colors" />
+                  View {replies.length - 1} earlier repl{replies.length - 1 === 1 ? 'y' : 'ies'}...
+                </button>
+              )}
+
+              {visibleReplies.map((reply: any) => (
+                <ThreadedReply key={reply.id} reply={reply} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

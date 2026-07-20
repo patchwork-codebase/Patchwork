@@ -31,8 +31,6 @@ export interface FeedUpdate {
     text?: string | null;
     createdAt: string;
   }[];
-  _isActivity?: boolean;
-  parentUpdate?: Omit<FeedUpdate, 'reactions' | 'parentUpdate'>;
 }
 
 import { normalizeRow } from '../utils/helpers';
@@ -59,38 +57,7 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
 
       if (error) throw error;
 
-      // Also fetch recent replies to surface as top-level Activity items.
-      const { data: repliesRaw } = await supabase
-        .from('reactions')
-        .select('*, users!observer_id(avatar)')
-        .eq('type', 'reply')
-        .order('created_at', { ascending: sortOrder === 'asc' })
-        .range(from, to);
 
-      const replies = (repliesRaw || []).map((r: any) => {
-        if (r.users?.avatar) registerAvatarUrl(r.observer_id, r.users.avatar);
-        return normalizeRow<Reaction & { text: string }>(r as Record<string, unknown>);
-      });
-
-      // Batch-fetch the parent updates for those replies
-      const parentUpdateIds = [...new Set(replies.map(r => r.updateId).filter(Boolean))];
-      let parentUpdatesMap: Record<string, FeedUpdate> = {};
-
-      if (parentUpdateIds.length > 0) {
-        const { data: parentRows } = await supabase
-          .from('updates')
-          .select('*, rooms(title, tags)')
-          .in('id', parentUpdateIds);
-
-        (parentRows || []).forEach(row => {
-          const pu = normalizeRow<FeedUpdate>(row as Record<string, unknown>);
-          pu.authorAvatar = getAvatarUrl(pu.authorName || pu.authorId);
-          pu.authorIsVerifiedExpert = false;
-          pu.authorOrgName = null;
-          pu.authorOrgLogo = null;
-          parentUpdatesMap[pu.id] = pu;
-        });
-      }
 
       const standardUpdates = (data || []).map(row => {
         const normalized = normalizeRow<FeedUpdate>(row as Record<string, unknown>);
@@ -104,10 +71,9 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
         return normalized;
       });
 
-      // Fetch reactions for all standard updates and replies so isActive renders correctly
+      // Fetch reactions for all standard updates so isActive renders correctly and replies can be threaded
       const updateIds = standardUpdates.map(u => u.id);
-      const replyIds = replies.map(r => r.id);
-      const allUpdateIds = [...updateIds, ...replyIds, ...parentUpdateIds];
+      const allUpdateIds = [...updateIds];
 
       if (allUpdateIds.length > 0) {
         const { data: rData } = await supabase
@@ -125,45 +91,11 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
         standardUpdates.forEach(upd => {
           upd.reactions = reactionsData.filter(r => r.updateId === upd.id) as FeedUpdate['reactions'];
         });
-
-        replies.forEach(reply => {
-          (reply as any).reactions = reactionsData.filter(r => r.updateId === reply.id);
-        });
-
-        Object.values(parentUpdatesMap).forEach(pu => {
-          pu.reactions = reactionsData.filter(r => r.updateId === pu.id) as FeedUpdate['reactions'];
-        });
       }
 
-      const activityUpdates = replies.map(reply => {
-        const parentUpdate = parentUpdatesMap[reply.updateId] || null;
-
-        return {
-          id: reply.id,
-          roomId: reply.roomId,
-          authorId: reply.observerId,
-          authorName: reply.observerName,
-          authorAvatar: getAvatarUrl(reply.observerName || reply.observerId),
-          content: reply.text || '',
-          createdAt: reply.createdAt,
-          _isActivity: true,
-          parentUpdate: parentUpdate,
-          reactions: (reply as any).reactions || [],
-        } as FeedUpdate;
-      });
-
-      // Merge and sort
-      const combined = [...standardUpdates, ...activityUpdates];
-      combined.sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-      });
-
-      return combined;
+      return standardUpdates;
     },
     getNextPageParam: (lastPage, allPages) => {
-      // Because we merge two sources, the page size might be up to 20.
       return lastPage.length > 0 ? allPages.length : undefined;
     },
   });
