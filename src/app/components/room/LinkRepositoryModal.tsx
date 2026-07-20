@@ -124,7 +124,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
           </button>
         )}
       </DialogTrigger>
-      <DialogContent className="w-[calc(100vw-32px)] sm:max-w-[500px] bg-[#0A0910] border border-white/[0.08] p-4 sm:p-6 shadow-2xl">
+      <DialogContent className="w-[calc(100vw-32px)] sm:max-w-[500px] bg-ink border border-white/[0.08] p-4 sm:p-6 shadow-2xl">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-xl font-extrabold text-white font-display flex items-center gap-2">
             <Github className="w-5 h-5" /> Link GitHub Repository
@@ -140,7 +140,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
             <p className="text-[14px] text-slate-300 mb-4">You need to connect your GitHub account first.</p>
             <button 
               onClick={() => { setOpen(false); /* route to profile or trigger auth */ }}
-              className="px-4 py-2 bg-white text-[#0A0910] font-bold text-[13px] rounded-full hover:bg-slate-200 transition-colors"
+              className="px-4 py-2 bg-white text-ink font-bold text-[13px] rounded-full hover:bg-slate-200 transition-colors"
             >
               Go to Integrations
             </button>

@@ -31,13 +31,10 @@ import {
   X
 } from "lucide-react";
 
-import { LandingHero } from "./LandingHero";
-import { LandingFeatures } from "./LandingFeatures";
-import { LandingWorkflow } from "./LandingWorkflow";
-import { LandingShowcase } from "./LandingShowcase";
-import { LandingCalculator } from "./LandingCalculator";
-import { LandingFAQ } from "./LandingFAQ";
-import { LandingCTA } from "./LandingCTA";
+import { LandingHeroRedux } from "./LandingHeroRedux";
+import { LandingScrollTale } from "./LandingScrollTale";
+import { LandingNetworkShowcase } from "./LandingNetworkShowcase";
+import { LandingInteractiveCTA } from "./LandingInteractiveCTA";
 import { LandingFooter } from "./LandingFooter";
 import { domainOptions, detailedRooms, showcaseBuilders, workflowSteps, faqs } from "../../constants/landingData";
 
@@ -91,9 +88,7 @@ export default function LandingPage() {
 
   const [selectedWorkflowStep, setSelectedWorkflowStep] = useState(1);
 
-  const [calcUpdates, setCalcUpdates] = useState(3);
-  const [calcReactions, setCalcReactions] = useState(15);
-  const [calcObservers, setCalcObservers] = useState(10);
+
 
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
@@ -194,13 +189,7 @@ export default function LandingPage() {
     ? showcaseBuilders
     : showcaseBuilders.filter(b => b.domain === selectedShowcaseDomain);
 
-  // Reputation Calculator Math
-  const calculateReputation = () => {
-    const updatePoints = calcUpdates * 10;
-    const reactionPoints = calcReactions * 5;
-    const observerPoints = calcObservers * 15;
-    return updatePoints + reactionPoints + observerPoints;
-  };
+
 
   // Handle Newsletter Submission
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -217,17 +206,17 @@ export default function LandingPage() {
   const currentRoom = detailedRooms.find(r => r.id === activeRoomId) || detailedRooms[0];
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans bg-[#FAFAF9] antialiased selection:bg-primary-500/30 selection:text-white">
+    <div className="min-h-screen text-slate-900 font-sans bg-gradient-to-br from-white via-sage-50 to-emerald-50 antialiased selection:bg-primary-500/30 selection:text-white">
       <AuthRedirectGuard />
       {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-[#FAFAF9]/95 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-6 sm:py-4">
           <div
             onClick={() => {
               showLanding();
               setMobileMenuOpen(false);
             }}
-            className="flex items-center gap-3 text-base sm:text-lg font-bold tracking-tight text-slate-900 cursor-pointer group"
+            className="flex items-center gap-3 text-base sm:text-lg font-bold tracking-tight text-white cursor-pointer group"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary-500 to-primary-400 shadow-[0_10px_30px_rgba(108,92,231,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -236,7 +225,7 @@ export default function LandingPage() {
                 <path d="M9 6l3-3 3 3" />
               </svg>
             </div>
-            <span className="flex items-center gap-2 font-extrabold tracking-[-0.03em] text-base sm:text-xl text-slate-900 group">
+            <span className="flex items-center gap-2 font-extrabold tracking-[-0.03em] text-base sm:text-xl text-white group">
               <span>patch<span className="inline-block text-primary-500 group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
               <span className="rounded bg-primary-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-400">Beta</span>
             </span>
@@ -245,25 +234,25 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6">
             <button
               onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-700 hover:text-slate-900 transition"
+              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
             >
               Why Patchwork
             </button>
             <button
               onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-700 hover:text-slate-900 transition"
+              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
             >
               How it works
             </button>
             <button
               onClick={() => document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-700 hover:text-slate-900 transition"
+              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
             >
               Showcase
             </button>
             <button
               onClick={() => document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-700 hover:text-slate-900 transition"
+              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
             >
               FAQ
             </button>
@@ -275,7 +264,7 @@ export default function LandingPage() {
                 navigate("/login");
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 transition"
+              className="hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition"
             >
               Sign In
             </button>
@@ -284,14 +273,14 @@ export default function LandingPage() {
                 showOnboarding();
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-primary-500 to-primary-400 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_30px_rgba(108,92,231,0.25)] transition hover:opacity-95 active:scale-[0.98]"
+              className="hidden sm:inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#0A0A0A] shadow-md transition hover:bg-slate-200 active:scale-[0.98]"
             >
               Join as a builder
             </button>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(open => !open)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition sm:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition sm:hidden"
               aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
             >
               {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
@@ -300,7 +289,7 @@ export default function LandingPage() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-slate-100 bg-white px-4 pb-5 pt-4">
+          <div className="sm:hidden border-t border-white/10 bg-[#0A0A0A] px-4 pb-5 pt-4">
             <div className="space-y-2.5">
               {/* Primary CTA */}
               <button
@@ -308,7 +297,7 @@ export default function LandingPage() {
                   showOnboarding();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full rounded-2xl bg-gradient-to-r from-primary-500 to-primary-400 px-5 py-3.5 text-sm font-bold text-white transition hover:opacity-95 active:scale-[0.98]"
+                className="w-full rounded-2xl bg-white px-5 py-3.5 text-sm font-bold text-[#0A0A0A] transition hover:bg-slate-200 active:scale-[0.98]"
               >
                 Join as a builder
               </button>
@@ -317,14 +306,14 @@ export default function LandingPage() {
                   navigate("/login");
                   setMobileMenuOpen(false);
                 }}
-                className="w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                className="w-full rounded-2xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
               >
                 Sign In
               </button>
 
               {/* Nav links — clean, no box */}
               <div className="pt-1">
-                <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Explore</p>
+                <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">Explore</p>
                 <div className="space-y-0.5">
                   <button
                     onClick={() => {
@@ -377,59 +366,17 @@ export default function LandingPage() {
       <main className="min-h-screen">
         {screen === "landing" && (
           <>
-            {/* ─── Hero / Main Landing Screen ──────────────────────────── */}
-            <LandingHero 
-              showOnboarding={showOnboarding}
-              showDashboard={showDashboard}
-              detailedRooms={detailedRooms}
-              activeRoomId={activeRoomId}
-              setActiveRoomId={setActiveRoomId}
-              setActiveUpdatesIndex={setActiveUpdatesIndex}
-              currentRoom={currentRoom}
-              userHeroReactions={userHeroReactions}
-              getHeroReactionCount={getHeroReactionCount}
-              handleHeroReaction={handleHeroReaction}
-            />
+            {/* ─── Chapter 1: The Hook (Void -> Light) ──────────────────────────── */}
+            <LandingHeroRedux onSignup={showOnboarding} />
 
-            {/* ─── Features Section (Why Patchwork) ──────────────────────────── */}
-            <LandingFeatures />
+            {/* ─── Chapter 2: The Journey (Scroll-Telling) ──────────────────────────── */}
+            <LandingScrollTale />
 
-            {/* ─── Interactive Workflow Timeline (How it Works) ─────────────── */}
-            <LandingWorkflow 
-              selectedWorkflowStep={selectedWorkflowStep}
-              setSelectedWorkflowStep={setSelectedWorkflowStep}
-            />
+            {/* ─── Chapter 3: The Network (Interactive Honeycomb) ──────────────────────── */}
+            <LandingNetworkShowcase />
 
-            {/* ─── Live Builders Feed Showcase Section ──────────────────────── */}
-            <LandingShowcase 
-              domainOptions={domainOptions}
-              selectedShowcaseDomain={selectedShowcaseDomain}
-              setSelectedShowcaseDomain={setSelectedShowcaseDomain}
-              filteredShowcaseBuilders={filteredShowcaseBuilders}
-              getShowcaseReactionCount={getShowcaseReactionCount}
-              handleShowcaseReaction={handleShowcaseReaction}
-              userShowcaseReactions={userShowcaseReactions}
-            />
-
-            {/* ─── Reputation Calculator (Gamification) ─────────────────────── */}
-            <LandingCalculator 
-              calcUpdates={calcUpdates}
-              setCalcUpdates={setCalcUpdates}
-              calcReactions={calcReactions}
-              setCalcReactions={setCalcReactions}
-              calcObservers={calcObservers}
-              setCalcObservers={setCalcObservers}
-              calculateReputation={calculateReputation}
-            />
-
-            {/* ─── FAQ Section ────────────────────────────────────────────────── */}
-            <LandingFAQ 
-              activeFaq={activeFaq}
-              setActiveFaq={setActiveFaq}
-            />
-
-            {/* ─── Call To Action (Bottom) ────────────────────────────────────── */}
-            <LandingCTA showOnboarding={showOnboarding} />
+            {/* ─── Chapter 4: The Climax (Expanding Orb CTA) ────────────────────────────────────── */}
+            <LandingInteractiveCTA onSignup={showOnboarding} />
 
             {/* ─── Premium Footer ──────────────────────────────────────────────── */}
             <LandingFooter 

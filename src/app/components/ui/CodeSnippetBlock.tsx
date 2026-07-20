@@ -1,10 +1,41 @@
 import React, { useState, Suspense } from 'react';
 import { Copy, Check } from 'lucide-react';
+// @ts-ignore
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SyntaxHighlighter = React.lazy(() => 
-  import('react-syntax-highlighter').then(m => ({ default: m.Prism }))
-);
+  Promise.all([
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/prism-light'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/javascript'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/typescript'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/jsx'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/tsx'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/css'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/python'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/json'),
+    // @ts-ignore
+    import('react-syntax-highlighter/dist/esm/languages/prism/bash')
+  ]).then(([PrismLight, js, ts, jsx, tsx, css, py, json, bash]) => {
+    const Prism = PrismLight.default as any;
+    Prism.registerLanguage('javascript', js.default);
+    Prism.registerLanguage('typescript', ts.default);
+    Prism.registerLanguage('jsx', jsx.default);
+    Prism.registerLanguage('tsx', tsx.default);
+    Prism.registerLanguage('css', css.default);
+    Prism.registerLanguage('python', py.default);
+    Prism.registerLanguage('json', json.default);
+    Prism.registerLanguage('bash', bash.default);
+    return { default: Prism };
+  })
+) as any;
 
 export function CodeSnippetBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
@@ -18,7 +49,7 @@ export function CodeSnippetBlock({ code }: { code: string }) {
   if (!code) return null;
 
   return (
-    <div className="mb-6 relative z-10 rounded-xl overflow-hidden border border-white/[0.08] bg-[#0A0910] shadow-xl">
+    <div className="mb-6 relative z-10 rounded-xl overflow-hidden border border-white/[0.08] bg-ink shadow-xl">
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.02]">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />

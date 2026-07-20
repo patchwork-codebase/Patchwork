@@ -4,6 +4,8 @@ import { useGithubAccount } from '../../hooks/useGithub';
 import { useLinkedinAccount } from '../../hooks/useLinkedin';
 import { useLinearAccount } from '../../hooks/useLinear';
 import { useNotionAccount } from '../../hooks/useNotion';
+import { useClickupAccount } from '../../hooks/useClickup';
+import { useJiraAccount } from '../../hooks/useJira';
 import { Check, Loader2, ExternalLink, Unlink } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -156,8 +158,16 @@ export default function Integrations({ userId }: { userId: string }) {
   const { data: linkedinAccount, isLoading: linkedinLoading, refetch: refetchLinkedin } = useLinkedinAccount(userId);
   const { data: linearAccount, isLoading: linearLoading, refetch: refetchLinear } = useLinearAccount(userId);
   const { data: notionAccount, isLoading: notionLoading, refetch: refetchNotion } = useNotionAccount(userId);
+  const { data: clickupAccount, isLoading: clickupLoading, refetch: refetchClickup } = useClickupAccount(userId);
+  const { data: jiraAccount, isLoading: jiraLoading, refetch: refetchJira } = useJiraAccount(userId);
+  
   const [connecting, setConnecting] = useState<string | null>(null);
   const [linearPAT, setLinearPAT] = useState('');
+  const [notionSecret, setNotionSecret] = useState('');
+  const [clickupPAT, setClickupPAT] = useState('');
+  const [jiraPAT, setJiraPAT] = useState('');
+  const [jiraDomain, setJiraDomain] = useState('');
+  const [jiraEmail, setJiraEmail] = useState('');
   const hasProcessedOAuth = useRef(false);
 
   useEffect(() => {
@@ -259,7 +269,7 @@ export default function Integrations({ userId }: { userId: string }) {
     }
   };
 
-  const handleDisconnect = async (provider: 'github' | 'linkedin' | 'linear' | 'notion') => {
+  const handleDisconnect = async (provider: 'github' | 'linkedin' | 'linear' | 'notion' | 'clickup' | 'jira') => {
     setConnecting(provider);
     try {
       const tableMap: Record<string, string> = {
@@ -267,6 +277,8 @@ export default function Integrations({ userId }: { userId: string }) {
         linkedin: 'linkedin_accounts',
         linear: 'linear_accounts',
         notion: 'notion_accounts',
+        clickup: 'clickup_accounts',
+        jira: 'jira_accounts',
       };
       const { error, data } = await supabase.from(tableMap[provider]).delete().eq('user_id', userId).select();
       if (error) throw error;
@@ -277,6 +289,8 @@ export default function Integrations({ userId }: { userId: string }) {
       else if (provider === 'linkedin') refetchLinkedin();
       else if (provider === 'linear') refetchLinear();
       else if (provider === 'notion') refetchNotion();
+      else if (provider === 'clickup') refetchClickup();
+      else if (provider === 'jira') refetchJira();
     } catch (err: unknown) {
       toast.error(`Failed to disconnect: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
@@ -303,9 +317,74 @@ export default function Integrations({ userId }: { userId: string }) {
     }
   };
 
-  if (githubLoading || linkedinLoading || linearLoading || notionLoading) return null;
+  const handleSaveNotion = async () => {
+    if (!notionSecret.trim()) return;
+    setConnecting('notion');
+    try {
+      const { error } = await supabase.from('notion_accounts').upsert({
+        user_id: userId,
+        access_token: notionSecret.trim(),
+        workspace_name: 'Notion Workspace',
+      }, { onConflict: 'user_id' });
+      if (error) throw error;
+      toast.success('Notion integration saved!');
+      refetchNotion();
+      setNotionSecret('');
+    } catch (err: unknown) {
+      toast.error(`Failed to save: ${(err instanceof Error ? err.message : String(err))}`);
+    } finally {
+      setConnecting(null);
+    }
+  };
 
-  const connectedCount = [githubAccount, linkedinAccount, linearAccount, notionAccount].filter(Boolean).length;
+  const handleSaveClickup = async () => {
+    if (!clickupPAT.trim()) return;
+    setConnecting('clickup');
+    try {
+      const { error } = await supabase.from('clickup_accounts').upsert({
+        user_id: userId,
+        access_token: clickupPAT.trim(),
+      }, { onConflict: 'user_id' });
+      if (error) throw error;
+      toast.success('ClickUp connected!');
+      refetchClickup();
+      setClickupPAT('');
+    } catch (err: unknown) {
+      toast.error(`Failed to save: ${(err instanceof Error ? err.message : String(err))}`);
+    } finally {
+      setConnecting(null);
+    }
+  };
+
+  const handleSaveJira = async () => {
+    if (!jiraPAT.trim() || !jiraDomain.trim() || !jiraEmail.trim()) {
+      toast.error('Please fill in all Jira fields');
+      return;
+    }
+    setConnecting('jira');
+    try {
+      const { error } = await supabase.from('jira_accounts').upsert({
+        user_id: userId,
+        access_token: jiraPAT.trim(),
+        jira_domain: jiraDomain.trim(),
+        email: jiraEmail.trim(),
+      }, { onConflict: 'user_id' });
+      if (error) throw error;
+      toast.success('Jira connected!');
+      refetchJira();
+      setJiraPAT('');
+      setJiraDomain('');
+      setJiraEmail('');
+    } catch (err: unknown) {
+      toast.error(`Failed to save: ${(err instanceof Error ? err.message : String(err))}`);
+    } finally {
+      setConnecting(null);
+    }
+  };
+
+  if (githubLoading || linkedinLoading || linearLoading || notionLoading || clickupLoading || jiraLoading) return null;
+
+  const connectedCount = [githubAccount, linkedinAccount, linearAccount, notionAccount, clickupAccount, jiraAccount].filter(Boolean).length;
 
   return (
     <div className="mb-10 bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
@@ -318,7 +397,7 @@ export default function Integrations({ userId }: { userId: string }) {
         </div>
         {/* Progress bar */}
         <div className="flex items-center gap-1.5">
-          {[0, 1, 2, 3].map(i => (
+          {[0, 1, 2, 3, 4, 5].map(i => (
             <div
               key={i}
               className="h-1.5 w-6 rounded-full transition-all duration-300"
@@ -411,7 +490,7 @@ export default function Integrations({ userId }: { userId: string }) {
           connectedLabel={notionAccount?.workspace_name || 'Workspace connected'}
           isConnected={!!notionAccount}
           isLoading={connecting === 'notion'}
-          onConnect={() => handleConnectOAuth('notion')}
+          onConnect={() => {}}
           onDisconnect={() => handleDisconnect('notion')}
           accentColor="#6B6B6B"
           bgColor="#1a1a1a"
@@ -420,7 +499,117 @@ export default function Integrations({ userId }: { userId: string }) {
               <path d="M4 4h16v2H4zM4 11h10v2H4zM4 18h10v2H4zM16 11l4 3.5L16 18v-7z"/>
             </svg>
           }
-        />
+        >
+          {!notionAccount && (
+            <div className="flex items-center gap-2 mt-2 max-w-[280px]">
+              <input
+                type="password"
+                value={notionSecret}
+                onChange={e => setNotionSecret(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSaveNotion()}
+                placeholder="Integration Secret"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all"
+              />
+              <button
+                onClick={handleSaveNotion}
+                disabled={connecting === 'notion' || !notionSecret.trim()}
+                className="px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#333333] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+              >
+                {connecting === 'notion' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+              </button>
+            </div>
+          )}
+        </IntegrationCard>
+
+        {/* ClickUp */}
+        <IntegrationCard
+          name="ClickUp"
+          description="Sync ClickUp tasks directly as room milestones."
+          isConnected={!!clickupAccount}
+          isLoading={connecting === 'clickup'}
+          onConnect={() => {}}
+          onDisconnect={() => handleDisconnect('clickup')}
+          accentColor="#7B68EE"
+          bgColor="#7B68EE"
+          icon={
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
+              <path d="M12.062 1.488L21.43 6.906a1.182 1.182 0 0 1 .562.973v10.828a1.182 1.182 0 0 1-.562.973l-9.368 5.418a1.182 1.182 0 0 1-1.124 0l-9.368-5.418a1.182 1.182 0 0 1-.562-.973V7.88a1.182 1.182 0 0 1 .562-.973l9.368-5.418a1.182 1.182 0 0 1 1.124 0zM12 5L5 9v8l7 4 7-4V9l-7-4z"/>
+            </svg>
+          }
+        >
+          {!clickupAccount && (
+            <div className="flex items-center gap-2 mt-2 max-w-[280px]">
+              <input
+                type="password"
+                value={clickupPAT}
+                onChange={e => setClickupPAT(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSaveClickup()}
+                placeholder="Personal Access Token"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#7B68EE] focus:ring-1 focus:ring-[#7B68EE] transition-all"
+              />
+              <button
+                onClick={handleSaveClickup}
+                disabled={connecting === 'clickup' || !clickupPAT.trim()}
+                className="px-3 py-1.5 bg-[#7B68EE] hover:bg-[#6A5AE0] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+              >
+                {connecting === 'clickup' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+              </button>
+            </div>
+          )}
+        </IntegrationCard>
+
+        {/* Jira */}
+        <IntegrationCard
+          name="Jira"
+          description="Sync Jira issues directly as room milestones."
+          isConnected={!!jiraAccount}
+          isLoading={connecting === 'jira'}
+          onConnect={() => {}}
+          onDisconnect={() => handleDisconnect('jira')}
+          accentColor="#0052CC"
+          bgColor="#0052CC"
+          icon={
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
+              <path d="M11.5 13.5v-10l5 5-5 5zm-7 7v-10l5 5-5 5zM22 13.5l-5-5-5 5 5 5 5-5z"/>
+            </svg>
+          }
+        >
+          {!jiraAccount && (
+            <div className="flex flex-col gap-2 mt-2 max-w-[320px]">
+              <input
+                type="text"
+                value={jiraDomain}
+                onChange={e => setJiraDomain(e.target.value)}
+                placeholder="Domain (e.g. your-company.atlassian.net)"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all"
+              />
+              <input
+                type="email"
+                value={jiraEmail}
+                onChange={e => setJiraEmail(e.target.value)}
+                placeholder="Jira Email"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all"
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="password"
+                  value={jiraPAT}
+                  onChange={e => setJiraPAT(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSaveJira()}
+                  placeholder="Personal Access Token"
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all"
+                />
+                <button
+                  onClick={handleSaveJira}
+                  disabled={connecting === 'jira' || !jiraPAT.trim() || !jiraDomain.trim() || !jiraEmail.trim()}
+                  className="px-3 py-1.5 bg-[#0052CC] hover:bg-[#0043A6] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+                >
+                  {connecting === 'jira' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
+                </button>
+              </div>
+            </div>
+          )}
+        </IntegrationCard>
       </div>
     </div>
   );

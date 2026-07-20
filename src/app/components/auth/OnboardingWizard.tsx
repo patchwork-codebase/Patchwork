@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Country, State, City } from "country-state-city";
+// import { Country, State, City } from "country-state-city";
 import { useAuth } from "./AuthContext";
 import { AuthRedirectGuard } from "./AuthRedirectGuard";
 import { motion, AnimatePresence } from "motion/react";
@@ -61,7 +61,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.96 }}
               transition={{ duration: 0.12 }}
-              className="absolute left-0 right-0 bottom-full mb-2 bg-[#1C1A24] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-2 z-50 overflow-hidden max-h-[260px] flex flex-col"
+              className="absolute left-0 right-0 bottom-full mb-2 bg-ink-80 border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-2 z-50 overflow-hidden max-h-[260px] flex flex-col"
             >
               {searchable && (
                 <input
@@ -106,8 +106,9 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
 
 const BUILDER_TYPES = [
   { value: 'product-manager', label: '📋 Product Manager' },
-  { value: 'engineer', label: '⚙️ Engineer (Coming Soon)', disabled: true },
-  { value: 'product-designer', label: '🎨 Product Designer (Coming Soon)', disabled: true },
+  { value: 'founder', label: '🚀 Founder' },
+  // { value: 'engineer', label: '⚙️ Engineer (Coming Soon)', disabled: true },
+  // { value: 'product-designer', label: '🎨 Product Designer (Coming Soon)', disabled: true },
 ];
 
 export default function OnboardingWizard() {
@@ -133,6 +134,13 @@ export default function OnboardingWizard() {
       navigate('/login');
     }
   }, [user, authLoading, navigate]);
+
+  const [geoData, setGeoData] = useState<any>(null);
+  useEffect(() => {
+    if (step === 2 && !geoData) {
+      import("country-state-city").then(m => setGeoData(m));
+    }
+  }, [step, geoData]);
 
   // Sync initial userRole from profile once loaded
   useEffect(() => {
@@ -199,8 +207,10 @@ export default function OnboardingWizard() {
       if (returnTo) {
         localStorage.removeItem('authRedirectUrl');
         navigate(returnTo);
+      } else if (role === 'observer') {
+        navigate('/dashboard/observer?welcome=true');
       } else {
-        navigate(role === 'observer' ? '/dashboard/observer' : '/dashboard');
+        navigate('/dashboard?welcome=true');
       }
     } catch (err: unknown) {
       toast.error((err instanceof Error ? err.message : String(err)) || 'Failed to save profile. Please try again.');
@@ -369,7 +379,7 @@ export default function OnboardingWizard() {
                     setStateIso('');
                     setCity('');
                   }}
-                  options={Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }))}
+                  options={geoData ? geoData.Country.getAllCountries().map((c: any) => ({ value: c.isoCode, label: c.name })) : []}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -380,16 +390,16 @@ export default function OnboardingWizard() {
                       setStateIso(val);
                       setCity('');
                     }}
-                    disabled={!countryIso}
-                    options={countryIso ? State.getStatesOfCountry(countryIso).map(s => ({ value: s.isoCode, label: s.name })) : []}
+                    disabled={!countryIso || !geoData}
+                    options={countryIso && geoData ? geoData.State.getStatesOfCountry(countryIso).map((s: any) => ({ value: s.isoCode, label: s.name })) : []}
                   />
 
                   <SearchableSelect
                     label="City"
                     value={city}
                     onChange={setCity}
-                    disabled={!stateIso}
-                    options={stateIso ? City.getCitiesOfState(countryIso, stateIso).map(c => ({ value: c.name, label: c.name })) : []}
+                    disabled={!stateIso || !geoData}
+                    options={stateIso && geoData ? geoData.City.getCitiesOfState(countryIso, stateIso).map((c: any) => ({ value: c.name, label: c.name })) : []}
                   />
                 </div>
 

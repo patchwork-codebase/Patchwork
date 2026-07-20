@@ -1,58 +1,82 @@
-import { ComingSoon } from '../ui/ComingSoon';
-
-const RoadmapPageIcon = () => (
-  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="8" y1="6" x2="21" y2="6" />
-    <line x1="8" y1="12" x2="21" y2="12" />
-    <line x1="8" y1="18" x2="21" y2="18" />
-    <line x1="3" y1="6" x2="3.01" y2="6" />
-    <line x1="3" y1="12" x2="3.01" y2="12" />
-    <line x1="3" y1="18" x2="3.01" y2="18" />
-  </svg>
-);
-
-const features = [
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <path d="M3 9h18M9 21V9" />
-      </svg>
-    ),
-    title: 'Kanban boards',
-    description: 'Drag-and-drop cards across Now, Next, and Later columns — synced with your build rooms in real time.',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-      </svg>
-    ),
-    title: 'Sprint planning',
-    description: 'Break goals into focused sprints. Assign items to rooms and track weekly velocity automatically.',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="18" cy="18" r="3" />
-        <circle cx="6" cy="6" r="3" />
-        <path d="M13 6h3a2 2 0 0 1 2 2v7" />
-        <path d="M11 18H8a2 2 0 0 1-2-2V9" />
-      </svg>
-    ),
-    title: 'Dependency mapping',
-    description: 'Visualise which features block others. Identify bottlenecks before they slow your ship date.',
-  },
-];
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router';
+import { motion } from 'motion/react';
+import { KanbanBoard } from '../roadmap/KanbanBoard';
+import { SprintPlanner } from '../roadmap/SprintPlanner';
+import { DependencyMap } from '../roadmap/DependencyMap';
+import { SEO } from '../seo/SEO';
 
 export default function RoadmapPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const activeTab = (searchParams.get('tab') as 'kanban' | 'sprints' | 'dependencies') || 'kanban';
+
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  function setTab(tab: 'kanban' | 'sprints' | 'dependencies') {
+    setSearchParams({ tab });
+  }
+
+  if (import.meta.env.PROD) {
+    return null;
+  }
+
   return (
-    <ComingSoon
-      title="Roadmap view"
-      subtitle="Plan what you're building, when you're building it, and why — all in one place visible to your whole community."
-      accentColor="#8B7CF8"
-      icon={<RoadmapPageIcon />}
-      features={features}
-    />
+    <>
+      <SEO title="Roadmap | Patchwork" />
+      <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8 h-full flex flex-col">
+        
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-bold text-[24px] sm:text-[28px] text-slate-900 leading-snug tracking-tight">
+            Roadmap view
+          </h1>
+          <p className="text-slate-500 mt-1">Plan what you're building, when you're building it, and why.</p>
+        </div>
+
+        {/* INLINE TEXT TABS */}
+        <div className="relative shrink-0">
+          <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-200 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+            {[
+              { key: 'kanban' as const, label: 'Kanban boards' },
+              { key: 'sprints' as const, label: 'Sprint planning' },
+              { key: 'dependencies' as const, label: 'Dependency mapping' },
+            ].map(tab => {
+              const isCurrent = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setTab(tab.key)}
+                  className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-ring whitespace-nowrap snap-start active:scale-95 ${
+                    isCurrent
+                      ? 'text-slate-900'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-t-lg'
+                  }`}
+                >
+                  {tab.label}
+                  {isCurrent && (
+                    <motion.div
+                      layoutId="roadmap-tab-indicator"
+                      className="absolute bottom-0 left-0 right-0 h-1 bg-primary-400 rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* MAIN CONTENT AREA */}
+        <div className="flex-1 min-h-0">
+          {activeTab === 'kanban' && <KanbanBoard />}
+          {activeTab === 'sprints' && <SprintPlanner />}
+          {activeTab === 'dependencies' && <DependencyMap />}
+        </div>
+      </div>
+    </>
   );
 }

@@ -44,6 +44,22 @@ export function MiroIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
+export function ClickUpIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12.062 1.488L21.43 6.906a1.182 1.182 0 0 1 .562.973v10.828a1.182 1.182 0 0 1-.562.973l-9.368 5.418a1.182 1.182 0 0 1-1.124 0l-9.368-5.418a1.182 1.182 0 0 1-.562-.973V7.88a1.182 1.182 0 0 1 .562-.973l9.368-5.418a1.182 1.182 0 0 1 1.124 0zM12 5L5 9v8l7 4 7-4V9l-7-4z" />
+    </svg>
+  );
+}
+
+export function JiraIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M11.5 13.5v-10l5 5-5 5zm-7 7v-10l5 5-5 5zM22 13.5l-5-5-5 5 5 5 5-5z" />
+    </svg>
+  );
+}
+
 /** Map platform slug → display metadata */
 export const INTEGRATION_CONFIG: Record<string, {
   label: string;
@@ -93,6 +109,22 @@ export const INTEGRATION_CONFIG: Record<string, {
     borderColor: 'border-[#FFD02F]/40',
     patterns: [/miro\.com\/app\//i],
   },
+  clickup: {
+    label: 'ClickUp',
+    description: 'Task',
+    color: 'text-white',
+    bgColor: 'bg-[#7B68EE]',
+    borderColor: 'border-[#7B68EE]/40',
+    patterns: [/clickup\.com\/t\//i],
+  },
+  jira: {
+    label: 'Jira',
+    description: 'Ticket',
+    color: 'text-white',
+    bgColor: 'bg-[#0052CC]',
+    borderColor: 'border-[#0052CC]/40',
+    patterns: [/atlassian\.net\/browse\//i],
+  },
 };
 
 export function getPlatformFromUrl(url: string): string | null {
@@ -115,6 +147,8 @@ export function IntegrationPlatformIcon({
     case 'notion':  return <NotionIcon className={className} />;
     case 'linear':  return <LinearIcon className={className} />;
     case 'miro':    return <MiroIcon className={className} />;
+    case 'clickup': return <ClickUpIcon className={className} />;
+    case 'jira':    return <JiraIcon className={className} />;
     default: return null;
   }
 }

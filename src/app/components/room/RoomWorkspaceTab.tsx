@@ -1,7 +1,13 @@
 import { Lock } from "lucide-react";
 import { IntegrationsBar } from "./IntegrationsBar";
 
-export function RoomWorkspaceTab({ roomId, builderId, user }: any) {
+interface RoomWorkspaceTabProps {
+  roomId: string;
+  builderId: string;
+  user: any;
+}
+
+export function RoomWorkspaceTab({ roomId, builderId, user }: RoomWorkspaceTabProps) {
   return (
     <div className="mb-8 p-8 bg-white border border-slate-200 rounded-[24px] shadow-sm">
       <div className="text-center mb-8">

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { X, Image as ImageIcon, ChevronDown, Code } from "lucide-react";
 import { usePostUpdate } from "../../hooks/usePostUpdate";
 import { useAuth } from "../auth/AuthContext";
 import type { Room } from "../../types";
@@ -17,6 +17,7 @@ export function ComposerSheet({ isOpen, onClose, myRooms, selectedRoomId, setSel
   const { user, profile, withVerification } = useAuth();
   const [updateContent, setUpdateContent] = useState("");
   const [codeSnippet, setCodeSnippet] = useState("");
+  const [showCodeInput, setShowCodeInput] = useState(false);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const isPostingRef = useRef(false);
@@ -34,7 +35,7 @@ export function ComposerSheet({ isOpen, onClose, myRooms, selectedRoomId, setSel
         await postMutation.mutateAsync({
           selectedRoomId,
           updateContent,
-          codeSnippet,
+          codeSnippet: showCodeInput ? codeSnippet : "",
           mediaPreview,
           userId: user.id,
           authorName: profile?.name || user.email?.split('@')[0] || 'Builder'
@@ -42,6 +43,7 @@ export function ComposerSheet({ isOpen, onClose, myRooms, selectedRoomId, setSel
         
         setUpdateContent("");
         setCodeSnippet("");
+        setShowCodeInput(false);
         setMediaPreview(null);
         onClose();
       } finally {
@@ -86,6 +88,31 @@ export function ComposerSheet({ isOpen, onClose, myRooms, selectedRoomId, setSel
               className="w-full bg-white border border-slate-200 text-slate-900 text-[16px] sm:text-[15px] resize-none placeholder:text-slate-400 min-h-[100px] focus-visible:ring-2 focus-visible:ring-primary-400 rounded-xl p-4 mb-4 shadow-sm"
             />
 
+            {mediaPreview && (
+              <div className="relative w-[120px] mb-4 group mt-1">
+                <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative aspect-video flex items-center justify-center">
+                  <img loading="lazy" src={mediaPreview} alt="Upload preview" className="max-h-[120px] w-full h-full object-cover rounded-xl" />
+                  <button
+                    type="button"
+                    onClick={() => setMediaPreview(null)}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showCodeInput && (
+              <textarea
+                value={codeSnippet}
+                onChange={(e) => setCodeSnippet(e.target.value)}
+                placeholder="Paste code snippet here..."
+                rows={5}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono text-slate-800 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 resize-none mb-4 transition-all"
+              />
+            )}
+
             <div className="flex items-center justify-between border-t border-slate-100 pt-4">
               <div className="flex items-center gap-3">
                 <label className="flex items-center justify-center w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full cursor-pointer transition-all">
@@ -102,6 +129,16 @@ export function ComposerSheet({ isOpen, onClose, myRooms, selectedRoomId, setSel
                     }}
                   />
                 </label>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCodeInput(!showCodeInput)}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
+                    showCodeInput ? 'bg-primary-400/20 text-primary-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  <Code className="w-5 h-5" />
+                </button>
                 
                 <div className="relative">
                   <button

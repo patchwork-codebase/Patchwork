@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 
 
 function figmaAssetResolver() {
@@ -23,6 +24,29 @@ export default defineConfig({
     // Tailwind is not being actively used – do not remove them
     react(),
     tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['icon.svg'],
+      manifest: {
+        name: 'Patchwork',
+        short_name: 'Patchwork',
+        description: 'Where builders share updates and collaborate.',
+        theme_color: '#0f172a',
+        background_color: '#ffffff',
+        display: 'standalone',
+        icons: [
+          {
+            src: 'icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+      }
+    }),
   ],
   resolve: {
     alias: {
@@ -45,6 +69,49 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/linear-api/, ''),
       },
+      '/clickup-api': {
+        target: 'https://api.clickup.com/api/v2',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/clickup-api/, ''),
+      },
+      '/jira-api': {
+        target: 'https://atlassian.net', // Placeholder, overridden by router
+        changeOrigin: true,
+        router: (req) => {
+          const domain = req.headers['x-jira-domain'];
+          return domain ? `https://${domain}` : 'https://atlassian.net';
+        },
+        rewrite: (path) => path.replace(/^\/jira-api/, ''),
+      },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-syntax-highlighter')) {
+              return 'syntax-highlighter';
+            }
+            if (id.includes('country-state-city')) {
+              return 'geo-data';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
+            }
+            if (id.includes('framer-motion') || id.includes('motion')) {
+              return 'framer-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'lucide';
+            }
+            if (id.includes('react-virtuoso')) {
+              return 'virtuoso';
+            }
+            // Let Vite automatically handle chunking for the rest
+          }
+        }
+      }
+    }
+  }
 })

@@ -5,9 +5,10 @@ import { Plus, Trash2, Edit2, Check, X, ShieldAlert, Sparkles, BookOpen } from '
 
 interface HypothesisTrackerProps {
   projectId: string;
+  isObserver?: boolean;
 }
 
-export default function HypothesisTracker({ projectId }: HypothesisTrackerProps) {
+export default function HypothesisTracker({ projectId, isObserver = false }: HypothesisTrackerProps) {
   const { data: hypotheses, isLoading } = useDiscoveryHypotheses(projectId);
   const mutateHypothesis = useMutateHypothesis();
   const deleteEntity = useDeleteDiscoveryEntity();
@@ -70,119 +71,121 @@ export default function HypothesisTracker({ projectId }: HypothesisTrackerProps)
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Create / Edit Form */}
-      <div className="space-y-6">
-        <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
-          {editingHypothesis ? (
-            <form onSubmit={handleEditSave} className="space-y-4">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5">
-                  <Edit2 className="w-4 h-4 text-[#8B7CF8]" /> Edit Hypothesis
-                </h3>
-                <button 
-                  type="button" 
-                  onClick={() => setEditingHypothesis(null)}
-                  className="text-xs text-slate-400 hover:text-slate-600 font-bold"
+      {!isObserver && (
+        <div className="space-y-6">
+          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
+            {editingHypothesis ? (
+              <form onSubmit={handleEditSave} className="space-y-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5">
+                    <Edit2 className="w-4 h-4 text-primary-400" /> Edit Hypothesis
+                  </h3>
+                  <button 
+                    type="button" 
+                    onClick={() => setEditingHypothesis(null)}
+                    className="text-xs text-slate-400 hover:text-slate-600 font-bold"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">If-Then Statement</label>
+                  <textarea
+                    required
+                    value={editingHypothesis.statement}
+                    onChange={e => setEditingHypothesis({ ...editingHypothesis, statement: e.target.value })}
+                    placeholder="If we [do X], then [Y will happen]..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Success Indicators</label>
+                  <textarea
+                    value={editingHypothesis.success_indicators || ''}
+                    onChange={e => setEditingHypothesis({ ...editingHypothesis, success_indicators: e.target.value })}
+                    placeholder="What proves this is true? (e.g. 5 conversions)"
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Failure Indicators</label>
+                  <textarea
+                    value={editingHypothesis.failure_indicators || ''}
+                    onChange={e => setEditingHypothesis({ ...editingHypothesis, failure_indicators: e.target.value })}
+                    placeholder="What disproves this? (e.g. 0 interviews)"
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-primary-400 hover:bg-[#7a6aeb] text-white font-bold py-2 rounded-xl text-sm transition-colors"
                 >
-                  Cancel
+                  Save Changes
                 </button>
-              </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-primary-400" /> New Hypothesis
+                </h3>
+                <p className="text-xs text-slate-500">Draft a clear statement along with concrete metrics to measure validity.</p>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">If-Then Statement</label>
-                <textarea
-                  required
-                  value={editingHypothesis.statement}
-                  onChange={e => setEditingHypothesis({ ...editingHypothesis, statement: e.target.value })}
-                  placeholder="If we [do X], then [Y will happen]..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Hypothesis Statement</label>
+                  <textarea
+                    required
+                    value={statement}
+                    onChange={e => setStatement(e.target.value)}
+                    placeholder="e.g. We believe solo builders will pay $10/mo for structured discovery tools because it saves hours of wasted build time."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Success Indicators</label>
-                <textarea
-                  value={editingHypothesis.success_indicators || ''}
-                  onChange={e => setEditingHypothesis({ ...editingHypothesis, success_indicators: e.target.value })}
-                  placeholder="What proves this is true? (e.g. 5 conversions)"
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Success Indicators</label>
+                  <textarea
+                    value={successIndicators}
+                    onChange={e => setSuccessIndicators(e.target.value)}
+                    placeholder="e.g. At least 5 out of 10 interviewees express intent to purchase."
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Failure Indicators</label>
-                <textarea
-                  value={editingHypothesis.failure_indicators || ''}
-                  onChange={e => setEditingHypothesis({ ...editingHypothesis, failure_indicators: e.target.value })}
-                  placeholder="What disproves this? (e.g. 0 interviews)"
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Failure Indicators</label>
+                  <textarea
+                    value={failureIndicators}
+                    onChange={e => setFailureIndicators(e.target.value)}
+                    placeholder="e.g. Builders say they prefer simple notes/Notion docs for everything."
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  />
+                </div>
 
-              <button
-                type="submit"
-                className="w-full bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white font-bold py-2 rounded-xl text-sm transition-colors"
-              >
-                Save Changes
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#8B7CF8]" /> New Hypothesis
-              </h3>
-              <p className="text-xs text-slate-500">Draft a clear statement along with concrete metrics to measure validity.</p>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Hypothesis Statement</label>
-                <textarea
-                  required
-                  value={statement}
-                  onChange={e => setStatement(e.target.value)}
-                  placeholder="e.g. We believe solo builders will pay $10/mo for structured discovery tools because it saves hours of wasted build time."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Success Indicators</label>
-                <textarea
-                  value={successIndicators}
-                  onChange={e => setSuccessIndicators(e.target.value)}
-                  placeholder="e.g. At least 5 out of 10 interviewees express intent to purchase."
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Failure Indicators</label>
-                <textarea
-                  value={failureIndicators}
-                  onChange={e => setFailureIndicators(e.target.value)}
-                  placeholder="e.g. Builders say they prefer simple notes/Notion docs for everything."
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!statement.trim()}
-                className="w-full bg-[#8B7CF8] hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-2 rounded-xl text-sm transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" /> Add Hypothesis
-              </button>
-            </form>
-          )}
+                <button
+                  type="submit"
+                  disabled={!statement.trim()}
+                  className="w-full bg-primary-400 hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-2 rounded-xl text-sm transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" /> Add Hypothesis
+                </button>
+              </form>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Hypothesis List */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className={`${isObserver ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-4`}>
         <h3 className="text-lg font-bold text-slate-900">Project Hypotheses</h3>
         
         {isLoading ? (
@@ -226,20 +229,22 @@ export default function HypothesisTracker({ projectId }: HypothesisTrackerProps)
                   </div>
                 </div>
 
-                <div className="flex gap-1.5 border-t border-slate-100 pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-4 shrink-0 w-full sm:w-auto justify-end">
-                  <button 
-                    onClick={() => setEditingHypothesis(h)}
-                    className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-[#8B7CF8] transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(h.id)}
-                    className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {!isObserver && (
+                  <div className="flex gap-1.5 border-t border-slate-100 pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-4 shrink-0 w-full sm:w-auto justify-end">
+                    <button 
+                      onClick={() => setEditingHypothesis(h)}
+                      className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-primary-400 transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(h.id)}
+                      className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

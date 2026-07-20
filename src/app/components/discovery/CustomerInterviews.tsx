@@ -5,9 +5,10 @@ import { Plus, Trash2, Edit2, FileText, ExternalLink, Calendar, User, MessageSqu
 
 interface CustomerInterviewsProps {
   projectId: string;
+  isObserver?: boolean;
 }
 
-export default function CustomerInterviews({ projectId }: CustomerInterviewsProps) {
+export default function CustomerInterviews({ projectId, isObserver = false }: CustomerInterviewsProps) {
   const { data: interviews, isLoading } = useDiscoveryInterviews(projectId);
   const mutateInterview = useMutateInterview();
   const deleteEntity = useDeleteDiscoveryEntity();
@@ -100,10 +101,10 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
           <h2 className="text-xl font-bold text-slate-900">Customer Interviews</h2>
           <p className="text-sm text-slate-500">Record insights, pain points, and feedback directly from user research sessions.</p>
         </div>
-        {!isFormOpen && (
+        {!isFormOpen && !isObserver && (
           <button 
             onClick={openNewForm}
-            className="bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm transition-colors w-full sm:w-auto justify-center whitespace-nowrap"
+            className="bg-primary-400 hover:bg-[#7a6aeb] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm transition-colors w-full sm:w-auto justify-center whitespace-nowrap"
           >
             <Plus className="w-4 h-4" /> Add Interview
           </button>
@@ -131,7 +132,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Sarah Jenkins"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -141,7 +142,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 type="date"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -152,7 +153,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 value={role}
                 onChange={e => setRole(e.target.value)}
                 placeholder="e.g. Senior PM"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -163,7 +164,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 value={company}
                 onChange={e => setCompany(e.target.value)}
                 placeholder="e.g. Stripe"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -174,7 +175,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 value={recordingUrl}
                 onChange={e => setRecordingUrl(e.target.value)}
                 placeholder="e.g. Loom, Grain, or Google Drive link"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -185,7 +186,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
                 placeholder="e.g. Struggles with validating target market, willing to pay for an automated signal tracking tool."
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -196,7 +197,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 onChange={e => setInsights(e.target.value)}
                 placeholder="- Insight 1: Automating survey results is critical.&#10;- Insight 2: Prefers Slack integration over dashboard tools."
                 rows={3}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
 
@@ -207,7 +208,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Raw conversation transcripts or detailed notes of the chat..."
                 rows={6}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
               />
             </div>
           </div>
@@ -222,7 +223,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
             </button>
             <button 
               type="submit"
-              className="px-5 py-2.5 bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white rounded-xl text-sm font-bold transition-colors"
+              className="px-5 py-2.5 bg-primary-400 hover:bg-[#7a6aeb] text-white rounded-xl text-sm font-bold transition-colors"
             >
               Save Record
             </button>
@@ -243,12 +244,14 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                 <MessageSquare className="w-12 h-12 text-slate-400 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-slate-900 mb-1">No Interviews Yet</h3>
                 <p className="text-sm text-slate-500 max-w-sm mx-auto mb-6">Talk to your customers first. Document qualitative learnings here.</p>
-                <button 
-                  onClick={openNewForm}
-                  className="bg-[#8B7CF8] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#7a6aeb] transition-colors"
-                >
-                  Create First Record
-                </button>
+                {!isObserver && (
+                  <button 
+                    onClick={openNewForm}
+                    className="bg-primary-400 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#7a6aeb] transition-colors"
+                  >
+                    Create First Record
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
@@ -260,32 +263,34 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                       onClick={() => setSelectedInterview(i)}
                       className={`group border rounded-2xl p-4 cursor-pointer transition-all ${
                         isSelected 
-                          ? 'border-[#8B7CF8] bg-[#6C5CE7]/5 shadow-sm' 
-                          : 'border-slate-200 bg-white hover:border-[#8B7CF8]/45 hover:shadow-sm'
+                          ? 'border-primary-400 bg-[#6C5CE7]/5 shadow-sm' 
+                          : 'border-slate-200 bg-white hover:border-primary-400/45 hover:shadow-sm'
                       }`}
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div className="min-w-0">
-                          <h4 className="font-bold text-slate-900 text-[15px] group-hover:text-[#8B7CF8] transition-colors">{i.interviewee_name}</h4>
+                          <h4 className="font-bold text-slate-900 text-[15px] group-hover:text-primary-400 transition-colors">{i.interviewee_name}</h4>
                           <p className="text-xs text-slate-500 truncate">
                             {i.interviewee_role ? `${i.interviewee_role} ` : ''}
                             {i.interviewee_company ? `@ ${i.interviewee_company}` : ''}
                           </p>
                         </div>
-                        <div className="flex gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); openEditForm(i); }}
-                            className="p-1 text-slate-400 hover:text-[#8B7CF8] rounded hover:bg-slate-100"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button 
-                            onClick={(e) => handleDelete(i.id, e)}
-                            className="p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-slate-100"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {!isObserver && (
+                          <div className="flex gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); openEditForm(i); }}
+                              className="p-1 text-slate-400 hover:text-primary-400 rounded hover:bg-slate-100"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              onClick={(e) => handleDelete(i.id, e)}
+                              className="p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-slate-100"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                       
                       <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
@@ -337,7 +342,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
                         href={selectedInterview.recording_url} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="flex items-center gap-1 text-[#8B7CF8] hover:underline"
+                        className="flex items-center gap-1 text-primary-400 hover:underline"
                       >
                         <ExternalLink className="w-3.5 h-3.5" /> Recording link
                       </a>
@@ -354,8 +359,8 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
 
                 {selectedInterview.key_insights && (
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-[#8B7CF8]" /> Key Insights
+                    <h4 className="text-xs font-bold text-slate-950 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-primary-400" /> Key Insights
                     </h4>
                     <div className="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed bg-white/50 border border-slate-150 p-4 rounded-xl">
                       {selectedInterview.key_insights}
@@ -365,7 +370,7 @@ export default function CustomerInterviews({ projectId }: CustomerInterviewsProp
 
                 {selectedInterview.notes && (
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Full Notes</h4>
+                    <h4 className="text-xs font-bold text-slate-950 uppercase tracking-wider mb-2">Full Notes</h4>
                     <div className="bg-white text-slate-700 text-sm p-5 rounded-xl border border-slate-200/60 max-h-[300px] overflow-y-auto whitespace-pre-wrap leading-relaxed font-sans">
                       {selectedInterview.notes}
                     </div>

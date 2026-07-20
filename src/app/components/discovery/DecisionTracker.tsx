@@ -4,13 +4,14 @@ import { useSubmitDecision, useDiscoveryDecisions } from '../../hooks/useDiscove
 import { DiscoveryProject } from '../../types/discovery';
 import { supabase, useAuth } from '../auth/AuthContext';
 import { toast } from 'sonner';
-import { Award, ShieldAlert, RefreshCw, Eye, ArrowRight, CheckCircle2, FileText, Lock } from 'lucide-react';
+import { Award, ShieldAlert, RefreshCw, Eye, ArrowRight, CheckCircle2, Lock } from 'lucide-react';
 
 interface DecisionTrackerProps {
   project: DiscoveryProject;
+  isObserver?: boolean;
 }
 
-export default function DecisionTracker({ project }: DecisionTrackerProps) {
+export default function DecisionTracker({ project, isObserver = false }: DecisionTrackerProps) {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const submitDecision = useSubmitDecision();
@@ -27,7 +28,7 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
 
   const handleDecision = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile) return;
+    if (!profile || isObserver) return;
     setIsSubmitting(true);
 
     try {
@@ -120,11 +121,19 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
           {project.converted_room_id && (
             <button
               onClick={() => navigate(`/dashboard/room/${project.converted_room_id}`)}
-              className="mt-4 bg-[#8B7CF8] hover:bg-[#7a6aeb] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors inline-flex items-center gap-2"
+              className="mt-4 bg-primary-400 hover:bg-[#7a6aeb] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors inline-flex items-center gap-2"
             >
               Go to Build Room <ArrowRight className="w-4 h-4" />
             </button>
           )}
+        </div>
+      ) : isObserver ? (
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-4">
+          <Lock className="w-12 h-12 text-slate-400 mx-auto" />
+          <h3 className="text-xl font-bold text-slate-900">No Decision Logged</h3>
+          <p className="text-sm text-slate-500 max-w-md mx-auto">
+            The project builders have not logged a final discovery verdict yet.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -171,11 +180,11 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
                 onClick={() => setDecisionType('need_more_research')}
                 className={`w-full flex items-center gap-3 p-3.5 border rounded-xl text-left transition-all ${
                   decisionType === 'need_more_research'
-                    ? 'border-[#8B7CF8] bg-[#6C5CE7]/5 text-[#8B7CF8] shadow-sm'
+                    ? 'border-primary-400 bg-[#6C5CE7]/5 text-primary-400 shadow-sm'
                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Eye className={`w-5 h-5 shrink-0 ${decisionType === 'need_more_research' ? 'text-[#8B7CF8]' : 'text-slate-400'}`} />
+                <Eye className={`w-5 h-5 shrink-0 ${decisionType === 'need_more_research' ? 'text-primary-400' : 'text-slate-400'}`} />
                 <div>
                   <div className="text-xs font-bold">Need More Research</div>
                   <div className="text-[10px] opacity-75 mt-0.5">Inconclusive evidence. Gather more signals.</div>
@@ -219,7 +228,7 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
                         setRoomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
                       }}
                       placeholder="Room Title"
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                     />
                   </div>
 
@@ -232,7 +241,7 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
                         value={roomSlug}
                         onChange={e => setRoomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                         placeholder="room-slug"
-                        className="w-full px-4 py-3 border border-slate-200 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-mono"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-mono"
                       />
                     </div>
                   </div>
@@ -244,7 +253,7 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
                       onChange={e => setRoomDescription(e.target.value)}
                       placeholder="What will this room focus on?"
                       rows={3}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                     />
                   </div>
                 </div>
@@ -266,14 +275,14 @@ export default function DecisionTracker({ project }: DecisionTrackerProps) {
                       : 'Provide a final explanation for logging this state...'
                   }
                   rows={4}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting || !rationale.trim() || (decisionType === 'proceed_to_build' && (!roomTitle.trim() || !roomSlug.trim()))}
-                className="w-full bg-[#8B7CF8] hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-primary-400 hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>

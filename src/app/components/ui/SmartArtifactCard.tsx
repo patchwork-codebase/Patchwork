@@ -1,35 +1,20 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../auth/AuthContext";
+import { useSummarizeArtifact } from "../../hooks/useSummarizeArtifact";
 import { Github, FileText, Sparkles } from "lucide-react";
 
 export function SmartArtifactCard({ url }: { url: string }) {
-  const [summary, setSummary] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-    
-    // Call the edge function
-    supabase.functions.invoke('summarize-artifact', {
-      body: { url }
-    }).then(({ data, error }) => {
-      if (!mounted) return;
-      if (!error && data?.success && data?.summary) {
-        setSummary(data.summary);
-      } else {
-        setSummary("Failed to generate AI summary for this artifact.");
-      }
-      setLoading(false);
-    });
-
-    return () => { mounted = false; };
-  }, [url]);
+  const { data: summary, isLoading, error } = useSummarizeArtifact(url);
 
   const isGithub = url.includes('github.com');
   const isLinear = url.includes('linear.app');
+  const isClickUp = url.includes('clickup.com');
+  const isJira = url.includes('atlassian.net');
   
-  const Icon = isGithub ? Github : (isLinear ? FileText : FileText);
-  const providerName = isGithub ? 'GitHub' : (isLinear ? 'Linear' : 'Link');
+  let Icon = FileText;
+  let providerName = 'Link';
+  if (isGithub) { Icon = Github; providerName = 'GitHub'; }
+  else if (isLinear) { Icon = FileText; providerName = 'Linear'; }
+  else if (isClickUp) { Icon = FileText; providerName = 'ClickUp'; }
+  else if (isJira) { Icon = FileText; providerName = 'Jira'; }
 
   return (
     <div className="mt-4 border border-slate-200 bg-slate-50 rounded-2xl overflow-hidden relative group">
@@ -43,19 +28,20 @@ export function SmartArtifactCard({ url }: { url: string }) {
           <div className="text-sm font-bold text-slate-900 truncate">{url}</div>
         </div>
       </a>
-      <div className="p-4 flex items-start gap-3">
-        <Sparkles className="w-4 h-4 text-primary-400 shrink-0 mt-0.5" />
-        <div className="flex-1">
-          <div className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-1">AI Summary</div>
-          {loading ? (
-            <div className="flex flex-col gap-2 animate-pulse">
-              <div className="h-3 bg-slate-200 rounded w-full"></div>
-              <div className="h-3 bg-slate-200 rounded w-4/5"></div>
+      <div className="p-4 bg-slate-50 border-t border-slate-200 text-[13px] leading-relaxed text-slate-600 relative">
+        <Sparkles className="w-4 h-4 absolute top-4 left-4 text-primary-400 opacity-50" />
+        <div className="pl-6">
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" />
+              <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+              <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <span className="ml-2 text-slate-400 italic font-medium tracking-wide text-[12px]">Generating AI summary...</span>
             </div>
+          ) : error ? (
+            <p className="text-rose-500 italic">{(error as Error).message || "Failed to generate AI summary for this artifact."}</p>
           ) : (
-            <p className="text-sm text-slate-700 leading-relaxed font-medium">
-              {summary}
-            </p>
+            <p className="italic">{summary}</p>
           )}
         </div>
       </div>

@@ -5,9 +5,11 @@
 import { motion } from "motion/react";
 import { useNavigate } from "react-router";
 import { Clock } from "lucide-react";
-import { timeAgo, getAvatarUrl, getObserverCount } from "../../utils/helpers";
+import { timeAgo, getObserverCount } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
 import type { Room, RoomObserver } from "../../types";
 
 interface RoomCardProps {
@@ -41,7 +43,7 @@ export function RoomCard({ room }: RoomCardProps) {
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => navigate(`/dashboard/room/${room.id}`)}
-      className="group bg-white border border-slate-200 hover:border-primary-400/50 rounded-[28px] flex flex-col cursor-pointer transition-colors hover:shadow-xl hover:shadow-primary-400/10 relative overflow-hidden"
+      className="group bg-white/60 backdrop-blur-md border border-white/40 hover:border-primary-400/50 rounded-[32px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/10 hover:bg-white/80 relative overflow-hidden"
     >
       {/* Cover Banner */}
       <div
@@ -50,7 +52,7 @@ export function RoomCard({ room }: RoomCardProps) {
         }`}
       >
         {hasCover && (
-          <img
+          <img loading="lazy"
             src={room.coverImage!}
             alt={room.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -76,11 +78,7 @@ export function RoomCard({ room }: RoomCardProps) {
       <div className="px-6 relative">
         <div className="absolute -top-6 left-6 p-1 bg-white rounded-2xl shadow-sm z-10">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 relative">
-            <img
-              src={getAvatarUrl(room.builderId || room.builderName)}
-              className="w-full h-full object-cover"
-              alt="Builder avatar"
-            />
+            <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
@@ -91,14 +89,23 @@ export function RoomCard({ room }: RoomCardProps) {
           <h3 className="text-slate-900 font-extrabold text-[18px] group-hover:text-primary-400 transition-colors line-clamp-1 font-display">
             {room.title}
           </h3>
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-slate-500 text-[13px] font-medium">by</span>
-            <span className="text-slate-700 text-[13px] font-bold group-hover:underline">
-              {room.builderName}
-            </span>
-            <VerifiedTick
-              isVerified={!!room.builderIsVerifiedExpert}
-              className="w-3.5 h-3.5"
+          <div className="flex flex-col mt-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 text-[13px] font-medium">by</span>
+              <span className="text-slate-700 text-[13px] font-bold group-hover:underline">
+                {room.builderName}
+              </span>
+              {!room.builderOrgName && (
+                <VerifiedTick
+                  isVerified={!!room.builderIsVerifiedExpert}
+                  className="w-3.5 h-3.5 shrink-0"
+                />
+              )}
+            </div>
+            <OrganizationBadge 
+              orgName={room.builderOrgName} 
+              orgLogo={room.builderOrgLogo} 
+              isVerified={!!room.builderIsVerifiedExpert} 
             />
           </div>
         </div>

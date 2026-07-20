@@ -4,6 +4,7 @@ import { Plus, Trash2, ShieldAlert, Award, TrendingUp, BarChart2 } from 'lucide-
 
 interface SignalTrackerProps {
   projectId: string;
+  isObserver?: boolean;
 }
 
 const SIGNAL_TYPES = [
@@ -16,7 +17,7 @@ const SIGNAL_TYPES = [
   { value: 'other', label: 'Other Market Signal' },
 ];
 
-export default function SignalTracker({ projectId }: SignalTrackerProps) {
+export default function SignalTracker({ projectId, isObserver = false }: SignalTrackerProps) {
   const { data: signals, isLoading } = useDiscoverySignals(projectId);
   const addSignal = useAddSignal();
   const deleteEntity = useDeleteDiscoveryEntity();
@@ -65,111 +66,113 @@ export default function SignalTracker({ projectId }: SignalTrackerProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Form panel */}
-      <div className="space-y-6">
-        <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
-          <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5 mb-2">
-            <Plus className="w-4 h-4 text-[#8B7CF8]" /> Log Market Signal
-          </h3>
-          <p className="text-xs text-slate-500 mb-6">Record quantitative or qualitative evidence that supports or refutes your problem statement.</p>
+      {!isObserver && (
+        <div className="space-y-6">
+          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5 mb-2">
+              <Plus className="w-4 h-4 text-primary-400" /> Log Market Signal
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">Record quantitative or qualitative evidence that supports or refutes your problem statement.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Signal Source Type</label>
-              <select
-                value={type}
-                onChange={e => setType(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 font-medium"
-              >
-                {SIGNAL_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Signal Sentiment</label>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => { setStatus('positive'); if (weight === 0) setWeight(10); }}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all border ${
-                    status === 'positive'
-                      ? 'bg-emerald-50 border-emerald-500/30 text-emerald-600'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  Positive
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setStatus('neutral'); setWeight(0); }}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all border ${
-                    status === 'neutral'
-                      ? 'bg-slate-100 border-slate-400/30 text-slate-600'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  Neutral
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setStatus('negative'); if (weight === 0) setWeight(10); }}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all border ${
-                    status === 'negative'
-                      ? 'bg-rose-50 border-rose-500/30 text-rose-600'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  Negative
-                </button>
-              </div>
-            </div>
-
-            {status !== 'neutral' && (
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                  Confidence Score Impact ({status === 'positive' ? '+' : '-'}{weight}%)
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={weight}
-                  onChange={e => setWeight(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#8B7CF8]"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                  <span>Weak (1%)</span>
-                  <span>Strong (50%)</span>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Signal Source Type</label>
+                <select
+                  value={type}
+                  onChange={e => setType(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                >
+                  {SIGNAL_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Signal Sentiment</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setStatus('positive'); if (weight === 0) setWeight(10); }}
+                    className={`py-2 rounded-xl text-xs font-bold transition-all border ${
+                      status === 'positive'
+                        ? 'bg-emerald-50 border-emerald-500/30 text-emerald-600'
+                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Positive
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setStatus('neutral'); setWeight(0); }}
+                    className={`py-2 rounded-xl text-xs font-bold transition-all border ${
+                      status === 'neutral'
+                        ? 'bg-slate-100 border-slate-400/30 text-slate-600'
+                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Neutral
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setStatus('negative'); if (weight === 0) setWeight(10); }}
+                    className={`py-2 rounded-xl text-xs font-bold transition-all border ${
+                      status === 'negative'
+                        ? 'bg-rose-50 border-rose-500/30 text-rose-600'
+                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    Negative
+                  </button>
                 </div>
               </div>
-            )}
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Evidence Details</label>
-              <textarea
-                required
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="e.g. 40 out of 100 landing page visitors clicked 'Join Waitlist'. Highly positive validation score."
-                rows={3}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8B7CF8]/50 leading-normal"
-              />
-            </div>
+              {status !== 'neutral' && (
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Confidence Score Impact ({status === 'positive' ? '+' : '-'}{weight}%)
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="50"
+                    value={weight}
+                    onChange={e => setWeight(parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-400"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                    <span>Weak (1%)</span>
+                    <span>Strong (50%)</span>
+                  </div>
+                </div>
+              )}
 
-            <button
-              type="submit"
-              disabled={!description.trim()}
-              className="w-full bg-[#8B7CF8] hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-sm transition-colors"
-            >
-              Add Signal
-            </button>
-          </form>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Evidence Details</label>
+                <textarea
+                  required
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="e.g. 40 out of 100 landing page visitors clicked 'Join Waitlist'. Highly positive validation score."
+                  rows={3}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 leading-normal"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!description.trim()}
+                className="w-full bg-primary-400 hover:bg-[#7a6aeb] disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Add Signal
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* List panel */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className={`${isObserver ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-4`}>
         <h3 className="text-lg font-bold text-slate-900">Recorded Signals</h3>
 
         {isLoading ? (
@@ -194,8 +197,8 @@ export default function SignalTracker({ projectId }: SignalTrackerProps) {
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{label}</span>
                       <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full uppercase tracking-wider ${
-                        s.status === 'positive' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                        s.status === 'negative' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
+                        s.status === 'positive' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        s.status === 'negative' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                         'bg-slate-100 text-slate-600 border border-slate-200'
                       }`}>
                         {s.status}
@@ -216,12 +219,14 @@ export default function SignalTracker({ projectId }: SignalTrackerProps) {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleDelete(s.id)}
-                      className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-50 transition-colors shrink-0"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!isObserver && (
+                      <button
+                        onClick={() => handleDelete(s.id)}
+                        className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-50 transition-colors shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

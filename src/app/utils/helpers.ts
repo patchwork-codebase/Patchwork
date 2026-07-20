@@ -7,13 +7,12 @@ export const STORAGE_KEYS = {
 };
 
 export function toCamelCase(key: string) {
-  if (key === 'onboarding_call_scheduled' || key === 'signup_completed_at' || key === 'github_url' || key === 'linkedin_url') return key;
   return key.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 
-export function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') return row;
-  return Object.entries(row).reduce((result: any, [key, value]) => {
+export function normalizeRow<T = unknown>(row: unknown): T {
+  if (!row || typeof row !== 'object') return row as T;
+  return Object.entries(row).reduce((result: Record<string, unknown>, [key, value]) => {
     const camelKey = toCamelCase(key);
     if (Array.isArray(value)) {
       result[camelKey] = value.map(item => (typeof item === 'object' && item !== null ? normalizeRow(item) : item));
@@ -23,7 +22,7 @@ export function normalizeRow(row: any): any {
       result[camelKey] = value;
     }
     return result;
-  }, {});
+  }, {} as Record<string, unknown>) as T;
 }
 
 export function timeAgo(iso: string) {
@@ -36,8 +35,24 @@ export function timeAgo(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+import { avatarStore } from './avatarStore';
+
+export function registerAvatarUrl(userId: string, url: string | null | undefined) {
+  if (userId && url && url.startsWith('http')) {
+    // Append a timestamp to ensure the URL is unique, bypassing browser caches
+    const cacheBusterUrl = url.includes('?') ? `${url}&_t=${Date.now()}` : `${url}?_t=${Date.now()}`;
+    avatarStore.set(userId, cacheBusterUrl);
+  }
+}
+
 export function getAvatarUrl(seed: string) {
   if (!seed) return "https://api.dicebear.com/9.x/micah/svg?seed=fallback&backgroundColor=transparent";
+  if (seed.startsWith('http')) return seed;
+  
+  // Check global store for a real uploaded photo by this userId
+  const cached = avatarStore.get(seed);
+  if (cached) return cached;
+  
   return `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(seed)}&backgroundColor=transparent`;
 }
 
@@ -55,3 +70,34 @@ export function getObserverCount(room: {
   }
   return room.observerCount ?? 0;
 }
+
+/**
+ * Generates a URL to add a certification to a user's LinkedIn profile.
+ */
+export function generateLinkedInCertUrl(title: string, dateIso: string, credentialUrl: string, orgId?: string) {
+  const baseUrl = "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME";
+  const name = encodeURIComponent(title);
+  
+  const date = new Date(dateIso);
+  const issueYear = date.getFullYear();
+  const issueMonth = date.getMonth() + 1; // 1-12
+  
+  let url = `${baseUrl}&name=${name}&issueYear=${issueYear}&issueMonth=${issueMonth}&certUrl=${encodeURIComponent(credentialUrl)}`;
+  if (orgId) {
+    url += `&organizationId=${orgId}`;
+  }
+  
+  return url;
+}
+
+/**
+ * Automatically applies Cloudinary URL transformations for format, quality, and sizing.
+ */
+export function optimizeCloudinaryUrl(url: string, width: number = 800): string {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  if (url.includes('/upload/q_auto')) return url; // Already optimized
+  
+  // Insert transformation parameters right after /upload/
+  return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
+}
+

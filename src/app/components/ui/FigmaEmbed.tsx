@@ -8,7 +8,7 @@ export function FigmaEmbed({ content }: { content: string }) {
   const url = match[0];
 
   return (
-    <div className="my-4 rounded-xl overflow-hidden border border-white/[0.08] shadow-lg bg-[#0A0910]">
+    <div className="my-4 rounded-xl overflow-hidden border border-white/[0.08] shadow-lg bg-ink">
       <iframe
         style={{ border: "1px solid rgba(0, 0, 0, 0.1)" }}
         width="100%"

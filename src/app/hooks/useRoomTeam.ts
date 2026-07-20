@@ -10,8 +10,8 @@ export interface TeamMember {
   role: string;
   avatar: string;
   domain?: string;
-  joined_at: string;
-  is_verified_expert: boolean;
+  joinedAt: string;
+  isVerifiedExpert: boolean;
 }
 
 export interface TeamInvitation {
@@ -19,8 +19,8 @@ export interface TeamInvitation {
   email: string;
   role: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'revoked';
-  created_at: string;
-  expires_at: string;
+  createdAt: string;
+  expiresAt: string;
 }
 
 export function useRoomTeam(roomId?: string) {
@@ -41,7 +41,9 @@ export function useRoomTeam(roomId?: string) {
             email,
             avatar,
             domain,
-            is_verified_expert
+            is_verified_expert,
+            organization_name,
+            organization_logo_url
           )
         `)
         .eq('room_id', roomId);
@@ -59,21 +61,66 @@ export function useRoomTeam(roomId?: string) {
       // Ignore RLS errors for non-builders fetching invitations
       const invitations = invitationsError ? [] : (invitationsData || []).map(normalizeRow) as TeamInvitation[];
 
-      const members: TeamMember[] = (observersData || []).map((row: any) => {
+      // 3. Fetch Room Owner's (Builder) details and their org
+      const { data: roomData } = await supabase
+        .from('rooms')
+        .select(`
+          builder_id,
+          users:builder_id (
+            id,
+            name,
+            email,
+            avatar,
+            domain,
+            is_verified_expert,
+            organization_name,
+            organization_logo_url
+          )
+        `)
+        .eq('id', roomId)
+        .single();
+      
+      const builderUser = roomData?.users ? (Array.isArray(roomData.users) ? roomData.users[0] : roomData.users) : null;
+      
+      const ownerOrg = {
+        builderId: roomData?.builder_id,
+        isVerifiedExpert: !!builderUser?.is_verified_expert,
+        organizationName: builderUser?.organization_name,
+        organizationLogoUrl: builderUser?.organization_logo_url
+      };
+
+      const observers: TeamMember[] = (observersData || []).map((row: any) => {
         const user = Array.isArray(row.users) ? row.users[0] : row.users;
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
+          id: user?.id,
+          name: user?.name || user?.email?.split('@')[0] || 'Unknown User',
+          email: user?.email,
           role: row.role,
-          avatar: user.avatar,
+          avatar: user?.avatar,
           domain: user.domain,
-          joined_at: row.joined_at,
-          is_verified_expert: !!user.is_verified_expert
+          joinedAt: row.joined_at,
+          isVerifiedExpert: !!user.is_verified_expert
         };
       });
 
-      return { members, invitations };
+      // Always prepend the builder to the members list (they're not in room_observers)
+      const builderMember: TeamMember | null = builderUser ? {
+        id: builderUser.id,
+        name: builderUser.name || builderUser.email?.split('@')[0] || 'Unknown User',
+        email: builderUser.email,
+        role: 'builder',
+        avatar: builderUser.avatar,
+        domain: builderUser.domain,
+        joinedAt: roomData ? new Date().toISOString() : '',
+        isVerifiedExpert: !!builderUser.is_verified_expert
+      } : null;
+
+      const members: TeamMember[] = [
+        ...(builderMember ? [builderMember] : []),
+        ...observers.filter(o => o.id !== roomData?.builder_id) // avoid duplicates
+      ];
+
+      return { members, invitations, ownerOrg };
     },
     enabled: !!roomId,
   });
@@ -83,7 +130,7 @@ export function useRevokeInvitation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ inviteId, roomId }: { inviteId: string, roomId: string }) => {
+    mutationFn: async ({ inviteId }: { inviteId: string, roomId: string }) => {
       const { error } = await supabase
         .from('room_invitations')
         .update({ status: 'revoked', updated_at: new Date().toISOString() })
@@ -96,8 +143,8 @@ export function useRevokeInvitation() {
       toast.success("Invitation revoked successfully");
       queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to revoke invitation");
+    onError: (error: unknown) => {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to revoke invitation");
     }
   });
 }
@@ -106,17 +153,26 @@ export function useResendInvitation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ roomId, email, role, roomTitle, builderName }: { roomId: string, email: string, role: string, roomTitle: string, builderName: string }) => {
+    mutationFn: async ({ roomId, email, role }: { roomId: string, email: string, role: string, roomTitle: string, builderName: string }) => {
       
-      // 1. Call the edge function which handles generating the invite and sending the email
+      // 1. Generate new token via RPC to resend
+      const { data: token, error: rpcError } = await supabase.rpc('invite_user_to_room', {
+        p_room_id: roomId,
+        p_email: email.trim().toLowerCase(),
+        p_role: role
+      });
+      if (rpcError) throw rpcError;
+
+      // 2. Call the edge function which handles sending the email
       const { data, error } = await supabase.functions.invoke('room-invitations', {
         body: {
-          roomId,
-          email,
-          role,
-          action: 'invite', // assuming 'invite' resends if it exists or creates new
-          roomTitle,
-          builderName
+          record: {
+            email,
+            role,
+            token,
+            room_id: roomId,
+            origin: window.location.origin
+          }
         }
       });
 
@@ -129,8 +185,32 @@ export function useResendInvitation() {
       toast.success("Invitation resent successfully!");
       queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to resend invitation");
+    onError: (error: unknown) => {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to resend invitation");
+    }
+  });
+}
+
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ roomId, userId, newRole }: { roomId: string, userId: string, newRole: string }) => {
+      const { error } = await supabase.rpc('update_room_member_role', {
+        p_room_id: roomId,
+        p_user_id: userId,
+        p_new_role: newRole
+      });
+
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: (_, { roomId }) => {
+      toast.success("Member role updated successfully");
+      queryClient.invalidateQueries({ queryKey: ['room-team', roomId] });
+    },
+    onError: (error: unknown) => {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to update member role");
     }
   });
 }

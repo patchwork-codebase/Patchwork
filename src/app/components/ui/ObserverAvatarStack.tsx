@@ -1,5 +1,6 @@
 import { Users } from "lucide-react";
-import { getAvatarUrl, getObserverCount } from "../../utils/helpers";
+import { getObserverCount } from "../../utils/helpers";
+import { UserAvatar } from "./UserAvatar";
 import type { Room, RoomObserver } from "../../types";
 
 interface ObserverAvatarStackProps {
@@ -35,11 +36,7 @@ export function ObserverAvatarStack({ room, maxAvatars = 4, className = "", size
             className={`${sizeClasses[size]} rounded-full bg-slate-200 border-2 border-white overflow-hidden transition-all duration-300 first:ml-0 group-hover/observers:-ml-0.5 group-hover/observers:shadow-sm shrink-0`}
             style={{ zIndex: 10 - i }}
           >
-            <img
-              src={getAvatarUrl(obs.observerId)}
-              alt="Observer"
-              className="w-full h-full object-cover"
-            />
+            <UserAvatar userId={obs.observerId} className="w-full h-full object-cover" />
           </div>
         ))
       ) : (

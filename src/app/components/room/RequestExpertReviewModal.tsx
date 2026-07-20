@@ -1,63 +1,30 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ChevronRight, ChevronLeft, Send, Search } from "lucide-react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
+import { UserAvatar } from "../ui/UserAvatar";
 import ExpertCard, { ExpertProfile } from "./ExpertCard";
+import { useUserRooms } from "../../hooks/useRooms";
 
 interface RequestExpertReviewModalProps {
   open: boolean;
   onClose: () => void;
-  roomId: string;
+  roomId?: string;
+  initialExpert?: ExpertProfile | null;
 }
 
-// Mock data for experts
-const MOCK_EXPERTS: ExpertProfile[] = [
-  {
-    id: "exp-1",
-    name: "Sarah Chen",
-    avatar: "https://i.pravatar.cc/150?u=1",
-    title: "Senior Product Designer",
-    company: "Figma",
-    domains: ["UX Design", "Prototyping", "Design Systems"],
-    reviewsCompleted: 42,
-    rating: 4.9,
-    activeSlots: 2,
-    monthlySlots: 10,
-    typicalResponseTime: "24h"
-  },
-  {
-    id: "exp-2",
-    name: "Alex Rivera",
-    avatar: "https://i.pravatar.cc/150?u=2",
-    title: "Staff Engineer",
-    company: "Vercel",
-    domains: ["React", "Performance", "Architecture"],
-    reviewsCompleted: 89,
-    rating: 4.95,
-    activeSlots: 0,
-    monthlySlots: 20,
-    typicalResponseTime: "48h"
-  },
-  {
-    id: "exp-3",
-    name: "Jamie Doe",
-    avatar: "https://i.pravatar.cc/150?u=3",
-    title: "Product Manager",
-    company: "Stripe",
-    domains: ["Growth", "Monetization", "Strategy"],
-    reviewsCompleted: 15,
-    rating: 4.7,
-    activeSlots: 5,
-    monthlySlots: 5,
-    typicalResponseTime: "12h"
-  }
-];
-
-export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExpertReviewModalProps) {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedExpert, setSelectedExpert] = useState<ExpertProfile | null>(null);
+export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert }: RequestExpertReviewModalProps) {
+  const navigate = useNavigate();
+  const [step, setStep] = useState<1 | 2>(initialExpert ? 2 : 1);
+  const [selectedExpert, setSelectedExpert] = useState<ExpertProfile | null>(initialExpert || null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>(roomId || "");
   const [domainFilter, setDomainFilter] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const { data: userRoomsData } = useUserRooms(userId || undefined);
+  const userRooms = userRoomsData?.pages?.flat() || [];
   
   const [form, setForm] = useState({
     buildSummary: "",
@@ -69,6 +36,54 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
     attachments: "" // simple text link for now
   });
   const [loading, setLoading] = useState(false);
+
+  // Fetch real experts
+  const [experts, setExperts] = useState<ExpertProfile[]>([]);
+  const [loadingExperts, setLoadingExperts] = useState(true);
+
+  useEffect(() => {
+    async function loadExperts() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) setUserId(user.id);
+
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('is_verified_expert', true);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const mappedExperts: ExpertProfile[] = data.map(user => ({
+            id: user.id,
+            name: user.name || "Anonymous Expert",
+            avatar: user.avatar || "",
+            title: user.job_title || user.expert_level || "Verified Expert",
+            company: user.company || "",
+            domains: user.expert_domains || ["General"],
+            reviewsCompleted: user.expert_reviews_completed || 0,
+            rating: user.expert_review_score ? parseFloat(user.expert_review_score) : 5.0,
+            activeSlots: user.expert_open_slots !== undefined ? user.expert_open_slots : 3,
+            monthlySlots: 10,
+            typicalResponseTime: user.expert_avg_response_hours ? `${user.expert_avg_response_hours}h` : "24h"
+          }));
+          setExperts(mappedExperts);
+        } else {
+          setExperts([]);
+        }
+      } catch (err) {
+        console.error("Failed to load experts", err);
+        setExperts([]); // Fallback on failure
+      } finally {
+        setLoadingExperts(false);
+      }
+    }
+    
+    if (open) {
+      loadExperts();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
@@ -90,44 +105,47 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
 
   if (!open) return null;
 
-  const filteredExperts = MOCK_EXPERTS.filter(exp => 
+  const filteredExperts = experts.filter(exp => 
     domainFilter ? exp.domains.some(d => d.toLowerCase().includes(domainFilter.toLowerCase())) : true
   );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedExpert) return;
+    if (!selectedRoomId) {
+      toast.error("Please select a room for this review.");
+      return;
+    }
 
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // We'll mock the insertion since the DB schema might not be fully migrated for the mock experts
-      // In a real scenario, we would insert into `expert_review_requests`
-      
-      // const payload = {
-      //   builder_id: user.id,
-      //   expert_id: selectedExpert.id,
-      //   room_id: roomId,
-      //   build_summary: form.buildSummary,
-      //   specific_challenge: form.specificChallenge,
-      //   questions: form.questions,
-      //   priority: form.priority,
-      //   is_public: form.isPublic,
-      //   deadline: form.deadline ? new Date(form.deadline).toISOString() : new Date().toISOString()
-      // };
-      
-      // const { error } = await supabase.from('expert_review_requests').insert(payload);
-      // if (error) throw error;
-      
-      // Mocking network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Insert into expert_review_requests
+      const { error } = await supabase.from('expert_review_requests').insert({
+        builder_id: user.id,
+        expert_id: selectedExpert.id,
+        room_id: selectedRoomId,
+        build_summary: form.buildSummary,
+        specific_challenge: form.specificChallenge,
+        questions: form.questions,
+        priority: form.priority,
+        is_public: form.isPublic,
+        deadline: form.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending'
+      });
+
+      if (error) throw error;
 
       toast.success("Review request sent successfully!");
       onClose();
-    } catch (err: unknown) {
-      toast.error(`Failed to send request: ${(err instanceof Error ? err.message : String(err))}`);
+      
+      // Navigate to the room that they requested the review for
+      navigate(`/dashboard/room/${selectedRoomId}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to send request: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -140,27 +158,27 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-[#0A0910]/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-ink/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-[#1A1825] border border-white/[0.08] rounded-[24px] w-full max-w-[800px] shadow-2xl relative z-10 my-auto flex flex-col max-h-[90vh]"
+          className="bg-white border border-slate-200 rounded-[24px] w-full max-w-[550px] relative z-10 my-auto flex flex-col max-h-[90vh]"
         >
-          <div className="p-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               {step === 2 && (
-                <button onClick={() => setStep(1)} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors">
+                <button type="button" onClick={() => setStep(1)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900 transition-colors">
                   <ChevronLeft className="w-5 h-5" />
                 </button>
               )}
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-slate-900">
                 {step === 1 ? "Select an Expert" : "Request Details"}
               </h2>
             </div>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
+            <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -169,13 +187,13 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
             {step === 1 ? (
               <div className="space-y-6">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search by domain (e.g., UX Design, React, Growth)..."
                     value={domainFilter}
                     onChange={(e) => setDomainFilter(e.target.value)}
-                    className="w-full pl-12 pr-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all"
+                    className="w-full pl-12 pr-5 py-4 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
                   />
                 </div>
                 
@@ -197,50 +215,69 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
               </div>
             ) : (
               <form id="request-review-form" onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10 mb-6">
-                  <img src={selectedExpert?.avatar} className="w-12 h-12 rounded-full" alt="" />
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 mb-5">
+                  <UserAvatar userId={selectedExpert?.id || ''} name={selectedExpert?.name || ''} avatarUrl={selectedExpert?.avatar} className="w-10 h-10 rounded-full border border-slate-200 object-cover" />
                   <div>
-                    <h4 className="text-white font-bold">{selectedExpert?.name}</h4>
-                    <p className="text-slate-400 text-sm">Reviewing your build</p>
+                    <h4 className="text-slate-900 font-bold text-[15px]">{selectedExpert?.name}</h4>
+                    <p className="text-slate-500 text-[13px] font-medium">Reviewing your build</p>
                   </div>
                 </div>
 
+                {!roomId && (
+                  <div>
+                    <label className="block text-[13px] font-bold text-slate-700 mb-2">Select a Room</label>
+                    <select
+                      required
+                      value={selectedRoomId}
+                      onChange={e => setSelectedRoomId(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
+                    >
+                      <option value="" disabled className="text-slate-400">Choose the room you want reviewed...</option>
+                      {userRooms?.map(room => (
+                        <option key={room.id} value={room.id}>
+                          {room.title || "Untitled Room"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-[13px] font-bold text-slate-300 mb-2">Build Summary</label>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-2">Build Summary</label>
                   <textarea
                     required rows={2}
                     value={form.buildSummary} onChange={e => setForm(f => ({ ...f, buildSummary: e.target.value }))}
                     placeholder="Briefly describe what you've built..."
-                    className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-bold text-slate-300 mb-2">Specific Challenge</label>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-2">Specific Challenge</label>
                   <textarea
-                    required rows={3}
+                    required rows={2}
                     value={form.specificChallenge} onChange={e => setForm(f => ({ ...f, specificChallenge: e.target.value }))}
-                    placeholder="What specific part are you struggling with?"
-                    className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    placeholder="What specific area do you need help with?"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-bold text-slate-300 mb-2">Questions for Expert</label>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-2">Questions for Expert</label>
                   <textarea
                     required rows={3}
                     value={form.questions} onChange={e => setForm(f => ({ ...f, questions: e.target.value }))}
                     placeholder="1. Is the UX intuitive?\n2. What would you do differently?"
-                    className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[13px] font-bold text-slate-300 mb-2">Priority</label>
+                    <label className="block text-[13px] font-bold text-slate-700 mb-2">Priority</label>
                     <select
                       value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                      className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white focus:outline-none focus:border-primary transition-all appearance-none"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
                     >
                       <option value="low">Low - When you have time</option>
                       <option value="medium">Medium - Within a week</option>
@@ -248,47 +285,64 @@ export function RequestExpertReviewModal({ open, onClose, roomId }: RequestExper
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[13px] font-bold text-slate-300 mb-2">Target Deadline</label>
+                    <label className="block text-[13px] font-bold text-slate-700 mb-2">Target Deadline</label>
                     <input
                       type="date"
                       value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                      className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[15px] text-white focus:outline-none focus:border-primary transition-all"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-[#0A0910]/50 rounded-xl border border-white/[0.08]">
-                  <div>
-                    <h4 className="text-white font-bold text-sm">Public Review</h4>
-                    <p className="text-slate-400 text-xs">Allow this review to be shown on your profile.</p>
+                <div className="flex flex-col gap-4 p-5 bg-slate-50 border border-slate-100 rounded-xl mt-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-[14px] font-bold text-slate-900">Make request public</h4>
+                      <p className="text-slate-500 text-[13px] font-medium mt-0.5">Allow other builders to learn from this review on your profile.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, isPublic: !f.isPublic }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.isPublic ? 'bg-primary-500' : 'bg-slate-300'}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.isPublic ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" checked={form.isPublic} onChange={e => setForm(f => ({ ...f, isPublic: e.target.checked }))} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
                 </div>
               </form>
             )}
           </div>
 
-          <div className="p-6 border-t border-white/[0.08] flex justify-end gap-3 shrink-0">
-            <button onClick={onClose} className="px-5 py-2.5 text-slate-400 hover:text-white rounded-xl text-[14px] font-bold transition-colors">
+          <div className="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50/50 rounded-b-[24px]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
+            >
               Cancel
             </button>
+            
             {step === 1 ? (
               <button 
                 onClick={() => setStep(2)} 
                 disabled={!selectedExpert}
-                className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-[14px] font-bold transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50"
               >
                 Continue <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
-              <button 
-                form="request-review-form" type="submit" disabled={loading} 
-                className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-[14px] font-bold transition-all disabled:opacity-50"
+              <button
+                form="request-review-form"
+                type="submit"
+                disabled={loading}
+                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4" /> {loading ? 'Sending Request...' : 'Send Request'}
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                {loading ? 'Sending...' : 'Send Request'}
               </button>
             )}
           </div>

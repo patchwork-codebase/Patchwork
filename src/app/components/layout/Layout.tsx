@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate, Outlet, useSearchParams, ScrollRestoration } from "react-router";
+import { Link, useLocation, useNavigate, useOutlet, useSearchParams, ScrollRestoration, useNavigation } from "react-router";
 import { Suspense } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Bell } from "lucide-react";
 import { useNotifications } from "../../hooks/useNotifications";
 
-import { getAvatarUrl } from "../../utils/helpers";
+// avatarUrl removed
 
 import { HammerIcon, DashboardIcon, SearchIcon, ActivityIcon, EyeIcon, CompassIcon, PlusIcon, LogOutIcon, UserIcon, ZapIcon, RoadmapIcon, MilestonesIcon, AnalyticsIcon, LightbulbIcon } from "./LayoutIcons";
 
@@ -22,12 +22,15 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { DesktopSidebar } from "./DesktopSidebar";
 
 import { GlobalHeader } from "./GlobalHeader";
+import { PwaInstallPrompt } from "./PwaInstallPrompt";
 
 export default function Layout() {
+  const outlet = useOutlet();
   const { user, profile, signOut, loading, refreshProfile } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,6 +66,8 @@ export default function Layout() {
     ? 'explore'
     : location.pathname.startsWith('/learning-hub')
       ? 'learning-hub'
+    : location.pathname.startsWith('/dashboard/experts')
+      ? 'experts'
     : location.pathname.startsWith('/dashboard/rooms')
       ? 'rooms'
     : location.pathname.startsWith('/dashboard/build-logs')
@@ -75,6 +80,8 @@ export default function Layout() {
       ? 'milestones'
     : location.pathname.startsWith('/dashboard/analytics')
       ? 'analytics'
+    : location.pathname.startsWith('/dashboard/achievements')
+      ? 'achievements'
     : location.pathname.startsWith('/dashboard/discovery')
       ? 'discovery'
       : activeTab;
@@ -105,12 +112,19 @@ export default function Layout() {
     navigate('/login');
   }
 
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
+  // avatarUrl removed
 
+  const isObserver = profile?.role === 'observer';
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAF9] text-slate-900 pb-[env(safe-area-inset-bottom)] lg:pb-0">
+      {/* Global Navigation Progress Bar */}
+      {navigation.state === 'loading' && (
+        <div className="fixed top-0 left-0 w-full h-1 z-[100] bg-primary-400/20 overflow-hidden">
+          <div className="h-full bg-primary-500 animate-[shimmer_1.5s_infinite] w-1/3" />
+        </div>
+      )}
       <VerificationRequiredModal />
       <VerificationSuccessModal
         isOpen={showSuccessModal}
@@ -153,24 +167,24 @@ export default function Layout() {
       )}
 
       <MobileBottomNav 
-        activeSection={activeSection}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        unreadCount={unreadCount}
-        avatarUrl={avatarUrl}
-        userDisplayName={userDisplayName}
-        user={user}
-        profile={profile}
-        setForceShowTour={setForceShowTour}
-        handleSignOut={handleSignOut}
-      />
+          activeSection={activeSection}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          unreadCount={unreadCount}
+          // avatarUrl removed
+          userDisplayName={userDisplayName}
+          user={user}
+          profile={profile}
+          setForceShowTour={setForceShowTour}
+          handleSignOut={handleSignOut}
+        />
 
-      <div className="flex flex-col lg:flex-row flex-1 pb-[80px] lg:pb-0">
+      <div className="flex flex-col lg:flex-row flex-1 lg:pb-0">
 
         {/* ── LEFT SIDEBAR ─────────────────────────────────── */}
         <DesktopSidebar 
           activeSection={activeSection}
-          avatarUrl={avatarUrl}
+          // avatarUrl removed
           userDisplayName={userDisplayName}
           profile={profile}
           user={user}
@@ -180,8 +194,9 @@ export default function Layout() {
           handleSignOut={handleSignOut}
         />
 
-        <main className="flex-1 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
+        <main className="flex-1 min-w-0 min-h-[calc(100vh-60px)] bg-[#FAFAF9] pb-28">
           <div className="h-full">
+
             <Suspense fallback={
               <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-8">
                 {/* Page skeleton */}
@@ -207,11 +222,23 @@ export default function Layout() {
                 </div>
               </div>
             }>
-              <Outlet />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  {outlet}
+                </motion.div>
+              </AnimatePresence>
             </Suspense>
           </div>
         </main>
       </div>
+      <PwaInstallPrompt />
       <ScrollRestoration getKey={(location) => location.pathname} />
     </div>
   );

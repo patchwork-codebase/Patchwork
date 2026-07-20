@@ -3,28 +3,28 @@ import { Link, useSearchParams, useNavigate } from "react-router";
 import { useAuth, supabase, sendVerificationEmailDirect } from "../auth/AuthContext";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw, Bell } from "lucide-react";
-import { OnboardingChecklist } from "./OnboardingChecklist";
+import { AlertCircle, X, Image as ImageIcon, ChevronDown, Mail, ShieldAlert, RefreshCw, Bell, Eye, Hammer } from "lucide-react";
+
 import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import VerificationSuccessModal from "./VerificationSuccessModal";
-import { useRooms, useUserRooms, useObservedRooms } from "../../hooks/useRooms";
+import { NewUserWelcomeBanner } from "./NewUserWelcomeBanner";
+import { useRooms, useUserRooms, useObservedRooms, useObserverStats, useOfficialRoom } from "../../hooks/useRooms";
+import { PATCHWORK_OFFICIAL_ROOM_ID } from "../../constants/patchwork";
 import { useFeedUpdates } from "../../hooks/useFeedUpdates";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDashboardStats, useRecentActivity, useRoomObservers, useDashboardRealtimeSync } from "../../hooks/useDashboardStats";
+import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { useNotifications } from "../../hooks/useNotifications";
 
 // Subcomponents
 import { StatsStrip } from "./StatsStrip";
-import { ActiveRoomsList } from "./ActiveRoomsList";
-import { RecentActivityList } from "./RecentActivityList";
 import { TimelineFeed } from "./TimelineFeed";
-import { ActiveRoomPanel } from "./ActiveRoomPanel";
-import { OverviewInsights } from "./OverviewInsights";
-import { PendingDraftsList } from "./PendingDraftsList";
-import { RequestsAndInvites } from "./RequestsAndInvites";
+import { DashboardOverview } from "./DashboardOverview";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { MobileActionSheet } from "./MobileActionSheet";
 import { ComposerSheet } from "./ComposerSheet";
+import { ObserverProgressionPanel } from "../observer/ObserverProgressionPanel";
+import ObserverDashboardView from "../observer/ObserverDashboardView";
+import { SEO } from "../seo/SEO";
 
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -32,16 +32,22 @@ const IconPlus = () => (
   </svg>
 );
 
-import { timeAgo, getAvatarUrl, STORAGE_KEYS } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 
 export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
+  const isObserver = profile?.role === 'observer';
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: notificationsData } = useNotifications(user?.id);
   const unreadCount = notificationsData?.filter(n => !n.read).length || 0;
+
+  // Welcome banner state — shown once after onboarding OR for brand-new users with no rooms
+  const isNewUser = !!(profile && !profile.signup_completed_at);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => searchParams.get('welcome') === 'true' || isNewUser);
 
   const {
     data: roomsData,
@@ -50,25 +56,36 @@ export default function Dashboard() {
   const { data: myRoomsData, isLoading: myRoomsLoading } = useUserRooms(user?.id || undefined);
   const { data: observedRoomsData, isLoading: observedRoomsLoading } = useObservedRooms(user?.id || undefined);
 
+  const [feedSortOrder, setFeedSortOrder] = useState<'desc' | 'asc'>('desc');
+
   const {
     data: dbUpdatesData,
     isLoading: dbUpdatesLoading,
     fetchNextPage: fetchNextUpdates,
     hasNextPage: hasNextUpdates,
     isFetchingNextPage: isFetchingNextUpdates
-  } = useFeedUpdates();
+  } = useFeedUpdates(feedSortOrder);
+
+  const { data: officialRoomData } = useOfficialRoom();
 
   const rooms = roomsData?.pages.flat() || [];
   const myRooms = myRoomsData?.pages.flat() || [];
   const observedRooms = observedRoomsData?.pages.flat() || [];
   const dbUpdates = dbUpdatesData?.pages.flat() || [];
 
-  const allMyRooms = [...myRooms, ...observedRooms].reduce((acc, current) => {
+  const hasPersonalRooms = myRooms.some(r => r.id !== PATCHWORK_OFFICIAL_ROOM_ID);
+
+  const allMyRoomsRaw = [...myRooms, ...observedRooms].reduce((acc, current) => {
     if (!acc.find(item => item.id === current.id)) {
       acc.push(current);
     }
     return acc;
   }, [] as any[]);
+
+  const allMyRooms = [
+    ...(officialRoomData ? [officialRoomData] : []),
+    ...allMyRoomsRaw.filter(r => r.id !== PATCHWORK_OFFICIAL_ROOM_ID)
+  ];
 
   const [selectedRoomId, setSelectedRoomId] = useState("");
 
@@ -78,15 +95,11 @@ export default function Dashboard() {
   const reactionsLoading = statsLoading;
   const observersLoading = statsLoading;
 
+  const { data: observerStats, isLoading: observerStatsLoading } = useObserverStats(isObserver ? user?.id : undefined);
+
   const [fabActionSheetOpen, setFabActionSheetOpen] = useState(false);
   const [composerSheetOpen, setComposerSheetOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const { data: recentEventsData } = useRecentActivity(user?.id);
-  const recentEvents = recentEventsData || [];
-
-  const { data: roomObserversData } = useRoomObservers(selectedRoomId);
-  const roomObservers = roomObserversData || [];
 
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
 
@@ -131,7 +144,6 @@ export default function Dashboard() {
 
   const activeTab = (searchParams.get('tab') as 'overview' | 'feed' | 'mine') || 'overview';
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
   const handle = `@${firstName.toLowerCase()}`;
   const joinDate = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
 
@@ -152,9 +164,6 @@ export default function Dashboard() {
   }
   const domainStyle = getDomainStyle(profile?.domain);
 
-  // Initialize real-time sync for dashboard stats and activities
-  useDashboardRealtimeSync(user?.id);
-
   const selectedRoom = allMyRooms.find(r => r.id === selectedRoomId);
   const selectedRoomTitle = selectedRoom?.title || 'Active Room';
 
@@ -165,112 +174,134 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
+  if (isObserver) {
+    return (
+      <>
+        <SEO title={`Dashboard | ${firstName} - Patchwork`} />
+        <ObserverDashboardView
+          user={user}
+          profile={profile}
+          dbUpdates={dbUpdates}
+          observerStats={observerStats}
+          refreshProfile={refreshProfile}
+          queryClient={queryClient}
+        />
+      </>
+    );
+  }
+
   return (
-    <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
+    <>
+      <SEO title={`Dashboard | ${firstName} - Patchwork`} />
+      <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
 
       {/* ── EMAIL VERIFICATION BANNER ─── shown until email is verified */}
       <EmailVerificationBanner />
 
-      {/* Onboarding Checklist */}
-      {user && profile && !profile.signup_completed_at && !(profile as any).signupCompletedAt && localStorage.getItem(STORAGE_KEYS.checklistDismissed(user.id)) !== 'true' && (
-        <OnboardingChecklist
-          role={(profile.role as 'builder' | 'observer') || 'builder'}
-          userId={user.id}
-          userName={profile.name}
-        />
-      )}
+
+      {/* WELCOME BANNER - shown after onboarding */}
+      <AnimatePresence>
+        {showWelcomeBanner && !isObserver && !myRoomsLoading && !hasPersonalRooms && (
+          <NewUserWelcomeBanner
+            userName={profile?.name?.split(' ')[0] || 'Builder'}
+            onDismiss={() => {
+              setShowWelcomeBanner(false);
+              setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('welcome'); return next; });
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* HEADER */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 mb-6 sm:gap-6 sm:mb-8">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
-            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
+      <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
+        {/* Left: avatar + identity */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
+            <UserAvatar 
+              userId={user?.id || ''} 
+              name={profile?.name || user?.email}
+              avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url}
+              className="w-full h-full object-cover scale-110" 
+            />
           </div>
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <h1 className="font-bold text-[20px] sm:text-[28px] text-slate-900 leading-tight tracking-tight m-0 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span>{greeting},</span>
-                <span className="text-primary-400 inline-flex items-center gap-1.5 sm:gap-2">
-                  <span className="truncate max-w-[150px] sm:max-w-none">{firstName}</span>
-                  <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                  <span className="shrink-0">👋</span>
-                </span>
-              </h1>
-              <div className="flex flex-wrap items-center gap-2">
-                {profile?.domain && (
-                  <span className={`px-2.5 py-1 rounded-full border ${domainStyle.border} ${domainStyle.bg} ${domainStyle.text} text-[11px] font-mono font-bold uppercase`}>
-                    {profile.domain}
-                  </span>
-                )}
-                <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[11px] font-mono font-bold uppercase">
-                  Free
-                </span>
-                <span className="px-2.5 py-1 rounded-full border border-primary-400/20 bg-primary-400/10 text-primary-400 text-[11px] font-mono font-bold uppercase">
-                  Rep {profile?.reputation || 0}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 sm:mt-2 text-[12px] sm:text-[13px] text-slate-500 font-medium">
-              <span>{handle}</span>
+          <div className="min-w-0 flex-1">
+            {/* Greeting + name — single truncating line */}
+            <h1 className="font-bold text-[16px] sm:text-[24px] text-slate-900 leading-snug tracking-tight m-0 flex items-center gap-2">
+              <span className="truncate">{greeting}, <span className="text-primary-400">{firstName}</span></span>
+              <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-3.5 h-3.5 sm:w-5 sm:h-5 shrink-0" />
+              <motion.span 
+                className="shrink-0 text-[20px] sm:text-[28px] inline-block origin-bottom-right cursor-pointer"
+                initial={{ scale: 0, rotate: 0 }}
+                animate={{ 
+                  scale: [0, 1.8, 1.8, 1.8, 1],
+                  rotate: [0, 15, -15, 15, -15, 0] 
+                }}
+                transition={{
+                  duration: 1.5,
+                  ease: "easeInOut",
+                  times: [0, 0.2, 0.4, 0.6, 0.8, 1]
+                }}
+                whileHover={{ 
+                  scale: 1.3, 
+                  rotate: [0, 15, -15, 15, -15, 0], 
+                  transition: { duration: 0.6 } 
+                }}
+                whileTap={{ scale: 0.9 }}
+              >
+                👋
+              </motion.span>
+            </h1>
+            {/* Handle + badges — flex wrap on desktop */}
+            <div className="flex sm:flex-wrap items-center gap-1.5 mt-1 overflow-x-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0">{handle}</span>
               {profile?.city && (
-                <>
-                  <span className="text-slate-600">·</span>
-                  <span>{profile.city}</span>
-                </>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0 hidden sm:inline">· {profile.city}</span>
               )}
-              <span className="text-slate-600 hidden sm:inline-block">·</span>
-              <span className="hidden sm:inline-block">Joined {joinDate}</span>
+              <span className="text-slate-300 shrink-0">·</span>
+              {profile?.domain && (
+                <span className={`px-2 py-0.5 rounded-full border ${domainStyle.border} ${domainStyle.bg} ${domainStyle.text} text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0`}>
+                  {profile.domain}
+                </span>
+              )}
+              {isObserver ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">
+                  <Eye className="w-2.5 h-2.5" /> Observer
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">
+                  <Hammer className="w-2.5 h-2.5" /> Builder
+                </span>
+              )}
+              <span className="px-2 py-0.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">Joined {joinDate}</span>
+              <span className="px-2 py-0.5 rounded-full border border-primary-400/20 bg-primary-400/10 text-primary-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">Rep {profile?.reputation || 0}</span>
             </div>
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-3 w-full sm:w-auto">
+        {/* Right: bell + new room — always visible */}
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/dashboard/notifications"
-            className="relative flex items-center justify-center w-[46px] h-[46px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 hover:text-slate-900 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-ring"
+            className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 transition-all shadow-sm focus-ring"
           >
-            <Bell className="w-[18px] h-[18px]" />
+            <Bell className="w-[15px] h-[15px] sm:w-[18px] sm:h-[18px]" />
             {unreadCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-[#0E0C15]" />
+              <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
             )}
           </Link>
-          <Link
-            to="/dashboard/create"
-            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-ring"
-          >
-            <IconPlus /> New room
-          </Link>
+          {!isObserver && (
+            <Link
+              to="/dashboard/create"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 bg-primary-500 hover:bg-[#5b4ed6] text-white rounded-full text-[11px] sm:text-[13px] font-bold shadow-[0_4px_14px_rgba(108,92,231,0.25)] transition-all focus-ring whitespace-nowrap"
+            >
+              <IconPlus /> + room
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* PROFILE CARD & STATS */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
-        {/* Profile Card - hidden on mobile to prevent redundancy with header */}
-        <div className="hidden md:block xl:col-span-2 bg-white border border-slate-100 rounded-[20px] p-6 focus-ring shadow-[0_2px_8px_rgba(0,0,0,0.04)]" tabIndex={0}>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-slate-900 text-[16px] truncate flex items-center gap-1.5">
-                {profile?.name}
-                <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-4 h-4" />
-              </h3>
-              <p className="text-[13px] text-slate-500 mt-0.5">{handle}</p>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Reputation</p>
-              <p className="text-[20px] font-bold text-primary-400 mt-1">{profile?.reputation || 0}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-slate-500 uppercase font-mono font-bold">Member since</p>
-              <p className="text-[16px] font-semibold text-slate-900 mt-1">{joinDate}</p>
-            </div>
-          </div>
-        </div>
-
+      {/* STATS */}
+      <div className="mb-6 sm:mb-8">
         {/* Stats Strip */}
         <StatsStrip
           myRooms={allMyRooms}
@@ -279,6 +310,9 @@ export default function Dashboard() {
           myRoomsLoading={myRoomsLoading}
           reactionsLoading={reactionsLoading}
           observersLoading={observersLoading}
+          isObserver={isObserver}
+          observerStats={observerStats}
+          observerStatsLoading={observerStatsLoading}
         />
       </div>
 
@@ -287,7 +321,6 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-200 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
           {[
             { key: 'overview' as const, label: 'Overview' },
-            { key: 'mine' as const, label: 'My rooms' },
             { key: 'feed' as const, label: 'Global timeline' },
           ].map(tab => {
             const isCurrent = activeTab === tab.key;
@@ -316,43 +349,18 @@ export default function Dashboard() {
       </div>
 
       {/* MAIN COLUMNS GRID */}
-      {activeTab === 'mine' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.95fr] gap-8">
-          {/* LEFT COLUMN: ACTIVE WORK LIST */}
-          <ActiveRoomsList
-            rooms={allMyRooms}
-            loading={myRoomsLoading || observedRoomsLoading}
-            setTab={setTab}
-          />
-
-          {/* RIGHT COLUMN: RECENT ACTIVITY & WATCHERS */}
-          <RecentActivityList
-            recentEvents={recentEvents}
-            roomObservers={roomObservers}
-            selectedRoomTitle={selectedRoomTitle}
-          />
-        </div>
-      ) : activeTab === 'overview' ? (
-        <div>
-          <RequestsAndInvites />
-          <PendingDraftsList />
-          <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.55fr] gap-8 xl:gap-12">
-            <ActiveRoomsList
-              rooms={allMyRooms}
-              loading={myRoomsLoading || observedRoomsLoading}
-              setTab={setTab}
-              selectedRoomId={selectedRoomId}
-              setSelectedRoomId={setSelectedRoomId}
-            />
-            <ActiveRoomPanel
-              user={user}
-              room={allMyRooms.find(r => r.id === selectedRoomId) || allMyRooms[0]}
-              reactions={reactions}
-              queryClient={queryClient}
-            />
-          </div>
-          <OverviewInsights />
-        </div>
+      {activeTab === 'overview' ? (
+        <DashboardOverview
+          user={user}
+          allMyRooms={allMyRooms}
+          myRoomsLoading={myRoomsLoading}
+          observedRoomsLoading={observedRoomsLoading}
+          setTab={setTab}
+          selectedRoomId={selectedRoomId}
+          setSelectedRoomId={setSelectedRoomId}
+          reactions={reactions}
+          queryClient={queryClient}
+        />
       ) : (
         /* TIMELINE FEED FOR MY ROOMS / LIVE FEED TABS */
         <TimelineFeed
@@ -370,6 +378,8 @@ export default function Dashboard() {
           activeTab={activeTab}
           queryClient={queryClient}
           loading={loading}
+          feedSortOrder={feedSortOrder}
+          setFeedSortOrder={setFeedSortOrder}
         />
       )}
 
@@ -393,5 +403,6 @@ export default function Dashboard() {
         role={profile?.role || 'builder'}
       />
     </div>
+    </>
   );
 }

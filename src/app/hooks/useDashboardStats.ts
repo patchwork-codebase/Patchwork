@@ -1,47 +1,6 @@
-import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import { timeAgo } from '../utils/helpers';
-
-export function useDashboardRealtimeSync(userId?: string) {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const channelName = 'dashboard-stats-sync';
-
-    // Remove any stale channel with the same name before subscribing.
-    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
-    if (existing) supabase.removeChannel(existing);
-
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'reactions' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', userId] });
-          queryClient.invalidateQueries({ queryKey: ['recent-activity', userId] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'room_observers' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats', userId] });
-          queryClient.invalidateQueries({ queryKey: ['room-observers'] });
-          queryClient.invalidateQueries({ queryKey: ['recent-activity', userId] });
-          queryClient.invalidateQueries({ queryKey: ['my-rooms', userId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, queryClient]);
-}
 
 export function useDashboardStats(userId?: string) {
   return useQuery({
@@ -68,7 +27,8 @@ export function useDashboardStats(userId?: string) {
         observers: observersRes.data || []
       };
     },
-    enabled: !!userId
+    enabled: !!userId,
+    refetchInterval: 30000
   });
 }
 
@@ -93,11 +53,21 @@ export function useRecentActivity(userId?: string) {
           .limit(5)
       ]);
 
-      const mergedEvents: any[] = [];
+      interface ActivityEvent {
+        name: string;
+        text: string;
+        time: string;
+        color: string;
+        date: Date;
+        userId: string;
+      }
+      const mergedEvents: ActivityEvent[] = [];
 
       if (reactionsRes.data) {
-        reactionsRes.data.forEach((re: any) => {
-          const name = re.users?.name || 'Someone';
+        reactionsRes.data.forEach((row) => {
+          const re = row as { type: string; created_at: string; observer_id: string; users?: { name?: string } | { name?: string }[] };
+          const userObj = Array.isArray(re.users) ? re.users[0] : re.users;
+          const name = userObj?.name || 'Someone';
           const text = re.type === 'like' ? 'reacted "Like" to your update' : `replied to your update`;
           mergedEvents.push({
             name,
@@ -111,9 +81,12 @@ export function useRecentActivity(userId?: string) {
       }
 
       if (observersRes.data) {
-        observersRes.data.forEach((ob: any) => {
-          const name = ob.users?.name || 'Someone';
-          const roomTitle = ob.rooms?.title || 'your room';
+        observersRes.data.forEach((row) => {
+          const ob = row as { joined_at: string; observer_id: string; users?: { name?: string } | { name?: string }[]; rooms?: { title?: string } | { title?: string }[] };
+          const userObj = Array.isArray(ob.users) ? ob.users[0] : ob.users;
+          const roomObj = Array.isArray(ob.rooms) ? ob.rooms[0] : ob.rooms;
+          const name = userObj?.name || 'Someone';
+          const roomTitle = roomObj?.title || 'your room';
           mergedEvents.push({
             name,
             text: `started following your "${roomTitle}" room`,
@@ -127,7 +100,8 @@ export function useRecentActivity(userId?: string) {
 
       return mergedEvents.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
     },
-    enabled: !!userId
+    enabled: !!userId,
+    refetchInterval: 30000
   });
 }
 
@@ -144,8 +118,10 @@ export function useRoomObservers(roomId?: string) {
 
       if (error) throw error;
 
-      return (data || []).map((ob: any) => {
-        const name = ob.users?.name || 'Observer';
+      return (data || []).map((row) => {
+        const ob = row as { observer_id: string; users?: { name?: string } | { name?: string }[] };
+        const userObj = Array.isArray(ob.users) ? ob.users[0] : ob.users;
+        const name = userObj?.name || 'Observer';
         const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
         return {
           initials,

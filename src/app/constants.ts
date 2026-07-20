@@ -17,7 +17,7 @@ export const QUERY_KEYS = {
   observedRooms: (userId: string) => ['observed-rooms', userId] as const,
   observerStats: (userId: string) => ['observer-stats', userId] as const,
   profile: (userId: string) => ['profile', userId] as const,
-  feedUpdates: ['feed-updates'] as const,
+  feedUpdates: ['feed-updates-v2'] as const,
   notifications: (userId: string) => ['notifications', userId] as const,
   dashboardStats: (userId: string) => ['dashboard-stats', userId] as const,
   recentActivity: (userId: string) => ['recent-activity', userId] as const,

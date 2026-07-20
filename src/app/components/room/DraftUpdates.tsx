@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../auth/AuthContext';
 import { useGithubDrafts } from '../../hooks/useGithub';
-import { Github, Check, X, GitCommit, FileText, Loader2, ArrowRight } from 'lucide-react';
+import { Github, Check, X, GitCommit, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -43,7 +43,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
       toast.success('Draft published successfully!');
       refetch();
       queryClient.invalidateQueries({ queryKey: ['room', roomId] });
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
     } catch (err: unknown) {
       toast.error(`Failed to publish draft: ${(err instanceof Error ? err.message : String(err))}`);
     } finally {
@@ -97,7 +97,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
                 <p className="text-[13px] text-slate-400 mb-3 line-clamp-2">{draft.commit_message}</p>
               )}
               {draft.diff_preview && (
-                <div className="bg-[#0A0910]/50 border border-white/[0.05] rounded-lg p-3 text-[12px] text-slate-300 font-mono whitespace-pre-wrap">
+                <div className="bg-ink/50 border border-white/[0.05] rounded-lg p-3 text-[12px] text-slate-300 font-mono whitespace-pre-wrap">
                   {draft.diff_preview}
                 </div>
               )}

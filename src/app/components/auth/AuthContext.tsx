@@ -15,34 +15,9 @@ export const DEV_AUTH_BYPASS = false;
 
 const API_BASE = window.location.origin + "/api/v1";
 
-import { normalizeRow } from "../../utils/helpers";
+import { normalizeRow, registerAvatarUrl } from "../../utils/helpers";
 
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  reputation: number;
-  bio: string;
-  avatar: string;
-  interests?: string[];
-  createdAt: string;
-  city?: string;
-  domain?: string;
-  emailVerified?: boolean;
-  signup_completed_at?: string | null;
-  gender?: string;
-  phone_country_code?: string;
-  phone_number?: string;
-  website?: string;
-  twitter?: string;
-  github_url?: string;
-  linkedin_url?: string;
-  skills?: string[];
-  followerCount?: number;
-  followingCount?: number;
-  isFollowing?: boolean;
-}
+import { Profile } from "../../types";
 
 interface SignInResult {
   profile: Profile | null;
@@ -60,6 +35,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithLinkedin: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
   ensureValidSession: () => Promise<Session>;
   withVerification: (action: () => void) => void;
@@ -106,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone_country_code: existing?.phone_country_code || metadata.phone_country_code || '',
         phone_number: existing?.phone_number || metadata.phone_number || '',
         bio: existing?.bio || '',
-        avatar: existing?.avatar || '',
+        avatar: existing?.avatar || existing?.avatarUrl || existing?.avatar_url || '',
       };
 
       const { error } = await supabase
@@ -118,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function loadProfile(userId: string) {
+  async function loadProfile(userId: string, providedAuthUser?: any) {
     try {
       const { data, error: fetchErr } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
       if (fetchErr) throw fetchErr;
@@ -129,8 +106,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // fall back to Supabase's built-in email_confirmed_at. Either being true = verified.
       let isConfirmed = false;
       try {
-        // Always fetch the auth user — this is the reliable fallback
-        const { data: { user: authUser } } = await supabase.auth.getUser();
+        let authUser = providedAuthUser;
+        
+        // If not provided, reliably fallback to fetching the auth user, but handle errors gracefully
+        if (!authUser) {
+          const { data, error: authError } = await supabase.auth.getUser();
+          if (!authError) {
+            authUser = data.user;
+          }
+        }
 
         // Try our custom column (only exists after the SQL migration is run)
         const { data: userRow, error: colError } = await supabase
@@ -164,6 +148,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!p) return null;
       }
       const profile = { ...(p as Profile), emailVerified: isConfirmed };
+      // Register this user's avatar so every getAvatarUrl(userId) call returns the real photo
+      const avatarUrl = (data as any)?.avatar_url || (data as any)?.avatar;
+      registerAvatarUrl(userId, avatarUrl);
       setProfile(profile);
       return profile;
     } catch (err) {
@@ -173,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function refreshProfile() {
-    if (user) await loadProfile(user.id);
+    if (user) await loadProfile(user.id, user);
   }
 
   useEffect(() => {
@@ -206,7 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           if (session?.user) {
-            loadProfile(session.user.id);
+            loadProfile(session.user.id, session.user);
           }
         });
       }
@@ -232,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
         // Load profile for user
-        await loadProfile(currentSession.user.id);
+        await loadProfile(currentSession.user.id, currentSession.user);
       }
 
       setLoading(false);
@@ -247,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(refreshedSession);
             setUser(refreshedUser ?? refreshedSession.user);
             if (refreshedUser?.id || refreshedSession.user?.id) {
-              await loadProfile(refreshedUser?.id || refreshedSession.user.id);
+              await loadProfile(refreshedUser?.id || refreshedSession.user.id, refreshedUser || refreshedSession.user);
             }
           }
         } catch (e) {
@@ -272,24 +259,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (event === 'SIGNED_IN') {
         channel.postMessage('SESSION_LOGIN');
         if (session?.user) {
-          await loadProfile(session.user.id);
+          await loadProfile(session.user.id, session.user);
         }
       } else if (event === 'TOKEN_REFRESHED') {
         channel.postMessage('SESSION_REFRESH');
-        if (session?.user) loadProfile(session.user.id);
+        if (session?.user) loadProfile(session.user.id, session.user);
       } else {
         if (session?.user) {
-          loadProfile(session.user.id);
+          loadProfile(session.user.id, session.user);
         } else {
           setProfile(null);
         }
       }
     });
 
+    // Global Realtime Sync for Avatars
+    // This ensures that when any user updates their avatar, it instantly propagates
+    // to all other active clients currently viewing them (e.g. in rooms, feed, etc.)
+    const globalUsersChannel = supabase
+      .channel('global-users-avatar')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'users' },
+        (payload: any) => {
+          const newUrl = payload.new?.avatar_url || payload.new?.avatar;
+          if (newUrl) {
+            registerAvatarUrl(payload.new.id, newUrl);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       subscription.unsubscribe();
       channel.close();
       window.removeEventListener('visibilitychange', handleVisibilityChange);
+      supabase.removeChannel(globalUsersChannel);
     };
   }, []);
 
@@ -414,13 +419,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
 
+  async function resetPassword(email: string) {
+    const { data, error } = await supabase.functions.invoke('send-password-reset-email', {
+      body: { email }
+    });
+
+    if (error) {
+      console.error('Failed to call send-password-reset-email edge function:', error);
+      throw new Error('Failed to dispatch password reset email.');
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+  }
+
+  async function updatePassword(password: string) {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  }
+
   return (
     <AuthContext.Provider value={{ 
       user, session, profile, loading, token, 
       signUp, signIn, signOut, refreshProfile, ensureValidSession,
       withVerification,
       signInWithGoogle,
-      signInWithLinkedin
+      signInWithLinkedin,
+      resetPassword,
+      updatePassword
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
 import { toast } from 'sonner';
+import { uploadImage } from '../utils/uploadImage';
 
 interface PostUpdatePayload {
   selectedRoomId: string;
@@ -40,17 +41,15 @@ export function usePostUpdate() {
       const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       let uploadedMediaUrl = null;
-      if (mediaPreview) {
+      if (mediaPreview && mediaPreview.startsWith('data:')) {
         toast.loading("Uploading image...", { id: "upload" });
-        const { data, error } = await supabase.functions.invoke('upload-image', {
-          body: { image: mediaPreview }
-        });
-        if (error) {
+        try {
+          uploadedMediaUrl = await uploadImage(mediaPreview);
+          toast.dismiss("upload");
+        } catch (error) {
           toast.dismiss("upload");
           throw error;
         }
-        uploadedMediaUrl = data?.secure_url || null;
-        toast.dismiss("upload");
       }
 
       const payload = {
@@ -82,11 +81,12 @@ export function usePostUpdate() {
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed-updates'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
       toast.success("Update posted successfully!");
     },
-    onError: (err: any) => {
-      toast.error(`Failed to post update: ${err instanceof Error ? err.message : String(err)}`);
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : (err as any)?.message || JSON.stringify(err);
+      toast.error(`Failed to post update: ${errorMessage}`);
     }
   });
 }

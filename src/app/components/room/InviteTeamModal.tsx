@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, Mail, User, Loader2, UserPlus, ShieldCheck, Trash2 } from "lucide-react";
-import { supabase } from "../auth/AuthContext";
+import { X, Send, Mail, Loader2, UserPlus, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { Room } from "../../types";
+import { usePendingInvites } from "../../hooks/usePendingInvites";
 
 interface InviteTeamModalProps {
   open: boolean;
@@ -11,99 +11,30 @@ interface InviteTeamModalProps {
   room: Room;
 }
 
-interface PendingInvite {
-  id: string;
-  email: string;
-  role: string;
-  status: string;
-  created_at: string;
-}
-
 export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<'observer' | 'collaborator'>('collaborator');
-  const [loading, setLoading] = useState(false);
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
-  const [fetchingInvites, setFetchingInvites] = useState(false);
+  const [role, setRole] = useState<'observer' | 'collaborator' | 'team_member' | 'expert' | 'investor' | 'co_founder' | 'org_member'>('team_member');
+  const [reason, setReason] = useState('');
+  
+  const { 
+    invites, 
+    isFetching, 
+    inviteUser,
+    isInviting, 
+    revokeInvite, 
+    resendInvite,
+    isResending 
+  } = usePendingInvites(open ? room.id : '');
 
-  useEffect(() => {
-    if (open) {
-      fetchInvites();
-    }
-  }, [open]);
-
-  const fetchInvites = async () => {
-    setFetchingInvites(true);
-    try {
-      const { data, error } = await supabase
-        .from('room_invitations')
-        .select('id, email, role, status, created_at')
-        .eq('room_id', room.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setPendingInvites(data || []);
-    } catch (err: unknown) {
-      console.error("Error fetching invites:", err);
-    } finally {
-      setFetchingInvites(false);
-    }
-  };
-
-  const handleInvite = async (e: React.FormEvent) => {
+  const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes('@')) {
       toast.error("Please enter a valid email address");
       return;
     }
-
-    setLoading(true);
-    try {
-      const { data: token, error } = await supabase.rpc('invite_user_to_room', {
-        p_room_id: room.id,
-        p_email: email.trim().toLowerCase(),
-        p_role: role
-      });
-
-      if (error) throw error;
-
-      // Manually invoke the edge function to send the email
-      await supabase.functions.invoke('room-invitations', {
-        body: {
-          record: {
-            email: email.trim().toLowerCase(),
-            room_id: room.id,
-            role: role,
-            token: token,
-            origin: window.location.origin
-          }
-        }
-      });
-
-      toast.success(`Invitation sent to ${email}`);
-      setEmail("");
-      fetchInvites();
-    } catch (err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)) || "Failed to send invitation");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRevoke = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('room_invitations')
-        .update({ status: 'revoked' })
-        .eq('id', id);
-
-      if (error) throw error;
-      toast.success("Invitation revoked");
-      fetchInvites();
-    } catch (err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)) || "Failed to revoke invitation");
-    }
+    inviteUser({ email, role }, {
+      onSuccess: () => { setEmail(""); setReason(''); }
+    });
   };
 
   if (!open) return null;
@@ -117,7 +48,7 @@ export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         className="bg-white rounded-[24px] shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col max-h-[90vh]"
       >
-        <div className="p-6 md:p-8 border-b border-slate-100 shrink-0">
+        <div className="p-6 md:p-8 border-b border-slate-100 shrink-0 bg-white relative z-20">
           <div className="flex items-center justify-between mb-2">
             <div className="w-10 h-10 bg-primary-400/10 rounded-xl flex items-center justify-center">
               <UserPlus className="w-5 h-5 text-primary-400" />
@@ -136,54 +67,76 @@ export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
         <div className="p-6 md:p-8 overflow-y-auto">
           <form onSubmit={handleInvite} className="mb-8">
             <div className="space-y-4">
-              <div>
-                <label className="block text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-2">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <div className="w-full">
+                <label htmlFor="invite-email" className="block text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-2">Email Address</label>
+                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary-400 focus-within:ring-1 focus-within:ring-primary-400 transition-all">
+                  <div className="pl-4 pr-2 text-slate-400 flex items-center justify-center">
+                    <Mail className="w-4 h-4" />
+                  </div>
                   <input
+                    id="invite-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="colleague@example.com"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-400 transition-all"
+                    className="w-full py-3 pr-4 bg-transparent text-[14px] text-slate-900 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-2">Role</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRole('collaborator')}
-                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
-                      role === 'collaborator' ? 'border-primary-400 bg-primary-400/5 text-primary-400' : 'border-slate-100 hover:border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    <ShieldCheck className="w-6 h-6 mb-2" />
-                    <span className="text-[13px] font-bold">Collaborator</span>
-                    <span className="text-[11px] text-center mt-1 opacity-70">Can post updates and edit settings</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('observer')}
-                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
-                      role === 'observer' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 hover:border-slate-200 text-slate-600'
-                    }`}
-                  >
-                    <User className="w-6 h-6 mb-2" />
-                    <span className="text-[13px] font-bold">Observer</span>
-                    <span className="text-[11px] text-center mt-1 opacity-70">Can only view and react</span>
-                  </button>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: 'observer', icon: '👁️', label: 'Observer', desc: 'View & react only' },
+                    { value: 'collaborator', icon: '🤝', label: 'Collaborator', desc: 'View & contribute' },
+                    { value: 'team_member', icon: '👥', label: 'Team Member', desc: 'Full room access' },
+                    { value: 'expert', icon: '⭐', label: 'Expert', desc: 'Review access' },
+                    { value: 'investor', icon: '💼', label: 'Investor', desc: 'Investor content' },
+                    { value: 'co_founder', icon: '🚀', label: 'Co-Founder', desc: 'Co-founder access' },
+                    { value: 'org_member', icon: '🏢', label: 'Org Member', desc: 'Org access' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setRole(opt.value)}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left ${
+                        role === opt.value
+                          ? 'border-primary-400 bg-primary-400/5 text-primary-400'
+                          : 'border-slate-100 hover:border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      <span className="text-lg shrink-0">{opt.icon}</span>
+                      <div>
+                        <p className="text-[12px] font-bold leading-tight">{opt.label}</p>
+                        <p className="text-[10px] opacity-70">{opt.desc}</p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="invite-reason" className="block text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Reason for Invitation <span className="font-normal text-slate-400">(Optional)</span>
+                </label>
+                <input
+                  id="invite-reason"
+                  type="text"
+                  value={reason}
+                  onChange={e => setReason(e.target.value)}
+                  placeholder="e.g. I'd love your technical feedback on the architecture"
+                  maxLength={200}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-400 transition-all"
+                />
               </div>
 
               <button
                 type="submit"
-                disabled={loading || !email.trim()}
+                disabled={isInviting || !email.trim()}
                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary-400 hover:bg-[#7b6ce8] text-white text-[14px] font-bold rounded-xl transition-all shadow-lg shadow-primary-400/20 disabled:opacity-50 mt-2"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
+                {isInviting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
                 Send Invitation
               </button>
             </div>
@@ -191,25 +144,37 @@ export function InviteTeamModal({ open, onClose, room }: InviteTeamModalProps) {
 
           <div>
             <h3 className="text-[13px] font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">Pending Invitations</h3>
-            {fetchingInvites ? (
+            {isFetching ? (
               <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
-            ) : pendingInvites.length === 0 ? (
+            ) : invites.length === 0 ? (
               <p className="text-[13px] text-slate-500 italic">No pending invitations.</p>
             ) : (
               <div className="space-y-3">
-                {pendingInvites.map(invite => (
+                {invites.map(invite => (
                   <div key={invite.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg">
                     <div>
                       <p className="text-[13px] font-bold text-slate-700">{invite.email}</p>
-                      <p className="text-[11px] text-slate-500 capitalize">{invite.role}</p>
+                      <p className="text-[11px] text-slate-500 capitalize">{invite.role.replace('_', ' ')}</p>
                     </div>
-                    <button
-                      onClick={() => handleRevoke(invite.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                      title="Revoke Invite"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => resendInvite({ email: invite.email, role: invite.role })}
+                        disabled={isResending}
+                        className="p-1.5 text-slate-400 hover:text-primary-500 hover:bg-primary-50 rounded-md transition-colors"
+                        title="Resend Invite"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => revokeInvite(invite.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                        title="Revoke Invite"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

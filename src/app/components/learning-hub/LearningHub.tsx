@@ -54,7 +54,7 @@ export default function LearningHub() {
   const regularFeatures = featuredLogs.filter(log => log.id !== buildOfTheMonth?.id);
 
   return (
-    <div className="min-h-screen bg-[#0E0C15] font-sans selection:bg-primary-400/30 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-ink font-sans selection:bg-primary-400/30 text-white overflow-hidden relative">
       {/* Background Ambient Glow */}
       <div className="fixed top-0 inset-x-0 h-screen pointer-events-none overflow-hidden -z-10">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary-500/10 blur-[120px] rounded-full" />
@@ -62,7 +62,7 @@ export default function LearningHub() {
       </div>
 
       {/* Public Header */}
-      <header className="sticky top-0 z-50 bg-[#0E0C15]/80 backdrop-blur-xl border-b border-white/[0.08] h-[72px] px-8 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-ink/80 backdrop-blur-xl border-b border-white/[0.08] h-[72px] px-8 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white group">
           <span>patch<span className="inline-block text-primary-400 group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
           <span className="rounded-full bg-white/[0.08] border border-white/[0.1] px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-300">Learning Hub</span>
@@ -92,10 +92,10 @@ export default function LearningHub() {
             <input 
               type="text" 
               placeholder="Search by domain, city, or topic..." 
-              className="relative w-full bg-[#1C1A24]/80 backdrop-blur-sm border border-white/[0.1] rounded-full pl-12 pr-6 py-3.5 text-[15px] font-medium text-white focus:outline-none focus:border-primary-400/50 transition-all placeholder:text-slate-500"
+              className="relative w-full bg-ink-80/80 backdrop-blur-sm border border-white/[0.1] rounded-full pl-12 pr-6 py-3.5 text-[15px] font-medium text-white focus:outline-none focus:border-primary-400/50 transition-all placeholder:text-slate-500"
             />
           </div>
-          <button className="flex items-center gap-2 px-6 py-3.5 bg-[#1C1A24]/80 backdrop-blur-sm border border-white/[0.1] rounded-full text-[14px] font-bold text-slate-300 hover:text-white hover:bg-white/[0.05] transition-all">
+          <button className="flex items-center gap-2 px-6 py-3.5 bg-ink-80/80 backdrop-blur-sm border border-white/[0.1] rounded-full text-[14px] font-bold text-slate-300 hover:text-white hover:bg-white/[0.05] transition-all">
             <Filter className="w-4 h-4" /> Filters
           </button>
         </div>
@@ -121,7 +121,7 @@ export default function LearningHub() {
                   </div>
                   
                   <Link to={`/dashboard/build-logs/${buildOfTheMonth.rooms?.id}`} className="block group">
-                    <div className="bg-[#1C1A24]/60 backdrop-blur-md rounded-[32px] p-8 border border-white/[0.08] hover:border-amber-500/30 transition-all relative overflow-hidden">
+                    <div className="bg-ink-80/60 backdrop-blur-md rounded-[32px] p-8 border border-white/[0.08] hover:border-amber-500/30 transition-all relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-full blur-[80px] -z-10 -mr-20 -mt-20 group-hover:from-amber-500/20 transition-all duration-500" />
                       
                       <div className="flex items-start justify-between gap-4 mb-8">
@@ -143,7 +143,7 @@ export default function LearningHub() {
                         </button>
                       </div>
 
-                      <div className="bg-[#0E0C15]/50 rounded-2xl p-6 border border-white/[0.05]">
+                      <div className="bg-ink/50 rounded-2xl p-6 border border-white/[0.05]">
                         <p className="text-[15px] text-slate-300 font-medium leading-relaxed">
                           <span className="font-bold text-white uppercase tracking-wider text-[12px] mr-2 opacity-80">Editorial Note:</span> 
                           {buildOfTheMonth.editorial_note}
@@ -167,7 +167,7 @@ export default function LearningHub() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {regularFeatures.map(log => (
                       <Link key={log.id} to={`/dashboard/build-logs/${log.rooms?.id}`} className="block group">
-                        <div className="bg-[#1C1A24]/60 backdrop-blur-md rounded-[24px] p-6 border border-white/[0.08] hover:border-primary-400/40 hover:bg-[#1C1A24] transition-all duration-300 h-full flex flex-col relative overflow-hidden">
+                        <div className="bg-ink-80/60 backdrop-blur-md rounded-[24px] p-6 border border-white/[0.08] hover:border-primary-400/40 hover:bg-ink-80 transition-all duration-300 h-full flex flex-col relative overflow-hidden">
                           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-400/5 rounded-full blur-[40px] -z-10 group-hover:bg-primary-400/10 transition-colors" />
                           
                           <div className="flex items-start justify-between gap-3 mb-5">
@@ -231,7 +231,7 @@ export default function LearningHub() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email" 
-                        className="relative w-full bg-[#0E0C15]/80 backdrop-blur-sm border border-white/[0.1] rounded-xl px-5 py-4 text-[15px] focus:outline-none focus:border-primary-400 transition-colors placeholder:text-slate-500 text-white"
+                        className="relative w-full bg-ink/80 backdrop-blur-sm border border-white/[0.1] rounded-xl px-5 py-4 text-[15px] focus:outline-none focus:border-primary-400 transition-colors placeholder:text-slate-500 text-white"
                       />
                     </div>
                     <button type="submit" className="relative w-full bg-white text-black font-extrabold text-[15px] py-4 rounded-xl hover:bg-slate-200 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] overflow-hidden group">

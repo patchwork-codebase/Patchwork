@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp, Archive } from "lucide-react";
+import { Sparkles, CheckCircle2, Flame, Clock, Edit3, Share2, ArrowUpRight, TrendingUp, Archive, Compass } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { useUserRooms } from "../../hooks/useRooms";
+import { useUserRooms, useRooms } from "../../hooks/useRooms";
 import { getObserverCount, timeAgo } from "../../utils/helpers";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
+import { UserAvatar } from "../ui/UserAvatar";
+import { QUERY_KEYS } from "../../constants";
+import { ActiveBuildCard, ShippedBuildCard, CompletedBuildCard } from "./BuildLogCards";
 
 function timeAgoDays(iso: string) {
   if (!iso) return 1;
@@ -21,9 +24,18 @@ function formatDate(iso: string) {
 
 export default function BuildLogs() {
   const [buildLogFilter, setBuildLogFilter] = useState("all");
-  const { user } = useAuth();
-  const { data: myRoomsData, isLoading } = useUserRooms(user?.id);
-  const myRooms = myRoomsData?.pages.flat() || [];
+  const { user, profile } = useAuth();
+  const isObserver = profile?.role === 'observer';
+
+  // Builders see their own rooms; observers see all public rooms
+  const { data: myRoomsData, isLoading: builderLoading } = useUserRooms(!isObserver ? user?.id : undefined);
+  const { data: publicRoomsData, isLoading: publicLoading } = useRooms();
+
+  const isLoading = isObserver ? publicLoading : builderLoading;
+  const myRooms = isObserver
+    ? (publicRoomsData?.pages.flat() || [])
+    : (myRoomsData?.pages.flat() || []);
+
   const queryClient = useQueryClient();
   const [archivingId, setArchivingId] = useState<string | null>(null);
 
@@ -33,7 +45,7 @@ export default function BuildLogs() {
       const { error } = await supabase.from('rooms').update({ status: 'archived' }).eq('id', roomId);
       if (error) throw error;
       toast.success('Room archived successfully');
-      queryClient.invalidateQueries({ queryKey: ['user-rooms'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userRooms(user!.id) });
     } catch (err: unknown) {
       toast.error('Failed to archive room: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
@@ -55,8 +67,14 @@ export default function BuildLogs() {
       {/* Header + metrics */}
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 m-0 mb-1 font-display tracking-tight leading-tight">Build logs</h2>
-          <p className="text-[13px] text-slate-500 m-0 font-medium">Compiled histories of your completed, in-progress, and stalled rooms.</p>
+          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 m-0 mb-1 font-display tracking-tight leading-tight">
+            {isObserver ? 'Build logs' : 'Build logs'}
+          </h2>
+          <p className="text-[13px] text-slate-500 m-0 font-medium">
+            {isObserver
+              ? 'Active, shipped, and completed builds across Patchwork.'
+              : 'Compiled histories of your completed, in-progress, and stalled rooms.'}
+          </p>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3 sm:justify-end">
           {[
@@ -96,77 +114,15 @@ export default function BuildLogs() {
       {/* ── ACTIVE cards ── */}
       {(buildLogFilter === "all" || buildLogFilter === "active" || activeRooms.some(r => r.tags?.[0] === buildLogFilter)) && (
         <div className="flex flex-col gap-4 sm:gap-6">
-          {activeRooms.filter(r => buildLogFilter === "all" || buildLogFilter === "active" || r.tags?.[0] === buildLogFilter).map(room => {
-            const daysActive = timeAgoDays(room.createdAt);
-            const tag = room.tags?.[0] || 'product';
-            return (
-              <div key={room.id} className="bg-white border border-amber-500/20 rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 relative overflow-hidden shadow-sm group hover:border-amber-500/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500" tabIndex={0}>
-                <div className="absolute top-0 right-0 p-32 bg-amber-500/5 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
-                
-                <div className="flex justify-between items-start mb-5 relative">
-                  <div className="flex gap-3 sm:gap-4 w-full">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0 shadow-sm">
-                      <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
-                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-amber-200">Active</span>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-primary-500 bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
-                      </div>
-                      <div className="flex items-center gap-2 m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Day {daysActive} of build · {room.updateCount} updates · <ObserverAvatarStack room={room} /></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 mb-5 relative md:grid-cols-2">
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center shadow-inner">
-                    <div className="flex justify-between text-[11px] sm:text-[12px] font-bold mb-2.5">
-                      <span className="text-slate-500 uppercase tracking-wide">Build progress</span>
-                      <span className="text-amber-600">Day {daysActive}</span>
-                    </div>
-                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full w-[60%] bg-gradient-to-r from-amber-400 to-amber-300 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.3)]" />
-                    </div>
-                  </div>
-                  
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center shadow-inner">
-                    <div className="flex items-center justify-between">
-                       <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"><TrendingUp size={14}/> Updates</span>
-                       <div className="flex items-baseline gap-1">
-                          <span className="text-[20px] sm:text-[24px] font-black text-amber-600 font-display leading-none">{room.updateCount}</span>
-                          <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wide">total</span>
-                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {room.updatedAt && (
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 relative">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Latest update</div>
-                    <p className="text-[13px] sm:text-[14px] text-slate-700 italic m-0 leading-relaxed font-medium line-clamp-2">
-                      Updated {timeAgo(room.updatedAt)}
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex flex-row gap-2 relative mt-auto">
-                  <Link to={`/dashboard/room/${room.id}?action=post`}
-                    title="Post update"
-                    aria-label="Post update"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-                    <Edit3 size={18} />
-                  </Link>
-                  <Link to={`/dashboard/room/${room.id}`}
-                    title="Open room"
-                    aria-label="Open room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
-                    <ArrowUpRight size={18} />
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+          {activeRooms.filter(r => buildLogFilter === "all" || buildLogFilter === "active" || r.tags?.[0] === buildLogFilter).map(room => (
+              <ActiveBuildCard 
+                key={room.id} 
+                room={room} 
+                isObserver={isObserver} 
+                handleArchiveRoom={handleArchiveRoom} 
+                archivingId={archivingId} 
+              />
+          ))}
         </div>
       )}
 
@@ -174,66 +130,7 @@ export default function BuildLogs() {
       {(buildLogFilter === "all" || buildLogFilter === "shipped" || shippedRooms.some(r => r.tags?.[0] === buildLogFilter)) && shippedRooms.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 mt-6">
           {shippedRooms.filter(r => buildLogFilter === "all" || buildLogFilter === "shipped" || r.tags?.[0] === buildLogFilter).map(log => {
-            const tag = log.tags?.[0] || 'product';
-            const daysActive = timeAgoDays(log.createdAt);
-            
-            return (
-              <div key={log.id} className="bg-white border border-emerald-500/20 rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 relative overflow-hidden shadow-sm group hover:border-emerald-500/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" tabIndex={0}>
-                <div className="absolute top-0 right-0 p-24 bg-emerald-500/5 rounded-full blur-[50px] -mr-12 -mt-12 pointer-events-none" />
-                
-                <div className="flex justify-between items-start relative mb-1">
-                  <div className="flex gap-3 sm:gap-4 w-full">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 shadow-sm">
-                      <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
-                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">Shipped</span>
-                      </div>
-                      <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Shipped {formatDate(log.updatedAt)}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 relative">
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-center flex flex-col justify-center shadow-inner">
-                    <div className="text-[15px] sm:text-[16px] font-black text-slate-900 font-display leading-none">{log.updateCount}</div>
-                    <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Updates</div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-center flex flex-col justify-center shadow-inner">
-                    <div className="text-[15px] sm:text-[16px] font-black text-slate-900 font-display leading-none">{log.observerCount}</div>
-                    <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Observers</div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-center flex flex-col justify-center shadow-inner">
-                    <div className="text-[15px] sm:text-[16px] font-black text-slate-900 font-display leading-none">{daysActive}</div>
-                    <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Days</div>
-                  </div>
-                </div>
-
-                {log.updatedAt && (
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative">
-                    <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Builder's closing note</div>
-                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">Updated {timeAgo(log.updatedAt)}</p>
-                  </div>
-                )}
-
-                <div className="flex flex-row gap-2 relative mt-auto">
-                  <button
-                    title="Share"
-                    aria-label="Share"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
-                    <Share2 size={18} />
-                  </button>
-                  <Link to={`/dashboard/build-logs/${log.id}`}
-                    title="View log"
-                    aria-label="View log"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
-                    <ArrowUpRight size={18} />
-                  </Link>
-                </div>
-              </div>
-            );
+            return <ShippedBuildCard key={log.id} log={log} />;
           })}
         </div>
       )}
@@ -242,56 +139,7 @@ export default function BuildLogs() {
       {(buildLogFilter === "all" || buildLogFilter === "completed" || completedRooms.some(r => r.tags?.[0] === buildLogFilter)) && completedRooms.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 mt-6">
           {completedRooms.filter(r => buildLogFilter === "all" || buildLogFilter === "completed" || r.tags?.[0] === buildLogFilter).map(log => {
-            const tag = log.tags?.[0] || 'product';
-            const daysActive = timeAgoDays(log.createdAt);
-            return (
-              <div key={log.id} className="bg-white border border-primary-400/20 rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 relative overflow-hidden shadow-sm group hover:border-primary-400/40 transition-all" tabIndex={0}>
-                <div className="absolute top-0 right-0 p-24 bg-primary-400/5 rounded-full blur-[50px] -mr-12 -mt-12 pointer-events-none" />
-                <div className="flex justify-between items-start relative mb-1">
-                  <div className="flex gap-3 sm:gap-4 w-full">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary-400/10 border border-primary-400/20 flex items-center justify-center shrink-0 shadow-sm">
-                      <Archive className="w-5 h-5 sm:w-6 sm:h-6 text-primary-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{log.title}</h3>
-                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-primary-400 bg-primary-400/10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-primary-400/20">Completed</span>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-primary-500 bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{tag}</span>
-                      </div>
-                      <p className="m-0 text-[11px] sm:text-[12px] text-slate-500 font-mono font-medium truncate">Closed {formatDate(log.updatedAt)}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 relative">
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-center flex flex-col justify-center shadow-inner">
-                    <div className="text-[15px] sm:text-[16px] font-black text-slate-900 font-display leading-none">{log.updateCount}</div>
-                    <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Updates</div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-center flex flex-col justify-center shadow-inner">
-                    <div className="text-[15px] sm:text-[16px] font-black text-slate-900 font-display leading-none">{log.observerCount}</div>
-                    <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Observers</div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-center flex flex-col justify-center shadow-inner">
-                    <div className="text-[15px] sm:text-[16px] font-black text-slate-900 font-display leading-none">{daysActive}</div>
-                    <div className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Days</div>
-                  </div>
-                </div>
-                {log.updatedAt && (
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative">
-                    <div className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-primary-400" /> Builder's closing note</div>
-                    <p className="text-[12px] sm:text-[13px] text-slate-700 italic m-0 font-medium leading-relaxed line-clamp-3">Updated {timeAgo(log.updatedAt)}</p>
-                  </div>
-                )}
-                <div className="flex flex-row gap-2 relative mt-auto">
-                  <Link to={`/dashboard/build-logs/${log.id}`}
-                    title="View log"
-                    aria-label="View log"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-primary-400/10 hover:bg-primary-400/20 border border-primary-400/20 text-primary-400 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
-                    <ArrowUpRight size={18} />
-                  </Link>
-                </div>
-              </div>
-            );
+            return <CompletedBuildCard key={log.id} log={log} />;
           })}
         </div>
       )}
@@ -313,6 +161,22 @@ export default function BuildLogs() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        {room.builderAvatarUrl ? (
+                          <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
+                            {room.builderName?.substring(0, 2) || '??'}
+                          </div>
+                        )}
+                        <span className="text-[12px] font-bold text-slate-700">{room.builderName}</span>
+                        {room.projectStage && (
+                          <>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wide border border-primary-100">{room.projectStage}</span>
+                          </>
+                        )}
+                      </div>
                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <span className="text-[9px] sm:text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wide border border-rose-200">Stalled</span>
                     </div>
@@ -331,35 +195,47 @@ export default function BuildLogs() {
                 </div>
 
                 <div className="flex flex-row gap-2 relative mt-auto">
-                  <Link to={`/dashboard/room/${room.id}?action=post`}
-                    title="Post update"
-                    aria-label="Post update"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
-                    <Edit3 size={18} />
+                  {!isObserver && (
+                    <Link to={`/dashboard/room/${room.id}?action=post`}
+                      title="Post update"
+                      aria-label="Post update"
+                      className="inline-flex items-center justify-center w-11 h-11 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl active:scale-95 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                      <Edit3 size={18} />
+                    </Link>
+                  )}
+                  {!isObserver && (
+                    <button
+                      onClick={() => handleArchiveRoom(room.id)}
+                      disabled={archivingId === room.id}
+                      title="Archive room"
+                      aria-label="Archive room"
+                      className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
+                      {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
+                    </button>
+                  )}
+                  <Link to={`/dashboard/room/${room.id}`}
+                    title="View room"
+                    aria-label="View room"
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
+                    <ArrowUpRight size={18} />
                   </Link>
-                  <button
-                    onClick={() => handleArchiveRoom(room.id)}
-                    disabled={archivingId === room.id}
-                    title="Archive room"
-                    aria-label="Archive room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
-                    {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
-                  </button>
                 </div>
               </div>
             );
           })}
 
-          {/* New Room Placeholder */}
-          <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors">
-              <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
-            </div>
-            <div className="text-center">
-              <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-primary-500 font-display transition-colors">Open a new build room</h3>
-              <p className="m-0 text-[12px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors font-medium">Start streaming your next project</p>
-            </div>
-          </Link>
+          {/* New Room Placeholder — only for builders */}
+          {!isObserver && (
+            <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors">
+                <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
+              </div>
+              <div className="text-center">
+                <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-primary-500 font-display transition-colors">Open a new build room</h3>
+                <p className="m-0 text-[12px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors font-medium">Start streaming your next project</p>
+              </div>
+            </Link>
+          )}
         </div>
       )}
 
@@ -389,13 +265,21 @@ export default function BuildLogs() {
               </div>
               <h3 className="text-[18px] font-extrabold text-slate-900 mb-2 font-display">No logs found</h3>
               <p className="text-[14px] text-slate-500 max-w-[280px] mb-8 font-medium">
-                {buildLogFilter === 'all' 
-                  ? "You haven't opened any build rooms yet." 
-                  : `You don't have any ${buildLogFilter} build logs right now.`}
+                {isObserver
+                  ? `No public ${buildLogFilter === 'all' ? '' : buildLogFilter + ' '}builds found right now.`
+                  : buildLogFilter === 'all'
+                    ? "You haven't opened any build rooms yet."
+                    : `You don't have any ${buildLogFilter} build logs right now.`}
               </p>
-              <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
-                <Sparkles size={16} /> Open a new room
-              </Link>
+              {isObserver ? (
+                <Link to="/dashboard/explore" className="bg-primary-500 hover:bg-[#5b4ed6] text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
+                  <Compass size={16} /> Explore builders
+                </Link>
+              ) : (
+                <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
+                  <Sparkles size={16} /> Open a new room
+                </Link>
+              )}
             </div>
           );
         }

@@ -34,7 +34,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
     if (window.confirm("Are you sure? Anyone using the old link will lose access.")) {
       regenerateTokenMutation.mutate(room.id, {
         onSuccess: () => toast.success("New invite link generated!"),
-        onError: (err: any) => toast.error(`Failed to regenerate token: ${(err instanceof Error ? err.message : String(err))}`)
+        onError: (err: unknown) => toast.error(`Failed to regenerate token: ${(err instanceof Error ? err.message : String(err))}`)
       });
     }
   };
@@ -61,7 +61,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
         setDomainInput("");
         toast.success("Domain added!");
       },
-      onError: (err: any) => toast.error(`Failed to add domain: ${(err instanceof Error ? err.message : String(err))}`)
+      onError: (err: unknown) => toast.error(`Failed to add domain: ${(err instanceof Error ? err.message : String(err))}`)
     });
   };
 
@@ -71,7 +71,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
     
     updateAccessMutation.mutate({ roomId: room.id, whitelistedDomains: newDomains }, {
       onSuccess: () => toast.success("Domain removed!"),
-      onError: (err: any) => toast.error(`Failed to remove domain: ${(err instanceof Error ? err.message : String(err))}`)
+      onError: (err: unknown) => toast.error(`Failed to remove domain: ${(err instanceof Error ? err.message : String(err))}`)
     });
   };
 
@@ -82,7 +82,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-[#0A0910]/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-ink/80 backdrop-blur-sm"
           onClick={onClose}
         />
         <motion.div
@@ -114,7 +114,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl px-4 py-3 text-[13px] font-mono text-slate-300 truncate select-all">
+                <div className="flex-1 bg-ink/50 border border-white/[0.08] rounded-xl px-4 py-3 text-[13px] font-mono text-slate-300 truncate select-all">
                   {inviteLink || "Generating..."}
                 </div>
                 <button
@@ -158,7 +158,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
                   onChange={(e) => setDomainInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain(); } }}
                   placeholder="e.g. yourcompany.com"
-                  className="flex-1 px-4 py-3 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
+                  className="flex-1 px-4 py-3 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
                 />
                 <button
                   onClick={handleAddDomain}

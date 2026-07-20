@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../components/auth/AuthContext';
-import { normalizeRow } from '../utils/helpers';
+import { normalizeRow, registerAvatarUrl } from '../utils/helpers';
 import { QUERY_KEYS, CHANNEL_NAMES } from '../constants';
 import type { Profile } from '../types';
 
@@ -12,10 +12,10 @@ export function useProfile(userId?: string) {
     queryKey: QUERY_KEYS.profile(userId ?? ''),
     queryFn: async () => {
       const { data: userRow, error } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       if (!userRow) return null;
 
-      const profileData = normalizeRow(userRow);
+      const profileData = normalizeRow<Profile>(userRow);
 
       const [{ data: followersData, count: followerCount }, { count: followingCount }] = await Promise.all([
         supabase.from('follows').select('follower_id', { count: 'exact' }).eq('following_id', userId).order('created_at', { ascending: false }).limit(5),
@@ -38,6 +38,12 @@ export function useProfile(userId?: string) {
       profileData.followingCount = followingCount || 0;
       profileData.isFollowing = isFollowing;
 
+      // Register avatar so getAvatarUrl(userId) returns the real photo everywhere
+      const avatarUrlStr = ('avatar_url' in userRow ? userRow.avatar_url : ('avatar' in userRow ? userRow.avatar : null)) as string | null;
+      if (avatarUrlStr) {
+        registerAvatarUrl(userId!, avatarUrlStr);
+      }
+
       return profileData;
     },
     enabled: !!userId,
@@ -52,18 +58,21 @@ export function useProfile(userId?: string) {
     const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
     if (existing) supabase.removeChannel(existing);
 
+    let invalidateTimer: NodeJS.Timeout;
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'users', filter: `id=eq.${userId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile(userId) });
+          clearTimeout(invalidateTimer);
+          invalidateTimer = setTimeout(() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile(userId) }), 1500);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(invalidateTimer);
       supabase.removeChannel(channel);
     };
   }, [userId, queryClient]);

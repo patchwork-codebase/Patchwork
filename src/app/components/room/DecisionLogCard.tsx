@@ -1,12 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, Clock, CheckCircle, MessageCircle, Send, Plus } from "lucide-react";
+import { CheckCircle, MessageCircle, Send, Plus, Smile, Edit2, Trash2, Lock } from "lucide-react";
+import { InlineEmojiPicker } from "../ui/InlineEmojiPicker";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from '../../utils/helpers';
+import { UserAvatar } from '../ui/UserAvatar';
+import { SmartImage } from "../ui/SmartImage";
 import { LogDecisionModal } from "./LogDecisionModal";
 import { useQuery } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 interface Decision {
   id: string;
@@ -16,6 +29,8 @@ interface Decision {
   createdAt: string;
   reactions?: number;
   type?: 'decision' | 'scrapped' | 'blocker' | 'shipped';
+  media_url?: string;
+  external_link?: string;
 }
 
 const TYPE_STYLES = {
@@ -37,8 +52,25 @@ interface DecisionLogCardProps {
 export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isNested = false, isBuilder = false }: DecisionLogCardProps) {
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDecision, setEditingDecision] = useState<any>(null);
+  const [decisionToDelete, setDecisionToDelete] = useState<string | null>(null);
+
+  const executeDelete = async () => {
+    if (!decisionToDelete) return;
+    try {
+      const { error } = await supabase.from('room_decisions').delete().eq('id', decisionToDelete);
+      if (error) throw error;
+      toast.success("Decision deleted");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to delete");
+    } finally {
+      setDecisionToDelete(null);
+    }
+  };
 
   // Fetch real decisions from the database
   const { data: dbDecisions = [] } = useQuery({
@@ -80,17 +112,25 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   }, [roomId, queryClient]);
 
   // Use real decisions from the database
-  const allDecisions = dbDecisions.map(d => ({
+  const allDecisions = dbDecisions
+  .filter(d => {
+    if (d.is_private && !isBuilder) return false;
+    return true;
+  })
+  .map(d => ({
     id: d.id,
     title: d.title,
     description: d.description,
     type: d.type,
     createdAt: d.created_at,
+    media_url: d.media_url,
+    external_link: d.external_link,
+    is_private: d.is_private,
   }));
 
   const toggleReaction = async (itemId: string, type: string) => {
     if (!user) return;
-    const existing = reactions.find(r => r.update_id === itemId && r.type === type && r.observer_id === user.id);
+    const existing = reactions.find(r => (r.update_id === itemId || r.updateId === itemId) && r.type === type && (r.observer_id === user.id || r.observerId === user.id));
     
     try {
       if (existing) {
@@ -136,6 +176,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
       await queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       setReplyText('');
       setReplyingTo(null);
+      setShowEmojiPicker(false);
     } catch (err: unknown) {
       toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
     }
@@ -195,7 +236,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
             </div>
           ) : (
             allDecisions.map((decision, index) => {
-              const style = TYPE_STYLES[decision.type || 'decision'];
+              const style = (TYPE_STYLES as any)[decision.type || 'decision'];
               const itemReactions = reactions.filter(r => r.update_id === decision.id || r.updateId === decision.id);
               const itemReplies = itemReactions.filter(r => r.type === 'reply' || r.text);
               
@@ -212,15 +253,47 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       {decision.type === 'shipped' ? <CheckCircle className={`w-2.5 h-2.5 ${style.text}`} /> : <div className={`w-1.5 h-1.5 rounded-full ${style.bg}`} />}
                     </div>
                     <div>
-                      <div className={`text-[10px] font-bold ${style.text} ${style.bg} px-1.5 py-0.5 rounded uppercase tracking-widest inline-block mb-1.5`}>
+                      <div className={`text-[10px] font-bold ${style.text} ${style.bg} px-1.5 py-0.5 rounded uppercase tracking-widest inline-flex items-center gap-1 mb-1.5`}>
                         {style.label}
+                        {decision.is_private && <Lock className="w-2.5 h-2.5 ml-1" />}
                       </div>
-                      <h4 className="text-[14px] font-bold text-slate-900 mb-1">{decision.title}</h4>
+                      <div className="flex items-start justify-between gap-4">
+                        <h4 className="text-[14px] font-bold text-slate-900 mb-1">{decision.title}</h4>
+                        {isBuilder && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button onClick={() => { setEditingDecision(decision); setIsModalOpen(true); }} className="p-1.5 text-slate-400 hover:text-primary-500 bg-slate-50 hover:bg-primary-50 rounded-lg transition-colors">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => setDecisionToDelete(decision.id)} className="p-1.5 text-slate-400 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 rounded-lg transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                       {decision.description && (
                         <p className="text-[13px] text-slate-600 leading-relaxed mb-2">
                           {decision.description}
                         </p>
                       )}
+                      
+                      {decision.media_url && (
+                        <div className="mb-3 w-fit rounded-xl overflow-hidden border border-slate-200">
+                          <SmartImage src={decision.media_url} aspectRatio="auto" alt="Decision context" />
+                        </div>
+                      )}
+
+                      {decision.external_link && (
+                        <a 
+                          href={decision.external_link.startsWith('http') ? decision.external_link : `https://${decision.external_link}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg text-[12px] font-bold transition-colors mb-3"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                          View External Resource
+                        </a>
+                      )}
+
                       <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium uppercase tracking-wider mb-3">
                         <span>Day {index === 0 ? 12 : index === 1 ? 12 : index === 2 ? 8 : 10}</span>
                         <span>·</span>
@@ -256,21 +329,18 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       <AnimatePresence>
                         {itemReplies.length > 0 && (
                           <motion.div 
+                            key="replies-list"
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             className="mt-4 space-y-3"
                           >
                             {itemReplies.map((reply: any) => (
                               <div key={reply.id} className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                                <img 
-                                  src={getAvatarUrl(reply.observer_id || reply.observerId)} 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const uid = reply.observer_id || reply.observerId;
-                                    if (uid) navigate(`/dashboard/profile/${uid}`);
-                                  }}
-                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all" 
-                                  alt="avatar" 
+                                <UserAvatar 
+                                  userId={reply.observer_id || reply.observerId} 
+                                  name={reply.observerName} 
+                                  avatarUrl={reply.observerAvatar} 
+                                  className="w-6 h-6 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all object-cover" 
                                 />
                                 <div>
                                   <div className="flex items-center gap-2 mb-0.5">
@@ -287,19 +357,37 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                         {/* Composer for Reply */}
                         {replyingTo === decision.id && (
                           <motion.div
+                            key="reply-composer"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="mt-4 p-3 bg-white border border-slate-200 shadow-sm rounded-2xl relative"
                           >
                             <textarea
+                              ref={replyTextareaRef}
                               autoFocus
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                               placeholder="Write your reply..."
                               className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-slate-900 placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
                             />
-                            <div className="flex justify-end mt-2">
+                            <InlineEmojiPicker
+                              isOpen={showEmojiPicker}
+                              className="px-1 py-2 bg-transparent border-t border-slate-100"
+                              buttonClassName="w-8 h-8 rounded-full hover:bg-slate-100"
+                              onEmojiSelect={(emoji) => {
+                                setReplyText(prev => prev + emoji);
+                                replyTextareaRef.current?.focus();
+                              }}
+                            />
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+                              <button 
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
+                                className={`p-1.5 rounded transition-colors ${showEmojiPicker ? 'text-primary-500 bg-primary-50' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`} 
+                                title="Emoji"
+                              >
+                                <Smile className="w-4 h-4" />
+                              </button>
                               <button
                                 onClick={() => submitReply(decision.id)}
                                 disabled={!replyText.trim()}
@@ -320,15 +408,29 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
         </div>
       </div>
 
-      <LogDecisionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        roomId={roomId}
-        userId={user?.id || ''}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['room-decisions', roomId] });
-        }}
+      <LogDecisionModal 
+        isOpen={isModalOpen} 
+        onClose={() => { setIsModalOpen(false); setEditingDecision(null); }} 
+        roomId={roomId} 
+        userId={user?.id}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['room-decisions', roomId] })}
+        initialDecision={editingDecision}
       />
+
+      <AlertDialog open={!!decisionToDelete} onOpenChange={(open) => !open && setDecisionToDelete(null)}>
+        <AlertDialogContent className="bg-[#0D0B14] border border-white/[0.08] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this decision?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              This action cannot be undone. This decision will be permanently removed from your log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/[0.08] text-slate-300 hover:bg-white/[0.05] hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-rose-500 hover:bg-rose-600 text-white border-0">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

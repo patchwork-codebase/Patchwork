@@ -1,9 +1,12 @@
 import { Link } from "react-router";
-import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Sparkles, Lock } from "lucide-react";
-import { timeAgo, getObserverCount } from "../../utils/helpers";
+import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Lock } from "lucide-react";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
+import { SmartImage } from "../ui/SmartImage";
 import { LinkRepositoryModal } from "./LinkRepositoryModal";
+import type { PresenceUser } from "../../hooks/useRoomPresence";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +33,7 @@ interface RoomHeaderProps {
   handleCloseRoom: () => void;
   copyLogLink: () => void;
   setRequestExpertModalOpen: (open: boolean) => void;
+  viewers: PresenceUser[];
 }
 
 export function RoomHeader({
@@ -40,24 +44,23 @@ export function RoomHeader({
   setLinkedinShareOpen,
   handleCloseRoom,
   copyLogLink,
-  setRequestExpertModalOpen
+  setRequestExpertModalOpen,
+  viewers
 }: RoomHeaderProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [accessModalOpen, setAccessModalOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] p-6 md:p-10 mb-8 shadow-sm relative overflow-hidden ${room.coverImage ? 'min-h-[300px] flex flex-col justify-end' : ''}`}>
+    <div className="bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] mb-8 shadow-sm relative overflow-hidden">
       {room.coverImage && (
-        <>
-          <div className="absolute inset-0 z-0">
-            <img src={room.coverImage} alt={room.title} className="w-full h-full object-cover opacity-[0.15]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
-          </div>
-        </>
+        <div className="w-full relative border-b border-slate-100">
+          <SmartImage src={room.coverImage} aspectRatio="banner" alt={room.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
+        </div>
       )}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-400/50 to-transparent opacity-50 z-10" />
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
+      <div className="p-6 md:p-10 flex flex-col md:flex-row items-start justify-between gap-6 relative z-10">
         <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
           <div className="flex flex-col gap-2.5">
             <div className="flex flex-wrap items-start justify-between gap-3 min-w-0">
@@ -69,12 +72,26 @@ export function RoomHeader({
                   {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
                   {room.status}
                 </span>
-                {room.isPrivate && (
-                  <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider bg-slate-800 text-slate-100 border border-slate-700">
-                    <Lock className="w-3 h-3" />
-                    Private
-                  </span>
-                )}
+                {(() => {
+                  const vis = room.visibility ?? (room.isPrivate ? 'private' : 'public');
+                  const VISIBILITY_BADGES: Record<string, { icon: string; label: string; className: string }> = {
+                    public: { icon: '🌍', label: 'Public', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+                    unlisted: { icon: '🔗', label: 'Unlisted', className: 'bg-slate-100 text-slate-600 border border-slate-200' },
+                    private: { icon: '🔒', label: 'Private', className: 'bg-slate-800 text-slate-100 border border-slate-700' },
+                    org_only: { icon: '🏢', label: 'Org Only', className: 'bg-blue-50 text-blue-700 border border-blue-200' },
+                    nda_protected: { icon: '📜', label: 'NDA', className: 'bg-primary-400/10 text-primary-400 border border-primary-400/30' },
+                  };
+                  const badge = VISIBILITY_BADGES[vis] ?? VISIBILITY_BADGES.public;
+                  return (
+                    <span
+                      className={`inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-wider ${badge.className}`}
+                      title={`Visibility: ${vis.replace('_', ' ')}`}
+                    >
+                      <span>{badge.icon}</span>
+                      {badge.label}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
             {room.description && (
@@ -113,7 +130,41 @@ export function RoomHeader({
           <div className="flex items-center gap-4 text-[12px] sm:text-[13px] text-slate-600 flex-wrap font-medium mt-1">
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-primary-400/20 flex items-center justify-center"><Hammer className="w-3 h-3 text-primary-400" /></div>{room.builderName} <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-3.5 h-3.5" /></span>
             <ObserverAvatarStack room={room} />
+            
+            {viewers.length > 0 && (
+              <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+                <div className="flex -space-x-1.5">
+                  {viewers.slice(0, 3).map((v) => (
+                    <div key={v.id} className="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-slate-100 relative">
+                      <UserAvatar userId={v.id} name={v.name} avatarUrl={v.avatar_url} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                  {viewers.length > 3 && (
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600 z-10">
+                      +{viewers.length - 3}
+                    </div>
+                  )}
+                </div>
+                <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-wider ml-1">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                  </span>
+                  Live
+                </span>
+              </div>
+            )}
+            
             <span className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><Clock className="w-3 h-3 text-slate-500" /></div>{timeAgo(room.updatedAt)}</span>
+            {room.authorshipTimestamp && (
+              <span
+                className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full cursor-help"
+                title={`Authorship established: ${new Date(room.authorshipTimestamp).toLocaleString()}`}
+              >
+                <ShieldCheck className="w-3 h-3" />
+                Authored {timeAgo(room.authorshipTimestamp)}
+              </span>
+            )}
           </div>
         </div>
 

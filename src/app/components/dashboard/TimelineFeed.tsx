@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Link, useNavigate } from 'react-router';
 import { Virtuoso } from "react-virtuoso";
 import { useAuth } from '../auth/AuthContext';
@@ -12,11 +12,15 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../auth/AuthContext";
-import { usePostUpdate } from "../../hooks/usePostUpdate";
-import { getAvatarUrl, timeAgo } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
 import { ReadMoreText } from "../ui/ReadMoreText";
 import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
+import { OrganizationBadge } from "../ui/OrganizationBadge";
+import { Composer } from "./Composer";
+import { ReplyComposer } from "./ReplyComposer";
+import { SuggestedBuilders } from "./SuggestedBuilders";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +36,9 @@ import type { Room, Profile } from "../../types";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
 import { QUERY_KEYS } from "../../constants";
 import type { QueryClient } from "@tanstack/react-query";
+import { FeedUpdateCard } from "./FeedUpdateCard";
+import { TimelineFilters } from "./TimelineFilters";
+import { TrendingTopics } from "./TrendingTopics";
 
 interface TimelineFeedProps {
   user: { id: string; email?: string } | null;
@@ -48,6 +55,8 @@ interface TimelineFeedProps {
   activeTab: 'overview' | 'feed' | 'mine';
   queryClient: QueryClient;
   loading?: boolean;
+  feedSortOrder: 'desc' | 'asc';
+  setFeedSortOrder: (order: 'desc' | 'asc') => void;
 }
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
@@ -80,205 +89,17 @@ export function TimelineFeed({
   activeTab,
   queryClient,
   loading,
+  feedSortOrder,
+  setFeedSortOrder,
 }: TimelineFeedProps) {
   const { session, withVerification } = useAuth();
   
-  const [updateContent, setUpdateContent] = useState("");
-  const [codeSnippet, setCodeSnippet] = useState("");
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState("");
-  const [expandedComments, setExpandedComments] = useState<string[]>([]);
-  const [fullyExpandedComments, setFullyExpandedComments] = useState<string[]>([]);
-  const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showCodeInput, setShowCodeInput] = useState(false);
   const [activeDomainFilter, setActiveDomainFilter] = useState('All');
-  const [feedSort, setFeedSort] = useState<'latest' | 'trending'>('latest');
+  const [activeViewToggle, setActiveViewToggle] = useState<'all' | 'media' | 'launches'>('all');
 
-  const avatarUrl = getAvatarUrl(user?.id || user?.email || 'default');
   const navigate = useNavigate();
 
-  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isPostingRef = useRef(false);
-
-  const postMutation = usePostUpdate();
-  const posting = postMutation.isPending;
-
-  const handlePostUpdate = async () => {
-    withVerification(async () => {
-      if (isPostingRef.current) return;
-      if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !user) return;
-      
-      isPostingRef.current = true;
-      try {
-        await postMutation.mutateAsync({
-          selectedRoomId,
-          updateContent,
-          codeSnippet,
-          mediaPreview,
-          userId: user.id,
-          authorName: profile?.name || user.email?.split('@')[0] || 'Builder'
-        });
-        
-        setUpdateContent("");
-        setCodeSnippet("");
-        setMediaPreview(null);
-      } finally {
-        isPostingRef.current = false;
-      }
-    });
-  };
-
-  const insertFormatting = (prefix: string, suffix: string = '') => {
-    const textarea = replyTextareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = replyText;
-    const selectedText = text.substring(start, end);
-
-    const newText = text.substring(0, start) + prefix + selectedText + suffix + text.substring(end);
-    setReplyText(newText);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-    }, 0);
-  };
-
-  const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
-
-  const handleDeleteUpdate = async (updateId: string) => {
-    setDeletingUpdateId(updateId);
-    try {
-      const { error, count } = await supabase.from('updates').delete({ count: 'exact' }).eq('id', updateId).eq('author_id', user.id);
-      if (error) throw error;
-      if (count === 0) throw new Error("Update not found or you don't have permission to delete it.");
-      
-      toast.success("Update deleted");
-      
-      queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: FeedUpdate[]) => 
-            page.filter((u: FeedUpdate) => u.id !== updateId)
-          )
-        };
-      });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
-    } catch (error: unknown) {
-      console.error("Error deleting update:", error);
-      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to delete update");
-    } finally {
-      setDeletingUpdateId(null);
-    }
-  };
-
-  const toggleComments = (id: string) => {
-    setExpandedComments(prev => 
-      prev.includes(id) ? prev.filter(cId => cId !== id) : [...prev, id]
-    );
-  };
-
-  const handleReplyClick = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    withVerification(() => {
-      setReplyingTo(id);
-    });
-  };
-
-  const handleOverlayClick = () => {
-    if (replyText.trim()) {
-      if (window.confirm("You have an unsaved reply. Discard it?")) {
-        setReplyingTo(null);
-        setReplyText("");
-      }
-    } else {
-      setReplyingTo(null);
-    }
-  };
-
-  const submitReply = async () => {
-    withVerification(async () => {
-      if (!replyText.trim() || !user || !replyingTo) return;
-      const update = dbUpdates.find(u => u.id === replyingTo);
-      if (!update) return;
-
-      const newReply = {
-        id: `${update.roomId}-reaction-reply-${user.id}-${Date.now()}`,
-        roomId: update.roomId,
-        updateId: replyingTo,
-        observerId: user.id,
-        observerName: profile?.name || user.email?.split('@')[0] || 'Observer',
-        type: 'reply',
-        text: replyText.trim(),
-        createdAt: new Date().toISOString(),
-      };
-
-      // Optimistic update — inject the reply into the cache immediately
-      // Do NOT call invalidateQueries after this: a full refetch on an infinite
-      // query only re-fetches page 0, which would wipe reactions on updates that
-      // are on later pages and make the reply disappear.
-      queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: FeedUpdate[]) =>
-            page.map((u: FeedUpdate) =>
-              u.id === replyingTo
-                ? { ...u, reactions: [...(u.reactions || []), newReply] }
-                : u
-            )
-          ),
-        };
-      });
-
-      // Open + fully expand comments section so the new reply is visible
-      setExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
-      setFullyExpandedComments(prev => replyingTo && !prev.includes(replyingTo) ? [...prev, replyingTo] : prev);
-      setReplyingTo(null);
-      setReplyText("");
-
-      try {
-        const dbPayload = {
-          id: newReply.id,
-          room_id: newReply.roomId,
-          update_id: newReply.updateId,
-          observer_id: newReply.observerId,
-          observer_name: newReply.observerName,
-          type: 'reply',
-          text: newReply.text,
-          created_at: newReply.createdAt,
-        };
-        await supabase.from('reactions').insert(dbPayload);
-        toast.success("Reply posted!");
-        // No invalidateQueries here — the real-time subscription will handle
-        // syncing new data from other users. Our own reply is already in the cache.
-      } catch (err: unknown) {
-        // Rollback optimistic update on failure
-        queryClient.setQueryData(QUERY_KEYS.feedUpdates, (oldData: { pages: FeedUpdate[][] } | undefined) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page: FeedUpdate[]) =>
-              page.map((u: FeedUpdate) =>
-                u.id === replyingTo
-                  ? { ...u, reactions: (u.reactions || []).filter((r) => r.id !== newReply.id) }
-                  : u
-              )
-            ),
-          };
-        });
-        toast.error(`Failed to post reply: ${(err instanceof Error ? err.message : String(err))}`);
-      }
-    });
-  };
-
-  const handleFollowRoom = async (roomId: string, e: React.MouseEvent) => {
+  const handleFollowRoom = React.useCallback(async (roomId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     try {
@@ -289,9 +110,9 @@ export function TimelineFeed({
     } catch (err: unknown) {
       toast.error(`Failed to follow room: ${(err instanceof Error ? err.message : String(err))}`);
     }
-  };
+  }, [user, queryClient]);
 
-  const handleUnfollowRoom = async (roomId: string, e: React.MouseEvent) => {
+  const handleUnfollowRoom = React.useCallback(async (roomId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     try {
@@ -302,103 +123,7 @@ export function TimelineFeed({
     } catch (err: unknown) {
       toast.error(`Failed to unfollow room: ${(err instanceof Error ? err.message : String(err))}`);
     }
-  };
-
-  const handleToggleReaction = async (
-    updateId: string,
-    roomId: string,
-    type: 'sharp' | 'pushback' | 'tellmemore',
-    currentReactions: any[]
-  ) => {
-    withVerification(async () => {
-      if (!user) return;
-      const key = `${updateId}-${type}`;
-      const existing = currentReactions?.find(r => r.type === type && r.observerId === user.id);
-      
-      // Optimistic state toggle
-      setOptimisticToggles(prev => ({
-        ...prev,
-        [key]: !existing
-      }));
-
-      try {
-        if (existing) {
-          const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
-          if (error) throw error;
-          toast.success(`Removed ${type === 'tellmemore' ? 'More' : type} reaction`);
-        } else {
-          const payload = {
-            id: `${roomId}-reaction-${type}-${user.id}-${Date.now()}`,
-            room_id: roomId,
-            update_id: updateId,
-            observer_id: user.id,
-            observer_name: profile?.name || user.email?.split('@')[0] || 'Observer',
-            type,
-            text: type, // Schema requires text NOT NULL
-            created_at: new Date().toISOString(),
-          };
-          const { error } = await supabase.from('reactions').insert(payload);
-          if (error) throw error;
-          toast.success(`Added ${type === 'tellmemore' ? 'More' : type} reaction`);
-        }
-        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feedUpdates });
-      } catch (err: unknown) {
-        // Revert optimistic toggle on failure
-        setOptimisticToggles(prev => ({
-          ...prev,
-          [key]: !!existing
-        }));
-        toast.error(`Failed to update reaction: ${(err instanceof Error ? err.message : String(err))}`);
-      }
-    });
-  };
-
-  const renderReactionButton = (
-    updateId: string,
-    roomId: string,
-    type: 'sharp' | 'pushback' | 'tellmemore',
-    label: string,
-    icon: string,
-    activeClass: string,
-    serverReactions: any[]
-  ) => {
-    const key = `${updateId}-${type}`;
-    const hasOptimisticOverride = optimisticToggles[key] !== undefined;
-    
-    const existingInServer = serverReactions?.some(r => r.type === type && r.observerId === user?.id) || false;
-    const isActive = hasOptimisticOverride ? optimisticToggles[key] : existingInServer;
-    
-    let count = serverReactions?.filter(r => r.type === type).length || 0;
-    if (hasOptimisticOverride) {
-      if (optimisticToggles[key] && !existingInServer) {
-        count += 1;
-      } else if (!optimisticToggles[key] && existingInServer) {
-        count -= 1;
-      }
-    }
-
-    return (
-      <motion.button
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleToggleReaction(updateId, roomId, type, serverReactions);
-        }}
-        className={`px-3 sm:px-4 py-1.5 sm:py-1.5 min-h-[44px] sm:min-h-auto rounded-full text-[11px] sm:text-[12px] font-bold transition-colors border flex items-center gap-1 sm:gap-1.5 focus-ring ${
-          isActive 
-            ? activeClass
-            : "bg-white shadow-sm border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300"
-        }`}
-      >
-        <span>{icon}</span>
-        <span>{label}</span>
-        {(!profile || !profile.emailVerified) && <Lock className="w-3 h-3 opacity-60 ml-0.5" />}
-        <span className="opacity-40">·</span>
-        <span>{count}</span>
-      </motion.button>
-    );
-  };
+  }, [user, queryClient]);
 
   const filteredUpdates = useMemo(() => {
     let result = dbUpdates;
@@ -416,155 +141,37 @@ export function TimelineFeed({
       });
     }
 
-    // 3. Sorting (Trending vs Latest)
-    if (activeTab === 'feed' && feedSort === 'trending') {
-      result = [...result].sort((a, b) => {
-        const aInteractions = (a.reactions?.length || 0);
-        const bInteractions = (b.reactions?.length || 0);
-        return bInteractions - aInteractions;
+    // 3. View Toggles (Media / Launches)
+    if (activeViewToggle === 'media') {
+      result = result.filter(u => !!u.mediaUrl || !!u.figmaUrl || (u.content && u.content.includes("figma.com/")));
+    } else if (activeViewToggle === 'launches') {
+      result = result.filter(u => {
+        const fullRoom = rooms?.find(r => r.id === u.roomId);
+        return fullRoom?.updateCount === 1; // "Launched" logic
       });
     }
+
+    // 4. Sorting
+    // dbUpdates is already sorted by the useFeedUpdates hook (either desc or asc).
+    // If we wanted local sorting fallback:
+    /* if (feedSortOrder === 'asc') {
+         result = [...result].reverse();
+       } */
     
     return result;
-  }, [dbUpdates, myRooms, activeTab, activeDomainFilter, feedSort, rooms]);
+  }, [dbUpdates, myRooms, activeTab, activeDomainFilter, feedSortOrder, rooms, activeViewToggle]);
 
   return (
-    <div className="max-w-[700px] w-full mx-auto">
-      {/* INLINE COMPOSER */}
-      {profile?.role === 'builder' && (
-        <div className="hidden sm:flex bg-white border border-slate-200 shadow-sm rounded-[16px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <textarea 
-              value={updateContent}
-              onChange={(e) => setUpdateContent(e.target.value)}
-              placeholder="What are you building right now?"
-              aria-label="New update content"
-              className="w-full bg-transparent border-none outline-none text-slate-900 text-[16px] sm:text-[14px] resize-none placeholder:text-slate-400 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-primary-400 rounded-md p-1"
-            />
-
-            {mediaPreview && (
-              <div className="relative w-fit mb-4 group/preview mt-3">
-                <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-                  <img src={mediaPreview} alt="Upload preview" className="max-h-[200px] object-cover" />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMediaPreview(null)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover/preview:opacity-100 transition-all shadow-lg focus-ring"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-            {showCodeInput && (
-              <textarea
-                value={codeSnippet}
-                onChange={e => setCodeSnippet(e.target.value)}
-                placeholder="Paste your code snippet here..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-[16px] sm:text-[14px] font-mono resize-none placeholder:text-slate-400 min-h-[100px] rounded-lg p-3 mt-3 focus-ring"
-              />
-            )}
-
-            <div className="flex items-center justify-between border-t border-slate-100 pt-3 mt-2">
-              <div className="flex items-center gap-1 sm:gap-2">
-                {myRooms && myRooms.length > 0 ? (
-                  <>
-                    <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-full cursor-pointer transition-all focus-ring">
-                      <ImageIcon className="w-[18px] h-[18px]" />
-                      <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Media</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => setMediaPreview(reader.result as string);
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowCodeInput(!showCodeInput)}
-                      className={`flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-slate-100 rounded-full transition-all focus-ring ${showCodeInput ? 'text-primary-400 bg-primary-400/10' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                      <Code className="w-[18px] h-[18px]" />
-                      <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Code</span>
-                    </button>
-
-                    <div className="w-px h-5 bg-slate-200 mx-1 sm:mx-2"></div>
-
-                    <div className="relative inline-block text-left">
-                      <button
-                        type="button"
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                        className="flex items-center gap-1.5 bg-primary-400/10 hover:bg-primary-400/20 text-primary-400 text-[12px] sm:text-[13px] font-bold rounded-full px-3 py-1.5 focus:outline-none cursor-pointer transition-all max-w-[130px] sm:max-w-[200px]"
-                      >
-                        <span className="truncate">{myRooms.find(r => r.id === selectedRoomId)?.title || "Select room"}</span>
-                        <svg className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                      </button>
-
-                      <AnimatePresence>
-                        {dropdownOpen && (
-                          <>
-                            <div 
-                              className="fixed inset-0 z-40 cursor-default" 
-                              onClick={() => setDropdownOpen(false)} 
-                            />
-                            <motion.div
-                              initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                              transition={{ duration: 0.12 }}
-                              className="absolute left-0 bottom-full mb-2 min-w-[180px] w-max max-w-[280px] bg-white border border-slate-200 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1 z-50 overflow-hidden"
-                            >
-                              {myRooms.map(r => (
-                                <button
-                                  key={r.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedRoomId(r.id);
-                                    setDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all block ${
-                                    selectedRoomId === r.id
-                                      ? 'bg-primary-400/10 text-primary-400'
-                                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  {r.title}
-                                </button>
-                              ))}
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-slate-500 text-[12px] font-medium">Create a room first</span>
-                )}
-              </div>
-
-              <button 
-                onClick={handlePostUpdate}
-                disabled={posting || (!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId}
-                className="bg-primary-400 hover:bg-[#7b6ce8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-[13px] sm:text-[14px] transition-colors active:scale-95 focus-ring shrink-0 ml-2 flex items-center justify-center gap-1.5"
-              >
-                {(!profile || !profile.emailVerified) && <Lock className="w-3.5 h-3.5" />}
-                {posting ? "Posting..." : "Post"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="w-full max-w-[1050px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+      <div className="max-w-[700px] w-full mx-auto lg:mx-0">
+      <Composer 
+        user={user}
+        profile={profile}
+        myRooms={myRooms}
+        selectedRoomId={selectedRoomId}
+        setSelectedRoomId={setSelectedRoomId}
+        // no longer passing avatarUrl string
+      />
 
       {/* TIMELINE HEADER */}
       <div className="flex flex-col gap-4 mb-6">
@@ -579,67 +186,48 @@ export function TimelineFeed({
           </div>
         </div>
         {activeTab === 'feed' && (
-          <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
-            <div className="flex overflow-x-auto custom-scrollbar items-center gap-2 pb-2 sm:pb-0 snap-x">
-              {['All', 'Product', 'Engineering', 'Design'].map(domain => (
-                <button
-                  key={domain}
-                  onClick={() => setActiveDomainFilter(domain)}
-                  className={`px-3 py-1.5 rounded-full text-[12px] font-bold transition-all border focus-ring ${
-                    activeDomainFilter === domain
-                      ? 'bg-primary-500 border-primary-500 text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]'
-                      : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  {domain}
-                </button>
-              ))}
-            </div>
-            <div className="flex bg-white border border-slate-200 rounded-full p-1 self-start sm:self-auto shadow-sm">
-              <button
-                onClick={() => setFeedSort('latest')}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
-                  feedSort === 'latest' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Latest
-              </button>
-              <button
-                onClick={() => setFeedSort('trending')}
-                className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
-                  feedSort === 'trending' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Trending
-              </button>
-            </div>
-          </div>
+          <TimelineFilters
+            activeDomainFilter={activeDomainFilter}
+            setActiveDomainFilter={setActiveDomainFilter}
+            activeViewToggle={activeViewToggle}
+            setActiveViewToggle={setActiveViewToggle}
+            feedSort={feedSortOrder}
+            setFeedSort={setFeedSortOrder as any}
+          />
         )}
       </div>
 
       {/* TIMELINE FEED */}
-      <div className="flex flex-col gap-4 mb-12">
+      <div className="flex flex-col mb-12 bg-white sm:border sm:border-slate-200 sm:rounded-[24px] overflow-hidden sm:shadow-sm">
         {loading ? (
           <>
             {[1, 2, 3].map(i => (
-              <div key={`skeleton-${i}`} className="bg-white border border-slate-200 rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 shadow-sm relative overflow-hidden">
-                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="flex items-center gap-2.5 sm:gap-4 flex-1">
-                    <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl bg-slate-100 animate-pulse shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-                      <div className="h-3 w-48 bg-slate-100 rounded animate-pulse" />
+              <div key={`skeleton-${i}`} className="bg-white sm:border sm:border-slate-200 sm:rounded-[24px] px-4 py-5 sm:p-6 sm:shadow-sm relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
+                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl bg-slate-200 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
+                        <div className="h-3 w-16 bg-slate-100 rounded-full animate-pulse" />
+                      </div>
+                      <div className="h-3 w-32 bg-slate-100 rounded animate-pulse" />
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3 mb-5">
                   <div className="h-4 w-full bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-5/6 bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-4/6 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-[90%] bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-[60%] bg-slate-100 rounded animate-pulse" />
                 </div>
                 <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse" />
-                  <div className="h-8 w-24 bg-slate-100 rounded-full animate-pulse" />
+                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
+                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
+                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
                 </div>
               </div>
             ))}
@@ -654,339 +242,87 @@ export function TimelineFeed({
             data={filteredUpdates}
             itemContent={(idx, update) => {
             const fullRoom = rooms?.find(r => r.id === update.roomId);
-            const tag = fullRoom?.tags?.[0] || update.rooms?.tags?.[0] || 'product';
-            const tStyle = tagStyle(tag);
-            const builderName = update.authorName;
-            const updateAvatarUrl = getAvatarUrl(update.authorId || builderName);
-            const timeString = timeAgo(update.createdAt);
-            const roomTitle = fullRoom?.title || update.rooms?.title || 'Unknown Room';
-            const comments = update.reactions?.filter((r: any) => r.type === 'reply') || [];
-            
             const isFollowing = observedRooms.some(r => r.id === update.roomId);
-            const isLaunch = fullRoom?.updateCount === 1;
 
             return (
-              <motion.div
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                key={update.id} 
-                onClick={() => toggleComments(update.id)}
-                className={`bg-white border ${isLaunch ? 'border-primary-400/40 shadow-[0_0_20px_rgba(139,124,248,0.1)]' : 'border-slate-200 shadow-sm'} rounded-[20px] sm:rounded-[24px] p-3 sm:p-6 hover:bg-slate-50/50 transition-all cursor-pointer relative overflow-hidden focus-ring`}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    toggleComments(update.id);
-                  }
-                }}
-              >
-                {/* Header */}
-                <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
-                    <div 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (update.authorId) {
-                          navigate(`/dashboard/profile/${update.authorId}`);
-                        }
-                      }}
-                      className={`w-8 h-8 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-50 border border-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
-                    >
-                      <img src={updateAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <div className="font-extrabold text-[13px] sm:text-[16px] text-slate-900 leading-tight font-display hover:underline truncate max-w-full flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          {builderName}
-                          <VerifiedTick isVerified={!!(update as any).authorIsVerifiedExpert} className="w-4 h-4" />
-                        </div>
-                        {isLaunch && (
-                          <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
-                        )}
-                      </div>
-                      <div className="text-[12px] sm:text-[13px] text-slate-500 mt-1 font-medium flex items-center flex-wrap gap-x-1.5">
-                        <span className="text-slate-900 font-semibold hover:underline truncate max-w-full" onClick={(e) => e.stopPropagation()}>{roomTitle}</span>
-                        <span className="text-slate-600 hidden sm:inline">·</span>
-                        <span className="capitalize">{tag}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col-reverse items-end gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
-                        {timeString}
-                      </div>
-                      {update.authorId === user?.id && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button
-                                onClick={(e) => e.stopPropagation()}
-                                disabled={deletingUpdateId === update.id}
-                                className="text-slate-500 hover:text-rose-400 transition-colors p-2.5 sm:p-2 -m-2 sm:-m-1 rounded-lg hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 relative z-20 flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-0 sm:min-h-0"
-                                title="Delete update"
-                              >
-                                {deletingUpdateId === update.id ? (
-                                   <span className="w-3.5 h-3.5 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
-                                ) : (
-                                   <Trash2 className="w-3.5 h-3.5" />
-                                )}
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent 
-                              onClick={(e) => e.stopPropagation()}
-                              className="bg-white border border-slate-200 shadow-xl sm:rounded-[24px]"
-                            >
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-[20px] font-display font-extrabold text-slate-900">Delete this update?</AlertDialogTitle>
-                                <AlertDialogDescription className="text-slate-500 text-[14px] font-medium leading-relaxed mt-2">
-                                  This action cannot be undone. This will permanently remove your update from the timeline.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter className="mt-6 border-t border-slate-100 pt-4">
-                                <AlertDialogCancel className="bg-slate-50 hover:bg-slate-100 text-slate-600 border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteUpdate(update.id);
-                                  }}
-                                  className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 font-bold transition-all"
-                                >
-                                  Delete Update
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                      )}
-                    </div>
-                    {activeTab === 'feed' && update.authorId !== user?.id && (
-                      isFollowing ? (
-                        <button 
-                          onClick={(e) => handleUnfollowRoom(update.roomId, e)}
-                          className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all group"
-                        >
-                          <CheckCircle className="w-3 h-3 group-hover:hidden" />
-                          <span className="group-hover:hidden">Following</span>
-                          <span className="hidden group-hover:inline">Unfollow</span>
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={(e) => handleFollowRoom(update.roomId, e)}
-                          className="text-[11px] font-bold text-primary-400 bg-primary-400/10 border border-primary-400/20 hover:bg-primary-400/20 px-2.5 py-1 rounded-full transition-all focus-ring"
-                        >
-                          + Follow
-                        </button>
-                      )
-                    )}
-                  </div>
+              <>
+                <FeedUpdateCard
+                  update={update}
+                  fullRoom={fullRoom}
+                  rooms={rooms}
+                  user={user}
+                  profile={profile}
+                  isFollowing={isFollowing}
+                  activeTab={activeTab}
+                  queryClient={queryClient}
+                  handleFollowRoom={handleFollowRoom}
+                  handleUnfollowRoom={handleUnfollowRoom}
+                />
+              {idx === 1 && (
+                <div className="block lg:hidden mb-6">
+                  <SuggestedBuilders currentUserId={user?.id} />
                 </div>
-
-                {update.content && (
-                  update.content.includes("figma.com/") ? (
-                    <FigmaEmbed content={update.content} />
-                  ) : (
-                    <ReadMoreText 
-                      content={update.content} 
-                      className="text-[14px] sm:text-[15px] text-slate-700 leading-relaxed mb-4 whitespace-pre-wrap break-words" 
-                    />
-                  )
-                )}
-
-                {update.mediaUrl && (
-                  <div className="mb-6 relative z-10 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-sm">
-                    <img src={update.mediaUrl} alt="Update media" className="w-full object-cover max-h-[500px]" />
-                  </div>
-                )}
-
-                {update.codeSnippet && <CodeSnippetBlock code={update.codeSnippet} />}
-
-                <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-slate-100">
-                  {renderReactionButton(update.id, update.roomId, 'sharp', 'Sharp', '✦', 'bg-primary-400/10 border-primary-400/30 text-primary-400', update.reactions || [])}
-                  {renderReactionButton(update.id, update.roomId, 'pushback', 'Push back', '↩', 'bg-rose-50 border-rose-200 text-rose-500', update.reactions || [])}
-                  {renderReactionButton(update.id, update.roomId, 'tellmemore', 'More', '?', 'bg-emerald-50 border-emerald-200 text-emerald-600', update.reactions || [])}
-                  
-                  {comments.length > 0 ? (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
-                      className="ml-auto text-[12px] font-bold text-primary-400 hover:underline focus-ring rounded px-1"
-                    >
-                      {comments.length} {comments.length === 1 ? 'reply' : 'replies'}
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleComments(update.id); }}
-                      className="ml-auto text-[12px] font-bold text-slate-500 hover:text-slate-900 transition-colors focus-ring rounded px-1"
-                    >
-                      Reply
-                    </button>
-                  )}
-                </div>
-
-                {/* Comments section */}
-                {expandedComments.includes(update.id) && (() => {
-                  const isFullyExpanded = fullyExpandedComments.includes(update.id);
-                  const visibleComments = isFullyExpanded ? comments : comments.slice(0, 3);
-                  const hiddenCount = comments.length - visibleComments.length;
-
-                  return (
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3 relative">
-                      {/* Thread Trail */}
-                      <div className="absolute top-8 bottom-12 left-[15px] w-px bg-slate-200 z-0 hidden sm:block" />
-                      
-                      {hiddenCount > 0 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFullyExpandedComments(prev => [...prev, update.id]);
-                          }}
-                          className="text-[12px] font-bold text-primary-400 hover:text-slate-900 transition-colors self-start mb-2 relative z-10 bg-white pr-2"
-                        >
-                          View {hiddenCount} previous {hiddenCount === 1 ? 'reply' : 'replies'}...
-                        </button>
-                      )}
-                      
-                      {visibleComments.map((comment: any) => {
-                        const commentAvatarUrl = getAvatarUrl(comment.observerId || comment.observerName);
-                        const commentHandle = `@${comment.observerName.toLowerCase().replace(/\s+/g, '')}`;
-                        const commentTime = timeAgo(comment.createdAt);
-                        return (
-                          <div key={comment.id} className="flex gap-3 relative z-10" onClick={(e) => e.stopPropagation()}>
-                          <div 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (comment.observerId) {
-                                navigate(`/dashboard/profile/${comment.observerId}`);
-                              }
-                            }}
-                            className="w-8 h-8 rounded-[10px] bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all"
-                          >
-                            <img src={commentAvatarUrl} alt="Avatar" className="w-full h-full object-cover scale-110" />
-                          </div>
-                          <div className="flex-1 bg-slate-50 rounded-xl p-3 border border-slate-100">
-                            <div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5 mb-1">
-                              <span className="font-bold text-[13px] text-slate-900 hover:underline whitespace-nowrap truncate max-w-[150px] sm:max-w-[250px] flex items-center gap-1">
-                                {comment.observerName}
-                                <VerifiedTick userId={comment.observerId} className="w-3 h-3" />
-                              </span>
-                              <span className="text-[12px] text-slate-500 truncate max-w-[100px] sm:max-w-[180px]">{commentHandle}</span>
-                              <span className="text-[12px] text-slate-500 shrink-0">·</span>
-                              <span className="text-[12px] text-slate-500 shrink-0">{commentTime}</span>
-                            </div>
-                            <p className="text-[13.5px] text-slate-700 leading-relaxed m-0">
-                              {comment.text.split(/(@\w+)/g).map((part: string, i: number) => 
-                                part.startsWith('@') ? (
-                                  <span key={i} className="text-[#E75C5C] font-semibold">{part}</span>
-                                ) : (
-                                  <span key={i}>{part}</span>
-                                )
-                              )}
-                            </p>
-                            <div className="flex items-center gap-4 mt-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleReplyClick(e, update.id);
-                                  setReplyText(`${commentHandle} `);
-                                }}
-                                className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400 hover:text-primary-400 transition-colors"
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                Reply
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {replyingTo === update.id ? (
-                      <div className="mt-3 flex flex-col gap-2 relative z-10" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                        <div className="w-full bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 transition-all">
-                          {/* Formatting Toolbar */}
-                          <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-100 bg-slate-50 overflow-x-auto">
-                            <button onClick={() => insertFormatting('**', '**')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Bold"><Bold className="w-4 h-4" /></button>
-                            <button onClick={() => insertFormatting('*', '*')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Italic"><Italic className="w-4 h-4" /></button>
-                            <div className="w-px h-4 bg-slate-200 mx-1" />
-                            <button onClick={() => insertFormatting('1. ')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Numbered List"><ListOrdered className="w-4 h-4" /></button>
-                            <button onClick={() => insertFormatting('- ')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Bulleted List"><List className="w-4 h-4" /></button>
-                            <div className="w-px h-4 bg-slate-200 mx-1" />
-                            <button onClick={() => insertFormatting('[', '](url)')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Link"><LinkIcon className="w-4 h-4" /></button>
-                            <button onClick={() => insertFormatting('`', '`')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Code"><Code className="w-4 h-4" /></button>
-                            <button onClick={() => insertFormatting('> ')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Quote"><Quote className="w-4 h-4" /></button>
-                            <div className="w-px h-4 bg-slate-200 mx-1" />
-                            <button onClick={() => insertFormatting('@')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Mention"><AtSign className="w-4 h-4" /></button>
-                            <div className="w-px h-4 bg-slate-200 mx-1" />
-                            <button onClick={() => insertFormatting('![alt text](', ')')} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded transition-colors" title="Image"><ImageIcon className="w-4 h-4" /></button>
-                          </div>
-                          <textarea
-                            ref={replyTextareaRef}
-                            autoFocus
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder={`Replying to @${update.authorName.toLowerCase().replace(/\s+/g, '')}...`}
-                            className="w-full bg-transparent p-3 text-[16px] sm:text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none resize-none min-h-[80px]"
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2 mt-1">
-                          <button
-                            onClick={() => {
-                              setReplyingTo(null);
-                              setReplyText("");
-                            }}
-                            className="px-4 py-2 rounded-full text-[13px] font-bold text-slate-500 hover:text-slate-900 transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={submitReply}
-                            disabled={!replyText.trim()}
-                            className="px-5 py-2 rounded-full bg-primary-500 hover:bg-[#5b4cdb] text-white text-[13px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Reply
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3 mt-1 relative z-10 pl-2" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                          onClick={(e) => handleReplyClick(e, update.id)}
-                          className="text-[13px] font-bold text-primary-400 hover:text-[#7b6ce8] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1.5 focus-ring rounded px-1"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                          Add a reply
-                          {(!profile || !profile.emailVerified) && <Lock className="w-3 h-3 ml-0.5 opacity-70" />}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );})()}
-              </motion.div>
+              )}
+            </>
             );
           }}
-        />
-        )}
-
-        {hasNextUpdates && (
-          <div className="flex justify-center p-6 border-t border-slate-200 bg-slate-50">
-            <button
-              onClick={() => fetchNextUpdates()}
-              disabled={isFetchingNextUpdates}
-              className="px-6 py-2.5 bg-primary-400/10 hover:bg-primary-400/20 active:scale-95 border border-primary-400/20 text-primary-400 hover:text-white rounded-full text-[13px] font-bold transition-all disabled:opacity-50 flex items-center gap-2 focus-ring"
-            >
-              {isFetchingNextUpdates ? (
+          components={{
+            Footer: () => (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Loading...
+                  {hasNextUpdates ? (
+                    <div className="flex justify-center p-6 border-t border-slate-200 bg-slate-50">
+                      <button
+                        onClick={() => fetchNextUpdates()}
+                        disabled={isFetchingNextUpdates}
+                        className="px-6 py-2.5 bg-primary-400/10 hover:bg-primary-400/20 active:scale-95 border border-primary-400/20 text-primary-400 hover:text-white rounded-full text-[13px] font-bold transition-all disabled:opacity-50 flex items-center gap-2 focus-ring"
+                      >
+                        {isFetchingNextUpdates ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More Updates"
+                        )}
+                      </button>
+                    </div>
+                  ) : !loading && filteredUpdates.length > 0 ? (
+                    <div className="mt-8 mb-12 p-8 sm:p-12 text-center bg-white border border-slate-200 rounded-[24px] shadow-sm flex flex-col items-center">
+                      <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mb-4 text-primary-500">
+                        <Sparkles className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-[18px] font-display font-extrabold text-slate-900 mb-2">You're all caught up!</h3>
+                      <p className="text-[14px] text-slate-500 max-w-md mx-auto mb-6">
+                        You've seen all the latest updates. Why not discover more rooms or post an update of your own?
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <Link to="/dashboard/explore" className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-full text-[13px] font-bold transition-all shadow-sm">
+                          Explore Rooms
+                        </Link>
+                        <button 
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-[13px] font-bold transition-all"
+                        >
+                          Back to top
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                 </>
-              ) : (
-                "Load More Updates"
-              )}
-            </button>
-          </div>
+              )
+            }}
+          />
         )}
+      </div>
+      </div>
+
+      {/* RIGHT SIDEBAR (Desktop Only) */}
+      <div className="hidden lg:flex flex-col gap-6 sticky top-24">
+        <TrendingTopics updates={dbUpdates} rooms={rooms} />
+        <SuggestedBuilders currentUserId={user?.id} />
       </div>
     </div>
   );

@@ -1,22 +1,36 @@
-node_modules
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.sql
-.md
-.cjs
-.git
-.gitignore
-.debug.log
-dist/
-.env.backup
+# Logs
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Scratch and Test Scripts
-check_db.js
-reset_apps.js
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Custom Scripts
+test-db.ts
 test_email.js
 test_welcome_email.js
-default_shadcn_theme.css
+seed-badges.ts
+seed-badges-raw.ts

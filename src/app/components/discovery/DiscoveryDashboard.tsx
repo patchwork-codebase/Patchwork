@@ -7,11 +7,15 @@ import HypothesisTracker from './HypothesisTracker';
 import CustomerInterviews from './CustomerInterviews';
 import SignalTracker from './SignalTracker';
 import DecisionTracker from './DecisionTracker';
+import LinkedInDeckGenerator from './LinkedInDeckGenerator';
+import { useAuth } from '../auth/AuthContext';
 
 export default function DiscoveryDashboard() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading } = useDiscoveryProject(id);
   const [activeTab, setActiveTab] = useState('overview');
+  const { profile } = useAuth();
+  const isObserver = profile?.role === 'observer';
 
   if (isLoading) {
     return (
@@ -26,7 +30,7 @@ export default function DiscoveryDashboard() {
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900">Project Not Found</h2>
-        <Link to="/dashboard/discovery" className="text-[#8B7CF8] hover:underline mt-4 inline-block">Return to Hub</Link>
+        <Link to="/dashboard/discovery" className="text-primary-400 hover:underline mt-4 inline-block">Return to Hub</Link>
       </div>
     );
   }
@@ -40,9 +44,9 @@ export default function DiscoveryDashboard() {
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#8B7CF8]/10 border border-[#8B7CF8]/20 rounded-full">
-                <Compass className="w-3.5 h-3.5 text-[#8B7CF8]" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B7CF8]">Discovery Mode</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-400/10 border border-primary-400/20 rounded-full">
+                <Compass className="w-3.5 h-3.5 text-primary-400" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400">Discovery Mode</span>
               </div>
               {project.status === 'converted' && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
@@ -59,16 +63,19 @@ export default function DiscoveryDashboard() {
           </div>
         </div>
         
-        {/* Confidence Gauge */}
-        <div className="w-full md:w-auto bg-white border border-slate-200 rounded-2xl p-4 flex md:flex-col flex-row items-center justify-between md:justify-center md:min-w-[150px] shadow-sm shrink-0 gap-2">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Confidence Score</div>
-          <div className={`text-2xl sm:text-3xl font-black ${
-            project.confidence_score >= 70 ? 'text-emerald-500' :
-            project.confidence_score >= 40 ? 'text-amber-500' :
-            'text-rose-500'
-          }`}>
-            {project.confidence_score}%
+        {/* Confidence Gauge & Share */}
+        <div className="flex md:flex-col flex-row gap-3 shrink-0 items-center w-full md:w-auto justify-between md:justify-center">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex md:flex-col flex-row items-center justify-between md:justify-center md:min-w-[150px] shadow-sm gap-2">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Confidence Score</div>
+            <div className={`text-2xl sm:text-3xl font-black ${
+              project.confidence_score >= 70 ? 'text-emerald-500' :
+              project.confidence_score >= 40 ? 'text-amber-500' :
+              'text-rose-500'
+            }`}>
+              {project.confidence_score}%
+            </div>
           </div>
+          {!isObserver && <LinkedInDeckGenerator project={project} />}
         </div>
       </div>
 
@@ -80,7 +87,7 @@ export default function DiscoveryDashboard() {
             onClick={() => setActiveTab(tab)}
             className={`px-6 py-4 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 ${
               activeTab === tab 
-                ? 'border-[#8B7CF8] text-[#8B7CF8]' 
+                ? 'border-primary-400 text-primary-400' 
                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`}
           >
@@ -92,26 +99,27 @@ export default function DiscoveryDashboard() {
       {/* Content Area */}
       <div className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-8 min-h-[400px]">
         {activeTab === 'overview' && (
-          <ProblemStatementForm project={project} />
+          <ProblemStatementForm project={project} isObserver={isObserver} />
         )}
         
         {activeTab === 'hypotheses' && (
-          <HypothesisTracker projectId={project.id} />
+          <HypothesisTracker projectId={project.id} isObserver={isObserver} />
         )}
 
         {activeTab === 'interviews' && (
-          <CustomerInterviews projectId={project.id} />
+          <CustomerInterviews projectId={project.id} isObserver={isObserver} />
         )}
 
         {activeTab === 'signals' && (
-          <SignalTracker projectId={project.id} />
+          <SignalTracker projectId={project.id} isObserver={isObserver} />
         )}
 
         {activeTab === 'decision' && (
-          <DecisionTracker project={project} />
+          <DecisionTracker project={project} isObserver={isObserver} />
         )}
       </div>
     </div>
   );
 }
+
 

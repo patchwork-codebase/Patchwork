@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, MessageCircle, CheckCircle, BookOpen, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { UserAvatar } from '../ui/UserAvatar';
 
 interface ExpertReview {
   id: string;
@@ -54,8 +55,8 @@ export function ReviewReport({ review }: ReviewReportProps) {
       <div className="p-6 border-b border-white/[0.08] flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img src={review.expert.avatar} alt={review.expert.name} className="w-12 h-12 rounded-full border border-white/10" />
-            <div className="absolute -bottom-1 -right-1 bg-[#1C1A24] rounded-full p-0.5">
+            <UserAvatar userId={review.expert.name} name={review.expert.name} avatarUrl={review.expert.avatar} className="w-12 h-12 rounded-full border border-white/10" />
+            <div className="absolute -bottom-1 -right-1 bg-ink-80 rounded-full p-0.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
             </div>
           </div>

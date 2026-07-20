@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { Zap, Eye, MessagesSquare, CheckCircle2, Flame, ArrowUpRight } from "lucide-react";
+import { Zap, Eye, MessagesSquare, CheckCircle2, Flame, ArrowUpRight, Compass } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { useObservedRooms, useObserverStats } from "../../hooks/useRooms";
-import { timeAgo, getAvatarUrl } from "../../utils/helpers";
+import { timeAgo } from "../../utils/helpers";
+import { UserAvatar } from "../ui/UserAvatar";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../auth/AuthContext";
+import { ObserverProgressionPanel } from "./ObserverProgressionPanel";
 
 export default function ObserverHub() {
   const [filter, setFilter] = useState("all");
@@ -31,6 +33,31 @@ export default function ObserverHub() {
   });
 
   const followedRooms = roomsData?.pages.flat() || [];
+
+  const { data: similarRooms, isLoading: similarLoading } = useQuery({
+    queryKey: ['similar-problems', user?.id, followedRooms.length],
+    queryFn: async () => {
+      if (!followedRooms || followedRooms.length === 0) return [];
+      // Extract unique tags from followed rooms to find similar problems
+      const tags = followedRooms.flatMap((r: any) => r.tags || []);
+      const uniqueTags = Array.from(new Set(tags));
+      if (uniqueTags.length === 0) return [];
+
+      // Naive approach: find rooms with the most prominent tag that the user is NOT already following
+      const followedIds = followedRooms.map((r: any) => r.id);
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('id, title, description, tags, builder_name, update_count, status')
+        .eq('is_private', false)
+        .contains('tags', [uniqueTags[0]])
+        .not('id', 'in', `(${followedIds.join(',')})`)
+        .order('update_count', { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && followedRooms.length > 0
+  });
 
   return (
     <div className="max-w-[1100px] mx-auto px-6 py-8">
@@ -63,91 +90,141 @@ export default function ObserverHub() {
         ))}
       </div>
 
-      {/* ── FOLLOWED ROOMS ── */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="font-display font-extrabold text-[20px] text-slate-900">Your Watchlist</h2>
-          
-          <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200 overflow-x-auto no-scrollbar">
-            {['all', 'active', 'shipped'].map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 rounded-lg text-[12px] font-bold capitalize transition-colors ${filter === f ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {roomsLoading ? (
-            <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading your watchlist...</div>
-          ) : followedRooms.filter(r => filter === 'all' || (filter === 'active' ? r.status === 'active' || !r.status : r.status === filter)).map((room, i) => (
-            <Link key={room.id || i} to={`/dashboard/room/${room.id}`} className="block bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-500/30 rounded-[20px] p-6 hover:bg-slate-50 transition-all group">
-              <div className="flex justify-between items-start mb-4">
-                <div className={`w-2.5 h-2.5 rounded-full mt-1 ${room.status === 'active' || !room.status ? 'bg-emerald-400 animate-pulse' : room.status === 'shipped' ? 'bg-primary-400' : 'bg-amber-400'}`} />
-                <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md uppercase tracking-wider">
-                  {room.status || 'Active'}
-                </span>
-              </div>
-              <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-primary-400 transition-colors mb-2 leading-snug">{room.title}</h3>
-              <p className="text-[12px] text-slate-600 font-medium mb-6">{room.updateCount || 0} updates</p>
-              
-              <div className="flex items-center justify-between border-t border-slate-200 pt-4">
-                <span className="text-[11px] text-slate-600 font-mono">Updated {timeAgo(room.updatedAt || room.createdAt)}</span>
-                <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-slate-900 transition-colors" />
-              </div>
-            </Link>
-          ))}
-          
-          <Link to="/dashboard/explore" className="border-2 border-dashed border-slate-300 hover:border-primary-400/50 hover:bg-slate-50 rounded-[20px] p-6 flex flex-col items-center justify-center text-center gap-3 transition-all min-h-[200px]">
-             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-               <Eye className="w-5 h-5" />
-             </div>
-             <div>
-               <div className="text-[14px] font-bold text-slate-900 mb-1">Discover rooms</div>
-               <div className="text-[12px] text-slate-600 font-medium">Find more builders to watch</div>
-             </div>
-          </Link>
-        </div>
-      </div>
-
-      {/* ── TRENDING BUILDERS ── */}
-      <div className="mt-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
-            Trending Builders <Flame className="w-5 h-5 text-amber-500" />
-          </h2>
-          <Link to="/dashboard/explore" className="text-[13px] font-bold text-primary-400 hover:underline">
-            View all
-          </Link>
-        </div>
+      {/* ── MAIN CONTENT & SIDEBAR GRID ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {buildersLoading ? (
-            <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading builders...</div>
-          ) : trendingBuilders?.map((builder: any) => (
-            <Link key={builder.id} to={`/dashboard/profile/${builder.id}`} className="bg-white border border-slate-200 shadow-sm rounded-[20px] p-5 flex items-start gap-4 hover:bg-slate-50 hover:border-primary-400/30 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0 overflow-hidden">
-                <img src={getAvatarUrl(builder.id || builder.email)} alt={builder.name} className="w-full h-full object-cover" />
+        {/* LEFT COLUMN: WATCHLIST & TRENDING */}
+        <div className="lg:col-span-2 space-y-12">
+          
+          {/* ── FOLLOWED ROOMS ── */}
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <h2 className="font-display font-extrabold text-[20px] text-slate-900">Your Watchlist</h2>
+              
+              <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200 overflow-x-auto no-scrollbar">
+                {['all', 'active', 'shipped'].map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`px-4 py-1.5 rounded-lg text-[12px] font-bold capitalize transition-colors ${filter === f ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}
+                  >
+                    {f}
+                  </button>
+                ))}
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-[15px] text-slate-900 flex items-center gap-1">
-                  <span className="truncate">{builder.name || builder.email?.split('@')[0]}</span>
-                  <VerifiedTick isVerified={!!builder.is_verified_expert} className="w-4 h-4 shrink-0" />
-                </h3>
-                <p className="text-[12px] text-slate-500 font-medium capitalize truncate mb-2">{builder.domain || 'Builder'}</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
-                    Rep {builder.reputation || 0}
-                  </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {roomsLoading ? (
+                <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading your watchlist...</div>
+              ) : followedRooms.filter(r => filter === 'all' || (filter === 'active' ? r.status === 'active' || !r.status : r.status === filter)).map((room, i) => (
+                <Link key={room.id || i} to={`/dashboard/room/${room.id}`} className="block bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-primary-500/30 rounded-[20px] p-6 hover:bg-slate-50 transition-all group">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={`w-2.5 h-2.5 rounded-full mt-1 ${room.status === 'active' || !room.status ? 'bg-emerald-400 animate-pulse' : room.status === 'shipped' ? 'bg-primary-400' : 'bg-amber-400'}`} />
+                    <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md uppercase tracking-wider">
+                      {room.status || 'Active'}
+                    </span>
+                  </div>
+                  <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-primary-400 transition-colors mb-2 leading-snug">{room.title}</h3>
+                  <p className="text-[12px] text-slate-600 font-medium mb-6">{room.updateCount || 0} updates</p>
+                  
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-4">
+                    <span className="text-[11px] text-slate-600 font-mono">Updated {timeAgo(room.updatedAt || room.createdAt)}</span>
+                    <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-slate-900 transition-colors" />
+                  </div>
+                </Link>
+              ))}
+              
+              <Link to="/dashboard/explore" className="border-2 border-dashed border-slate-300 hover:border-primary-400/50 hover:bg-slate-50 rounded-[20px] p-6 flex flex-col items-center justify-center text-center gap-3 transition-all min-h-[200px]">
+                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                   <Eye className="w-5 h-5" />
+                 </div>
+                 <div>
+                   <div className="text-[14px] font-bold text-slate-900 mb-1">Discover rooms</div>
+                   <div className="text-[12px] text-slate-600 font-medium">Find more builders to watch</div>
+                 </div>
+              </Link>
+            </div>
+          </div>
+
+          {/* ── TRENDING BUILDERS ── */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
+                Trending Builders <Flame className="w-5 h-5 text-amber-500" />
+              </h2>
+              <Link to="/dashboard/explore" className="text-[13px] font-bold text-primary-400 hover:underline">
+                View all
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {buildersLoading ? (
+                <div className="col-span-full p-8 text-center text-slate-600 font-medium">Loading builders...</div>
+              ) : trendingBuilders?.map((builder: any) => (
+                <Link key={builder.id} to={`/dashboard/profile/${builder.id}`} className="bg-white border border-slate-200 shadow-sm rounded-[20px] p-5 flex items-start gap-4 hover:bg-slate-50 hover:border-primary-400/30 transition-all">
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0 overflow-hidden">
+                    <UserAvatar userId={builder.id} name={builder.name} avatarUrl={builder.avatar || builder.avatar_url || builder.avatarUrl} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-[15px] text-slate-900 flex items-center gap-1">
+                      <span className="truncate">{builder.name || builder.email?.split('@')[0]}</span>
+                      <VerifiedTick isVerified={!!builder.is_verified_expert} className="w-4 h-4 shrink-0" />
+                    </h3>
+                    <p className="text-[12px] text-slate-500 font-medium capitalize truncate mb-2">{builder.domain || 'Builder'}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+                        Rep {builder.reputation || 0}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* ── SIMILAR PROBLEMS ── */}
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
+                Similar problems <Compass className="w-5 h-5 text-emerald-500" />
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {similarLoading ? (
+                <div className="col-span-full p-8 text-center text-slate-600 font-medium">Discovering similar rooms...</div>
+              ) : similarRooms && similarRooms.length > 0 ? (
+                similarRooms.map((room: any) => (
+                  <Link key={room.id} to={`/dashboard/room/${room.id}`} className="bg-white border border-slate-200 shadow-sm hover:border-emerald-500/30 rounded-[20px] p-5 flex flex-col justify-between hover:bg-slate-50 transition-all group">
+                    <div>
+                      <div className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider mb-3 inline-block">
+                        {room.tags?.[0] || 'Similar'}
+                      </div>
+                      <h3 className="text-[15px] font-bold text-slate-900 group-hover:text-emerald-500 transition-colors mb-1 leading-snug">{room.title}</h3>
+                      <p className="text-[12px] text-slate-500 font-medium truncate mb-4">by {room.builder_name || 'Builder'}</p>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+                      <span className="text-[11px] font-bold text-slate-600">{room.update_count || 0} updates</span>
+                      <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-full p-8 text-center bg-slate-50 border border-slate-200 rounded-[20px]">
+                  <p className="text-[13px] text-slate-500 font-medium">Follow more rooms to get personalized discovery suggestions!</p>
                 </div>
-              </div>
-            </Link>
-          ))}
+              )}
+            </div>
+          </div>
+
         </div>
+
+        {/* RIGHT COLUMN: PROGRESSION PANEL */}
+        <div className="lg:col-span-1">
+          <ObserverProgressionPanel />
+        </div>
+
       </div>
 
     </div>

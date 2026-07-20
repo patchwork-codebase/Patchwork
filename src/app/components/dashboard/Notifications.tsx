@@ -3,20 +3,88 @@ import { useAuth } from "../auth/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { RequestsAndInvites } from "./RequestsAndInvites";
+import { UserAvatar } from "../ui/UserAvatar";
 
+// Map notification type → display config
+function getNotifConfig(n: any) {
+  const roomTitle = n.metadata?.room_title || 'a room';
+
+  switch (n.type) {
+    case 'reaction': {
+      const isLike = n.metadata?.reaction_type === 'like';
+      return {
+        icon: isLike ? '⚡' : '💬',
+        iconBg: 'bg-primary-400/10',
+        text: isLike ? 'reacted to your update' : 'replied to your update',
+        preview: n.metadata?.reaction_text,
+        primaryLink: n.metadata?.room_id && n.metadata?.update_id
+          ? `/dashboard/room/${n.metadata.room_id}?updateId=${n.metadata.update_id}`
+          : null,
+        primaryLabel: 'View update',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    }
+    case 'room_follow':
+      return {
+        icon: '👀',
+        iconBg: 'bg-emerald-500/10',
+        text: `started following "${roomTitle}"`,
+        preview: null,
+        primaryLink: n.metadata?.room_id ? `/dashboard/room/${n.metadata.room_id}` : null,
+        primaryLabel: 'View room',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    case 'decision':
+    case 'decision_updated':
+      return {
+        icon: '📝',
+        iconBg: 'bg-violet-500/10',
+        text: n.type === 'decision'
+          ? `published a Decision Log in "${roomTitle}"`
+          : `updated a Decision Log in "${roomTitle}"`,
+        preview: n.metadata?.decision_text,
+        primaryLink: n.metadata?.room_id
+          ? `/dashboard/room/${n.metadata.room_id}?updateId=${n.reference_id}`
+          : null,
+        primaryLabel: 'View decision',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    case 'update_posted':
+      return {
+        icon: '🔔',
+        iconBg: 'bg-amber-500/10',
+        text: `posted a new update in "${roomTitle}"`,
+        preview: n.metadata?.update_text,
+        primaryLink: n.metadata?.room_id
+          ? `/dashboard/room/${n.metadata.room_id}?updateId=${n.reference_id}`
+          : null,
+        primaryLabel: 'View update',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    default:
+      return {
+        icon: '🔔',
+        iconBg: 'bg-slate-100',
+        text: 'sent you a notification',
+        preview: null,
+        primaryLink: null,
+        primaryLabel: null,
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+  }
+}
 
 export default function Notifications() {
   const { user } = useAuth();
   const { data: notificationsData, isLoading, markAllAsRead } = useNotifications(user?.id);
-  
+
   const notifications = notificationsData || [];
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const hasMarkedRef = useRef(false);
-
   useEffect(() => {
     if (unreadCount > 0 && !hasMarkedRef.current) {
       hasMarkedRef.current = true;
@@ -25,7 +93,7 @@ export default function Notifications() {
   }, [unreadCount]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -41,22 +109,7 @@ export default function Notifications() {
             Notifications
           </h1>
           <p className="text-slate-500 mt-1 text-[14px]">
-            Stay updated on activity in your rooms
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-primary-400/10 border border-primary-400/20 rounded-xl p-4 mb-6 flex items-start gap-4">
-        <div className="w-8 h-8 rounded-full bg-primary-400/20 flex items-center justify-center shrink-0 mt-0.5">
-          <span className="text-[16px]">🔌</span>
-        </div>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-bold text-slate-900 text-[14px]">GitHub & Figma Webhooks</h3>
-            <span className="px-2 py-0.5 bg-primary-400/10 border border-primary-400/20 text-primary-400 text-[9px] font-bold uppercase tracking-wider rounded-md">Coming Soon</span>
-          </div>
-          <p className="text-slate-600 text-[13px] leading-relaxed">
-            Soon, you'll see automated notifications here whenever a Pull Request is merged or a Figma design changes in your linked artifacts.
+            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
           </p>
         </div>
       </div>
@@ -72,12 +125,12 @@ export default function Notifications() {
         ) : notifications.length === 0 ? (
           <div className="p-16 flex flex-col items-center justify-center text-center text-slate-500 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-[40px] pointer-events-none" />
-            <div className="w-16 h-16 rounded-[20px] bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-5 shadow-sm text-primary-400">
+            <div className="w-16 h-16 rounded-[20px] bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-5 shadow-sm">
               <span className="text-2xl">🔔</span>
             </div>
             <h3 className="text-slate-900 font-extrabold text-[20px] mb-2 tracking-tight">You're all caught up!</h3>
             <p className="text-[14px] text-slate-500 max-w-[280px] leading-relaxed mb-6">
-              You don't have any notifications right now. Discover active rooms to follow.
+              No notifications yet. Discover active rooms to follow.
             </p>
             <Link
               to="/explore"
@@ -89,81 +142,87 @@ export default function Notifications() {
         ) : (
           <div className="divide-y divide-slate-100">
             {notifications.map(n => {
-              const isReaction = n.type === 'reaction';
-              const isDecision = n.type === 'decision';
+              const config = getNotifConfig(n);
               const actorName = n.actor?.name || 'Someone';
-              
-              let text = '';
-              let icon = '';
-              let bg = '';
-              let color = '';
-              let linkTo = null;
-              
-              if (isReaction) {
-                const isLike = n.metadata?.reaction_type === 'like';
-                text = isLike ? 'reacted "Like" to your update' : 'replied to your update';
-                icon = isLike ? '⚡' : '🔄';
-                bg = 'bg-primary-400/10';
-                color = 'text-primary-400';
-                
-                if (n.metadata?.room_id && n.metadata?.update_id) {
-                  linkTo = `/dashboard/room/${n.metadata.room_id}?updateId=${n.metadata.update_id}`;
-                }
-              } else if (isDecision) {
-                const roomTitle = n.metadata?.room_title || 'a room';
-                text = `published a new Decision Log in "${roomTitle}"`;
-                icon = '📝';
-                bg = 'bg-primary-400/10';
-                color = 'text-primary-400';
-                linkTo = `/build-room/${n.metadata?.room_id}/decision/${n.reference_id}`;
-              } else {
-                const roomTitle = n.metadata?.room_title || 'your room';
-                text = `started following "${roomTitle}"`;
-                icon = '👀';
-                bg = 'bg-emerald-500/10';
-                color = 'text-emerald-400';
-              }
 
-              const InnerContent = (
-                <div className={`p-5 flex items-start gap-4 transition-colors hover:bg-slate-50/50 ${!n.read ? 'bg-slate-50' : ''}`}>
-                  <div className={`w-10 h-10 rounded-full ${bg} flex items-center justify-center shrink-0 mt-0.5`}>
-                    <span className="text-[18px]">{icon}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[14px] text-slate-700 leading-snug">
-                      <strong className="text-slate-900 font-bold">{actorName}</strong> {text}
+              return (
+                <motion.div
+                  key={n.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={`p-4 sm:p-5 transition-colors ${!n.read ? 'bg-primary-50/50' : 'hover:bg-slate-50/60'}`}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Actor avatar — tappable to profile */}
+                    <div className="relative shrink-0">
+                      <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
+                        <UserAvatar userId={n.actor_id} name={actorName} avatarUrl={n.actor?.avatar_url} className="w-full h-full object-cover" />
+                      </div>
+                      {/* Notification type badge */}
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full ${config.iconBg} border-2 border-white flex items-center justify-center text-[10px]`}>
+                        {config.icon}
+                      </div>
                     </div>
-                    {isDecision && n.metadata?.decision_text && (
-                      <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl line-clamp-2">
-                        {n.metadata.decision_text}...
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] text-slate-700 leading-snug">
+                        {config.actorLink ? (
+                          <Link
+                            to={config.actorLink}
+                            className="font-extrabold text-slate-900 hover:text-primary-500 transition-colors"
+                          >
+                            {actorName}
+                          </Link>
+                        ) : (
+                          <strong className="font-extrabold text-slate-900">{actorName}</strong>
+                        )}{' '}
+                        {config.text}
+                      </p>
+
+                      {/* Preview snippet */}
+                      {config.preview && (
+                        <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-2.5 rounded-xl line-clamp-2 italic">
+                          "{config.preview}"
+                        </div>
+                      )}
+
+                      {/* Timestamp + unread dot */}
+                      <div className="text-[12px] text-slate-400 mt-2 font-medium flex items-center gap-2">
+                        {timeAgo(n.created_at)}
+                        {!n.read && (
+                          <>
+                            <span className="w-1 h-1 rounded-full bg-rose-500" />
+                            <span className="text-rose-400 font-bold text-[10px] uppercase tracking-wider">New</span>
+                          </>
+                        )}
                       </div>
-                    )}
-                    {isReaction && n.metadata?.reaction_text && n.metadata.reaction_type !== 'like' && (
-                      <div className="mt-2 text-[13px] text-slate-600 bg-slate-50 border border-slate-200 p-3 rounded-xl italic">
-                        "{n.metadata.reaction_text}"
-                      </div>
-                    )}
-                    <div className="text-[12px] text-slate-500 mt-2 font-mono font-medium flex items-center gap-2">
-                      {timeAgo(n.created_at)}
-                      {!n.read && (
-                        <>
-                          <span className="w-1 h-1 rounded-full bg-rose-500" />
-                          <span className="text-rose-400 font-bold text-[10px] uppercase tracking-wider">New</span>
-                        </>
+
+                      {/* Action buttons */}
+                      {(config.primaryLink || config.actorLink) && (
+                        <div className="flex items-center gap-2 mt-3 flex-wrap">
+                          {config.primaryLink && config.primaryLabel && (
+                            <Link
+                              to={config.primaryLink}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white text-[12px] font-bold rounded-xl transition-all shadow-sm shadow-primary-100 active:scale-95"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              {config.primaryLabel}
+                            </Link>
+                          )}
+                          {config.actorLink && (
+                            <Link
+                              to={config.actorLink}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-bold rounded-xl border border-slate-200 hover:border-slate-300 transition-all active:scale-95"
+                            >
+                              View profile
+                            </Link>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
-                </div>
-              );
-
-              return linkTo ? (
-                <Link key={n.id} to={linkTo} className="block">
-                  {InnerContent}
-                </Link>
-              ) : (
-                <div key={n.id}>
-                  {InnerContent}
-                </div>
+                </motion.div>
               );
             })}
           </div>

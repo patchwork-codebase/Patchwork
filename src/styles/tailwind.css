@@ -2,3 +2,21 @@
 @source '../**/*.{js,ts,jsx,tsx}';
 
 @import 'tw-animate-css';
+
+@theme {
+  --animate-shimmer: shimmer 1.5s infinite;
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  --color-sage: #a6cdba;
+  --color-sage-50: #f1f7f4;
+  --color-sage-100: #e0eee6;
+  --color-sage-200: #c5ded1;
+  --color-sage-300: #a6cdba;
+  --color-sage-400: #7fb69b;
+  --color-sage-500: #5e9b7d;
+  --color-sage-600: #497a61;
+  --color-sage-950: #1b3224;
+}

@@ -77,7 +77,7 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
           <textarea
             required name="understanding" value={form.understanding} onChange={handleChange} rows={3}
             placeholder="I understand that you are trying to build..."
-            className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
           <textarea
             required name="whatWorks" value={form.whatWorks} onChange={handleChange} rows={3}
             placeholder="The strongest part of this approach is..."
-            className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
           />
         </div>
 
@@ -105,7 +105,7 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
           <textarea
             required name="risks" value={form.risks} onChange={handleChange} rows={3}
             placeholder="A major risk here is..."
-            className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
           />
         </div>
 
@@ -119,7 +119,7 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
           <textarea
             required name="alternativeApproaches" value={form.alternativeApproaches} onChange={handleChange} rows={3}
             placeholder="Alternatively, you could try..."
-            className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
           />
         </div>
 
@@ -133,7 +133,7 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
           <textarea
             required name="recommendation" value={form.recommendation} onChange={handleChange} rows={3}
             placeholder="I strongly recommend that you..."
-            className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
           />
         </div>
 
@@ -147,7 +147,7 @@ export function ReviewTemplateForm({ requestId, onClose, onSubmitSuccess }: Revi
           <textarea
             required name="questions" value={form.questions} onChange={handleChange} rows={2}
             placeholder="1. Have you considered... ?"
-            className="w-full px-5 py-4 bg-[#0A0910]/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white focus:outline-none focus:border-emerald-500/50 resize-none"
           />
         </div>
 
