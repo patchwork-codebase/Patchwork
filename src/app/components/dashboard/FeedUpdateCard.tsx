@@ -283,7 +283,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           {/* Threaded Replies Section */}
           {replies.length > 0 && (
             <div className="mt-3 relative pl-2">
-              <div className="absolute left-6 top-0 bottom-6 w-px bg-slate-200/60 -z-10" />
+              <div className="absolute left-6 top-0 bottom-6 w-[2px] bg-slate-300 -z-10" />
               
               {replies.length > 1 && !showAllReplies && (
                 <button 
@@ -293,7 +293,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                   }}
                   className="relative ml-2 flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-primary-600 transition-colors py-2 group"
                 >
-                  <div className="w-4 h-px bg-slate-200 group-hover:bg-primary-200 transition-colors" />
+                  <div className="w-4 h-[2px] bg-slate-300 group-hover:bg-primary-300 transition-colors" />
                   View {replies.length - 1} earlier repl{replies.length - 1 === 1 ? 'y' : 'ies'}...
                 </button>
               )}

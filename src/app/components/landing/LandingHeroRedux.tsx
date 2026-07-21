@@ -39,7 +39,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
   );
 
   return (
-    <section className="relative w-full h-[100vh] sm:h-[120vh] bg-[#0A0A0A] overflow-hidden flex flex-col items-center justify-center">
+    <section className="relative w-full h-[100vh] sm:h-[120vh] bg-white overflow-hidden flex flex-col items-center justify-center">
       
       {/* Interactive Void Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -92,7 +92,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
-          className="text-[36px] sm:text-[72px] leading-[1.1] font-display font-extrabold text-white mb-6"
+          className="text-[36px] sm:text-[72px] leading-[1.1] font-display font-extrabold text-slate-900 mb-6"
         >
           The Operating System for <br/>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 via-purple-300 to-indigo-400">
@@ -104,7 +104,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1 }}
-          className="text-[15px] sm:text-[20px] text-slate-400 mb-12 max-w-[700px] leading-relaxed mx-auto font-medium"
+          className="text-[15px] sm:text-[20px] text-slate-600 mb-12 max-w-[700px] leading-relaxed mx-auto font-medium"
         >
           Capture every decision, document every iteration, and collaborate with builders who help you grow. Share your journey, gather meaningful feedback, and build a living record of how you think, solve problems, and create products. All in one place.
         </motion.p>
@@ -120,7 +120,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onSignup}
-            className="px-8 py-4 bg-white text-black rounded-full font-bold text-[16px] border border-transparent shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(255,255,255,0.4)] transition-all"
+            className="px-8 py-4 bg-slate-900 text-white hover:bg-slate-800 rounded-full font-bold text-[16px] border border-transparent shadow-lg transition-all"
           >
             Start your build log
           </motion.button>
@@ -129,7 +129,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => window.location.href = '/login'}
-            className="group px-8 py-4 bg-transparent text-white rounded-full font-bold text-[16px] border border-white/20 flex items-center gap-2 hover:bg-white/5 transition-all"
+            className="group px-8 py-4 bg-transparent text-slate-900 rounded-full font-bold text-[16px] border border-slate-200 flex items-center gap-2 hover:bg-slate-50 transition-all"
           >
             Enter dashboard
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

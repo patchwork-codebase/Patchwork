@@ -158,7 +158,7 @@ function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, o
           type="button"
           disabled={loading}
           onClick={onGoogle}
-          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50 shadow-sm"
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50"
         >
           <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
             <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -174,7 +174,7 @@ function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, o
           type="button"
           disabled={loading}
           onClick={onLinkedin}
-          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50 shadow-sm"
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50"
         >
           <Linkedin className="w-5 h-5 text-[#0A66C2] fill-[#0A66C2]" />
           LinkedIn
@@ -401,7 +401,7 @@ export default function AuthPage() {
 
         {/* Removed Tab Switcher for cleaner UI */}
 
-        <div className="w-full max-w-sm sm:max-w-md bg-white border border-slate-200 p-8 sm:p-10 rounded-[32px] shadow-xl">
+        <div className="w-full max-w-sm sm:max-w-md bg-white border border-slate-200 p-8 sm:p-10 rounded-[32px] shadow-sm">
           <AnimatePresence mode="wait">
             {/* ── LOGIN FORM ── */}
             {tab === 'login' && (
@@ -424,7 +424,7 @@ export default function AuthPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: [0, -10, 10, -5, 5, 0] }}
                     transition={{ duration: 0.4 }}
-                    className="flex items-center gap-3 bg-rose-950/40 border border-rose-500/30 text-rose-200 text-[13.5px] font-semibold px-4 py-3.5 rounded-xl shadow-lg shadow-rose-950/20"
+                    className="flex items-center gap-3 bg-rose-950/40 border border-rose-500/30 text-rose-200 text-[13.5px] font-semibold px-4 py-3.5 rounded-xl shadow-sm shadow-rose-950/20"
                   >
                     <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>{error}</span>
@@ -439,7 +439,7 @@ export default function AuthPage() {
                     value={loginForm.email}
                     onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm"
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -451,7 +451,7 @@ export default function AuthPage() {
                     value={loginForm.password}
                     onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm"
+                    className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
                   />
                   <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -469,7 +469,7 @@ export default function AuthPage() {
                   whileTap={{ scale: loading ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg transition-all"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : <>Sign in <ArrowRight className="w-4 h-4" /></>}
                 </motion.button>
@@ -510,7 +510,7 @@ export default function AuthPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: [0, -10, 10, -5, 5, 0] }}
                     transition={{ duration: 0.4 }}
-                    className="flex items-center gap-3 bg-rose-950/40 border border-rose-500/30 text-rose-200 text-[13.5px] font-semibold px-4 py-3.5 rounded-xl shadow-lg shadow-rose-950/20"
+                    className="flex items-center gap-3 bg-rose-950/40 border border-rose-500/30 text-rose-200 text-[13.5px] font-semibold px-4 py-3.5 rounded-xl shadow-sm shadow-rose-950/20"
                   >
                     <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>{error}</span>
@@ -553,7 +553,7 @@ export default function AuthPage() {
                       value={signup.fname}
                       onChange={e => setSignup(s => ({ ...s, fname: e.target.value }))}
                       required
-                      className="w-full pl-9 pr-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm"
+                      className="w-full pl-9 pr-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
                     />
                   </div>
                   <input
@@ -561,7 +561,7 @@ export default function AuthPage() {
                     placeholder="Last name"
                     value={signup.lname}
                     onChange={e => setSignup(s => ({ ...s, lname: e.target.value }))}
-                    className="w-full px-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm"
+                    className="w-full px-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -574,7 +574,7 @@ export default function AuthPage() {
                     value={signup.email}
                     onChange={e => setSignup(s => ({ ...s, email: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm"
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -588,7 +588,7 @@ export default function AuthPage() {
                       value={signup.password}
                       onChange={e => setSignup(s => ({ ...s, password: e.target.value }))}
                       required
-                      className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm"
+                      className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
                     />
                     <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -632,7 +632,7 @@ export default function AuthPage() {
                   whileTap={{ scale: (loading || !canSubmitSignup) ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading || !canSubmitSignup}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg transition-all"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
                 >
                   {loading
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</>

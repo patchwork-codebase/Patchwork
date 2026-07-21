@@ -14,8 +14,8 @@ export const ThreadedReply = React.memo(function ThreadedReply({ reply }: Thread
   return (
     <div className="relative flex items-start gap-3 pt-3 mt-1 group">
       {/* Left visual connecting line */}
-      <div className="absolute left-[15px] top-0 w-px h-[30px] bg-slate-200 -z-10 group-last:h-[20px]" />
-      <div className="absolute left-[15px] top-[20px] w-4 h-px bg-slate-200 -z-10" />
+      <div className="absolute left-[15px] top-0 w-[2px] h-[30px] bg-slate-300 -z-10 group-last:h-[20px]" />
+      <div className="absolute left-[15px] top-[20px] w-4 h-[2px] bg-slate-300 -z-10" />
 
       <div className="relative shrink-0 mt-1">
         <UserAvatar 

@@ -209,14 +209,14 @@ export default function LandingPage() {
     <div className="min-h-screen text-slate-900 font-sans bg-gradient-to-br from-white via-sage-50 to-emerald-50 antialiased selection:bg-primary-500/30 selection:text-white">
       <AuthRedirectGuard />
       {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-6 sm:py-4">
           <div
             onClick={() => {
               showLanding();
               setMobileMenuOpen(false);
             }}
-            className="flex items-center gap-3 text-base sm:text-lg font-bold tracking-tight text-white cursor-pointer group"
+            className="flex items-center gap-3 text-base sm:text-lg font-bold tracking-tight text-slate-900 cursor-pointer group"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary-500 to-primary-400 shadow-[0_10px_30px_rgba(108,92,231,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -225,7 +225,7 @@ export default function LandingPage() {
                 <path d="M9 6l3-3 3 3" />
               </svg>
             </div>
-            <span className="flex items-center gap-2 font-extrabold tracking-[-0.03em] text-base sm:text-xl text-white group">
+            <span className="flex items-center gap-2 font-extrabold tracking-[-0.03em] text-base sm:text-xl text-slate-900 group">
               <span>patch<span className="inline-block text-primary-500 group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
               <span className="rounded bg-primary-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-400">Beta</span>
             </span>
@@ -234,25 +234,25 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6">
             <button
               onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
             >
               Why Patchwork
             </button>
             <button
               onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
             >
               How it works
             </button>
             <button
               onClick={() => document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
             >
               Showcase
             </button>
             <button
               onClick={() => document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-400 hover:text-white transition"
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
             >
               FAQ
             </button>
@@ -264,7 +264,7 @@ export default function LandingPage() {
                 navigate("/login");
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition"
+              className="hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition"
             >
               Sign In
             </button>
@@ -273,7 +273,7 @@ export default function LandingPage() {
                 showOnboarding();
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#0A0A0A] shadow-md transition hover:bg-slate-200 active:scale-[0.98]"
+              className="hidden sm:inline-flex rounded-full bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-slate-800 active:scale-[0.98]"
             >
               Join as a builder
             </button>
@@ -289,7 +289,7 @@ export default function LandingPage() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-white/10 bg-[#0A0A0A] px-4 pb-5 pt-4">
+          <div className="sm:hidden border-t border-slate-200/50 bg-white px-4 pb-5 pt-4">
             <div className="space-y-2.5">
               {/* Primary CTA */}
               <button
@@ -297,7 +297,7 @@ export default function LandingPage() {
                   showOnboarding();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full rounded-2xl bg-white px-5 py-3.5 text-sm font-bold text-[#0A0A0A] transition hover:bg-slate-200 active:scale-[0.98]"
+                className="w-full rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 active:scale-[0.98]"
               >
                 Join as a builder
               </button>
