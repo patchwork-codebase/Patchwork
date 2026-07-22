@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { User as UserIcon, Compass as CompassIcon, LogOut as LogOutIcon, Lightbulb as LightbulbIcon, FileText as FileTextIcon, Award as AwardIcon } from "lucide-react";
+import { User as UserIcon, Compass as CompassIcon, LogOut as LogOutIcon, Lightbulb as LightbulbIcon, FileText as FileTextIcon, Award as AwardIcon, Map as MapIcon } from "lucide-react";
 import { UserAvatar } from "../ui/UserAvatar";
 
 
@@ -206,76 +206,95 @@ export function MobileBottomNav({
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
 
-              <div className="px-5 pb-5">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
+              <div className="max-h-[85vh] overflow-y-auto px-5 pb-5 custom-scrollbar">
+                {/* User Profile Header Card */}
+                <div className="flex items-center gap-3 mb-5 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl">
+                  <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0">
                     <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-base font-bold text-slate-900 truncate">{userDisplayName}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-extrabold text-slate-900 truncate">{userDisplayName}</div>
                     <div className="text-xs text-slate-500 font-mono truncate">{profile?.email || user.email}</div>
                   </div>
                 </div>
 
-                <div className="space-y-1 mb-6">
-                  <Link
-                    to={`/dashboard/profile/${user.id}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    <UserIcon className="w-5 h-5 text-slate-400" /> My Profile
-                  </Link>
-                  <Link
-                    to="/dashboard/achievements"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    <AwardIcon className="w-5 h-5 text-slate-400" /> Achievements
-                  </Link>
-                  <Link
-                    to="/dashboard/build-logs"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    <FileTextIcon className="w-5 h-5 text-slate-400" /> Build Logs
-                  </Link>
-                  <Link
-                    to="/dashboard/discovery"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    <LightbulbIcon className="w-5 h-5 text-slate-400" /> Discovery Mode
-                  </Link>
-                  {import.meta.env.DEV && (
+                {/* SECTION 1: ACCOUNT */}
+                <div className="mb-4">
+                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Account</div>
+                  <div className="space-y-0.5">
+                    <Link
+                      to={`/dashboard/profile/${user.id}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                    >
+                      <UserIcon className="w-4 h-4 text-slate-400" /> My Profile
+                    </Link>
+                    <Link
+                      to="/dashboard/achievements"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                    >
+                      <AwardIcon className="w-4 h-4 text-slate-400" /> Achievements
+                    </Link>
+                  </div>
+                </div>
+
+                {/* SECTION 2: PRODUCT OPS */}
+                <div className="mb-4">
+                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Product Ops</div>
+                  <div className="space-y-0.5">
+                    <Link
+                      to="/dashboard/roadmap"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 rounded-xl transition"
+                    >
+                      <MapIcon className="w-4 h-4 text-indigo-500" /> Roadmap View
+                    </Link>
+                    <Link
+                      to="/dashboard/build-logs"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                    >
+                      <FileTextIcon className="w-4 h-4 text-slate-400" /> Build Logs
+                    </Link>
+                  </div>
+                </div>
+
+                {/* SECTION 3: EXPLORE & UTILITIES */}
+                <div className="mb-5">
+                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Explore</div>
+                  <div className="space-y-0.5">
+                    <Link
+                      to="/dashboard/discovery"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                    >
+                      <LightbulbIcon className="w-4 h-4 text-slate-400" /> Discovery Mode
+                    </Link>
                     <Link
                       to="/dashboard/experts"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition"
+                      className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <AwardIcon className="w-5 h-5 text-slate-400" /> Expert Directory
+                      <AwardIcon className="w-4 h-4 text-slate-400" /> Expert Directory
                     </Link>
-                  )}
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setForceShowTour(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors text-left"
-                  >
-                    <CompassIcon className="w-5 h-5 text-slate-400" /> Replay Tour
-                  </button>
-                  {/* <Link 
-                    to="/learning-hub"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${activeSection === 'learning-hub' ? 'bg-primary-400/10 text-primary-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                  >
-                    <CompassIcon /> Learning Hub
-                  </Link> */}
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setForceShowTour(true);
+                      }}
+                      className="w-full flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition text-left"
+                    >
+                      <CompassIcon className="w-4 h-4 text-slate-400" /> Replay Tour
+                    </button>
+                  </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 px-4 mb-4">
-                  <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Privacy Policy</Link>
-                  <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900">Terms of Service</Link>
+                {/* FOOTER & SIGNOUT */}
+                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-medium text-slate-500 px-2 mb-4">
+                  <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900 transition">Privacy Policy</Link>
+                  <span>·</span>
+                  <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900 transition">Terms of Service</Link>
                 </div>
 
                 <button
@@ -283,7 +302,7 @@ export function MobileBottomNav({
                     setMobileMenuOpen(false);
                     handleSignOut();
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-extrabold text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition border border-rose-100 active:scale-95 cursor-pointer"
                 >
                   <LogOutIcon className="w-4 h-4" /> Sign out
                 </button>

@@ -355,9 +355,9 @@ export function KanbanBoard() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 h-full overflow-x-auto pb-4 custom-scrollbar items-start">
+        <div className="flex gap-4 h-full overflow-x-auto pb-4 custom-scrollbar items-start snap-x snap-mandatory scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
           {columnConfig.map((col) => (
-            <div key={col.id} className="flex-shrink-0 w-[300px] flex flex-col max-h-full">
+            <div key={col.id} className="flex-shrink-0 w-[85vw] max-w-[320px] sm:w-[300px] flex flex-col max-h-full snap-center">
               <div className={`px-3 py-2 rounded-lg font-bold text-[13px] mb-3 border ${col.color} flex items-center justify-between`}>
                 <span className="uppercase tracking-wider">{col.title}</span>
                 <span className="bg-white/50 px-2 py-0.5 rounded-full text-[11px]">{columns[col.id]?.length || 0}</span>
