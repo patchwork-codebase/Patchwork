@@ -64,6 +64,54 @@ function getNotifConfig(n: any) {
         primaryLabel: 'View update',
         actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
       };
+    case 'ticket_assigned': {
+      const ticketId = n.metadata?.item_id || n.reference_id;
+      return {
+        icon: '📌',
+        iconBg: 'bg-indigo-500/10',
+        text: `assigned you to ticket "${n.metadata?.ticket_title || 'a ticket'}" in "${roomTitle}"`,
+        preview: null,
+        primaryLink: ticketId ? `/dashboard/roadmap?ticketId=${ticketId}` : '/dashboard/roadmap',
+        primaryLabel: 'View ticket on roadmap',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    }
+    case 'ticket_assigned_invite': {
+      const ticketId = n.metadata?.item_id || n.reference_id;
+      return {
+        icon: '✉️',
+        iconBg: 'bg-purple-500/10',
+        text: `assigned you to ticket "${n.metadata?.ticket_title || 'a ticket'}" and invited you to join "${roomTitle}"`,
+        preview: 'Accept your room invitation below to gain access to edit the ticket.',
+        primaryLink: ticketId ? `/dashboard/roadmap?ticketId=${ticketId}` : '/dashboard/roadmap',
+        primaryLabel: 'Accept & View ticket',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    }
+    case 'ticket_updated': {
+      const ticketId = n.metadata?.item_id || n.reference_id;
+      return {
+        icon: '✏️',
+        iconBg: 'bg-blue-500/10',
+        text: `updated ticket "${n.metadata?.ticket_title || 'a ticket'}" in "${roomTitle}"`,
+        preview: n.metadata?.status ? `Status: ${n.metadata.status}` : null,
+        primaryLink: ticketId ? `/dashboard/roadmap?ticketId=${ticketId}` : '/dashboard/roadmap',
+        primaryLabel: 'View ticket details',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    }
+    case 'ticket_comment': {
+      const ticketId = n.metadata?.item_id || n.reference_id;
+      return {
+        icon: '💬',
+        iconBg: 'bg-sky-500/10',
+        text: `commented on ticket "${n.metadata?.ticket_title || 'a ticket'}"`,
+        preview: n.metadata?.comment_text,
+        primaryLink: ticketId ? `/dashboard/roadmap?ticketId=${ticketId}` : '/dashboard/roadmap',
+        primaryLabel: 'View ticket',
+        actorLink: n.actor?.id ? `/dashboard/profile/${n.actor.id}` : null,
+      };
+    }
     default:
       return {
         icon: '🔔',

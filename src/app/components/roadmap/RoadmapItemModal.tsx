@@ -4,8 +4,9 @@ import { AssigneeSelector } from './AssigneeSelector';
 import { UserAvatar } from '../ui/UserAvatar';
 import { useAuth } from '../auth/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Calendar, Tag, Flag, MessageSquare, Clock, Send } from 'lucide-react';
+import { X, Calendar, Tag, Flag, MessageSquare, Clock, Send, Check, Save } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { cn } from '../ui/utils';
 
 interface RoadmapItemModalProps {
@@ -30,13 +31,26 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
   const [priority, setPriority] = useState(item.priority || '');
   const [labels, setLabels] = useState<string[]>(item.labels || []);
   const [newComment, setNewComment] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const hasUnsavedChanges = title !== item.title || description !== (item.description || '');
+
+  // Check if current assigned user is a member of the room
+  const assignedUserIds = item.roadmap_assignees?.map(a => a.user_id) || [];
+  const isAssignedToMe = !!user?.id && assignedUserIds.includes(user.id);
+  const isRoomOwner = !!user?.id && user.id === item.builder_id;
 
   // Handle saving changes
   const handleSaveField = async (field: Partial<RoadmapItem>) => {
+    setIsSaving(true);
     try {
       await updateItem({ id: item.id, updates: field });
+      toast.success('Changes saved');
     } catch (error) {
       console.error('Failed to update field', error);
+      toast.error('Failed to save changes');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -58,8 +72,6 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
       console.error('Failed to post comment', error);
     }
   };
-
-  const assignedUserIds = item.roadmap_assignees?.map(a => a.user_id) || [];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -89,16 +101,70 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={() => { if (title !== item.title) handleSaveField({ title }); }}
-                className="w-full text-2xl font-bold text-slate-900 border-none outline-none focus:ring-0 p-0 mb-2 placeholder:text-slate-300"
+                className="w-full text-2xl font-bold text-slate-900 border-none outline-none focus:ring-0 p-0 mb-3 placeholder:text-slate-300"
                 placeholder="Task title..."
               />
+
+              {/* Template Quick Insert Bar */}
+              <div className="mb-3 flex items-center gap-2 flex-wrap text-xs">
+                <span className="text-slate-400 font-medium mr-1 text-[11px] uppercase tracking-wider">Templates:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const template = `### User Story\n**As a** [user/role]\n**I want to** [action/feature]\n**So that** [benefit/value]\n\n`;
+                    setDescription(prev => prev ? `${prev.trim()}\n\n${template}` : template);
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                >
+                  + User Story
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const template = `### Acceptance Criteria\n- [ ] **Given** [context], **When** [action], **Then** [expected outcome]\n- [ ] **Given** [context], **When** [action], **Then** [expected outcome]\n\n`;
+                    setDescription(prev => prev ? `${prev.trim()}\n\n${template}` : template);
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                >
+                  + Acceptance Criteria
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const template = `### Use Cases\n#### Scenario 1: [Name]\n1. **Actor**: [User/System]\n2. **Preconditions**: [State before]\n3. **Main Flow**: [Steps]\n4. **Postconditions**: [Outcome]\n\n`;
+                    setDescription(prev => prev ? `${prev.trim()}\n\n${template}` : template);
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                >
+                  + Use Cases
+                </button>
+              </div>
+
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={() => { if (description !== item.description) handleSaveField({ description }); }}
-                placeholder="Add a description..."
-                className="w-full min-h-[120px] text-slate-600 border border-transparent hover:border-slate-200 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 rounded-lg p-3 resize-y bg-slate-50 focus:bg-white transition-all text-sm outline-none"
+                placeholder="Write your description, User Story, Acceptance Criteria, or Use Cases here..."
+                className="w-full min-h-[160px] text-slate-700 border border-slate-200 hover:border-slate-300 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 rounded-xl p-3.5 resize-y bg-slate-50 focus:bg-white transition-all text-sm outline-none font-mono leading-relaxed"
               />
+              <div className="mt-2.5 flex items-center justify-between gap-3">
+                <span className="text-[12px] text-slate-400 font-medium flex items-center gap-1">
+                  {hasUnsavedChanges ? (
+                    <span className="text-amber-600 font-semibold">• Unsaved changes</span>
+                  ) : (
+                    <span className="text-emerald-600 font-semibold flex items-center gap-1"><Check className="w-3.5 h-3.5" /> All changes saved</span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSaveField({ title, description })}
+                  disabled={isSaving || !hasUnsavedChanges}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
 
             {/* Comments Section */}

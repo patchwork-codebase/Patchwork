@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 import { 
   DndContext, 
   closestCenter,
@@ -165,6 +166,9 @@ export function KanbanBoard() {
     }
   };
 
+  const [searchParams] = useSearchParams();
+  const ticketIdParam = searchParams.get('ticketId') || searchParams.get('itemId');
+
   useEffect(() => {
     if (items) {
       setColumns({
@@ -173,8 +177,15 @@ export function KanbanBoard() {
         later: items.filter(i => i.status === 'later').sort((a, b) => a.position - b.position),
         completed: items.filter(i => i.status === 'completed').sort((a, b) => a.position - b.position)
       });
+
+      if (ticketIdParam) {
+        const targetItem = items.find(i => i.id === ticketIdParam);
+        if (targetItem) {
+          setSelectedItem(targetItem);
+        }
+      }
     }
-  }, [items]);
+  }, [items, ticketIdParam]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

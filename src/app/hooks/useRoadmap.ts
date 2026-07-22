@@ -145,16 +145,117 @@ export function useAssignRoadmapItem() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ item_id, user_id }: { item_id: string; user_id: string }) => {
+      // 1. Insert assignee
       const { data, error } = await supabase
         .from('roadmap_assignees')
         .insert({ item_id, user_id })
         .select()
         .single();
       if (error) throw error;
+
+      try {
+        // 2. Fetch Item & Room details
+        const { data: item } = await supabase
+          .from('roadmap_items')
+          .select('title, room_id, builder_id, rooms(title)')
+          .eq('id', item_id)
+          .single();
+
+        // 3. Fetch Assignee user details
+        const { data: assigneeUser } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', user_id)
+          .single();
+
+        const { data: authUserData } = await supabase.auth.getUser();
+        const currentUserId = authUserData?.user?.id;
+        const roomTitle = (item?.rooms as any)?.title || 'Build Room';
+        const itemTitle = item?.title || 'Ticket';
+
+        let isRoomMember = false;
+        if (item?.builder_id === user_id) {
+          isRoomMember = true;
+        } else if (item?.room_id) {
+          const { data: obs } = await supabase
+            .from('room_observers')
+            .select('id')
+            .eq('room_id', item.room_id)
+            .eq('observer_id', user_id)
+            .maybeSingle();
+          if (obs) isRoomMember = true;
+        }
+
+        let inviteToken: string | null = null;
+
+        // If not a room member, trigger room invitation RPC
+        if (!isRoomMember && item?.room_id && assigneeUser?.email) {
+          const { data: tokenData } = await supabase.rpc('invite_user_to_room', {
+            p_room_id: item.room_id,
+            p_email: assigneeUser.email.trim().toLowerCase(),
+            p_role: 'team_member',
+          });
+          inviteToken = tokenData;
+
+          // Dispatch room invitation email
+          if (inviteToken) {
+            await supabase.functions.invoke('room-invitations', {
+              body: {
+                record: {
+                  email: assigneeUser.email,
+                  role: 'team_member',
+                  token: inviteToken,
+                  room_id: item.room_id,
+                  origin: window.location.origin,
+                },
+              },
+            }).catch(() => {});
+          }
+        }
+
+        // 4. Insert in-app notification
+        const { error: notifErr } = await supabase.from('notifications').insert({
+          user_id,
+          actor_id: currentUserId || item?.builder_id,
+          type: isRoomMember ? 'ticket_assigned' : 'ticket_assigned_invite',
+          reference_id: item_id,
+          metadata: {
+            item_id,
+            ticket_title: itemTitle,
+            room_id: item?.room_id,
+            room_title: roomTitle,
+            is_room_member: isRoomMember,
+          },
+        });
+        if (notifErr) console.warn('In-app notification insert warning:', notifErr);
+
+        // 5. Invoke ticket-notifications Edge function for email
+        await supabase.functions.invoke('ticket-notifications', {
+          body: {
+            record: {
+              user_id,
+              metadata: {
+                item_id,
+                ticket_title: itemTitle,
+                room_id: item?.room_id,
+                room_title: roomTitle,
+                is_room_member: isRoomMember,
+              },
+              origin: window.location.origin,
+            },
+            type: 'ticket_assigned',
+          },
+        }).catch(() => {});
+
+      } catch (notifyErr) {
+        console.warn('Notification/Email dispatch warning:', notifyErr);
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }
@@ -204,11 +305,75 @@ export function useAddRoadmapComment() {
         .select()
         .single();
       if (error) throw error;
+
+      try {
+        // Fetch item details & assignees
+        const { data: item } = await supabase
+          .from('roadmap_items')
+          .select('title, room_id, builder_id, rooms(title)')
+          .eq('id', item_id)
+          .single();
+
+        const { data: assignees } = await supabase
+          .from('roadmap_assignees')
+          .select('user_id')
+          .eq('item_id', item_id);
+
+        const roomTitle = (item?.rooms as any)?.title || 'Build Room';
+        const itemTitle = item?.title || 'Ticket';
+        const notifyUsers = new Set<string>();
+
+        if (item?.builder_id && item.builder_id !== user_id) {
+          notifyUsers.add(item.builder_id);
+        }
+        (assignees || []).forEach(a => {
+          if (a.user_id !== user_id) notifyUsers.add(a.user_id);
+        });
+
+        for (const targetUserId of Array.from(notifyUsers)) {
+          try {
+            await supabase.from('notifications').insert({
+              user_id: targetUserId,
+              actor_id: user_id,
+              type: 'ticket_comment',
+              reference_id: item_id,
+              metadata: {
+                item_id,
+                ticket_title: itemTitle,
+                room_id: item?.room_id,
+                room_title: roomTitle,
+                comment_text: content.substring(0, 100),
+              },
+            });
+          } catch (_) {}
+
+          await supabase.functions.invoke('ticket-notifications', {
+            body: {
+              record: {
+                user_id: targetUserId,
+                metadata: {
+                  item_id,
+                  ticket_title: itemTitle,
+                  room_id: item?.room_id,
+                  room_title: roomTitle,
+                  comment_text: content.substring(0, 100),
+                },
+                origin: window.location.origin,
+              },
+              type: 'ticket_comment',
+            },
+          }).catch(() => {});
+        }
+      } catch (commentNotifyErr) {
+        console.warn('Comment notification dispatch warning:', commentNotifyErr);
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['roadmap_comments', variables.item_id] });
       queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }

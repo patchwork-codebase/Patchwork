@@ -11,18 +11,8 @@ export default function RoadmapPage() {
   const navigate = useNavigate();
   const activeTab = (searchParams.get('tab') as 'kanban' | 'sprints' | 'dependencies') || 'kanban';
 
-  useEffect(() => {
-    if (import.meta.env.PROD) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
-
   function setTab(tab: 'kanban' | 'sprints' | 'dependencies') {
     setSearchParams({ tab });
-  }
-
-  if (import.meta.env.PROD) {
-    return null;
   }
 
   return (

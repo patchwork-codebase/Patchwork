@@ -2,7 +2,8 @@ import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@3.4.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") || "");
+const resendApiKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("VITE_RESEND_API_KEY") || Deno.env.get("REACT_APP_RESEND_API_KEY") || "";
+const resend = new Resend(resendApiKey);
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";

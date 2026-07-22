@@ -219,9 +219,7 @@ export function DesktopSidebar({
               Product Ops
             </div>
 
-            {import.meta.env.DEV && (
-              <NavItem to="/dashboard/roadmap" icon={<RoadmapIcon />} label="Roadmap view" active={activeSection === 'roadmap'} />
-            )}
+            <NavItem to="/dashboard/roadmap" icon={<RoadmapIcon />} label="Roadmap view" active={activeSection === 'roadmap'} />
             <NavItem to="/dashboard/milestones" icon={<MilestonesIcon />} label="Milestones" active={activeSection === 'milestones'} />
             <NavItem to="/dashboard/analytics" icon={<AnalyticsIcon />} label="Analytics" active={activeSection === 'analytics'} />
 

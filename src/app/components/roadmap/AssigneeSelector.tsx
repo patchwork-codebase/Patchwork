@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth, supabase } from '../auth/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { UserAvatar } from '../ui/UserAvatar';
@@ -12,6 +12,7 @@ interface SimpleMember {
   email: string;
   avatar: string | null;
   role: string;
+  isRoomMember?: boolean;
 }
 
 function useAssignableMembers(roomId?: string | null) {
@@ -24,6 +25,7 @@ function useAssignableMembers(roomId?: string | null) {
       if (!builderId) return [];
 
       const members: SimpleMember[] = [];
+      const memberIds = new Set<string>();
 
       // 1. Always include the builder themselves
       const { data: builderData } = await supabase
@@ -38,10 +40,12 @@ function useAssignableMembers(roomId?: string | null) {
           email: builderData.email || '',
           avatar: builderData.avatar || null,
           role: 'Builder',
+          isRoomMember: true,
         });
+        memberIds.add(builderData.id);
       }
 
-      // 2. If a roomId is provided, fetch observers for that specific room
+      // 2. Fetch observers/members for room
       if (roomId) {
         const { data: observers } = await supabase
           .from('room_observers')
@@ -50,45 +54,39 @@ function useAssignableMembers(roomId?: string | null) {
 
         (observers || []).forEach((row: any) => {
           const u = Array.isArray(row.users) ? row.users[0] : row.users;
-          if (u?.id && !members.find(m => m.id === u.id)) {
+          if (u?.id && !memberIds.has(u.id)) {
             members.push({
               id: u.id,
               name: u.name || u.email || 'Team Member',
               email: u.email || '',
               avatar: u.avatar || null,
               role: row.role || 'observer',
+              isRoomMember: true,
             });
+            memberIds.add(u.id);
           }
         });
-      } else {
-        // 3. No room_id — fetch builder's rooms first, then their observers
-        const { data: builderRooms } = await supabase
-          .from('rooms')
-          .select('id')
-          .eq('builder_id', builderId);
-
-        const roomIds = (builderRooms || []).map((r: any) => r.id).filter(Boolean);
-
-        if (roomIds.length > 0) {
-          const { data: allObservers } = await supabase
-            .from('room_observers')
-            .select(`role, users:observer_id(id, name, email, avatar)`)
-            .in('room_id', roomIds);
-
-          (allObservers || []).forEach((row: any) => {
-            const u = Array.isArray(row.users) ? row.users[0] : row.users;
-            if (u?.id && !members.find(m => m.id === u.id)) {
-              members.push({
-                id: u.id,
-                name: u.name || u.email || 'Team Member',
-                email: u.email || '',
-                avatar: u.avatar || null,
-                role: row.role || 'observer',
-              });
-            }
-          });
-        }
       }
+
+      // 3. Also fetch all users from platform to allow assigning & inviting non-room members
+      const { data: allUsers } = await supabase
+        .from('users')
+        .select('id, name, email, avatar')
+        .limit(100);
+
+      (allUsers || []).forEach((u: any) => {
+        if (u?.id && !memberIds.has(u.id)) {
+          members.push({
+            id: u.id,
+            name: u.name || u.email || 'User',
+            email: u.email || '',
+            avatar: u.avatar || null,
+            role: 'User',
+            isRoomMember: false,
+          });
+          memberIds.add(u.id);
+        }
+      });
 
       return members;
     },
@@ -204,7 +202,13 @@ export function AssigneeSelector({ roomId, assignedUserIds, onAssign, onUnassign
                         <UserAvatar userId={member.id} avatarUrl={member.avatar} name={member.name} className="w-6 h-6 rounded-full object-cover" />
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-slate-900 truncate max-w-[140px]">{member.name}</span>
-                          <span className="text-[11px] text-slate-500 capitalize">{(member.role || '').replace('_', ' ')}</span>
+                          <span className="text-[11px] text-slate-500 capitalize">
+                            {member.isRoomMember === false ? (
+                              <span className="text-primary-600 font-semibold">Invites to Room</span>
+                            ) : (
+                              (member.role || '').replace('_', ' ')
+                            )}
+                          </span>
                         </div>
                       </div>
                       {isAssigned && (
