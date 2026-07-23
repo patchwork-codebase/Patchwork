@@ -10,6 +10,7 @@ import { FigmaEmbed } from "../ui/FigmaEmbed";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { OrganizationBadge } from "../ui/OrganizationBadge";
 import { SmartImage } from "../ui/SmartImage";
+import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
 import { ReplyComposer } from "./ReplyComposer";
 import { ReactionGroup } from "./ReactionGroup";
 import { ThreadedReply } from "./ThreadedReply";
