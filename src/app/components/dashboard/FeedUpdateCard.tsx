@@ -17,6 +17,17 @@ import { ThreadedReply } from "./ThreadedReply";
 import { supabase } from "../auth/AuthContext";
 import type { Room, Profile } from "../../types";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
+
+const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
+  decision: { label: 'Decision', color: 'bg-primary-400/10 text-primary-500 border-primary-400/30', icon: '⚡' },
+  scrap: { label: 'Scrap', color: 'bg-rose-50 text-rose-600 border-rose-200', icon: '🗑' },
+  pivot: { label: 'Pivot', color: 'bg-orange-50 text-orange-600 border-orange-200', icon: '🔄' },
+  blocker: { label: 'Blocker', color: 'bg-red-50 text-red-600 border-red-200', icon: '🚧' },
+  insight: { label: 'Insight', color: 'bg-amber-50 text-amber-600 border-amber-200', icon: '💡' },
+  open_question: { label: 'Open question', color: 'bg-blue-50 text-blue-600 border-blue-200', icon: '❓' },
+  shipped: { label: 'Shipped', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: '🚀' },
+  crossroad: { label: 'Crossroad', color: 'bg-purple-50 text-purple-600 border-purple-200', icon: '🔀' },
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,12 +41,12 @@ import {
 } from "../ui/alert-dialog";
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
-  design:      { bg: 'bg-purple-500/10', color: 'text-purple-400' },
+  design: { bg: 'bg-purple-500/10', color: 'text-purple-400' },
   engineering: { bg: 'bg-emerald-500/10', color: 'text-emerald-400' },
-  dev:         { bg: 'bg-blue-500/10',  color: 'text-blue-400' },
-  product:     { bg: 'bg-primary-500/10', color: 'text-primary-400' },
-  research:    { bg: 'bg-amber-500/10', color: 'text-amber-400' },
-  writing:     { bg: 'bg-pink-500/10', color: 'text-pink-400' },
+  dev: { bg: 'bg-blue-500/10', color: 'text-blue-400' },
+  product: { bg: 'bg-primary-500/10', color: 'text-primary-400' },
+  research: { bg: 'bg-amber-500/10', color: 'text-amber-400' },
+  writing: { bg: 'bg-pink-500/10', color: 'text-pink-400' },
 };
 
 function tagStyle(tag: string) {
@@ -84,7 +95,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
       const { error, count } = await supabase.from('updates').delete({ count: 'exact' }).eq('id', updateId).eq('author_id', user!.id);
       if (error) throw error;
       if (count === 0) throw new Error("Update not found or you don't have permission to delete it.");
-      
+
       toast.success("Update deleted");
       queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
     } catch (error: unknown) {
@@ -120,45 +131,91 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
       }}
     >
       <div className="flex items-start gap-3 sm:gap-4 mb-3">
-        <div 
+        <div
           onClick={(e) => {
             e.stopPropagation();
             if (update.authorId) navigate(`/dashboard/profile/${update.authorId}`);
           }}
           className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 ring-1 ring-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
         >
-          <UserAvatar 
-            userId={update.authorId} 
-            name={builderName} 
+          <UserAvatar
+            userId={update.authorId}
+            name={builderName}
             avatarUrl={update.authorAvatar}
-            className="w-full h-full object-cover" 
+            className="w-full h-full object-cover"
           />
         </div>
 
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex items-center gap-1.5 justify-between mb-0.5">
-            <div className="flex items-center gap-1 min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
-              <span className="font-bold text-[15px] sm:text-[16px] text-slate-900 truncate hover:underline cursor-pointer">
-                {builderName}
-              </span>
-              {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
-              {update.authorOrgName && (
-                <OrganizationBadge 
-                  orgName={update.authorOrgName} 
-                  orgLogo={update.authorOrgLogo} 
-                  isVerified={!!update.authorIsVerifiedExpert} 
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          {/* Clean Header: Builder Name · Room Title */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap mb-1" onClick={(e) => e.stopPropagation()}>
+            <span className="font-bold text-[15px] sm:text-[16px] text-slate-900 hover:underline cursor-pointer">
+              {builderName}
+            </span>
+            {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
+            {update.authorOrgName && (
+              <OrganizationBadge 
+                orgName={update.authorOrgName} 
+                orgLogo={update.authorOrgLogo} 
+                isVerified={!!update.authorIsVerifiedExpert} 
+              />
+            )}
+            <span className="text-slate-300 text-[14px]">·</span>
+            <span 
+              className="text-[13px] sm:text-[14px] text-slate-500 hover:underline cursor-pointer font-medium truncate max-w-[180px] sm:max-w-none"
+              onClick={() => navigate(`/dashboard/room/${update.roomId}`)}
+            >
+              {roomTitle}
+            </span>
+            {isLaunch && (
+              <span className="text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
+            )}
+          </div>
+
+          <div className="mt-1 w-full max-w-full">
+            {update.content && (
+              update.content.includes("figma.com/") ? (
+                <div className="my-3 rounded-[20px] overflow-hidden border border-slate-200/60 shadow-sm bg-slate-50 relative group">
+                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Figma Design</span>
+                  </div>
+                  <FigmaEmbed content={update.content} />
+                </div>
+              ) : (
+                <ReadMoreText
+                  content={update.content}
+                  className="text-[15px] sm:text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap break-words font-medium"
                 />
+              )
+            )}
+
+            {update.mediaUrl && (
+              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-200/60 bg-slate-50 relative group">
+                <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
+              </div>
+            )}
+
+            {update.codeSnippet && (
+              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-slate-200/60">
+                <CodeSnippetBlock code={update.codeSnippet} />
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-end justify-between gap-3 flex-wrap">
+            <ReactionGroup
+              targetUpdate={update}
+              onReplyClick={(e) => handleReplyClick(e)}
+            />
+
+            <div className="flex items-center gap-3 shrink-0 ml-auto pt-2">
+              {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType] && (
+                <span className={`text-[11px] font-bold border ${UPDATE_TYPE_UI[update.updateType].color} px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1.5 shadow-sm`}>
+                  <span>{UPDATE_TYPE_UI[update.updateType].icon}</span>
+                  {UPDATE_TYPE_UI[update.updateType].label}
+                </span>
               )}
-              <span className="text-slate-400 text-[14px] mx-1 hidden sm:inline">·</span>
-              <span className="text-[14px] text-slate-400 hover:underline cursor-pointer truncate hidden sm:inline" onClick={() => navigate(`/dashboard/room/${update.roomId}`)}>
-                {roomTitle}
-              </span>
-              {isLaunch && (
-                <span className="ml-2 text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0 hidden sm:inline">Launched</span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-[14px] text-slate-400 whitespace-nowrap">{timeString}</span>
+              <span className="text-[12px] sm:text-[13px] text-slate-400 font-medium whitespace-nowrap">{timeString}</span>
               {update.authorId === user?.id && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -166,6 +223,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                       onClick={(e) => e.stopPropagation()}
                       disabled={isDeleting}
                       className="text-slate-400 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-50 relative z-20"
+                      title="Delete update"
                     >
                       {isDeleting ? (
                         <span className="w-4 h-4 border-2 border-rose-400/30 border-t-rose-400 rounded-full animate-spin block" />
@@ -188,61 +246,6 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
               )}
             </div>
           </div>
-          
-          <div className="text-[14px] text-slate-500 mb-2 sm:hidden flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            <span className="truncate hover:underline cursor-pointer">{roomTitle}</span>
-          </div>
-
-          <div className="mt-1 w-full max-w-full">
-            {update.content && (
-              update.content.includes("figma.com/") ? (
-                <div className="my-3 rounded-[20px] overflow-hidden border border-slate-200/60 shadow-sm bg-slate-50 relative group">
-                   <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span>Figma Design</span>
-                   </div>
-                   <FigmaEmbed content={update.content} />
-                </div>
-              ) : (
-                <ReadMoreText 
-                  content={update.content} 
-                  className="text-[15px] sm:text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap break-words font-medium" 
-                />
-              )
-            )}
-
-            {update.mediaUrl && (
-              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-200/60 bg-slate-50 relative group">
-                <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
-              </div>
-            )}
-
-            {update.codeSnippet && (
-              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-slate-200/60">
-                 <CodeSnippetBlock code={update.codeSnippet} />
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4">
-            {emojiReactions.length > 0 && (
-              <div className="flex items-center gap-1.5 mb-2">
-                <div className="flex -space-x-1.5">
-                  {Array.from(new Set(emojiReactions.map((r: any) => r.observerId).filter(Boolean)))
-                    .slice(0, 3)
-                    .map((observerId: any) => (
-                      <UserAvatar key={observerId} userId={observerId} className="w-5 h-5 rounded-full ring-2 ring-white bg-slate-100 object-cover" />
-                    ))
-                  }
-                </div>
-                <span className="text-[12px] text-slate-400">{emojiReactions.length} reaction{emojiReactions.length !== 1 ? 's' : ''}</span>
-              </div>
-            )}
-
-            <ReactionGroup 
-              targetUpdate={update}
-              onReplyClick={(e) => handleReplyClick(e)}
-            />
-          </div>
 
           <AnimatePresence>
             {isReplying && (
@@ -253,9 +256,9 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                 exit={{ opacity: 0, height: 0 }}
                 className="mt-4 overflow-hidden"
               >
-                <ReplyComposer 
+                <ReplyComposer
                   update={update}
-                  user={user} 
+                  user={user}
                   profile={profile}
                   queryClient={queryClient}
                   onCancel={() => setIsReplying(false)}
@@ -285,9 +288,9 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           {replies.length > 0 && (
             <div className="mt-3 relative pl-2">
               <div className="absolute left-6 top-0 bottom-6 w-[2px] bg-slate-300 -z-10" />
-              
+
               {replies.length > 1 && !showAllReplies && (
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowAllReplies(true);

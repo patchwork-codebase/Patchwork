@@ -15,6 +15,7 @@ export interface FeedUpdate {
   content: string;
   mediaUrl?: string;
   codeSnippet?: string;
+  updateType?: string;
   createdAt: string;
   rooms?: {
     title: string;
