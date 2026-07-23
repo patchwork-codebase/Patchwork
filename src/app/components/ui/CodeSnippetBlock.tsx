@@ -91,3 +91,5 @@ export function CodeSnippetBlock({ code }: { code: string }) {
     </div>
   );
 }
+
+export default CodeSnippetBlock;
