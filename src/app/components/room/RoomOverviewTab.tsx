@@ -1,6 +1,7 @@
 import { ProductRoomStats } from "./ProductRoomStats";
 import { DecisionLogCard } from "./DecisionLogCard";
 import { MilestoneTrackerCard } from "./MilestoneTrackerCard";
+import { AiBuildDigestCard } from "./AiBuildDigestCard";
 import type { Room } from "../../types";
 
 interface RoomOverviewTabProps {
@@ -10,11 +11,14 @@ interface RoomOverviewTabProps {
   reactions: any[];
   queryClient: any;
   isBuilder: boolean;
+  onPostAsUpdate?: (text: string) => void;
 }
 
-export function RoomOverviewTab({ room, id, user, reactions, queryClient, isBuilder }: RoomOverviewTabProps) {
+export function RoomOverviewTab({ room, id, user, reactions, queryClient, isBuilder, onPostAsUpdate }: RoomOverviewTabProps) {
   return (
     <div className="mt-2">
+      <AiBuildDigestCard room={room} isBuilder={isBuilder} onPostAsUpdate={onPostAsUpdate} />
+      
       {(room.tags?.includes('product') || room.tags?.includes('product-management') || (room as any).builderDomain?.toLowerCase() === 'product') && (
         <ProductRoomStats roomId={id!} reactionsCount={reactions.length} roomCreatedAt={room.createdAt || new Date().toISOString()} />
       )}

@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Lock } from "lucide-react";
+import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Lock, Layers, Compass } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { UserAvatar } from "../ui/UserAvatar";
 import { VerifiedTick } from "../ui/VerifiedTick";
@@ -21,6 +21,9 @@ import {
 import { EditRoomModal } from "./EditRoomModal";
 import { PrivateRoomAccessModal } from "./PrivateRoomAccessModal";
 import { InviteTeamModal } from "./InviteTeamModal";
+import { IntegrationsModal } from "./IntegrationsModal";
+import { LivePresencePill } from "./LivePresencePill";
+import { BuilderTourModal } from "./BuilderTourModal";
 import { useState } from "react";
 import type { Room } from "../../types";
 
@@ -50,6 +53,8 @@ export function RoomHeader({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [accessModalOpen, setAccessModalOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [integrationsModalOpen, setIntegrationsModalOpen] = useState(false);
+  const [tourModalOpen, setTourModalOpen] = useState(false);
 
   return (
     <div className="bg-white border border-slate-200 rounded-[24px] md:rounded-[32px] mb-8 shadow-sm relative overflow-hidden">
@@ -132,26 +137,8 @@ export function RoomHeader({
             <ObserverAvatarStack room={room} />
             
             {viewers.length > 0 && (
-              <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
-                <div className="flex -space-x-1.5">
-                  {viewers.slice(0, 3).map((v) => (
-                    <div key={v.id} className="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-slate-100 relative">
-                      <UserAvatar userId={v.id} name={v.name} avatarUrl={v.avatar_url} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                  {viewers.length > 3 && (
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600 z-10">
-                      +{viewers.length - 3}
-                    </div>
-                  )}
-                </div>
-                <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-wider ml-1">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                  </span>
-                  Live
-                </span>
+              <div className="border-l border-slate-200 pl-4 ml-2">
+                <LivePresencePill viewers={viewers} />
               </div>
             )}
             
@@ -206,14 +193,34 @@ export function RoomHeader({
           ) */}
           
           {isBuilder && (room.status === 'active' || room.status === 'draft') && (
-            <button
-              onClick={() => setEditModalOpen(true)}
-              title="Edit Room"
-              aria-label="Edit Room"
-              className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
+            <>
+              <button
+                onClick={() => setTourModalOpen(true)}
+                title="Interactive Guided Tour"
+                aria-label="Interactive Guided Tour"
+                className="flex items-center justify-center gap-1.5 px-3 h-9 border border-amber-200 bg-amber-50 hover:bg-amber-100 rounded-xl text-amber-800 font-bold transition-all shadow-sm focus-ring active:scale-95 text-xs cursor-pointer"
+              >
+                <Compass className="w-4 h-4 text-amber-600" />
+                <span className="hidden sm:inline">Tour</span>
+              </button>
+              <button
+                onClick={() => setIntegrationsModalOpen(true)}
+                title="Integrations (GitHub & Linear Webhooks)"
+                aria-label="Integrations"
+                className="flex items-center justify-center gap-1.5 px-3 h-9 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 rounded-xl text-indigo-700 font-bold transition-all shadow-sm focus-ring active:scale-95 text-xs"
+              >
+                <Layers className="w-4 h-4 text-indigo-600" />
+                <span className="hidden sm:inline">Webhooks</span>
+              </button>
+              <button
+                onClick={() => setEditModalOpen(true)}
+                title="Edit Room"
+                aria-label="Edit Room"
+                className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            </>
           )}
 
           {isBuilder && room.isPrivate && (
@@ -306,6 +313,19 @@ export function RoomHeader({
       {isBuilder && room.isPrivate && (
         <InviteTeamModal open={inviteModalOpen} onClose={() => setInviteModalOpen(false)} room={room} />
       )}
+      {isBuilder && (
+        <IntegrationsModal
+          open={integrationsModalOpen}
+          onClose={() => setIntegrationsModalOpen(false)}
+          roomId={room.id}
+          roomTitle={room.title}
+        />
+      )}
+      <BuilderTourModal
+        isOpen={tourModalOpen}
+        onClose={() => setTourModalOpen(false)}
+        roomId={room.id}
+      />
     </div>
   );
 }

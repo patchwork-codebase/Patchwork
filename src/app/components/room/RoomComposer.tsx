@@ -53,6 +53,27 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
     }
   }, [newUpdate, sendTypingEvent]);
 
+  // Restore draft on mount
+  useEffect(() => {
+    if (!roomId) return;
+    const draftKey = `patchwork_draft_${roomId}`;
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft && !newUpdate) {
+      setNewUpdate(savedDraft);
+    }
+  }, [roomId]);
+
+  // Save draft as user types
+  useEffect(() => {
+    if (!roomId) return;
+    const draftKey = `patchwork_draft_${roomId}`;
+    if (newUpdate.trim()) {
+      localStorage.setItem(draftKey, newUpdate);
+    } else {
+      localStorage.removeItem(draftKey);
+    }
+  }, [newUpdate, roomId]);
+
   const handlePostUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomId || !user || (!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview)) return;
@@ -106,6 +127,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
       }).eq('id', roomId);
 
       setNewUpdate('');
+      localStorage.removeItem(`patchwork_draft_${roomId}`);
       setMediaPreview(null);
       setCodeSnippet('');
       setShowCodeInput(false);

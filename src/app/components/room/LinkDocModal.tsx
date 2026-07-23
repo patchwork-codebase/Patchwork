@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Loader2, FileText, Search, X } from "lucide-react";
@@ -14,6 +15,7 @@ interface LinkDocModalProps {
 }
 
 export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -106,7 +108,13 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
                   <p className="text-[13px] text-slate-400 mb-6">
                     Connect your Notion workspace in profile settings to browse and link live documents.
                   </p>
-                  <button onClick={onClose} className="px-5 py-2.5 bg-primary-400 hover:bg-[#7a6ce0] text-white text-[13px] font-bold rounded-xl transition-colors">
+                  <button 
+                    onClick={() => {
+                      onClose();
+                      navigate(userId ? `/dashboard/profile/${userId}` : '/dashboard');
+                    }} 
+                    className="px-5 py-2.5 bg-primary-400 hover:bg-[#7a6ce0] text-white text-[13px] font-bold rounded-xl transition-colors cursor-pointer"
+                  >
                     Go to Integrations
                   </button>
                 </div>

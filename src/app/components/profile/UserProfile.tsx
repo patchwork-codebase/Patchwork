@@ -105,8 +105,8 @@ export default function UserProfile() {
         expert_available: profile.expertAvailable ?? true,
         expert_open_slots: profile.expertOpenSlots ?? 3,
         expert_avg_response_hours: profile.expertAvgResponseHours ?? 48,
-        email_notifications_enabled: profile.emailNotificationsEnabled ?? true,
-        in_app_notifications_enabled: profile.inAppNotificationsEnabled ?? true
+        email_notifications_enabled: (profile as any).emailNotificationsEnabled ?? (profile as any).email_notifications_enabled ?? true,
+        in_app_notifications_enabled: (profile as any).inAppNotificationsEnabled ?? (profile as any).in_app_notifications_enabled ?? true
       });
     }
   }, [profile]);
@@ -159,7 +159,7 @@ export default function UserProfile() {
       <SEO 
         title={`${profile.name} (@${profile.name?.split(' ')[0]?.toLowerCase() || 'user'}) | Patchwork`}
         description={profile.bio || `Check out ${profile.name}'s profile and rooms on Patchwork.`}
-        image={profile.avatar || profile.avatarUrl || profile.avatar_url || `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(profile.id || profile.name)}&backgroundColor=transparent`}
+        image={profile.avatar || profile.avatarUrl || (profile as any).avatar_url || `https://api.dicebear.com/9.x/micah/svg?seed=${encodeURIComponent(profile.id || profile.name)}&backgroundColor=transparent`}
       />
       <div className="min-h-screen bg-gradient-to-b from-[#F2F0FF] to-[#FAFAFA] -mt-16 pt-16">
         <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 sm:py-8 relative">
@@ -180,7 +180,7 @@ export default function UserProfile() {
                       <UserAvatar 
                         userId={profile.id} 
                         name={profile.name} 
-                        avatarUrl={profile.avatar || profile.avatarUrl || profile.avatar_url} 
+                        avatarUrl={profile.avatar || profile.avatarUrl || (profile as any).avatar_url} 
                         className="w-full h-full object-cover scale-110" 
                         lazy={false}
                       />

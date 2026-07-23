@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { timeAgo } from '../../utils/helpers';
 import { UserAvatar } from '../ui/UserAvatar';
+import { ReadMoreText } from '../ui/ReadMoreText';
 import type { Reaction } from '../../types';
 
 interface ThreadedReplyProps {
@@ -41,9 +42,10 @@ export const ThreadedReply = React.memo(function ThreadedReply({ reply }: Thread
             {timeAgo(reply.createdAt)}
           </span>
         </div>
-        <p className="text-[14px] text-slate-700 leading-relaxed break-words whitespace-pre-wrap">
-          {reply.text}
-        </p>
+        <ReadMoreText
+          text={reply.text || ''}
+          className="text-[14px] text-slate-700 leading-relaxed break-words font-medium"
+        />
       </div>
     </div>
   );

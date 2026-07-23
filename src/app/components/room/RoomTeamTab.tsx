@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useRoomTeam, useRevokeInvitation, useResendInvitation, useUpdateMemberRole, TeamMember, TeamInvitation } from '../../hooks/useRoomTeam';
-import { Loader2, User, Mail, ShieldAlert, CheckCircle, Clock, XCircle, RefreshCw, X } from 'lucide-react';
+import { Loader2, User, Mail, ShieldAlert, CheckCircle, Clock, XCircle, RefreshCw, X, Shield } from 'lucide-react';
 import { VerifiedTick } from '../ui/VerifiedTick';
 import { OrganizationBadge } from '../ui/OrganizationBadge';
 import { timeAgo } from '../../utils/helpers';
 import { UserAvatar } from '../ui/UserAvatar';
 import { motion } from 'motion/react';
+import { MemberPermissionsModal } from './MemberPermissionsModal';
 
 interface RoomTeamTabProps {
   roomId: string;
@@ -22,6 +23,7 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
 
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [permModalMember, setPermModalMember] = useState<any | null>(null);
 
   if (isLoading) {
     return (
@@ -138,41 +140,52 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
 
                       <div className="flex items-center gap-2 mt-0.5">
                         {isBuilder && !isOwner ? (
-                          <div className="relative inline-block">
+                          <div className="flex items-center gap-1.5">
+                            <div className="relative inline-block">
+                              <button
+                                onClick={() => setOpenDropdownId(openDropdownId === member.id ? null : member.id)}
+                                disabled={actionLoadingId === `update-${member.id}`}
+                                className="flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md outline-none cursor-pointer hover:bg-slate-200 hover:text-slate-900 transition-colors disabled:opacity-50"
+                              >
+                                {member.role.replace('_', ' ')}
+                                <svg className={`fill-current h-3 w-3 opacity-50 transition-transform ${openDropdownId === member.id ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                              </button>
+                              
+                              {openDropdownId === member.id && (
+                                <>
+                                  <div 
+                                    className="fixed inset-0 z-40" 
+                                    onClick={() => setOpenDropdownId(null)} 
+                                  />
+                                  <div className="absolute top-full right-0 mt-1.5 w-36 bg-white border border-slate-200 shadow-xl rounded-xl py-1 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {['observer', 'team_member', 'expert'].map(r => (
+                                      <button
+                                        key={r}
+                                        onClick={() => {
+                                          setOpenDropdownId(null);
+                                          if (member.role !== r) handleRoleChange(member.id, r);
+                                        }}
+                                        className={`w-full text-left px-3 py-2.5 text-[11px] font-mono font-bold uppercase transition-colors flex items-center justify-between ${
+                                          member.role === r ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                        }`}
+                                      >
+                                        {r.replace('_', ' ')}
+                                        {member.role === r && <CheckCircle className="w-3.5 h-3.5" />}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+
                             <button
-                              onClick={() => setOpenDropdownId(openDropdownId === member.id ? null : member.id)}
-                              disabled={actionLoadingId === `update-${member.id}`}
-                              className="flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md outline-none cursor-pointer hover:bg-slate-200 hover:text-slate-900 transition-colors disabled:opacity-50"
+                              type="button"
+                              onClick={() => setPermModalMember(member)}
+                              className="p-1 text-slate-400 hover:text-primary-600 hover:bg-primary-50 border border-slate-200 hover:border-primary-200 rounded-md transition-colors"
+                              title="Configure Member Permissions"
                             >
-                              {member.role.replace('_', ' ')}
-                              <svg className={`fill-current h-3 w-3 opacity-50 transition-transform ${openDropdownId === member.id ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                              <Shield className="w-3.5 h-3.5" />
                             </button>
-                            
-                            {openDropdownId === member.id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-40" 
-                                  onClick={() => setOpenDropdownId(null)} 
-                                />
-                                <div className="absolute top-full right-0 mt-1.5 w-36 bg-white border border-slate-200 shadow-xl rounded-xl py-1 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                  {['observer', 'team_member', 'expert'].map(r => (
-                                    <button
-                                      key={r}
-                                      onClick={() => {
-                                        setOpenDropdownId(null);
-                                        if (member.role !== r) handleRoleChange(member.id, r);
-                                      }}
-                                      className={`w-full text-left px-3 py-2.5 text-[11px] font-mono font-bold uppercase transition-colors flex items-center justify-between ${
-                                        member.role === r ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                      }`}
-                                    >
-                                      {r.replace('_', ' ')}
-                                      {member.role === r && <CheckCircle className="w-3.5 h-3.5" />}
-                                    </button>
-                                  ))}
-                                </div>
-                              </>
-                            )}
                           </div>
                         ) : (
                           <span className="text-[11px] font-mono font-bold uppercase text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
@@ -263,6 +276,14 @@ export function RoomTeamTab({ roomId, isBuilder, roomTitle, builderName }: RoomT
         </section>
       )}
 
+      {permModalMember && (
+        <MemberPermissionsModal
+          open={!!permModalMember}
+          onClose={() => setPermModalMember(null)}
+          roomId={roomId}
+          member={permModalMember}
+        />
+      )}
     </div>
   );
 }

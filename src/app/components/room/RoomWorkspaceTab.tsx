@@ -1,13 +1,34 @@
-import { Lock } from "lucide-react";
+import { Lock, ShieldAlert } from "lucide-react";
 import { IntegrationsBar } from "./IntegrationsBar";
 
 interface RoomWorkspaceTabProps {
   roomId: string;
   builderId: string;
   user: any;
+  isTeamMember?: boolean;
+  userRole?: string;
+  builderName?: string;
 }
 
-export function RoomWorkspaceTab({ roomId, builderId, user }: RoomWorkspaceTabProps) {
+export function RoomWorkspaceTab({ roomId, builderId, user, isTeamMember = true, userRole = 'observer', builderName = 'Builder' }: RoomWorkspaceTabProps) {
+  if (!isTeamMember) {
+    return (
+      <div className="mb-8 p-8 sm:p-12 bg-white border border-slate-200/80 rounded-[28px] shadow-sm text-center max-w-[800px] mx-auto relative overflow-hidden">
+        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-center justify-center mx-auto mb-5 shadow-sm">
+          <Lock className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-extrabold text-slate-900 font-display mb-2">Team Member Access Required</h3>
+        <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed mb-6 font-medium">
+          Build Room internal workspaces, roadmaps, tickets, and PRD documents are restricted to active Team Members. Observers can view public updates and timeline activity. Ask room owner <strong className="text-slate-900">{builderName}</strong> to invite or promote you to gain full workspace access.
+        </p>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-600">
+          <ShieldAlert className="w-4 h-4 text-amber-500" />
+          Role: <span className="capitalize text-slate-900 font-bold">{userRole}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-8 p-8 bg-white border border-slate-200 rounded-[24px] shadow-sm">
       <div className="text-center mb-8">

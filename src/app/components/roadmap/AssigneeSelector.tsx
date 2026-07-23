@@ -45,30 +45,51 @@ function useAssignableMembers(roomId?: string | null) {
         memberIds.add(builderData.id);
       }
 
-      // 2. Fetch observers/members for room
+      // 2. Resolve target room IDs
+      let targetRoomIds: string[] = [];
       if (roomId) {
+        targetRoomIds = [roomId];
+      } else {
+        const { data: ownedRooms } = await supabase
+          .from('rooms')
+          .select('id')
+          .eq('builder_id', builderId);
+        targetRoomIds = (ownedRooms || []).map(r => r.id).filter(Boolean);
+      }
+
+      // 3. Fetch active team members from room_observers
+      if (targetRoomIds.length > 0) {
         const { data: observers } = await supabase
           .from('room_observers')
-          .select(`role, users:observer_id(id, name, email, avatar)`)
-          .eq('room_id', roomId);
+          .select(`
+            role, 
+            observer_id,
+            users:observer_id(id, name, email, avatar)
+          `)
+          .in('room_id', targetRoomIds);
 
         (observers || []).forEach((row: any) => {
           const u = Array.isArray(row.users) ? row.users[0] : row.users;
-          if (u?.id && !memberIds.has(u.id)) {
+          const userId = u?.id || row.observer_id;
+
+          if (userId && !memberIds.has(userId)) {
+            // Any role except explicit 'observer' is considered an active Team Member of the room
+            const isTeam = row.role !== 'observer';
+
             members.push({
-              id: u.id,
-              name: u.name || u.email || 'Team Member',
-              email: u.email || '',
-              avatar: u.avatar || null,
-              role: row.role || 'observer',
-              isRoomMember: true,
+              id: userId,
+              name: u?.name || u?.email?.split('@')[0] || 'Team Member',
+              email: u?.email || '',
+              avatar: u?.avatar || null,
+              role: isTeam ? 'Team Member' : 'Observer',
+              isRoomMember: isTeam,
             });
-            memberIds.add(u.id);
+            memberIds.add(userId);
           }
         });
       }
 
-      // 3. Also fetch all users from platform to allow assigning & inviting non-room members
+      // 4. Also fetch all users from platform to allow assigning & inviting non-room members
       const { data: allUsers } = await supabase
         .from('users')
         .select('id, name, email, avatar')
@@ -78,7 +99,7 @@ function useAssignableMembers(roomId?: string | null) {
         if (u?.id && !memberIds.has(u.id)) {
           members.push({
             id: u.id,
-            name: u.name || u.email || 'User',
+            name: u.name || u.email?.split('@')[0] || 'User',
             email: u.email || '',
             avatar: u.avatar || null,
             role: 'User',
@@ -204,7 +225,7 @@ export function AssigneeSelector({ roomId, assignedUserIds, onAssign, onUnassign
                           <span className="text-sm font-medium text-slate-900 truncate max-w-[140px]">{member.name}</span>
                           <span className="text-[11px] text-slate-500 capitalize">
                             {member.isRoomMember === false ? (
-                              <span className="text-primary-600 font-semibold">Invites to Room</span>
+                              <span className="text-primary-600 font-semibold">Invites To Room</span>
                             ) : (
                               (member.role || '').replace('_', ' ')
                             )}

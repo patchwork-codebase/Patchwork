@@ -168,6 +168,8 @@ export const router = createBrowserRouter([
           { path: "leaderboard", lazy: () => import("./components/dashboard/LeaderboardPage").then(m => ({ Component: m.default })) },
         ],
       },
+      { path: "/profile", loader: () => redirect("/dashboard") },
+      { path: "/profile/:id", loader: ({ params }) => redirect(`/dashboard/profile/${params.id}`) },
     ]
   }
 ]);

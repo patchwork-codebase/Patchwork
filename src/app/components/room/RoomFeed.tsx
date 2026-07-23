@@ -73,6 +73,7 @@ interface RoomFeedProps {
   setReactionModal: (state: { open: boolean; updateId: string | null }) => void;
   deletingUpdateId: string | null;
   handleDeleteUpdate: (updateId: string) => void;
+  onDeleteReaction?: (reactionId: string) => void;
   setNewUpdate: (content: string) => void;
   updateTextAreaRef: React.RefObject<HTMLTextAreaElement | null>;
   REACTION_CONFIG: ReactionConfig;
@@ -89,6 +90,7 @@ export function RoomFeed({
   setReactionModal,
   deletingUpdateId,
   handleDeleteUpdate,
+  onDeleteReaction,
   setNewUpdate,
   updateTextAreaRef,
   REACTION_CONFIG,
@@ -360,8 +362,18 @@ export function RoomFeed({
                                       Draft Follow-up
                                     </button>
                                   )}
+                                  {onDeleteReaction && (user?.id === r.observerId || isBuilder) && (
+                                     <button
+                                       type="button"
+                                       onClick={() => onDeleteReaction(r.id)}
+                                       className="ml-auto text-slate-400 hover:text-rose-600 transition-colors p-1 rounded hover:bg-rose-50"
+                                       title="Delete comment"
+                                     >
+                                       <Trash2 className="w-3.5 h-3.5" />
+                                     </button>
+                                   )}
                                 </div>
-                                <p className="text-[13px] text-slate-700 leading-relaxed font-medium break-words">{r.text}</p>
+                                <ReadMoreText text={r.text as string} className="text-[13px] text-slate-700 leading-relaxed font-medium break-words" />
                               </div>
                             </div>
                           );

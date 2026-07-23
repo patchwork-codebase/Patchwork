@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { supabase } from '../auth/AuthContext';
 import { useGithubAccount, useGithubRepositories } from '../../hooks/useGithub';
 import { Github, Link as LinkIcon, Loader2, Plus, X, Check } from 'lucide-react';
@@ -13,6 +14,7 @@ import {
 } from "../ui/dialog";
 
 export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId: string }) {
+  const navigate = useNavigate();
   const { data: githubAccount, isLoading: accountLoading } = useGithubAccount(userId);
   const { data: linkedRepos, refetch: refetchRepos } = useGithubRepositories(userId);
   const [open, setOpen] = useState(false);
@@ -139,8 +141,11 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
             <Github className="w-10 h-10 mx-auto mb-3 text-slate-600" />
             <p className="text-[14px] text-slate-300 mb-4">You need to connect your GitHub account first.</p>
             <button 
-              onClick={() => { setOpen(false); /* route to profile or trigger auth */ }}
-              className="px-4 py-2 bg-white text-ink font-bold text-[13px] rounded-full hover:bg-slate-200 transition-colors"
+              onClick={() => {
+                setOpen(false);
+                navigate(userId ? `/dashboard/profile/${userId}` : '/dashboard');
+              }}
+              className="px-4 py-2 bg-white text-ink font-bold text-[13px] rounded-full hover:bg-slate-200 transition-colors cursor-pointer"
             >
               Go to Integrations
             </button>

@@ -65,15 +65,44 @@ export function useRoadmapItems(builderId: string) {
   return useQuery({
     queryKey: ['roadmap_items', builderId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!builderId) return [];
+
+      // 1. Fetch room IDs where user is an accepted Team Member
+      const { data: teamObserverData } = await supabase
+        .from('room_observers')
+        .select('room_id')
+        .eq('observer_id', builderId)
+        .in('role', ['team_member', 'collaborator', 'co_founder', 'org_member', 'expert']);
+
+      const teamRoomIds = (teamObserverData || []).map(r => r.room_id).filter(Boolean);
+
+      // 2. Fetch ticket IDs where user is explicitly assigned
+      const { data: assigneeData } = await supabase
+        .from('roadmap_assignees')
+        .select('item_id')
+        .eq('user_id', builderId);
+
+      const assignedItemIds = (assigneeData || []).map(a => a.item_id).filter(Boolean);
+
+      // 3. Query items where user is builder, team room member, or assignee
+      let query = supabase
         .from('roadmap_items')
         .select(`
           *,
           roadmap_assignees(user_id, users(name, avatar)),
           roadmap_comments(count)
         `)
-        .eq('builder_id', builderId)
         .order('position', { ascending: true });
+
+      const orConditions: string[] = [`builder_id.eq.${builderId}`];
+      if (teamRoomIds.length > 0) {
+        orConditions.push(`room_id.in.(${teamRoomIds.map(id => `"${id}"`).join(',')})`);
+      }
+      if (assignedItemIds.length > 0) {
+        orConditions.push(`id.in.(${assignedItemIds.map(id => `"${id}"`).join(',')})`);
+      }
+
+      const { data, error } = await query.or(orConditions.join(','));
       if (error) throw error;
       return data as RoadmapItem[];
     },
@@ -375,6 +404,28 @@ export function useAddRoadmapComment() {
       queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
+  });
+}
+
+export function useDeleteRoadmapComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ commentId, itemId }: { commentId: string; itemId: string }) => {
+      const { error } = await supabase
+        .from('roadmap_comments')
+        .delete()
+        .eq('id', commentId);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap_comments', variables.itemId] });
+      queryClient.invalidateQueries({ queryKey: ['roadmap_items'] });
+      toast.success('Comment deleted');
+    },
+    onError: (error: any) => {
+      console.error('Failed to delete comment:', error);
+      toast.error(error.message || 'Failed to delete comment');
+    }
   });
 }
 // Hooks for Sprints

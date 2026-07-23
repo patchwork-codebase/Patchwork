@@ -101,12 +101,18 @@ export function ReactionGroup({
               e.stopPropagation(); 
               handleToggleReaction(type); 
             }}
-            className={`flex items-center transition-all group pr-2.5 pl-1 py-1 rounded-full bg-white shadow-sm ring-1 ring-slate-200/50 hover:shadow-md hover:ring-slate-300/50 ${isActive ? 'ring-primary-100/50 shadow-primary-500/10' : ''}`}
+            className={`flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-white shadow-xs border active:scale-95 cursor-pointer ${
+              isActive 
+                ? 'border-primary-300 bg-primary-50/50 text-primary-700 shadow-primary-500/10' 
+                : 'border-slate-200/80 hover:border-slate-300 text-slate-600 hover:bg-slate-50/60'
+            }`}
           >
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors shrink-0 ${isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-slate-50 text-slate-500 group-hover:bg-slate-100 group-hover:text-slate-700'}`}>
-               <span className="text-[13px] font-bold leading-none mb-[1px]">{config.icon}</span>
+            <div className={`w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+              isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-slate-100/80 text-slate-500 group-hover:bg-slate-200/70 group-hover:text-slate-700'
+            }`}>
+               <span className="text-[12px] font-bold leading-none mb-[0.5px]">{config.icon}</span>
             </div>
-            {count > 0 && <span className={`ml-1.5 text-[12px] font-bold ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{count}</span>}
+            {count > 0 && <span className={`ml-1.5 text-[12px] font-bold ${isActive ? 'text-primary-700' : 'text-slate-600'}`}>{count}</span>}
           </button>
         );
       })}
@@ -114,12 +120,12 @@ export function ReactionGroup({
       {showReplyButton && (
         <button 
           onClick={(e) => { e.stopPropagation(); onReplyClick?.(e); }}
-          className="flex items-center transition-all group pr-2.5 pl-1 py-1 rounded-full bg-white shadow-sm ring-1 ring-slate-200/50 hover:shadow-md hover:ring-slate-300/50 ml-1"
+          className="flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-white shadow-xs border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60 active:scale-95 cursor-pointer ml-0.5"
         >
-          <div className="w-7 h-7 rounded-full flex items-center justify-center transition-colors shrink-0 bg-slate-50 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-500">
+          <div className="w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
             <MessageCircle className="w-3.5 h-3.5" strokeWidth={2} />
           </div>
-          {replyCount > 0 && <span className="ml-1.5 text-[12px] font-bold text-slate-500 group-hover:text-indigo-600">{replyCount}</span>}
+          {replyCount > 0 && <span className="ml-1.5 text-[12px] font-bold text-slate-600 group-hover:text-indigo-600">{replyCount}</span>}
         </button>
       )}
     </div>

@@ -1,23 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router";
-import { AnimatePresence } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, supabase } from "../auth/AuthContext";
-import { ArrowLeft, Hammer, Send, ImageIcon, Code, MessageCircle, Lock, Sparkles, Smile, Loader2, LayoutDashboard, Layers, Activity, Users, Clock, ShieldCheck } from "lucide-react";
+import { ArrowLeft, MessageCircle, Lock, Smile, Loader2, LayoutDashboard, Layers, Users, Clock, ShieldCheck } from "lucide-react";
 
 import { toast } from "sonner";
 import { ReactionModal } from "./ReactionModal";
 import { DraftUpdates } from "./DraftUpdates";
 import { LinkedInShareModal } from "../ui/LinkedInShareModal";
-import { IntegrationsBar } from "./IntegrationsBar";
-import { DecisionLogCard } from "./DecisionLogCard";
-import { MilestoneTrackerCard } from "./MilestoneTrackerCard";
-import { ProductRoomStats } from "./ProductRoomStats";
 import { RoomHeader } from "./RoomHeader";
 import { RoomFeed } from "./RoomFeed";
 import { RoomOverviewTab } from "./RoomOverviewTab";
 import { RoomWorkspaceTab } from "./RoomWorkspaceTab";
 import { RoomTeamTab } from "./RoomTeamTab";
+import { useRoomTeam } from "../../hooks/useRoomTeam";
 import { useRoomDetails, useJoinPrivateRoom } from "../../hooks/useRooms";
 import { timeAgo } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
@@ -72,7 +68,10 @@ export default function BuildRoom() {
   const updateTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const isBuilder = room && profile?.role === 'builder' && room.builderId === user?.id;
-  const joined = room?.observerCount !== undefined; // simplified
+  const { data: teamData } = useRoomTeam(id);
+  const myMemberObj = (teamData?.members || []).find((m: any) => m.id === user?.id);
+  const userRole = isBuilder ? 'builder' : (myMemberObj?.role || 'observer');
+  const isTeamMember = !!isBuilder || ['team_member', 'collaborator', 'co_founder', 'org_member', 'expert'].includes(userRole);
 
   // IP Protection hooks
   const { data: ndaAccepted, isLoading: ndaLoading } = useCheckNdaAccepted(
@@ -235,6 +234,18 @@ export default function BuildRoom() {
     }
   };
 
+  const handleDeleteReaction = async (reactionId: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from('reactions').delete().eq('id', reactionId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roomDetails(id || '') });
+      toast.success("Comment deleted");
+    } catch (error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)) || "Failed to delete comment");
+    }
+  };
+
   function copyLogLink() {
     const url = `${window.location.origin}/log/${id}`;
     navigator.clipboard.writeText(url);
@@ -383,11 +394,30 @@ export default function BuildRoom() {
         </div>
 
         {activeTab === 'overview' && (
-          <RoomOverviewTab room={room} id={id as string} user={user} reactions={room.reactions} queryClient={queryClient} isBuilder={!!isBuilder} />
+          <RoomOverviewTab
+            room={room}
+            id={id as string}
+            user={user}
+            reactions={room.reactions}
+            queryClient={queryClient}
+            isBuilder={!!isBuilder}
+            onPostAsUpdate={(digestText) => {
+              setNewUpdate(digestText);
+              setActiveTab('updates');
+              updateTextAreaRef.current?.focus();
+            }}
+          />
         )}
 
         {activeTab === 'workspace' && (
-          <RoomWorkspaceTab roomId={id as string} builderId={room.builderId} user={user} />
+          <RoomWorkspaceTab
+            roomId={id as string}
+            builderId={room.builderId}
+            user={user}
+            isTeamMember={isTeamMember}
+            userRole={userRole}
+            builderName={room.builderName}
+          />
         )}
 
         {activeTab === 'team' && (
@@ -449,6 +479,7 @@ export default function BuildRoom() {
                 setReactionModal={setReactionModal} 
                 deletingUpdateId={deletingUpdateId} 
                 handleDeleteUpdate={handleDeleteUpdate}
+                onDeleteReaction={handleDeleteReaction}
                 setNewUpdate={setNewUpdate}
                 updateTextAreaRef={updateTextAreaRef}
                 REACTION_CONFIG={REACTION_CONFIG}

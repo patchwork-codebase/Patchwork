@@ -176,6 +176,15 @@ export function BuildTimelineCard({
                 </span>
               </div>
             )}
+
+            <div className="flex items-center gap-3 pt-2 flex-wrap">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">
+                <Shield className="w-3.5 h-3.5" /> SHA-256 Chain Verified
+              </div>
+              <span className="text-xs text-slate-400 font-mono">
+                Build Velocity: <strong className="text-white">{events.length} immutable events</strong>
+              </span>
+            </div>
           </div>
 
           <button

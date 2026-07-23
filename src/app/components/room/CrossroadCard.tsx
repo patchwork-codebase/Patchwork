@@ -204,26 +204,29 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
               {!isLoading && votes.length === 0 && !submitted && (
                  <p className="text-slate-400 text-[13px] font-medium bg-white border border-slate-200 border-dashed rounded-xl p-6 text-center">No rationales staked yet. Be the first to share your expertise!</p>
               )}
-              {votes.map(r => (
-                <div key={r.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                   <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 relative">
-                        <UserAvatar userId={r.user_id} name={r.user?.name || 'User'} avatarUrl={r.user?.avatar_url} />
-                      </div>
-                      <div>
-                         <div className="flex items-center gap-1.5">
-                            <span className="text-[13px] font-bold text-slate-900">{r.user?.name || 'User'}</span>
-                            {r.user?.is_verified_expert && <VerifiedTick className="w-3.5 h-3.5" />}
-                         </div>
-                         <div className="text-[11px] text-slate-500 font-medium">{r.user?.role || 'Observer'}</div>
-                      </div>
-                      <div className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold uppercase px-2 py-1 rounded">
-                        Voted {r.option_title}
-                      </div>
-                   </div>
-                   <p className="text-[14px] text-slate-700 leading-relaxed">"{r.rationale}"</p>
-                </div>
-               ))}
+              {votes.map((r: any) => {
+                const u = r.user || {};
+                return (
+                  <div key={r.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                     <div className="flex items-center gap-3 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 relative">
+                          <UserAvatar userId={r.user_id} name={u.name || 'User'} avatarUrl={u.avatar_url || u.avatarUrl || u.avatar} />
+                        </div>
+                        <div>
+                           <div className="flex items-center gap-1.5">
+                              <span className="text-[13px] font-bold text-slate-900">{u.name || 'User'}</span>
+                              {u.is_verified_expert && <VerifiedTick className="w-3.5 h-3.5" />}
+                           </div>
+                           <div className="text-[11px] text-slate-500 font-medium">{u.role || 'Observer'}</div>
+                        </div>
+                        <div className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold uppercase px-2 py-1 rounded">
+                          Voted {r.option_title}
+                        </div>
+                     </div>
+                     <p className="text-[14px] text-slate-700 leading-relaxed">"{r.rationale}"</p>
+                  </div>
+                );
+              })}
             </div>
         </div>
 

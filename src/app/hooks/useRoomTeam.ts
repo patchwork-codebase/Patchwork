@@ -8,6 +8,7 @@ export interface TeamMember {
   name: string;
   email: string;
   role: string;
+  permissions?: any;
   avatar: string;
   domain?: string;
   joinedAt: string;
@@ -35,6 +36,7 @@ export function useRoomTeam(roomId?: string) {
         .select(`
           joined_at,
           role,
+          permissions,
           users:observer_id (
             id,
             name,
@@ -96,6 +98,7 @@ export function useRoomTeam(roomId?: string) {
           name: user?.name || user?.email?.split('@')[0] || 'Unknown User',
           email: user?.email,
           role: row.role,
+          permissions: row.permissions,
           avatar: user?.avatar,
           domain: user.domain,
           joinedAt: row.joined_at,

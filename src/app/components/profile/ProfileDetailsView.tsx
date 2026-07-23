@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Hammer, Eye, Calendar, Users, Globe, Twitter, Github, Linkedin, Camera, Link as LinkIcon, Trophy, Edit2, ShieldCheck } from "lucide-react";
+import { Hammer, Eye, Calendar, Users, Globe, Twitter, Github, Linkedin, Camera, Link as LinkIcon, Trophy, Edit2, ShieldCheck, Share2 } from "lucide-react";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { timeAgo, registerAvatarUrl, optimizeCloudinaryUrl } from "../../utils/helpers";
 import { UserAvatar } from "../ui/UserAvatar";
@@ -150,6 +150,28 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
             <div className="flex items-center gap-1.5 text-slate-900 font-extrabold text-[16px] sm:text-[18px] mb-0.5"><Trophy className="w-4 h-4 text-primary-500"/> {roomsCount}</div>
             <span className="text-[11px] sm:text-[12px] text-slate-500 font-medium">Projects</span>
           </div>
+        </div>
+
+        {/* Proof of Work Showcase Card */}
+        <div className="bg-gradient-to-r from-slate-900 via-primary-950 to-slate-900 border border-primary-500/20 rounded-2xl p-4 max-w-sm sm:max-w-md mx-auto mb-8 shadow-md text-white text-center relative overflow-hidden">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 font-mono">
+              Verified Proof-of-Work Credential
+            </span>
+          </div>
+          <p className="text-[12px] text-slate-300 font-medium">
+            {roomsCount} Build {roomsCount === 1 ? 'Room' : 'Rooms'} &amp; SHA-256 Proof of Authorship verified on Patchwork
+          </p>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success("Proof-of-Work portfolio link copied!");
+            }}
+            className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-primary-300 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 rounded-full transition-all cursor-pointer"
+          >
+            <Share2 className="w-3.5 h-3.5" /> Copy Credential Link
+          </button>
         </div>
 
         {/* Social Links */}
