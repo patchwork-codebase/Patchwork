@@ -35,16 +35,16 @@ export function LandingNetworkShowcase() {
         const { data, error } = await supabase
           .from("updates")
           .select(
-            "id, content, created_at, author_name, author_id, rooms!room_id(title, tags, is_public), users!author_id(avatar)"
+            "id, content, created_at, author_name, author_id, rooms!room_id(title, tags, is_private), users!author_id(avatar)"
           )
           .order("created_at", { ascending: false })
           .limit(12);
 
         if (error || !data) throw error;
 
-        // Filter to only updates in public rooms, take first 6
+        // Filter to only updates in public rooms (is_private = false), take first 6
         const publicUpdates = data
-          .filter((row: any) => row.rooms?.is_public !== false)
+          .filter((row: any) => row.rooms?.is_private !== true)
           .slice(0, 6);
 
         if (publicUpdates.length > 0) {

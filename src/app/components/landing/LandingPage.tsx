@@ -206,7 +206,7 @@ export default function LandingPage() {
   const currentRoom = detailedRooms.find(r => r.id === activeRoomId) || detailedRooms[0];
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans bg-gradient-to-br from-white via-sage-50 to-emerald-50 antialiased selection:bg-primary-500/30 selection:text-white">
+    <div className="min-h-screen text-slate-900 font-sans bg-gradient-to-br from-white via-sage-50 to-emerald-50 antialiased selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
       <AuthRedirectGuard />
       {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl">
@@ -306,7 +306,7 @@ export default function LandingPage() {
                   navigate("/login");
                   setMobileMenuOpen(false);
                 }}
-                className="w-full rounded-2xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 hover:border-slate-300"
               >
                 Sign In
               </button>

@@ -39,7 +39,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
   );
 
   return (
-    <section className="relative w-full min-h-screen pt-28 sm:pt-36 pb-20 bg-white overflow-hidden flex flex-col items-center justify-start">
+    <section className="relative w-full min-h-screen pt-28 sm:pt-36 pb-20 bg-white overflow-x-hidden flex flex-col items-center justify-start">
       
       {/* Interactive Void Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -85,17 +85,15 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
         />
       </div>
 
-      {/* Storytelling Text */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-[1100px] pb-12">
-        {/* Storytelling Text */}
+      <div className="relative z-10 flex flex-col items-center text-center px-5 w-full max-w-[1100px] pb-12">
         <motion.h1 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
-          className="text-[36px] sm:text-[72px] leading-[1.1] font-display font-extrabold text-slate-900 mb-6 tracking-tight"
+          className="text-[32px] sm:text-[56px] md:text-[72px] leading-[1.1] font-display font-extrabold text-slate-900 mb-6 tracking-tight w-full"
         >
-          The Operating System for <br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-purple-600 to-indigo-600">
+          The Operating System for{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-purple-600 to-indigo-600 whitespace-nowrap">
             Builders.
           </span>
         </motion.h1>
