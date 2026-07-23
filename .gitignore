@@ -34,3 +34,5 @@ test_email.js
 test_welcome_email.js
 seed-badges.ts
 seed-badges-raw.ts
+.sql
+test_query.ts
