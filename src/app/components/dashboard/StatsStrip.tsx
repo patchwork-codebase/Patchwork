@@ -197,7 +197,7 @@ export function StatsStrip({
                   {s.label}
                 </div>
                 {s.icon && (
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${s.iconBg} ${s.iconColor} ring-1 ring-inset ${s.deltaBorder} group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center ${s.iconBg} ${s.iconColor} ring-1 ring-inset ${s.deltaBorder} group-hover:scale-110 transition-transform duration-300`}>
                     <s.icon strokeWidth={2.5} size={18} />
                   </div>
                 )}
