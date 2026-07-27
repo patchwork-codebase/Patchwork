@@ -315,7 +315,7 @@ export default function LandingPage() {
                 }}
                 className="w-full flex items-center justify-center gap-2 rounded-[16px] bg-slate-900 px-5 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
               >
-                <Sparkles className="w-4 h-4 text-primary-400" /> Start Building
+                Start Building
               </button>
               <button
                 onClick={() => {
