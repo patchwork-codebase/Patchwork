@@ -33,7 +33,7 @@ export function MobileBottomNav({
       {/* ── MOBILE BOTTOM NAV ─────────────────────────────── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
         {/* Safe-area spacer + glass bar */}
-        <div className="bg-white/95 backdrop-blur-3xl border-t border-slate-200/50 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
+        <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border-t border-white/5 shadow-2xl pb-[env(safe-area-inset-bottom)]">
           <nav className="flex items-stretch justify-around px-2 pt-2 pb-2">
 
             {/* Home */}
@@ -60,7 +60,7 @@ export function MobileBottomNav({
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
               </motion.div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'overview' ? 'text-primary-600' : 'text-slate-400'}`}>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'overview' ? 'text-primary-500' : 'text-slate-400'}`}>
                 Home
               </span>
             </Link>
@@ -88,7 +88,7 @@ export function MobileBottomNav({
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeWidth={activeSection === 'feed' ? '2.8' : '2.2'} />
                 </svg>
               </motion.div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'feed' ? 'text-primary-600' : 'text-slate-400'}`}>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'feed' ? 'text-primary-500' : 'text-slate-400'}`}>
                 Feed
               </span>
             </Link>
@@ -118,7 +118,7 @@ export function MobileBottomNav({
                   <path d="M9 6l3-3 3 3" />
                 </svg>
               </motion.div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'rooms' ? 'text-primary-600' : 'text-slate-400'}`}>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'rooms' ? 'text-primary-500' : 'text-slate-400'}`}>
                 Rooms
               </span>
             </Link>
@@ -147,7 +147,7 @@ export function MobileBottomNav({
                   <path d="m21 21-4.35-4.35" />
                 </svg>
               </motion.div>
-              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'explore' ? 'text-primary-600' : 'text-slate-400'}`}>
+              <span className={`relative z-10 text-[10px] font-bold tracking-wide transition-colors duration-200 ${activeSection === 'explore' ? 'text-primary-500' : 'text-slate-400'}`}>
                 Explore
               </span>
             </Link>

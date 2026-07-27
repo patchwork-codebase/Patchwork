@@ -25,7 +25,7 @@ export function LandingScrollTale() {
       title: "Create Your Build Room",
       desc: "Document your daily progress, share live updates, and build your portfolio in public.",
       icon: <PenTool className="w-8 h-8 text-primary-400" />,
-      color: "from-primary-500/20 to-purple-500/20",
+      color: "from-primary-500/20 to-primary-500/20",
       align: "left",
       scrollTrigger: [0.1, 0.3]
     },

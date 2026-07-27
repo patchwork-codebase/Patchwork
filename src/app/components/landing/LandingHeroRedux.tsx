@@ -93,7 +93,7 @@ export function LandingHeroRedux({ onSignup }: LandingHeroReduxProps) {
           className="text-[32px] sm:text-[56px] md:text-[72px] leading-[1.1] font-display font-extrabold text-slate-900 mb-6 tracking-tight w-full"
         >
           The Operating System for{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-purple-600 to-indigo-600 whitespace-nowrap">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-primary-600 to-indigo-600 whitespace-nowrap">
             Builders.
           </span>
         </motion.h1>
@@ -241,8 +241,8 @@ function HeroSandboxWidget() {
                 Realtime Node Graph
               </div>
             </div>
-            <div className="p-3 bg-purple-50/60 border border-purple-200/60 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase text-purple-700 tracking-wider">Completed</span>
+            <div className="p-3 bg-primary-50/60 border border-primary-200/60 rounded-2xl">
+              <span className="text-[10px] font-bold uppercase text-primary-700 tracking-wider">Completed</span>
               <div className="mt-2 p-2.5 bg-white rounded-xl text-xs font-bold text-slate-800 shadow-sm">
                 Ticket Invitations
               </div>
@@ -252,7 +252,7 @@ function HeroSandboxWidget() {
 
         {activeTab === 'crossroads' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-white rounded-2xl border border-slate-200/70 shadow-sm">
-            <span className="text-[10px] font-bold uppercase text-purple-600 tracking-wider">Community Crossroads Decision</span>
+            <span className="text-[10px] font-bold uppercase text-primary-600 tracking-wider">Community Crossroads Decision</span>
             <h4 className="text-xs font-bold text-slate-900 mt-1">Should we prioritize AI auto-summaries for build logs?</h4>
             <div className="mt-3 flex items-center gap-2">
               <button className="px-3 py-1.5 bg-primary-50 text-primary-700 text-xs font-bold rounded-lg border border-primary-200">

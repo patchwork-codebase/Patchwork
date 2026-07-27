@@ -62,7 +62,7 @@ function QuoteBlock({ lines }: { lines: string[] }) {
     }
 
     return (
-      <div className="my-2.5 p-3 sm:p-3.5 bg-gradient-to-r from-purple-50/80 via-primary-50/40 to-slate-50/80 rounded-2xl border border-primary-100/80 border-l-4 border-l-primary-500 shadow-sm transition-all text-[13px]">
+      <div className="my-2.5 p-3 sm:p-3.5 bg-gradient-to-r from-primary-50/80 via-primary-50/40 to-slate-50/80 rounded-2xl border border-primary-100/80 border-l-4 border-l-primary-500 shadow-sm transition-all text-[13px]">
         <div className="flex items-center gap-1.5 text-[12px] text-slate-600 font-semibold mb-1 flex-wrap">
           <CornerDownRight className="w-3.5 h-3.5 text-primary-500 shrink-0" />
           <span>Replying to</span>

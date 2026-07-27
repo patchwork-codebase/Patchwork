@@ -14,19 +14,23 @@ import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
 import { ReplyComposer } from "./ReplyComposer";
 import { ReactionGroup } from "./ReactionGroup";
 import { ThreadedReply } from "./ThreadedReply";
+import { DecisionMatrixBlock } from "../pow/DecisionMatrixBlock";
+import { CodeDiffViewer } from "../pow/CodeDiffViewer";
+import { MetricImpactBadge } from "../pow/MetricImpactBadge";
+import { SocialProofCardModal } from "../pow/SocialProofCardModal";
 import { supabase } from "../auth/AuthContext";
 import type { Room, Profile } from "../../types";
 import type { FeedUpdate } from "../../hooks/useFeedUpdates";
 
 const UPDATE_TYPE_UI: Record<string, { label: string; color: string; icon: string }> = {
-  decision: { label: 'Decision', color: 'bg-primary-400/10 text-primary-500 border-primary-400/30', icon: '⚡' },
-  scrap: { label: 'Scrap', color: 'bg-rose-50 text-rose-600 border-rose-200', icon: '🗑' },
-  pivot: { label: 'Pivot', color: 'bg-orange-50 text-orange-600 border-orange-200', icon: '🔄' },
-  blocker: { label: 'Blocker', color: 'bg-red-50 text-red-600 border-red-200', icon: '🚧' },
-  insight: { label: 'Insight', color: 'bg-amber-50 text-amber-600 border-amber-200', icon: '💡' },
-  open_question: { label: 'Open question', color: 'bg-blue-50 text-blue-600 border-blue-200', icon: '❓' },
-  shipped: { label: 'Shipped', color: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: '🚀' },
-  crossroad: { label: 'Crossroad', color: 'bg-purple-50 text-purple-600 border-purple-200', icon: '🔀' },
+  decision: { label: 'Decision', color: 'bg-primary-500/10 text-primary-400 border-primary-500/20', icon: '⚡' },
+  scrap: { label: 'Scrap', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20', icon: '🗑' },
+  pivot: { label: 'Pivot', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', icon: '🔄' },
+  blocker: { label: 'Blocker', color: 'bg-red-500/10 text-red-400 border-red-500/20', icon: '🚧' },
+  insight: { label: 'Insight', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: '💡' },
+  open_question: { label: 'Open question', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', icon: '❓' },
+  shipped: { label: 'Shipped', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: '🚀' },
+  crossroad: { label: 'Crossroad', color: 'bg-primary-500/10 text-primary-400 border-primary-500/20', icon: '🔀' },
 };
 import {
   AlertDialog,
@@ -41,7 +45,7 @@ import {
 } from "../ui/alert-dialog";
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
-  design: { bg: 'bg-purple-500/10', color: 'text-purple-400' },
+  design: { bg: 'bg-primary-500/10', color: 'text-primary-400' },
   engineering: { bg: 'bg-emerald-500/10', color: 'text-emerald-400' },
   dev: { bg: 'bg-blue-500/10', color: 'text-blue-400' },
   product: { bg: 'bg-primary-500/10', color: 'text-primary-400' },
@@ -124,7 +128,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   return (
     <div
       onClick={toggleComments}
-      className="w-full max-w-full bg-white border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden group focus-ring"
+      className="w-full max-w-full bg-[#111111] border border-white/5 shadow-2xl rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') toggleComments();
@@ -136,7 +140,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             e.stopPropagation();
             if (update.authorId) navigate(`/dashboard/profile/${update.authorId}`);
           }}
-          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-400 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 ring-1 ring-slate-200'} cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-500 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-[#1a1a1a] ring-1 ring-white/10'} cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all`}
         >
           <UserAvatar
             userId={update.authorId}
@@ -149,7 +153,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           {/* Clean Header: Builder Name · Room Title */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap mb-1" onClick={(e) => e.stopPropagation()}>
-            <span className="font-bold text-[15px] sm:text-[16px] text-slate-900 hover:underline cursor-pointer">
+            <span className="font-bold text-[15px] sm:text-[16px] text-white hover:underline cursor-pointer">
               {builderName}
             </span>
             {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
@@ -160,23 +164,23 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                 isVerified={!!update.authorIsVerifiedExpert} 
               />
             )}
-            <span className="text-slate-300 text-[14px]">·</span>
+            <span className="text-slate-600 text-[14px]">·</span>
             <span 
-              className="text-[13px] sm:text-[14px] text-slate-500 hover:underline cursor-pointer font-medium truncate max-w-[180px] sm:max-w-none"
+              className="text-[13px] sm:text-[14px] text-slate-400 hover:underline cursor-pointer font-medium truncate max-w-[180px] sm:max-w-none"
               onClick={() => navigate(`/dashboard/room/${update.roomId}`)}
             >
               {roomTitle}
             </span>
             {isLaunch && (
-              <span className="text-[10px] uppercase tracking-widest font-bold bg-primary-400/10 text-primary-400 px-2 py-0.5 rounded-full shrink-0">Launched</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold bg-primary-500/10 text-primary-500 px-2 py-0.5 rounded-full shrink-0">Launched</span>
             )}
           </div>
 
           <div className="mt-1 w-full max-w-full">
             {update.content && (
               update.content.includes("figma.com/") ? (
-                <div className="my-3 rounded-[20px] overflow-hidden border border-slate-200/60 shadow-sm bg-slate-50 relative group">
-                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="my-3 rounded-[20px] overflow-hidden border border-white/10 shadow-sm bg-[#1a1a1a] relative group">
+                  <div className="absolute top-3 left-3 bg-[#0a0a0a]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-300 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span>Figma Design</span>
                   </div>
                   <FigmaEmbed content={update.content} />
@@ -184,19 +188,31 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
               ) : (
                 <ReadMoreText
                   content={update.content}
-                  className="text-[15px] sm:text-[16px] text-slate-800 leading-relaxed whitespace-pre-wrap break-words font-medium"
+                  className="text-[15px] sm:text-[16px] text-slate-300 leading-relaxed whitespace-pre-wrap break-words font-medium"
                 />
               )
             )}
 
             {update.mediaUrl && (
-              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-200/60 bg-slate-50 relative group">
+              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-white/10 bg-[#1a1a1a] relative group">
                 <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
               </div>
             )}
 
-            {update.codeSnippet && (
-              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-slate-200/60">
+            {update.decisionMatrix && (
+              <DecisionMatrixBlock data={update.decisionMatrix} />
+            )}
+
+            {update.diffData && (
+              <CodeDiffViewer data={update.diffData} />
+            )}
+
+            {update.metricWin && (
+              <MetricImpactBadge data={update.metricWin} />
+            )}
+
+            {update.codeSnippet && !update.diffData && (
+              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-white/10">
                 <CodeSnippetBlock code={update.codeSnippet} />
               </div>
             )}
@@ -209,10 +225,10 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             />
 
             <div className="flex items-center gap-3 shrink-0 ml-auto pt-2">
-              {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType] && (
-                <span className={`text-[11px] font-bold border ${UPDATE_TYPE_UI[update.updateType].color} px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1.5 shadow-sm`}>
-                  <span>{UPDATE_TYPE_UI[update.updateType].icon}</span>
-                  {UPDATE_TYPE_UI[update.updateType].label}
+              {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType.toLowerCase()] && (
+                <span className={`text-[11px] font-bold border ${UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.color || 'bg-white/5 text-slate-300 border-white/10'} px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1.5 shadow-sm`}>
+                  <span>{UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.icon || '📌'}</span>
+                  {UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.label || update.updateType}
                 </span>
               )}
               <span className="text-[12px] sm:text-[13px] text-slate-400 font-medium whitespace-nowrap">{timeString}</span>
@@ -222,7 +238,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                     <button
                       onClick={(e) => e.stopPropagation()}
                       disabled={isDeleting}
-                      className="text-slate-400 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-50 relative z-20"
+                      className="text-slate-500 hover:text-rose-400 transition-colors p-1 rounded hover:bg-rose-500/10 relative z-20"
                       title="Delete update"
                     >
                       {isDeleting ? (
@@ -232,10 +248,10 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                       )}
                     </button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-white border border-slate-200 sm:rounded-[24px]">
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-[#111111] border border-white/10 sm:rounded-[24px] text-white">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-[20px] font-display font-bold">Delete update?</AlertDialogTitle>
-                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                      <AlertDialogDescription className="text-slate-400">This action cannot be undone.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -287,7 +303,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           {/* Threaded Replies Section */}
           {replies.length > 0 && (
             <div className="mt-3 relative pl-2">
-              <div className="absolute left-6 top-0 bottom-6 w-[2px] bg-slate-300 -z-10" />
+              <div className="absolute left-6 top-0 bottom-6 w-[2px] bg-white/10 -z-10" />
 
               {replies.length > 1 && !showAllReplies && (
                 <button
@@ -295,9 +311,9 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                     e.stopPropagation();
                     setShowAllReplies(true);
                   }}
-                  className="relative ml-2 flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-primary-600 transition-colors py-2 group"
+                  className="relative ml-2 flex items-center gap-2 text-[13px] font-medium text-slate-400 hover:text-primary-400 transition-colors py-2 group"
                 >
-                  <div className="w-4 h-[2px] bg-slate-300 group-hover:bg-primary-300 transition-colors" />
+                  <div className="w-4 h-[2px] bg-white/10 group-hover:bg-primary-500 transition-colors" />
                   View {replies.length - 1} earlier repl{replies.length - 1 === 1 ? 'y' : 'ies'}...
                 </button>
               )}

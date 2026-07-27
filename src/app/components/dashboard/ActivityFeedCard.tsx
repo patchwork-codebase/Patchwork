@@ -74,15 +74,15 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
   if (!parent) return null;
 
   return (
-    <div className="w-full max-w-full bg-white border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] rounded-[24px] mb-6 p-4 sm:p-6 sm:px-8 relative group focus-ring">
+    <div className="w-full max-w-full bg-[#111111] border border-white/5 shadow-2xl rounded-[24px] mb-6 p-4 sm:p-6 sm:px-8 relative group focus-ring">
 
       {/* 1. Context Header */}
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 relative z-10">
         <div className="relative shrink-0">
           <UserAvatar userId={activity.authorId} name={activity.authorName} avatarUrl={activity.authorAvatar} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover" />
         </div>
-        <span className="text-[14px] sm:text-[15px] text-slate-500 font-medium leading-snug">
-          <strong className="text-slate-900 font-bold cursor-pointer hover:underline font-display" onClick={() => navigate(`/dashboard/profile/${activity.authorId}`)}>
+        <span className="text-[14px] sm:text-[15px] text-slate-400 font-medium leading-snug">
+          <strong className="text-white font-bold cursor-pointer hover:underline font-display" onClick={() => navigate(`/dashboard/profile/${activity.authorId}`)}>
             {activity.authorName}
           </strong> commented <span className="text-[12px] sm:text-[13px] ml-1">{timeAgo(activity.createdAt)}</span>
         </span>
@@ -91,29 +91,29 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
       {/* Main Thread Container */}
       <div className="relative ml-4 sm:ml-5">
         {/* Main Vertical Trail Line */}
-        <div className="absolute top-[-25px] sm:top-[-30px] bottom-8 left-[0px] w-0.5 bg-indigo-200/50 z-0" />
+        <div className="absolute top-[-25px] sm:top-[-30px] bottom-8 left-[0px] w-0.5 bg-primary-500/20 z-0" />
 
         {/* 2. Highlighted Post (Parent - Purple Card) */}
         <div className="relative mb-3 sm:mb-4">
-          <div className="absolute left-[0px] top-[-10px] w-[16px] sm:w-[24px] h-[30px] border-l-2 border-b-2 border-indigo-200/50 rounded-bl-xl z-0" />
+          <div className="absolute left-[0px] top-[-10px] w-[16px] sm:w-[24px] h-[30px] border-l-2 border-b-2 border-primary-500/20 rounded-bl-xl z-0" />
 
           <div
             onClick={() => navigate(`/dashboard/room/${parent.roomId}`)}
-            className="ml-4 sm:ml-6 bg-indigo-50/50 border border-indigo-100 rounded-[20px] p-4 sm:p-5 hover:shadow-md transition-shadow cursor-pointer relative z-10"
+            className="ml-4 sm:ml-6 bg-primary-500/5 border border-primary-500/20 rounded-[20px] p-4 sm:p-5 hover:shadow-md transition-shadow cursor-pointer relative z-10"
           >
             <div className="flex items-start justify-between gap-2 sm:gap-3 mb-3">
               <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                 <div className="relative shrink-0">
                   <UserAvatar userId={parent.authorId} name={parent.authorName} avatarUrl={parent.authorAvatar} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover" />
-                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-indigo-500 border-2 border-indigo-50 rounded-full"></div>
+                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-primary-500 border-2 border-primary-900 rounded-full"></div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1.5 flex-1 min-w-0">
                   <div className="flex items-center flex-wrap shrink min-w-0">
-                    <span className="font-bold text-[13px] sm:text-[14px] text-slate-900 truncate hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/profile/${parent.authorId}`); }}>
+                    <span className="font-bold text-[13px] sm:text-[14px] text-white truncate hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/profile/${parent.authorId}`); }}>
                       {parent.authorName}
                     </span>
-                    <span className="text-slate-400 text-[13px] mx-1 hidden sm:inline">·</span>
-                    <span className="text-[12px] sm:text-[13px] text-slate-500 truncate mt-0.5 sm:mt-0"><span className="sm:hidden mr-1">·</span>Patchwork</span>
+                    <span className="text-slate-600 text-[13px] mx-1 hidden sm:inline">·</span>
+                    <span className="text-[12px] sm:text-[13px] text-slate-400 truncate mt-0.5 sm:mt-0"><span className="sm:hidden mr-1">·</span>Patchwork</span>
                   </div>
                 </div>
               </div>
@@ -123,15 +123,15 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
                   <button 
                     onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === parent.id ? null : parent.id); }}
                     disabled={isDeleting === parent.id}
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-500/5 text-indigo-500 flex items-center justify-center hover:bg-indigo-500/10 transition-colors shrink-0"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-500/10 text-primary-400 flex items-center justify-center hover:bg-primary-500/20 transition-colors shrink-0"
                   >
-                    {isDeleting === parent.id ? <span className="w-4 h-4 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin block" /> : <MoreHorizontal className="w-4 h-4" />}
+                    {isDeleting === parent.id ? <span className="w-4 h-4 border-2 border-primary-400/30 border-t-primary-400 rounded-full animate-spin block" /> : <MoreHorizontal className="w-4 h-4" />}
                   </button>
                   {openDropdownId === parent.id && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }} />
-                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 min-w-[140px] flex flex-col items-stretch text-left">
-                        <button onClick={(e) => handleCopyLink(e, parent.id)} className="px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2"><Link2 className="w-4 h-4" /> Copy Link</button>
+                      <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg z-50 py-1 min-w-[140px] flex flex-col items-stretch text-left text-white">
+                        <button onClick={(e) => handleCopyLink(e, parent.id)} className="px-4 py-2 text-sm text-slate-300 hover:bg-white/5 text-left flex items-center gap-2"><Link2 className="w-4 h-4" /> Copy Link</button>
                         {user?.id === parent.authorId && (
                           <button 
                             onClick={(e) => { 
@@ -139,7 +139,7 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
                               setDeleteTarget({ id: parent.id, type: 'update' }); 
                               setOpenDropdownId(null); 
                             }} 
-                            className="px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 text-left flex items-center gap-2 w-full"
+                            className="px-4 py-2 text-sm text-rose-600 hover:bg-rose-500/10 text-left flex items-center gap-2 w-full"
                           >
                             <Trash2 className="w-4 h-4" /> Delete
                           </button>
@@ -154,20 +154,20 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
             <div className="pl-0 sm:pl-[52px] text-[14px] sm:text-[15px] mb-3 sm:mb-4">
               {parent.content && (
                 parent.content.includes("figma.com/") ? (
-                  <div className="my-2 rounded-[16px] overflow-hidden border border-slate-200/60 shadow-sm relative pointer-events-none">
+                  <div className="my-2 rounded-[16px] overflow-hidden border border-white/10 shadow-sm relative pointer-events-none">
                     <FigmaEmbed content={parent.content} />
                   </div>
                 ) : (
-                  <ReadMoreText content={parent.content} className="text-slate-800 leading-relaxed whitespace-pre-wrap break-words" />
+                  <ReadMoreText content={parent.content} className="text-slate-300 leading-relaxed whitespace-pre-wrap break-words" />
                 )
               )}
               {parent.mediaUrl && (
-                <div className="mt-3 rounded-[16px] overflow-hidden border border-slate-200/60 pointer-events-none">
+                <div className="mt-3 rounded-[16px] overflow-hidden border border-white/10 pointer-events-none">
                   <SmartImage src={parent.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" />
                 </div>
               )}
               {parent.codeSnippet && (
-                <div className="mt-3 rounded-[16px] overflow-hidden border border-slate-200/60 pointer-events-none">
+                <div className="mt-3 rounded-[16px] overflow-hidden border border-white/10 pointer-events-none">
                   <CodeSnippetBlock code={parent.codeSnippet} />
                 </div>
               )}
@@ -209,22 +209,22 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
 
         {/* 3. The Comment (Activity - Green Card) */}
         <div className="relative mb-4 sm:mb-6">
-          <div className="absolute left-[0px] top-[-10px] w-[16px] sm:w-[24px] h-[30px] border-l-2 border-b-2 border-indigo-200/50 rounded-bl-xl z-0" />
+          <div className="absolute left-[0px] top-[-10px] w-[16px] sm:w-[24px] h-[30px] border-l-2 border-b-2 border-primary-500/20 rounded-bl-xl z-0" />
 
-          <div className="ml-4 sm:ml-6 bg-green-50/50 border border-green-100 rounded-[20px] p-4 sm:p-5 hover:shadow-md transition-shadow relative z-10">
+          <div className="ml-4 sm:ml-6 bg-emerald-500/5 border border-emerald-500/20 rounded-[20px] p-4 sm:p-5 hover:shadow-md transition-shadow relative z-10">
             <div className="flex items-start justify-between gap-2 sm:gap-3 mb-3">
               <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                 <div className="relative shrink-0">
                   <UserAvatar userId={activity.authorId} name={activity.authorName} avatarUrl={activity.authorAvatar} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover" />
-                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-green-50 rounded-full"></div>
+                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 border-2 border-emerald-900 rounded-full"></div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1.5 flex-1 min-w-0">
                   <div className="flex items-center flex-wrap shrink min-w-0">
-                    <span className="font-bold text-[13px] sm:text-[14px] text-slate-900 truncate hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/profile/${activity.authorId}`); }}>
+                    <span className="font-bold text-[13px] sm:text-[14px] text-white truncate hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/profile/${activity.authorId}`); }}>
                       {activity.authorName}
                     </span>
-                    <span className="text-slate-400 text-[13px] mx-1 hidden sm:inline">·</span>
-                    <span className="text-[12px] sm:text-[13px] text-slate-500 truncate mt-0.5 sm:mt-0"><span className="sm:hidden mr-1">·</span>Patchwork</span>
+                    <span className="text-slate-600 text-[13px] mx-1 hidden sm:inline">·</span>
+                    <span className="text-[12px] sm:text-[13px] text-slate-400 truncate mt-0.5 sm:mt-0"><span className="sm:hidden mr-1">·</span>Patchwork</span>
                   </div>
                 </div>
               </div>
@@ -234,15 +234,15 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
                   <button 
                     onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === activity.id ? null : activity.id); }}
                     disabled={isDeleting === activity.id}
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center hover:bg-green-500/20 transition-colors shrink-0"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center hover:bg-emerald-500/20 transition-colors shrink-0"
                   >
-                    {isDeleting === activity.id ? <span className="w-4 h-4 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin block" /> : <MoreHorizontal className="w-4 h-4" />}
+                    {isDeleting === activity.id ? <span className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin block" /> : <MoreHorizontal className="w-4 h-4" />}
                   </button>
                   {openDropdownId === activity.id && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }} />
-                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 min-w-[140px] flex flex-col items-stretch text-left">
-                        <button onClick={(e) => handleCopyLink(e, activity.id)} className="px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2"><Link2 className="w-4 h-4" /> Copy Link</button>
+                      <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-lg z-50 py-1 min-w-[140px] flex flex-col items-stretch text-left text-white">
+                        <button onClick={(e) => handleCopyLink(e, activity.id)} className="px-4 py-2 text-sm text-slate-300 hover:bg-white/5 text-left flex items-center gap-2"><Link2 className="w-4 h-4" /> Copy Link</button>
                         {user?.id === activity.authorId && (
                           <button 
                             onClick={(e) => { 
@@ -250,7 +250,7 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
                               setDeleteTarget({ id: activity.id, type: 'reaction' }); 
                               setOpenDropdownId(null); 
                             }} 
-                            className="px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 text-left flex items-center gap-2 w-full"
+                            className="px-4 py-2 text-sm text-rose-600 hover:bg-rose-500/10 text-left flex items-center gap-2 w-full"
                           >
                             <Trash2 className="w-4 h-4" /> Delete
                           </button>
@@ -262,9 +262,9 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
               </div>
             </div>
 
-            <div className="pl-0 sm:pl-[52px] text-[14px] sm:text-[15px] mb-3 sm:mb-4 text-slate-800 leading-relaxed whitespace-pre-wrap">
+            <div className="pl-0 sm:pl-[52px] text-[14px] sm:text-[15px] mb-3 sm:mb-4 text-slate-300 leading-relaxed whitespace-pre-wrap">
               {activity.content.split(/(@\w+)/g).map((part, i) =>
-                part.startsWith('@') ? <span key={i} className="text-indigo-500 font-medium">{part}</span> : part
+                part.startsWith('@') ? <span key={i} className="text-primary-400 font-medium">{part}</span> : part
               )}
             </div>
 
@@ -304,10 +304,10 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
         </div>
 
         <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
-          <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-white border border-slate-200 sm:rounded-[24px]">
+          <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-[#111111] border border-white/10 sm:rounded-[24px] text-white">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-[20px] font-display font-bold">Delete {deleteTarget?.type === 'update' ? 'update' : 'reply'}?</AlertDialogTitle>
-              <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+              <AlertDialogDescription className="text-slate-400">This action cannot be undone.</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>

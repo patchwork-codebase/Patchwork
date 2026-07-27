@@ -18,7 +18,7 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     icon: <Hammer className="w-8 h-8" />,
-    accent: "#6C5CE7",
+    accent: "#FF5B22",
     tag: "Rooms",
     title: "Your build, out in the open",
     description:
@@ -140,7 +140,7 @@ export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTou
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 60, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            className="relative w-full sm:max-w-[480px] bg-white border border-slate-200 rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.15)]"
+            className="relative w-full sm:max-w-[480px] bg-[#111111] border border-white/10 rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.15)]"
           >
             {/* Accent gradient strip */}
             <motion.div
@@ -152,13 +152,13 @@ export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTou
 
             {/* Drag handle (mobile) */}
             <div className="flex justify-center pt-3 pb-0 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-slate-200" />
+              <div className="w-10 h-1 rounded-full bg-white/10" />
             </div>
 
             {/* Close button */}
             <button
               onClick={dismiss}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all z-10"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all z-10"
               aria-label="Close tour"
             >
               <X className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTou
                 >
                   {current.tag}
                 </span>
-                <span className="text-[11px] text-slate-600 font-mono">
+                <span className="text-[11px] text-slate-400 font-mono">
                   {slide + 1} / {SLIDES.length}
                 </span>
               </div>
@@ -206,20 +206,20 @@ export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTou
 
                     {/* Heading */}
                     {slide === 0 && (
-                      <p className="text-[11px] font-mono font-bold text-slate-500 uppercase tracking-[0.15em] mb-1">
+                      <p className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-[0.15em] mb-1">
                         Hey {firstName} 👋
                       </p>
                     )}
-                    <h2 className="text-[22px] sm:text-[24px] font-extrabold text-slate-900 leading-tight tracking-tight mb-3">
+                    <h2 className="text-[22px] sm:text-[24px] font-extrabold text-white leading-tight tracking-tight mb-3">
                       {current.title}
                     </h2>
-                    <p className="text-[14px] text-slate-600 leading-relaxed mb-5">
+                    <p className="text-[14px] text-slate-400 leading-relaxed mb-5">
                       {current.description}
                     </p>
 
                     {/* Tip */}
-                    <div className="mt-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-                      <p className="text-[12.5px] text-slate-600 leading-relaxed">{current.tip}</p>
+                    <div className="mt-auto bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3">
+                      <p className="text-[12.5px] text-slate-400 leading-relaxed">{current.tip}</p>
                     </div>
                   </motion.div>
                 </AnimatePresence>
@@ -230,7 +230,7 @@ export function WelcomeTour({ userId, userName, forceShow, onClose }: WelcomeTou
                 {/* Back or Skip */}
                 <button
                   onClick={slide === 0 ? dismiss : prev}
-                  className="text-[13px] font-bold text-slate-500 hover:text-slate-900 transition-colors px-1 py-2 min-w-[56px]"
+                  className="text-[13px] font-bold text-slate-400 hover:text-white transition-colors px-1 py-2 min-w-[56px]"
                 >
                   {slide === 0 ? "Skip" : "← Back"}
                 </button>

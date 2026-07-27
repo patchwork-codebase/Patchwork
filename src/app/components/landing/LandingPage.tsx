@@ -31,11 +31,18 @@ import {
   X
 } from "lucide-react";
 
-import { LandingHeroRedux } from "./LandingHeroRedux";
-import { LandingScrollTale } from "./LandingScrollTale";
-import { LandingNetworkShowcase } from "./LandingNetworkShowcase";
-import { LandingInteractiveCTA } from "./LandingInteractiveCTA";
+import { LandingHeroCapstone } from "./LandingHeroCapstone";
+import { LandingLiveFeedMockup } from "./LandingLiveFeedMockup";
+import { LandingTargetAudience } from "./LandingTargetAudience";
+import { LandingFeaturesCapstone } from "./LandingFeaturesCapstone";
+import { LandingWorkflowCapstone } from "./LandingWorkflowCapstone";
+import { LandingTestimonials } from "./LandingTestimonials";
+import { LandingFAQs } from "./LandingFAQs";
 import { LandingFooter } from "./LandingFooter";
+import { RecruiterHero } from "./RecruiterHero";
+import { RecruiterComparison } from "./RecruiterComparison";
+import { RecruiterArtifact } from "./RecruiterArtifact";
+import { RecruiterCTA } from "./RecruiterCTA";
 import { domainOptions, detailedRooms, showcaseBuilders, workflowSteps, faqs } from "../../constants/landingData";
 
 
@@ -44,6 +51,7 @@ export default function LandingPage() {
   const location = useLocation();
   const { user, profile, loading } = useAuth();
   const [screen, setScreen] = useState<"landing" | "onboarding" | "dashboard">("landing");
+  const [audience, setAudience] = useState<'builders' | 'observers'>('builders');
 
   // Auto-redirect if already logged in
   useEffect(() => {
@@ -209,62 +217,50 @@ export default function LandingPage() {
     <div className="min-h-screen text-slate-900 font-sans bg-gradient-to-br from-white via-sage-50 to-emerald-50 antialiased selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
       <AuthRedirectGuard />
       {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-6 sm:py-4">
           <div
             onClick={() => {
               showLanding();
               setMobileMenuOpen(false);
             }}
-            className="flex items-center gap-3 text-base sm:text-lg font-bold tracking-tight text-slate-900 cursor-pointer group"
+            className="flex items-center gap-3 text-lg font-bold tracking-tight text-slate-900 cursor-pointer group"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary-500 to-primary-400 shadow-[0_10px_30px_rgba(108,92,231,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] text-white">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 12L9 6 3 12l1.5 1.5L9 9l4.5 4.5L15 12Z" />
-                <path d="M15 12l4.5 4.5-1.5 1.5L13.5 13.5" />
-                <path d="M9 6l3-3 3 3" />
+                <path d="m15 12-8.373 8.373a1 1 0 1 1-1.414-1.414L13.586 10.586"/>
+                <path d="m18 13.4-9-9"/>
+                <path d="M12 4.4 14.6 2l3.4 3.4L15.6 8z"/>
+                <path d="M18.4 10.6 21 8l-3.4-3.4L15 7.2"/>
               </svg>
             </div>
-            <span className="flex items-center gap-2 font-extrabold tracking-[-0.03em] text-base sm:text-xl text-slate-900 group">
-              <span>patch<span className="inline-block text-primary-500 group-hover:animate-[spin_2s_linear_infinite]">·</span>work</span>
-              <span className="rounded bg-primary-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-400">Beta</span>
-            </span>
+            <span className="font-black text-[#0f172a] tracking-tight text-xl">patchwork</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-6">
-            <button
-              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
-            >
-              Why Patchwork
-            </button>
-            <button
-              onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
-            >
-              How it works
-            </button>
-            <button
-              onClick={() => document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
-            >
-              Showcase
-            </button>
-            <button
-              onClick={() => document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" })}
-              className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition"
-            >
-              FAQ
-            </button>
+          <div className="hidden md:flex items-center">
+            <div className="flex bg-[#111111] rounded-full p-0.5 border border-[#222222]">
+              <button 
+                onClick={() => setAudience('builders')}
+                className={`text-xs font-bold px-3.5 py-1 rounded-full shadow-sm transition ${audience === 'builders' ? 'text-white bg-black' : 'text-slate-400 hover:text-white bg-transparent'}`}
+              >
+                For builders
+              </button>
+              <button 
+                onClick={() => setAudience('observers')}
+                className={`text-xs font-bold px-3.5 py-1 rounded-full shadow-sm transition ${audience === 'observers' ? 'text-white bg-black' : 'text-slate-400 hover:text-white bg-transparent'}`}
+              >
+                For observers
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => {
                 navigate("/login");
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition"
+              className="hidden sm:inline-flex text-sm font-bold text-slate-600 hover:text-slate-900 transition"
             >
               Sign In
             </button>
@@ -273,118 +269,85 @@ export default function LandingPage() {
                 showOnboarding();
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex rounded-full bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-slate-800 active:scale-[0.98]"
+              className="hidden sm:inline-flex rounded-full bg-primary-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-primary-500/20 transition hover:bg-primary-600"
             >
-              Join as a builder
+              Use Patchwork
             </button>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(open => !open)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition sm:hidden"
-              aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition sm:hidden"
             >
               {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
             </button>
           </div>
         </div>
 
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-slate-200/50 bg-white px-4 pb-5 pt-4">
-            <div className="space-y-2.5">
-              {/* Primary CTA */}
-              <button
-                onClick={() => {
-                  showOnboarding();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 active:scale-[0.98]"
+          <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-xl p-4 sm:hidden flex flex-col gap-4 z-50">
+            <div className="flex flex-col gap-2 bg-[#111111] p-2 rounded-xl">
+              <button 
+                onClick={() => { setAudience('builders'); setMobileMenuOpen(false); }}
+                className={`text-sm font-bold px-4 py-2.5 rounded-lg transition text-left ${audience === 'builders' ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white'}`}
               >
-                Join as a builder
+                For builders
               </button>
-              <button
-                onClick={() => {
-                  navigate("/login");
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 hover:border-slate-300"
+              <button 
+                onClick={() => { setAudience('observers'); setMobileMenuOpen(false); }}
+                className={`text-sm font-bold px-4 py-2.5 rounded-lg transition text-left ${audience === 'observers' ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white'}`}
               >
-                Sign In
+                For observers
               </button>
-
-              {/* Nav links — clean, no box */}
-              <div className="pt-1">
-                <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">Explore</p>
-                <div className="space-y-0.5">
-                  <button
-                    onClick={() => {
-                      document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    Why Patchwork
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" });
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    How it works
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" });
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    Showcase
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" });
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition"
-                  >
-                    FAQ
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                  </button>
-                </div>
-              </div>
             </div>
+            <button
+              onClick={() => {
+                navigate("/login");
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-center text-sm font-bold text-slate-600 hover:text-slate-900 py-3.5 rounded-xl border border-slate-200"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => {
+                showOnboarding();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-center rounded-xl bg-primary-500 px-5 py-3.5 text-sm font-bold text-white shadow-md shadow-primary-500/20"
+            >
+              Use Patchwork
+            </button>
           </div>
         )}
       </header>
 
       {/* ─── MAIN CONTENT AREA ─────────────────────────────────────────── */}
       <main className="min-h-screen">
-        {screen === "landing" && (
+        {screen === "landing" && audience === "builders" && (
           <>
-            {/* ─── Chapter 1: The Hook (Void -> Light) ──────────────────────────── */}
-            <LandingHeroRedux onSignup={showOnboarding} />
-
-            {/* ─── Chapter 2: The Journey (Scroll-Telling) ──────────────────────────── */}
-            <LandingScrollTale />
-
-            {/* ─── Chapter 3: The Network (Interactive Honeycomb) ──────────────────────── */}
-            <LandingNetworkShowcase />
-
-            {/* ─── Chapter 4: The Climax (Expanding Orb CTA) ────────────────────────────────────── */}
-            <LandingInteractiveCTA onSignup={showOnboarding} />
-
-            {/* ─── Premium Footer ──────────────────────────────────────────────── */}
+            <LandingHeroCapstone onSignup={showOnboarding} />
+            <LandingLiveFeedMockup />
+            <LandingTargetAudience />
+            <LandingFeaturesCapstone />
+            <LandingWorkflowCapstone />
+            <LandingTestimonials />
+            <LandingFAQs />
             <LandingFooter 
               newsletterEmail={newsletterEmail}
               setNewsletterEmail={setNewsletterEmail}
               newsletterSent={newsletterSent}
               handleNewsletterSubmit={handleNewsletterSubmit}
             />
+          </>
+        )}
+
+        {screen === "landing" && audience === "observers" && (
+          <>
+            <RecruiterHero />
+            <RecruiterComparison />
+            <RecruiterArtifact />
+            <RecruiterCTA />
           </>
         )}
 
@@ -687,7 +650,7 @@ export default function LandingPage() {
                       <p className="mt-1.5 text-xs text-slate-600">Write what's actually happening in your build right now — a design scrapped, a bug solved, or a decision made.</p>
                     </div>
 
-                    <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4.5 text-xs text-purple-200/90 leading-relaxed">
+                    <div className="rounded-xl border border-primary-500/20 bg-primary-500/5 p-4.5 text-xs text-primary-200/90 leading-relaxed">
                       💡 <strong>Good updates:</strong> a decision you just made and why · something you thought would work but didn't · the hardest open query in your build.
                     </div>
 
@@ -862,10 +825,10 @@ export default function LandingPage() {
 
                   {/* Post Today's Update CTA */}
                   <div className="rounded-[24px] bg-gradient-to-tr from-primary-500 to-[#4A3DB8] p-6 space-y-3 text-slate-900">
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-purple-200">
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-primary-200">
                       POST TODAY'S UPDATE
                     </div>
-                    <p className="text-xs text-purple-100/90 leading-relaxed">
+                    <p className="text-xs text-primary-100/90 leading-relaxed">
                       Last update: 2 days ago. Your active observers are watching. Keep momentum high.
                     </p>
                     <button className="w-full rounded-full bg-white/10 hover:bg-white/15 px-4 py-2.5 text-xs font-bold text-slate-900 transition border border-slate-200">

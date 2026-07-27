@@ -17,7 +17,7 @@ export function BadgeCard({ badge, userBadge, className = '' }: BadgeCardProps) 
     slate: 'from-slate-400 to-slate-600 border-slate-500/30 text-slate-700',
     blue: 'from-blue-400 to-blue-600 border-blue-500/30 text-blue-700',
     indigo: 'from-indigo-400 to-indigo-600 border-indigo-500/30 text-indigo-700',
-    purple: 'from-purple-400 to-purple-600 border-purple-500/30 text-purple-700',
+    purple: 'from-primary-400 to-primary-600 border-primary-500/30 text-primary-700',
     emerald: 'from-emerald-400 to-emerald-600 border-emerald-500/30 text-emerald-700',
     amber: 'from-amber-400 to-amber-600 border-amber-500/30 text-amber-700',
     orange: 'from-orange-400 to-orange-600 border-orange-500/30 text-orange-700',

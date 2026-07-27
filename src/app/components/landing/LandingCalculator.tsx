@@ -100,10 +100,10 @@ export function LandingCalculator({
                       <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                         Est. Reputation Score
                       </div>
-                      <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-purple-300 tracking-tight my-4">
+                      <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-primary-300 tracking-tight my-4">
                         {calculateReputation()}
                       </div>
-                      <div className="inline-flex items-center gap-1.5 mx-auto rounded-full bg-purple-500/10 border border-purple-500/20 px-3 py-1 text-[10px] font-semibold text-primary-400">
+                      <div className="inline-flex items-center gap-1.5 mx-auto rounded-full bg-primary-500/10 border border-primary-500/20 px-3 py-1 text-[10px] font-semibold text-primary-400">
                         <Award className="h-3.5 w-3.5" />
                         <span>Domain Rep Level 1</span>
                       </div>

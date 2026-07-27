@@ -121,7 +121,7 @@ export function ObserverProgressionPanel() {
       {/* Sleek, Compact Sidebar Card */}
       <div className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-ring" tabIndex={0}>
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-4 h-4 text-purple-400" />
+          <Sparkles className="w-4 h-4 text-primary-400" />
           <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-widest font-mono">Progression Pathways</h3>
         </div>
 
@@ -129,7 +129,7 @@ export function ObserverProgressionPanel() {
           {/* Pathway 1: Become a Builder */}
           {showBuilder && (
             <div className="flex items-start gap-3 pb-3.5 border-b border-slate-50 last:border-0 last:pb-0">
-              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-500 shrink-0 mt-0.5">
                 <Hammer className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
@@ -137,7 +137,7 @@ export function ObserverProgressionPanel() {
                   <span className="text-[13px] font-bold text-slate-900 leading-tight">Become a Builder</span>
                   <button
                     onClick={() => setBuilderModalOpen(true)}
-                    className="px-2.5 py-1 text-[11px] font-bold bg-purple-550 hover:bg-purple-650 text-white rounded-md transition-colors"
+                    className="px-2.5 py-1 text-[11px] font-bold bg-primary-550 hover:bg-primary-650 text-white rounded-md transition-colors"
                   >
                     Upgrade
                   </button>
@@ -210,7 +210,7 @@ export function ObserverProgressionPanel() {
               
               <div className="mb-6">
                 <h3 className="text-xl font-extrabold text-white font-display flex items-center gap-2">
-                  <Hammer className="w-5 h-5 text-purple-400" /> Upgrade to Builder
+                  <Hammer className="w-5 h-5 text-primary-400" /> Upgrade to Builder
                 </h3>
                 <p className="text-xs text-slate-400 mt-1">Select your builder track to activate your Builder Dashboard.</p>
               </div>
@@ -224,7 +224,7 @@ export function ObserverProgressionPanel() {
                       onClick={() => setSelectedTrack(track.value)}
                       className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                         isSelected 
-                          ? 'border-purple-400 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                          ? 'border-primary-400 bg-primary-500/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
                           : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
                       }`}
                     >
@@ -246,7 +246,7 @@ export function ObserverProgressionPanel() {
                 <button
                   onClick={handleUpgradeToBuilder}
                   disabled={upgrading || !selectedTrack}
-                  className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-2.5 bg-primary-600 hover:bg-primary-500 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {upgrading ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Upgrading...</>

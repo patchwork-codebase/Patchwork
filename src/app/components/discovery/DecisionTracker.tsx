@@ -180,7 +180,7 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
                 onClick={() => setDecisionType('need_more_research')}
                 className={`w-full flex items-center gap-3 p-3.5 border rounded-xl text-left transition-all ${
                   decisionType === 'need_more_research'
-                    ? 'border-primary-400 bg-[#6C5CE7]/5 text-primary-400 shadow-sm'
+                    ? 'border-primary-400 bg-[#FF5B22]/5 text-primary-400 shadow-sm'
                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >

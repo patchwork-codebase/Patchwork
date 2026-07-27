@@ -585,7 +585,7 @@ export default function RoomLogPage() {
               const typeMap: Record<string, { label: string; color: string; bg: string; border: string }> = {
                 decision: { label: 'DECISION', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
                 scrapped:  { label: 'SCRAPPED',  color: 'text-rose-700',  bg: 'bg-rose-50',  border: 'border-rose-200' },
-                blocker:   { label: 'BLOCKER',   color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200' },
+                blocker:   { label: 'BLOCKER',   color: 'text-primary-700', bg: 'bg-primary-50', border: 'border-primary-200' },
                 shipped:   { label: 'SHIPPED',   color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
               };
               const t = typeMap[d.type || 'decision'] || typeMap['decision'];

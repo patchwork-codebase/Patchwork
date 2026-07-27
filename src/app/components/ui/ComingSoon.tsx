@@ -31,7 +31,7 @@ export function ComingSoon({
   features,
 }: ComingSoonProps) {
   return (
-    <div className="relative bg-[#FAFAF9] flex flex-col items-center justify-center px-4 py-16" style={{ zoom: 0.9 }}>
+    <div className="relative bg-transparent flex flex-col items-center justify-center px-4 py-16" style={{ zoom: 0.9 }}>
 
       {/* Floating background orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
@@ -125,7 +125,7 @@ export function ComingSoon({
 
         {/* Title */}
         <motion.h1
-          className="text-[32px] sm:text-[40px] font-extrabold text-slate-900 leading-tight tracking-tight mb-4"
+          className="text-[32px] sm:text-[40px] font-extrabold text-white leading-tight tracking-tight mb-4"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -135,7 +135,7 @@ export function ComingSoon({
 
         {/* Subtitle */}
         <motion.p
-          className="text-[15px] text-slate-500 leading-relaxed max-w-md mx-auto mb-14"
+          className="text-[15px] text-slate-400 leading-relaxed max-w-md mx-auto mb-14"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -150,9 +150,9 @@ export function ComingSoon({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-slate-800" />
           <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">What to expect</span>
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-slate-800" />
         </motion.div>
 
         {/* Feature cards */}
@@ -160,7 +160,7 @@ export function ComingSoon({
           {features.map((feature, i) => (
             <motion.div
               key={feature.title}
-              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
+              className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:bg-slate-800/80 transition-all duration-200 group"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 + i * 0.1, type: 'spring', stiffness: 180, damping: 20 }}
@@ -173,8 +173,8 @@ export function ComingSoon({
                   {feature.icon}
                 </div>
               </div>
-              <h3 className="text-[13px] font-bold text-slate-800 mb-1.5">{feature.title}</h3>
-              <p className="text-[12px] text-slate-500 leading-relaxed">{feature.description}</p>
+              <h3 className="text-[13px] font-bold text-slate-100 mb-1.5">{feature.title}</h3>
+              <p className="text-[12px] text-slate-400 leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </div>

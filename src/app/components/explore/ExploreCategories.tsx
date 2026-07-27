@@ -17,7 +17,7 @@ export function ExploreCategories({ categories, selected, onSelect }: ExploreCat
               className={`px-5 py-2.5 rounded-full text-[13px] font-bold tracking-wide transition-all duration-200 active:scale-95 ${
                 isSelected
                   ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900"
+                  : "bg-transparent text-slate-400 border border-slate-800 hover:bg-slate-800/50 hover:border-slate-700 hover:text-slate-100"
               }`}
             >
               {category}

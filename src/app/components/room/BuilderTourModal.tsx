@@ -38,7 +38,7 @@ const TOUR_STEPS = [
     icon: GitBranch,
     title: 'GitHub & Linear Webhook Sync',
     badge: 'Step 3 of 5',
-    color: 'from-purple-500 to-pink-600',
+    color: 'from-primary-500 to-pink-600',
     description: 'Automate your update feed. Connect GitHub repositories or Linear teams via 1-click webhook URLs to stream live commits and shipped issue updates.',
     tips: [
       'Click Webhooks in the room header to copy your payload URL',

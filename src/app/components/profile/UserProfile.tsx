@@ -291,8 +291,8 @@ export default function UserProfile() {
                   <div className="text-[10px] sm:text-[11px] font-medium text-slate-500">Create & Plan</div>
                 </div>
             </Link>
-            <Link to="/dashboard/explore" className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-[20px] bg-slate-50/80 backdrop-blur-sm border border-slate-200/60 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 hover:border-purple-200 hover:bg-white transition-all text-center">
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+            <Link to="/dashboard/explore" className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-[20px] bg-slate-50/80 backdrop-blur-sm border border-slate-200/60 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 hover:border-primary-200 hover:bg-white transition-all text-center">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500" />
                 <div>
                   <div className="font-extrabold text-[13px] sm:text-[14px] text-slate-900 mt-1">Explore</div>
                   <div className="text-[10px] sm:text-[11px] font-medium text-slate-500">Discover Ideas</div>

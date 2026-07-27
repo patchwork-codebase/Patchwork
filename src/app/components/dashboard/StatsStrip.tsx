@@ -59,119 +59,119 @@ export function StatsStrip({
 
   const stats = isObserver
     ? [
-        {
-          label: 'followed rooms',
-          value: observerStats?.roomsFollowed ?? 0,
-          delta: 'tracking progress',
-          deltaColor: 'text-primary-600',
-          deltaBg: 'bg-primary-50',
-          deltaBorder: 'border-primary-100',
-          numColor: 'text-slate-900',
-          icon: Bookmark,
-          iconColor: 'text-primary-400',
-          loading: observerStatsLoading,
-        },
-        {
-          label: 'reactions given',
-          value: observerStats?.totalReactions ?? 0,
-          delta: 'insights shared',
-          deltaColor: 'text-amber-600',
-          deltaBg: 'bg-amber-50',
-          deltaBorder: 'border-amber-100',
-          numColor: 'text-slate-900',
-          icon: MessageSquare,
-          iconColor: 'text-amber-400',
-          loading: observerStatsLoading,
-        },
-        {
-          label: 'sharp critiques',
-          value: observerStats?.sharpInsights ?? 0,
-          delta: '⚡ high signal',
-          deltaColor: 'text-purple-600',
-          deltaBg: 'bg-purple-50',
-          deltaBorder: 'border-purple-100',
-          numColor: 'text-slate-900',
-          icon: Zap,
-          iconColor: 'text-purple-400',
-          loading: observerStatsLoading,
-        },
-        {
-          label: 'shipped products',
-          value: observerStats?.shippedProducts ?? 0,
-          delta: 'witnessed launches',
-          deltaColor: 'text-emerald-600',
-          deltaBg: 'bg-emerald-50',
-          deltaBorder: 'border-emerald-100',
-          numColor: 'text-slate-900',
-          icon: Rocket,
-          iconColor: 'text-emerald-400',
-          loading: observerStatsLoading,
-        },
-      ]
+      {
+        label: 'followed rooms',
+        value: observerStats?.roomsFollowed ?? 0,
+        delta: 'tracking progress',
+        deltaColor: 'text-primary-600',
+        deltaBg: 'bg-primary-50',
+        deltaBorder: 'border-primary-100',
+        numColor: 'text-slate-100',
+        icon: Bookmark,
+        iconColor: 'text-primary-400',
+        loading: observerStatsLoading,
+      },
+      {
+        label: 'reactions given',
+        value: observerStats?.totalReactions ?? 0,
+        delta: 'insights shared',
+        deltaColor: 'text-amber-600',
+        deltaBg: 'bg-amber-50',
+        deltaBorder: 'border-amber-100',
+        numColor: 'text-slate-100',
+        icon: MessageSquare,
+        iconColor: 'text-amber-400',
+        loading: observerStatsLoading,
+      },
+      {
+        label: 'sharp critiques',
+        value: observerStats?.sharpInsights ?? 0,
+        delta: '⚡ high signal',
+        deltaColor: 'text-primary-600',
+        deltaBg: 'bg-primary-50',
+        deltaBorder: 'border-primary-100',
+        numColor: 'text-slate-100',
+        icon: Zap,
+        iconColor: 'text-primary-400',
+        loading: observerStatsLoading,
+      },
+      {
+        label: 'shipped products',
+        value: observerStats?.shippedProducts ?? 0,
+        delta: 'witnessed launches',
+        deltaColor: 'text-emerald-600',
+        deltaBg: 'bg-emerald-50',
+        deltaBorder: 'border-emerald-100',
+        numColor: 'text-slate-100',
+        icon: Rocket,
+        iconColor: 'text-emerald-400',
+        loading: observerStatsLoading,
+      },
+    ]
     : [
-        {
-          label: 'active rooms',
-          value: activeRoomsCount,
-          delta: activeRoomsDelta,
-          deltaColor: 'text-emerald-600',
-          deltaBg: 'bg-emerald-50',
-          deltaBorder: 'border-emerald-100',
-          numColor: 'text-slate-900',
-          icon: Activity,
-          iconColor: 'text-primary-500',
-          loading: myRoomsLoading,
-        },
-        {
-          label: 'total reactions',
-          value: totalReactions,
-          delta: reactionsDelta,
-          deltaColor: 'text-amber-600',
-          deltaBg: 'bg-amber-50',
-          deltaBorder: 'border-amber-100',
-          numColor: 'text-slate-900',
-          icon: MessageSquare,
-          iconColor: 'text-amber-500',
-          loading: reactionsLoading,
-        },
-        {
-          label: 'observers',
-          value: totalObservers,
-          delta: observersDelta,
-          deltaColor: 'text-emerald-600',
-          deltaBg: 'bg-emerald-50',
-          deltaBorder: 'border-emerald-100',
-          numColor: 'text-slate-900',
-          icon: Users,
-          iconColor: 'text-emerald-500',
-          loading: myRoomsLoading || observersLoading,
-        },
-        {
-          label: 'build logs',
-          value: totalBuildLogs,
-          delta: buildLogsDelta,
-          deltaColor: 'text-slate-600',
-          deltaBg: 'bg-slate-100',
-          deltaBorder: 'border-slate-200',
-          numColor: 'text-slate-900',
-          icon: FileText,
-          iconColor: 'text-slate-400',
-          loading: myRoomsLoading,
-        },
-      ];
+      {
+        label: 'active rooms',
+        value: activeRoomsCount,
+        delta: activeRoomsDelta,
+        deltaColor: 'text-emerald-600',
+        deltaBg: 'bg-emerald-50',
+        deltaBorder: 'border-emerald-100',
+        numColor: 'text-slate-100',
+        icon: Activity,
+        iconColor: 'text-primary-500',
+        loading: myRoomsLoading,
+      },
+      {
+        label: 'total reactions',
+        value: totalReactions,
+        delta: reactionsDelta,
+        deltaColor: 'text-amber-600',
+        deltaBg: 'bg-amber-50',
+        deltaBorder: 'border-amber-100',
+        numColor: 'text-slate-100',
+        icon: MessageSquare,
+        iconColor: 'text-amber-500',
+        loading: reactionsLoading,
+      },
+      {
+        label: 'observers',
+        value: totalObservers,
+        delta: observersDelta,
+        deltaColor: 'text-emerald-600',
+        deltaBg: 'bg-emerald-50',
+        deltaBorder: 'border-emerald-100',
+        numColor: 'text-slate-100',
+        icon: Users,
+        iconColor: 'text-emerald-500',
+        loading: myRoomsLoading || observersLoading,
+      },
+      {
+        label: 'build logs',
+        value: totalBuildLogs,
+        delta: buildLogsDelta,
+        deltaColor: 'text-slate-600',
+        deltaBg: 'bg-slate-100',
+        deltaBorder: 'border-slate-200',
+        numColor: 'text-slate-100',
+        icon: FileText,
+        iconColor: 'text-slate-400',
+        loading: myRoomsLoading,
+      },
+    ];
 
   return (
     <div className="h-fit self-start flex overflow-x-auto snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 sm:overflow-visible pb-2 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {stats.map((s, i) => (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.05 }}
-          key={s.label} 
-          className="bg-white border border-slate-200 rounded-[20px] p-5 flex min-h-[140px] flex-col justify-between group hover:border-primary-200 hover:shadow-md transition-all cursor-default min-w-[160px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring relative overflow-hidden"
+          key={s.label}
+          className="bg-transparent border border-slate-800 rounded-[20px] p-5 flex min-h-[140px] flex-col justify-between group hover:border-slate-700 hover:shadow-md transition-all cursor-default min-w-[160px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring relative overflow-hidden"
           tabIndex={0}
         >
           {/* Subtle background gradient on hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
           {s.loading ? (
             <div className="flex flex-col gap-3 w-full relative z-10">

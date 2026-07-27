@@ -72,11 +72,11 @@ export function DashboardOverview({
             </div>
           </div>
 
-          <h2 className="text-[22px] sm:text-[26px] font-extrabold text-slate-900 mb-3 leading-tight">
+          <h2 className="text-[22px] sm:text-[26px] font-extrabold text-white mb-3 leading-tight">
             You haven't built anything publicly yet
           </h2>
-          <p className="text-[14px] sm:text-[15px] text-slate-500 leading-relaxed max-w-[400px] mb-8">
-            Create your first <strong className="text-slate-700">Room</strong> to start sharing your work. Rooms are your public build space — where ideas become progress, and progress attracts observers.
+          <p className="text-[14px] sm:text-[15px] text-slate-400 leading-relaxed max-w-[400px] mb-8">
+            Create your first <strong className="text-white">Room</strong> to start sharing your work. Rooms are your public build space — where ideas become progress, and progress attracts observers.
           </p>
 
           {/* CTA */}
@@ -104,7 +104,7 @@ export function DashboardOverview({
               { label: "Reactions given", value: "48k+" },
             ].map(stat => (
               <div key={stat.label}>
-                <p className="text-[18px] font-extrabold text-slate-900">{stat.value}</p>
+                <p className="text-[18px] font-extrabold text-white">{stat.value}</p>
                 <p className="text-[11px] text-slate-400 font-medium">{stat.label}</p>
               </div>
             ))}

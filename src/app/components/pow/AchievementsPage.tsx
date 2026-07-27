@@ -126,14 +126,14 @@ export default function AchievementsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-slate-50 relative">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-transparent relative">
       {/* Background ambient glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-teal-400/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="max-w-6xl mx-auto p-4 md:p-8 lg:p-12 relative z-10">
         <div className="mb-12">
-          <h1 className="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">Achievements</h1>
-          <p className="text-slate-600 max-w-2xl text-[15px] leading-relaxed">
+          <h1 className="text-3xl font-extrabold text-slate-100 mb-4 tracking-tight">Achievements</h1>
+          <p className="text-slate-400 max-w-2xl text-[15px] leading-relaxed">
             Your verified achievements in the global community can help you get recognized 
             and stand out at your workplace.
           </p>
@@ -143,16 +143,16 @@ export default function AchievementsPage() {
           
           {/* Left Column: Milestones */}
           <div className="lg:col-span-7">
-            <h2 className="text-[20px] font-bold text-slate-900 mb-6 font-display">Builder Milestones</h2>
+            <h2 className="text-[20px] font-bold text-slate-100 mb-6 font-display">Builder Milestones</h2>
             
             <div className="space-y-4">
               {earnedMilestones.length > 0 ? earnedMilestones.map((ub) => (
-                <div key={ub.id} className="bg-white/80 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:bg-white transition-all duration-300">
+                <div key={ub.id} className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:bg-slate-800 transition-all duration-300">
                   <HexagonSVG completed={true} number={getBadge(ub)?.points_required ? Math.floor(getBadge(ub).points_required / 50) : 1} />
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-slate-900 text-[15px]">{getBadge(ub)?.title}</h3>
-                    <p className="text-slate-500 text-[13px] mt-0.5 mb-2">{getBadge(ub)?.description}</p>
+                    <h3 className="font-bold text-slate-100 text-[15px]">{getBadge(ub)?.title}</h3>
+                    <p className="text-slate-400 text-[13px] mt-0.5 mb-2">{getBadge(ub)?.description}</p>
                     <Link to={`/credentials/${ub.id}`} className="text-[12px] font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1 group w-max">
                       See credentials <ArrowUpRight className="w-3.5 h-3.5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
@@ -167,8 +167,8 @@ export default function AchievementsPage() {
                   </div>
                 </div>
               )) : (
-                <div className="bg-white/50 backdrop-blur-md border border-white rounded-3xl p-8 text-center shadow-sm">
-                   <p className="text-slate-500 text-[14px]">You haven't earned any builder milestones yet. Keep participating in builds!</p>
+                <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-3xl p-8 text-center shadow-sm">
+                   <p className="text-slate-400 text-[14px]">You haven't earned any builder milestones yet. Keep participating in builds!</p>
                 </div>
               )}
               
@@ -177,27 +177,27 @@ export default function AchievementsPage() {
                 const progressPercent = Math.min(100, Math.round((currentPoints / (badge.points_required || 1)) * 100));
                 
                 return (
-                <div key={`locked-${badge.id}`} className="bg-white/60 backdrop-blur-md border border-slate-200/60 shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:bg-white/80">
+                <div key={`locked-${badge.id}`} className="bg-slate-800/60 backdrop-blur-md border border-slate-700 shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all hover:bg-slate-800/80">
                   <div className="opacity-50 grayscale shrink-0">
                     <HexagonSVG completed={false} isUpcoming={true} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <h3 className="font-bold text-slate-900 text-[15px]">{badge.title}</h3>
-                      <span className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md inline-flex items-center gap-1">
+                      <h3 className="font-bold text-slate-100 text-[15px]">{badge.title}</h3>
+                      <span className="text-[11px] font-bold text-slate-400 bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-md inline-flex items-center gap-1">
                         <Lock className="w-3 h-3" /> Locked
                       </span>
                     </div>
-                    <p className="text-slate-500 text-[13px] mb-3">{badge.description}</p>
+                    <p className="text-slate-400 text-[13px] mb-3">{badge.description}</p>
                     
-                    <div className="w-full bg-slate-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                    <div className="w-full bg-slate-700 rounded-full h-2 mb-1.5 overflow-hidden">
                       <div className="bg-blue-400 h-2 rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
                     </div>
                     <div className="flex justify-between items-center text-[11.5px]">
-                      <span className="text-slate-500 font-medium">Progress</span>
-                      <span className="text-slate-700 font-bold">{currentPoints} / {badge.points_required} pts</span>
+                      <span className="text-slate-400 font-medium">Progress</span>
+                      <span className="text-slate-300 font-bold">{currentPoints} / {badge.points_required} pts</span>
                     </div>
-                    <p className="text-[11.5px] text-slate-400 mt-2 italic border-t border-slate-100 pt-2">
+                    <p className="text-[11.5px] text-slate-400 mt-2 italic border-t border-slate-700 pt-2">
                       💡 How to earn: Build consistently, attend sessions, and get endorsed.
                     </p>
                   </div>
@@ -205,11 +205,11 @@ export default function AchievementsPage() {
               )})}
 
               {nextLevel && (
-                <div className="bg-white/50 backdrop-blur-md border border-white shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 opacity-70 grayscale transition-all">
+                <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 shadow-sm rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 opacity-70 grayscale transition-all">
                     <HexagonSVG completed={false} isUpcoming={true} />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-slate-900 text-[15px]">Reach {nextLevel.title} level</h3>
-                      <p className="text-slate-500 text-[13px] mt-0.5">Upcoming milestone • {nextLevel.points_required} points required</p>
+                      <h3 className="font-bold text-slate-100 text-[15px]">Reach {nextLevel.title} level</h3>
+                      <p className="text-slate-400 text-[13px] mt-0.5">Upcoming milestone • {nextLevel.points_required} points required</p>
                     </div>
                 </div>
               )}
@@ -219,7 +219,7 @@ export default function AchievementsPage() {
 
           {/* Right Column: Community Recognition */}
           <div className="lg:col-span-5">
-            <h2 className="text-[20px] font-bold text-slate-900 mb-6 font-display">Community Recognition</h2>
+            <h2 className="text-[20px] font-bold text-slate-100 mb-6 font-display">Community Recognition</h2>
             
             <div className="bg-gradient-to-br from-teal-900 to-emerald-950 rounded-3xl p-5 md:p-8 shadow-[0_20px_40px_rgba(20,184,166,0.15)] border border-teal-800/50 mb-8 relative overflow-hidden group hover:shadow-[0_20px_50px_rgba(20,184,166,0.25)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/20 rounded-full blur-[60px] pointer-events-none group-hover:scale-110 transition-transform duration-700" />
@@ -242,16 +242,16 @@ export default function AchievementsPage() {
 
             <div className="flex flex-col gap-4">
               {earnedRecognitions.map((ub) => (
-                <div key={ub.id} className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-5 hover:shadow-md transition-all duration-300">
+                <div key={ub.id} className="bg-slate-800/80 rounded-[20px] p-4 shadow-sm border border-slate-700 flex flex-col sm:flex-row sm:items-center gap-5 hover:shadow-md transition-all duration-300">
                   <div className="shrink-0 flex items-center justify-center mx-auto sm:mx-0">
                      <RecognitionBadgeSVG title={getBadge(ub)?.title || ''} />
                   </div>
-                  <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-100 sm:pl-5">
-                     <h3 className="text-[17px] font-bold text-slate-900 mb-0.5 tracking-tight">{getBadge(ub)?.title}</h3>
-                     <p className="text-slate-500 text-[13.5px] mb-2 leading-relaxed">{getBadge(ub)?.description}</p>
+                  <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-700 sm:pl-5">
+                     <h3 className="text-[17px] font-bold text-slate-100 mb-0.5 tracking-tight">{getBadge(ub)?.title}</h3>
+                     <p className="text-slate-400 text-[13.5px] mb-2 leading-relaxed">{getBadge(ub)?.description}</p>
                      
-                     <div className="flex items-center justify-center sm:justify-start gap-4 mt-4 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
-                       <div className="text-[11px] font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                     <div className="flex items-center justify-center sm:justify-start gap-4 mt-4 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-700">
+                       <div className="text-[11px] font-bold text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full">
                          {ub.issued_at && !isNaN(new Date(ub.issued_at).getTime()) ? new Date(ub.issued_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'Recently'}
                        </div>
                        <Link to={`/credentials/${ub.id}`} className="text-[12px] font-bold text-teal-600 hover:text-teal-700 flex items-center group leading-tight">
@@ -263,8 +263,8 @@ export default function AchievementsPage() {
               ))}
 
               {earnedRecognitions.length === 0 && lockedRecognitions.length === 0 && (
-                <div className="bg-white/50 backdrop-blur-md border border-white rounded-3xl p-6 text-center shadow-sm">
-                   <p className="text-slate-500 text-[13px]">Community recognition badges will appear here once earned.</p>
+                <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-3xl p-6 text-center shadow-sm">
+                   <p className="text-slate-400 text-[13px]">Community recognition badges will appear here once earned.</p>
                 </div>
               )}
 
@@ -273,27 +273,27 @@ export default function AchievementsPage() {
                 const progressPercent = Math.min(100, Math.round((currentPoints / (badge.points_required || 1)) * 100));
 
                 return (
-                <div key={`locked-${badge.id}`} className="bg-white/80 backdrop-blur-md rounded-[20px] p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-5 transition-all hover:shadow-md hover:bg-white">
+                <div key={`locked-${badge.id}`} className="bg-slate-800/80 backdrop-blur-md rounded-[20px] p-5 shadow-sm border border-slate-700 flex flex-col sm:flex-row sm:items-center gap-5 transition-all hover:shadow-md hover:bg-slate-800">
                   <div className="shrink-0 flex items-center justify-center mx-auto sm:mx-0 opacity-50 grayscale">
                      <RecognitionBadgeSVG title={badge.title} />
                   </div>
-                  <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-100 sm:pl-5">
+                  <div className="flex-1 text-center sm:text-left sm:border-l sm:border-slate-700 sm:pl-5">
                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2">
-                       <h3 className="text-[17px] font-bold text-slate-900 tracking-tight">{badge.title}</h3>
-                       <div className="inline-flex items-center justify-center gap-1.5 bg-slate-100/80 text-slate-500 px-3 py-1 rounded-full text-[12px] font-bold">
+                       <h3 className="text-[17px] font-bold text-slate-100 tracking-tight">{badge.title}</h3>
+                       <div className="inline-flex items-center justify-center gap-1.5 bg-slate-700 text-slate-400 px-3 py-1 rounded-full text-[12px] font-bold">
                          <Lock className="w-3 h-3" /> Locked
                        </div>
                      </div>
-                     <p className="text-slate-500 text-[13.5px] mb-3 leading-relaxed">{badge.description}</p>
+                     <p className="text-slate-400 text-[13.5px] mb-3 leading-relaxed">{badge.description}</p>
                      
-                     <div className="w-full bg-slate-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                     <div className="w-full bg-slate-700 rounded-full h-2 mb-1.5 overflow-hidden">
                        <div className="bg-teal-400 h-2 rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
                      </div>
                      <div className="flex justify-between items-center text-[11.5px] mb-2">
-                       <span className="text-slate-500 font-medium">Progress</span>
-                       <span className="text-slate-700 font-bold">{currentPoints} / {badge.points_required} pts</span>
+                       <span className="text-slate-400 font-medium">Progress</span>
+                       <span className="text-slate-300 font-bold">{currentPoints} / {badge.points_required} pts</span>
                      </div>
-                     <p className="text-[11.5px] text-slate-400 mt-2 italic border-t border-slate-100 pt-2 text-left">
+                     <p className="text-[11.5px] text-slate-400 mt-2 italic border-t border-slate-700 pt-2 text-left">
                        💡 How to earn: Stand out in the community, share knowledge, and lead rooms.
                      </p>
                   </div>

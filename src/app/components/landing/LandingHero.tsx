@@ -199,7 +199,7 @@ export function LandingHero({
             className="relative mx-auto max-w-5xl"
           >
             {/* Outer Glow */}
-            <div className="absolute -inset-1 rounded-[24px] bg-gradient-to-tr from-primary-500/40 via-purple-500/20 to-primary-400/40 blur-xl opacity-60 pointer-events-none" />
+            <div className="absolute -inset-1 rounded-[24px] bg-gradient-to-tr from-primary-500/40 via-primary-500/20 to-primary-400/40 blur-xl opacity-60 pointer-events-none" />
 
             {/* Application Window */}
             <div className="relative overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-2xl">

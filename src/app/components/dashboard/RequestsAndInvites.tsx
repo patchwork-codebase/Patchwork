@@ -125,32 +125,32 @@ export function RequestsAndInvites() {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[20px] overflow-hidden shadow-sm mb-6">
-      <div className="bg-slate-50 border-b border-slate-200 px-5 py-4">
-        <h2 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+    <div className="bg-[#111111] border border-white/10 rounded-[20px] overflow-hidden shadow-sm mb-6">
+      <div className="bg-white/5 border-b border-white/10 px-5 py-4">
+        <h2 className="text-[15px] font-bold text-white flex items-center gap-2">
           <Inbox className="w-4 h-4 text-primary-400" /> Pending Requests & Invites
         </h2>
       </div>
       
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-white/10">
         {joinRequests.map(req => (
-          <div key={req.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-slate-50/50">
+          <div key={req.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-white/5">
             <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
               <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 mt-1 sm:mt-0">
                 <UserPlus className="w-5 h-5 text-amber-500" />
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] sm:text-[14px] text-slate-900 leading-snug">
+                <p className="text-[13px] sm:text-[14px] text-white leading-snug">
                   <span className="font-bold">{req.users?.email || 'Someone'}</span> wants to join <Link to={`/dashboard/room/${req.room_id}`} className="font-bold hover:underline">{req.rooms?.title}</Link>
                 </p>
-                <p className="text-[12px] text-slate-500 font-mono mt-1">{timeAgo(req.created_at)}</p>
+                <p className="text-[12px] text-slate-400 font-mono mt-1">{timeAgo(req.created_at)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 sm:self-auto self-end">
               <button
                 onClick={() => handleReviewRequest(req.id, 'declined')}
                 disabled={actionLoading === req.id}
-                className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors disabled:opacity-50"
                 title="Decline"
               >
                 <X className="w-4 h-4" />
@@ -168,18 +168,18 @@ export function RequestsAndInvites() {
         ))}
 
         {invitations.map(inv => (
-          <div key={inv.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-slate-50/50">
+          <div key={inv.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-white/5">
             <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
               <div className="w-10 h-10 rounded-full bg-primary-400/10 flex items-center justify-center shrink-0 mt-1 sm:mt-0">
                 <span className="text-[18px]">💌</span>
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] sm:text-[14px] text-slate-900 leading-snug">
+                <p className="text-[13px] sm:text-[14px] text-white leading-snug">
                   <span className="font-bold truncate inline-block max-w-full align-bottom">{inv.rooms?.builder_name}</span> invited you to collaborate on <span className="font-bold">{inv.rooms?.title}</span>
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Role: {inv.role}</span>
-                  <span className="text-[12px] text-slate-500 font-mono">{timeAgo(inv.created_at)}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-slate-400">Role: {inv.role}</span>
+                  <span className="text-[12px] text-slate-400 font-mono">{timeAgo(inv.created_at)}</span>
                 </div>
               </div>
             </div>
@@ -187,7 +187,7 @@ export function RequestsAndInvites() {
               <button
                 onClick={() => handleDeclineInvite(inv.id)}
                 disabled={actionLoading === inv.id}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[12px] font-bold transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-400 hover:bg-white/10 text-[12px] font-bold transition-colors disabled:opacity-50"
               >
                 Decline
               </button>

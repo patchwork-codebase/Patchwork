@@ -16,7 +16,7 @@ export const detailedRooms = [
     domain: "product",
     status: "Live",
     dayCount: 12,
-    color: "#6C5CE7",
+    color: "#FF5B22",
     badge: "product",
     initials: "MF",
     location: "Lagos, Nigeria",
@@ -38,7 +38,7 @@ export const detailedRooms = [
       }
     ],
     observers: [
-      { initials: "TN", name: "Tobi N.", visits: "8 visits", bg: "#F0EEFF", color: "#6C5CE7" },
+      { initials: "TN", name: "Tobi N.", visits: "8 visits", bg: "#F0EEFF", color: "#FF5B22" },
       { initials: "FO", name: "Funmi O.", visits: "5 visits", bg: "#E8F5E9", color: "#2E7D32" },
       { initials: "AI", name: "Ade I.", visits: "3 visits", bg: "#FFF8E1", color: "#F57F17" },
       { initials: "PM", name: "Priya M.", visits: "2 visits", bg: "#FFF0F3", color: "#C2185B" }
@@ -68,7 +68,7 @@ export const detailedRooms = [
     ],
     observers: [
       { initials: "PM", name: "Priya M.", visits: "12 visits", bg: "#FFF0F3", color: "#C2185B" },
-      { initials: "TN", name: "Tobi N.", visits: "4 visits", bg: "#F0EEFF", color: "#6C5CE7" },
+      { initials: "TN", name: "Tobi N.", visits: "4 visits", bg: "#F0EEFF", color: "#FF5B22" },
       { initials: "KM", name: "Kofi M.", visits: "2 visits", bg: "#E3F2FD", color: "#1E88E5" }
     ]
   },

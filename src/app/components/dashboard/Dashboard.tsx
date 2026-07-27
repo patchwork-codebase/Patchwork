@@ -216,7 +216,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
         {/* Left: avatar + identity */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
+          <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-[#1a1a1a] border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
             <UserAvatar 
               userId={user?.id || ''} 
               name={profile?.name || user?.email}
@@ -226,8 +226,8 @@ export default function Dashboard() {
           </div>
           <div className="min-w-0 flex-1">
             {/* Greeting + name — single truncating line */}
-            <h1 className="font-bold text-[16px] sm:text-[24px] text-slate-900 leading-snug tracking-tight m-0 flex items-center gap-2">
-              <span className="truncate">{greeting}, <span className="text-primary-400">{firstName}</span></span>
+            <h1 className="font-bold text-[16px] sm:text-[24px] text-white leading-snug tracking-tight m-0 flex items-center gap-2">
+              <span className="truncate">{greeting}, <span className="text-primary-500">{firstName}</span></span>
               <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-3.5 h-3.5 sm:w-5 sm:h-5 shrink-0" />
               <motion.span 
                 className="shrink-0 text-[20px] sm:text-[28px] inline-block origin-bottom-right cursor-pointer"
@@ -264,7 +264,7 @@ export default function Dashboard() {
                 </span>
               )}
               {isObserver ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-primary-500/20 bg-primary-500/10 text-primary-400 text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0">
                   <Eye className="w-2.5 h-2.5" /> Observer
                 </span>
               ) : (
@@ -282,11 +282,11 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/dashboard/notifications"
-            className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-white hover:bg-slate-50 border border-slate-100 rounded-full text-slate-600 transition-all shadow-sm focus-ring"
+            className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-[#111111] hover:bg-white/5 border border-white/10 rounded-full text-slate-400 transition-all shadow-sm focus-ring"
           >
             <Bell className="w-[15px] h-[15px] sm:w-[18px] sm:h-[18px]" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 bg-primary-500 rounded-full ring-2 ring-[#0a0a0a]" />
             )}
           </Link>
           {!isObserver && (
@@ -318,7 +318,7 @@ export default function Dashboard() {
 
       {/* INLINE TEXT TABS */}
       <div className="relative">
-        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-200 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-white/10 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
           {[
             { key: 'overview' as const, label: 'Overview' },
             { key: 'feed' as const, label: 'Global timeline' },
@@ -329,15 +329,15 @@ export default function Dashboard() {
                 key={tab.key}
                 onClick={() => setTab(tab.key)}
                 className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-ring whitespace-nowrap snap-start active:scale-95 ${isCurrent
-                    ? 'text-slate-900'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-t-lg'
+                    ? 'text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 rounded-t-lg'
                   }`}
               >
                 {tab.label}
                 {isCurrent && (
                   <motion.div
                     layoutId="tab-indicator"
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-primary-400 rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-primary-500 rounded-t-full shadow-[0_0_8px_rgba(139,124,248,0.5)]"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
@@ -345,7 +345,7 @@ export default function Dashboard() {
             );
           })}
         </div>
-        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none sm:hidden" />
+        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none sm:hidden" />
       </div>
 
       {/* MAIN COLUMNS GRID */}

@@ -239,13 +239,13 @@ export default function ObserverDashboardView({
               </div>
               <div className="min-w-0">
                 <div className={`font-bold text-[22px] sm:text-[28px] tracking-tight leading-none ${s.color}`}>{s.value}</div>
-                <div className="text-[10px] sm:text-[11px] text-slate-500 lowercase mt-0.5 font-mono font-medium leading-tight">{s.label}</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-400 lowercase mt-0.5 font-mono font-medium leading-tight">{s.label}</div>
                 <div className={`text-[10px] font-bold mt-0.5 hidden sm:block ${s.deltaColor}`}>{s.delta}</div>
               </div>
             </>
           );
 
-          const baseClasses = "bg-white border border-slate-200 rounded-[14px] p-4 flex items-center gap-3 shadow-sm shrink-0 snap-start w-[160px] sm:w-auto sm:flex-col sm:items-start sm:justify-between sm:min-h-[110px] sm:p-5";
+          const baseClasses = "bg-transparent border border-slate-800 rounded-[14px] p-4 flex items-center gap-3 shadow-sm shrink-0 snap-start w-[160px] sm:w-auto sm:flex-col sm:items-start sm:justify-between sm:min-h-[110px] sm:p-5";
           
           if (s.label === "Followed rooms") {
             return (

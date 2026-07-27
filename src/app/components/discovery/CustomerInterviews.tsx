@@ -263,7 +263,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                       onClick={() => setSelectedInterview(i)}
                       className={`group border rounded-2xl p-4 cursor-pointer transition-all ${
                         isSelected 
-                          ? 'border-primary-400 bg-[#6C5CE7]/5 shadow-sm' 
+                          ? 'border-primary-400 bg-[#FF5B22]/5 shadow-sm' 
                           : 'border-slate-200 bg-white hover:border-primary-400/45 hover:shadow-sm'
                       }`}
                     >

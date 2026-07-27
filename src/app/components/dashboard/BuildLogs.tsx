@@ -67,10 +67,10 @@ export default function BuildLogs() {
       {/* Header + metrics */}
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 m-0 mb-1 font-display tracking-tight leading-tight">
+          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-100 m-0 mb-1 font-display tracking-tight leading-tight">
             {isObserver ? 'Build logs' : 'Build logs'}
           </h2>
-          <p className="text-[13px] text-slate-500 m-0 font-medium">
+          <p className="text-[13px] text-slate-400 m-0 font-medium">
             {isObserver
               ? 'Active, shipped, and completed builds across Patchwork.'
               : 'Compiled histories of your completed, in-progress, and stalled rooms.'}
@@ -83,7 +83,7 @@ export default function BuildLogs() {
             { label: "Completed", count: completedRooms.length, color: "text-primary-400", dot: "bg-primary-400" },
             { label: "Stalled", count: stalledRooms.length, color: "text-rose-500", dot: "bg-rose-500" },
           ].map(m => (
-            <div key={m.label} className="bg-white border border-slate-200 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-4 text-center shadow-sm">
+            <div key={m.label} className="bg-transparent border border-slate-800 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-4 text-center shadow-sm">
               <div className={`text-[18px] sm:text-[24px] font-black font-display leading-none ${m.color}`}>{m.count}</div>
               <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-1.5 sm:mt-2">
                 <span className={`w-1.5 h-1.5 rounded-full ${m.dot}`} />
@@ -102,8 +102,8 @@ export default function BuildLogs() {
             onClick={() => setBuildLogFilter(f)}
             className={`px-4 sm:px-5 py-2.5 min-h-[44px] sm:min-h-auto rounded-full text-[13px] sm:text-[14px] font-bold capitalize transition-all snap-start active:scale-95 border focus-ring ${
               buildLogFilter === f
-                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                : 'bg-white text-slate-500 border-slate-200 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-slate-800 text-white border-slate-700 shadow-sm'
+                : 'bg-transparent text-slate-400 border-slate-700 hover:text-slate-200 hover:bg-slate-800/50'
             }`}
           >
             {f === "all" ? "All logs" : f}

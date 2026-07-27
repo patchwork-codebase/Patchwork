@@ -79,6 +79,10 @@ export const router = createBrowserRouter([
         lazy: () => import("./components/auth/OnboardingWizard").then(m => ({ Component: m.default })),
       },
       {
+        path: "/u/:username",
+        lazy: () => import("./components/portfolio/BuilderPortfolioView").then(m => ({ Component: m.BuilderPortfolioView })),
+      },
+      {
         path: "/onbaording",
         loader: () => redirect("/onboarding"),
       },

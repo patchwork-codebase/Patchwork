@@ -18,7 +18,7 @@ interface RoomCardProps {
 
 // Stable gradient palette based on room id
 const GRADIENTS = [
-  "from-indigo-500/20 via-purple-500/20 to-pink-500/20",
+  "from-indigo-500/20 via-primary-500/20 to-pink-500/20",
   "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
   "from-rose-500/20 via-red-500/20 to-orange-500/20",
   "from-blue-500/20 via-indigo-500/20 to-violet-500/20",
@@ -43,7 +43,7 @@ export function RoomCard({ room }: RoomCardProps) {
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => navigate(`/dashboard/room/${room.id}`)}
-      className="group bg-white/60 backdrop-blur-md border border-white/40 hover:border-primary-400/50 rounded-[32px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/10 hover:bg-white/80 relative overflow-hidden"
+      className="group bg-slate-800/40 backdrop-blur-md border border-slate-700 hover:border-primary-400/50 rounded-[32px] flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-400/10 hover:bg-slate-800/60 relative overflow-hidden"
     >
       {/* Cover Banner */}
       <div
@@ -66,7 +66,7 @@ export function RoomCard({ room }: RoomCardProps) {
           {(room.tags ?? ["product"]).slice(0, 2).map((tag, idx) => (
             <span
               key={idx}
-              className="bg-white/90 backdrop-blur-md text-slate-900 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm"
+              className="bg-slate-800/90 backdrop-blur-md text-slate-100 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm"
             >
               {tag}
             </span>
@@ -76,8 +76,8 @@ export function RoomCard({ room }: RoomCardProps) {
 
       {/* Builder Avatar overlapping the banner */}
       <div className="px-6 relative">
-        <div className="absolute -top-6 left-6 p-1 bg-white rounded-2xl shadow-sm z-10">
-          <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 relative">
+        <div className="absolute -top-6 left-6 p-1 bg-slate-900 rounded-2xl shadow-sm z-10">
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 relative">
             <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-full h-full object-cover" />
           </div>
         </div>
@@ -86,13 +86,13 @@ export function RoomCard({ room }: RoomCardProps) {
       {/* Card Body */}
       <div className="px-6 pt-8 pb-6 flex flex-col flex-1">
         <div className="mb-3">
-          <h3 className="text-slate-900 font-extrabold text-[18px] group-hover:text-primary-400 transition-colors line-clamp-1 font-display">
+          <h3 className="text-slate-100 font-extrabold text-[18px] group-hover:text-primary-400 transition-colors line-clamp-1 font-display">
             {room.title}
           </h3>
           <div className="flex flex-col mt-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-500 text-[13px] font-medium">by</span>
-              <span className="text-slate-700 text-[13px] font-bold group-hover:underline">
+              <span className="text-slate-400 text-[13px] font-medium">by</span>
+              <span className="text-slate-300 text-[13px] font-bold group-hover:underline">
                 {room.builderName}
               </span>
               {!room.builderOrgName && (
@@ -110,15 +110,15 @@ export function RoomCard({ room }: RoomCardProps) {
           </div>
         </div>
 
-        <p className="text-[14px] leading-relaxed text-slate-600 mb-6 line-clamp-2">
+        <p className="text-[14px] leading-relaxed text-slate-400 mb-6 line-clamp-2">
           {room.description || "No description provided."}
         </p>
 
-        <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-100">
+        <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-700">
           <div className="flex items-center gap-4">
             {/* Last updated */}
-            <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
-              <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center">
+            <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-400">
+              <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
               </div>
               <span>{timeAgo(room.updatedAt)}</span>

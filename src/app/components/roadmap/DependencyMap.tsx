@@ -163,7 +163,7 @@ export function DependencyMap() {
                       return (
                         <div key={dep.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-all group hover:pl-4">
                           <div className="flex items-center gap-3.5">
-                            <span className={`w-2 h-2 rounded-full shadow-sm ${blocker.status === 'completed' ? 'bg-purple-500 shadow-purple-500/40' : blocker.status === 'now' ? 'bg-emerald-500 shadow-emerald-500/40' : blocker.status === 'next' ? 'bg-amber-500 shadow-amber-500/40' : 'bg-slate-300 shadow-slate-300/40'}`} />
+                            <span className={`w-2 h-2 rounded-full shadow-sm ${blocker.status === 'completed' ? 'bg-primary-500 shadow-primary-500/40' : blocker.status === 'now' ? 'bg-emerald-500 shadow-emerald-500/40' : blocker.status === 'next' ? 'bg-amber-500 shadow-amber-500/40' : 'bg-slate-300 shadow-slate-300/40'}`} />
                             <span className={`text-[14px] font-medium transition-colors ${blocker.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-700 group-hover:text-slate-900'}`}>
                               {blocker.title}
                             </span>

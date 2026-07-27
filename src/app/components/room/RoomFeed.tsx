@@ -206,12 +206,11 @@ export function RoomFeed({
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <div className="text-[11px] text-slate-500 font-mono font-medium tracking-wide">{timeAgo(update.createdAt)}</div>
-                      {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType] && (
+                      {update.updateType && update.updateType !== 'general' && (
                         <>
-                          <span className="text-slate-300">•</span>
-                          <div className={`px-2 py-0.5 rounded text-[10px] font-bold border ${UPDATE_TYPE_UI[update.updateType].color} flex items-center gap-1`}>
-                            <span>{UPDATE_TYPE_UI[update.updateType].icon}</span>
-                            {UPDATE_TYPE_UI[update.updateType].label}
+                          <div className={`px-2 py-0.5 rounded text-[10px] font-bold border ${UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.color || 'bg-slate-100 text-slate-700 border-slate-200'} flex items-center gap-1`}>
+                            <span>{UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.icon || '📌'}</span>
+                            {UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.label || update.updateType}
                           </div>
                         </>
                       )}

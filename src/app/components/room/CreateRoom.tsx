@@ -189,7 +189,7 @@ export default function CreateRoom() {
         <div className="bg-[#15131C] border border-white/[0.08] rounded-[32px] p-8 sm:p-12 text-center max-w-lg w-full backdrop-blur-md relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <div className="absolute top-0 right-0 p-32 bg-primary-500/10 rounded-full blur-[80px] pointer-events-none -z-10" />
           
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-400/20 flex items-center justify-center text-purple-400 mx-auto mb-4 animate-pulse">
+          <div className="w-12 h-12 rounded-2xl bg-primary-500/10 border border-primary-400/20 flex items-center justify-center text-primary-400 mx-auto mb-4 animate-pulse">
             <Hammer className="w-6 h-6" />
           </div>
 
@@ -207,7 +207,7 @@ export default function CreateRoom() {
                   onClick={() => setSelectedTrack(track.value)}
                   className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     isSelected 
-                      ? 'border-purple-400 bg-purple-500/10 shadow-[0_0_10px_rgba(168,85,247,0.15)]'
+                      ? 'border-primary-400 bg-primary-500/10 shadow-[0_0_10px_rgba(168,85,247,0.15)]'
                       : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
                   }`}
                 >
@@ -226,7 +226,7 @@ export default function CreateRoom() {
             <button
               onClick={handleUpgradeToBuilder}
               disabled={upgrading || !selectedTrack}
-              className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-3 bg-primary-600 hover:bg-primary-500 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
             >
               {upgrading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Upgrading...</>

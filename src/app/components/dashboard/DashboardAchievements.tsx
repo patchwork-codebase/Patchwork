@@ -40,7 +40,7 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
       rose: { main: "#fb7185", light: "#fecdd3", dark: "#e11d48", bg: "from-rose-50 to-rose-100", ring: "ring-rose-200" },
       pink: { main: "#f472b6", light: "#fbcfe8", dark: "#db2777", bg: "from-pink-50 to-pink-100", ring: "ring-pink-200" },
       indigo: { main: "#818cf8", light: "#c7d2fe", dark: "#4f46e5", bg: "from-indigo-50 to-indigo-100", ring: "ring-indigo-200" },
-      purple: { main: "#a855f7", light: "#e9d5ff", dark: "#7e22ce", bg: "from-purple-50 to-purple-100", ring: "ring-purple-200" },
+      purple: { main: "#a855f7", light: "#e9d5ff", dark: "#7e22ce", bg: "from-primary-50 to-primary-100", ring: "ring-primary-200" },
       emerald: { main: "#34d399", light: "#a7f3d0", dark: "#059669", bg: "from-emerald-50 to-emerald-100", ring: "ring-emerald-200" },
       amber: { main: "#fbbf24", light: "#fde68a", dark: "#d97706", bg: "from-amber-50 to-amber-100", ring: "ring-amber-200" },
       blue: { main: "#60a5fa", light: "#bfdbfe", dark: "#2563eb", bg: "from-blue-50 to-blue-100", ring: "ring-blue-200" },
@@ -103,17 +103,17 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 mb-8 flex flex-col font-sans">
+    <div className="bg-[#111111] border border-white/10 rounded-3xl shadow-sm p-6 mb-8 flex flex-col font-sans">
       
       {/* Top Section */}
       <div className="flex justify-between items-center mb-5">
-        <h3 className="text-lg font-bold text-slate-900">Achievements</h3>
+        <h3 className="text-lg font-bold text-white">Achievements</h3>
         <Link to="/dashboard/achievements" className="text-teal-600 font-bold hover:text-teal-700 text-[13px] flex items-center gap-1 group">
           View all <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
-      <h4 className="text-[14px] font-bold text-slate-900 mb-4 tracking-tight uppercase text-slate-400">Milestones in progress</h4>
+      <h4 className="text-[14px] font-bold text-slate-400 mb-4 tracking-tight uppercase">Milestones in progress</h4>
 
       <div className="flex flex-col gap-3 mb-6">
         {nextLevels.map((lvl) => {
@@ -121,27 +121,27 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
           const progress = Math.min(100, Math.max(0, (currentReputation / lvl.points_required) * 100));
           
           return (
-            <div key={lvl.id} className="group flex flex-col p-4 rounded-2xl border border-slate-100 bg-white hover:border-slate-200 transition-all shadow-sm hover:shadow-md">
+            <div key={lvl.id} className="group flex flex-col p-4 rounded-2xl border border-white/10 bg-[#1a1a1a] hover:border-white/20 transition-all shadow-sm hover:shadow-md">
               <div className="flex justify-between items-center mb-4">
                  <div className="flex items-center gap-4">
                    <PremiumBadgeSVG points={lvl.points_required} colorTheme={lvl.color_theme || 'blue'} completed={isCompleted} />
                    <div className="flex items-center gap-2 relative group/tooltip">
-                     <span className="font-black text-slate-900 text-[17px] tracking-tight cursor-default">{lvl.title}</span>
-                     <Info className="w-4 h-4 text-slate-300 cursor-help hover:text-slate-500 transition-colors" />
+                     <span className="font-black text-white text-[17px] tracking-tight cursor-default">{lvl.title}</span>
+                     <Info className="w-4 h-4 text-slate-300 cursor-help hover:text-slate-400 transition-colors" />
                      
-                     <div className="absolute bottom-full left-0 mb-2 w-56 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 bg-slate-900 text-white text-[12px] p-3 rounded-xl shadow-xl z-20 pointer-events-none translate-y-1 group-hover/tooltip:translate-y-0">
-                       <div className="absolute -bottom-1 left-6 w-3 h-3 bg-slate-900 rotate-45"></div>
+                     <div className="absolute bottom-full left-0 mb-2 w-56 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 bg-black text-slate-300 text-[12px] p-3 rounded-xl shadow-xl z-20 pointer-events-none translate-y-1 group-hover/tooltip:translate-y-0">
+                       <div className="absolute -bottom-1 left-6 w-3 h-3 bg-black rotate-45"></div>
                        {lvl.description || `Earn ${lvl.points_required} points to unlock this milestone.`}
                      </div>
                    </div>
                  </div>
-                 <div className="text-[12px] font-black text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
+                 <div className="text-[12px] font-black text-indigo-300 bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 shadow-sm">
                    {Math.min(currentReputation, lvl.points_required)} <span className="text-indigo-400 font-bold">/ {lvl.points_required}</span>
                  </div>
               </div>
-              <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+              <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden shadow-inner">
                 <div 
-                  className={`h-full rounded-full transition-all duration-1000 ease-out relative ${isCompleted ? 'bg-emerald-400' : 'bg-gradient-to-r from-rose-400 via-purple-500 to-indigo-500 shadow-[0_0_12px_rgba(168,85,247,0.6)]'}`}
+                  className={`h-full rounded-full transition-all duration-1000 ease-out relative ${isCompleted ? 'bg-emerald-400' : 'bg-gradient-to-r from-rose-400 via-primary-500 to-indigo-500 shadow-[0_0_12px_rgba(168,85,247,0.6)]'}`}
                   style={{ width: `${progress}%` }}
                 >
                   <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse"></div>
@@ -152,19 +152,19 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
         })}
         
         {nextLevels.length === 0 && (
-          <p className="text-slate-500 text-sm italic text-center py-4">You have completed all current milestones!</p>
+          <p className="text-slate-400 text-sm italic text-center py-4">You have completed all current milestones!</p>
         )}
       </div>
 
-      <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-        <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+        <div className="w-12 h-12 rounded-xl bg-[#1a1a1a] shadow-sm border border-white/10 flex items-center justify-center shrink-0">
            <Award className={`w-6 h-6 ${awardsCount > 0 ? 'text-amber-500 fill-amber-100' : 'text-slate-300'}`} />
         </div>
         <div className="flex-1">
-          <p className="text-slate-900 font-bold text-[15px] leading-tight mb-0.5">
+          <p className="text-white font-bold text-[15px] leading-tight mb-0.5">
             {awardsCount > 0 ? `You achieved ${awardsCount} awards` : "No awards yet"}
           </p>
-          <p className="text-slate-500 text-[13px] leading-tight">Keep building to unlock more</p>
+          <p className="text-slate-400 text-[13px] leading-tight">Keep building to unlock more</p>
         </div>
       </div>
 

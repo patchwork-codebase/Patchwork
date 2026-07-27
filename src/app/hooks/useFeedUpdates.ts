@@ -16,6 +16,9 @@ export interface FeedUpdate {
   mediaUrl?: string;
   codeSnippet?: string;
   updateType?: string;
+  decisionMatrix?: any;
+  diffData?: any;
+  metricWin?: any;
   createdAt: string;
   rooms?: {
     title: string;

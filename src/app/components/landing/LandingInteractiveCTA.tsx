@@ -27,7 +27,7 @@ export function LandingInteractiveCTA({ onSignup }: LandingInteractiveCTAProps) 
         
         {/* The Expanding Orb */}
         <motion.div 
-          className="absolute w-[100px] h-[100px] rounded-full bg-gradient-to-tr from-primary-600 via-indigo-500 to-purple-500"
+          className="absolute w-[100px] h-[100px] rounded-full bg-gradient-to-tr from-primary-600 via-indigo-500 to-primary-500"
           style={{ scale: orbScale }}
         />
 

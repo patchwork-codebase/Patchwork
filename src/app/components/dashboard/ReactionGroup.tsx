@@ -73,9 +73,9 @@ export function ReactionGroup({
   const replyCount = targetUpdate.replies?.length || 0;
 
   const reactionConfig = {
-    sharp: { icon: '✦', activeColor: 'text-primary-500', activeBg: 'bg-primary-50' },
-    pushback: { icon: '↩', activeColor: 'text-rose-500', activeBg: 'bg-rose-50' },
-    tellmemore: { icon: '?', activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50' },
+    sharp: { icon: '✦', activeColor: 'text-primary-500', activeBg: 'bg-primary-500/20' },
+    pushback: { icon: '↩', activeColor: 'text-rose-500', activeBg: 'bg-rose-500/20' },
+    tellmemore: { icon: '?', activeColor: 'text-emerald-500', activeBg: 'bg-emerald-500/20' },
   };
 
   return (
@@ -101,18 +101,18 @@ export function ReactionGroup({
               e.stopPropagation(); 
               handleToggleReaction(type); 
             }}
-            className={`flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-white shadow-xs border active:scale-95 cursor-pointer ${
+            className={`flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-[#1a1a1a] shadow-xs border active:scale-95 cursor-pointer ${
               isActive 
-                ? 'border-primary-300 bg-primary-50/50 text-primary-700 shadow-primary-500/10' 
-                : 'border-slate-200/80 hover:border-slate-300 text-slate-600 hover:bg-slate-50/60'
+                ? 'border-primary-500 bg-primary-500/10 text-primary-400 shadow-primary-500/10' 
+                : 'border-white/10 hover:border-white/20 text-slate-400 hover:bg-white/5'
             }`}
           >
             <div className={`w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-              isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-slate-100/80 text-slate-500 group-hover:bg-slate-200/70 group-hover:text-slate-700'
+              isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-white/5 text-slate-500 group-hover:bg-white/10 group-hover:text-white'
             }`}>
                <span className="text-[12px] font-bold leading-none mb-[0.5px]">{config.icon}</span>
             </div>
-            {count > 0 && <span className={`ml-1.5 text-[12px] font-bold ${isActive ? 'text-primary-700' : 'text-slate-600'}`}>{count}</span>}
+            {count > 0 && <span className={`ml-1.5 text-[12px] font-bold ${isActive ? 'text-primary-400' : 'text-slate-400'}`}>{count}</span>}
           </button>
         );
       })}
@@ -120,12 +120,12 @@ export function ReactionGroup({
       {showReplyButton && (
         <button 
           onClick={(e) => { e.stopPropagation(); onReplyClick?.(e); }}
-          className="flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-white shadow-xs border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60 active:scale-95 cursor-pointer ml-0.5"
+          className="flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-[#1a1a1a] shadow-xs border border-white/10 hover:border-white/20 hover:bg-white/5 active:scale-95 cursor-pointer ml-0.5"
         >
-          <div className="w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
+          <div className="w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 bg-white/5 text-slate-500 group-hover:bg-primary-500/20 group-hover:text-primary-400">
             <MessageCircle className="w-3.5 h-3.5" strokeWidth={2} />
           </div>
-          {replyCount > 0 && <span className="ml-1.5 text-[12px] font-bold text-slate-600 group-hover:text-indigo-600">{replyCount}</span>}
+          {replyCount > 0 && <span className="ml-1.5 text-[12px] font-bold text-slate-400 group-hover:text-primary-400">{replyCount}</span>}
         </button>
       )}
     </div>

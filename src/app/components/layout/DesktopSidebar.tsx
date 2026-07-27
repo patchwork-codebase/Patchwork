@@ -9,7 +9,7 @@ const NavItem = ({ to, icon, label, active, badge }: any) => (
   <Link
     to={to}
     className={`relative flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition mb-1 border border-transparent focus-ring ${
-      active ? 'text-primary-500 font-bold' : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-50'
+      active ? 'text-primary-500 font-bold' : 'text-slate-400 font-medium hover:text-white hover:bg-white/5'
     }`}
   >
     {active && (
@@ -24,7 +24,7 @@ const NavItem = ({ to, icon, label, active, badge }: any) => (
       {label}
     </div>
     {badge !== undefined && (
-      <span className="relative z-10 text-[10px] font-mono font-bold bg-white shadow-sm border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded-full">
+      <span className="relative z-10 text-[10px] font-mono font-bold bg-[#1a1a1a] shadow-sm border border-white/10 text-slate-300 px-1.5 py-0.5 rounded-full">
         {badge}
       </span>
     )}
@@ -66,7 +66,7 @@ export function DesktopSidebar({
   // Observer sidebar uses the same white sidebar shell as builders, with observer-specific nav items
   if (isObserver) {
     return (
-      <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 backdrop-blur-xl border-r border-white/40 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0a0a0a]/90 backdrop-blur-md border-r border-white/5 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.2)]">
 
         <nav className="p-5 flex-1 overflow-y-auto custom-scrollbar">
 
@@ -89,27 +89,27 @@ export function DesktopSidebar({
           <NavItem to="/dashboard/observer" icon={<ActivityIcon />} label="My reactions" active={activeSection === 'observer'} badge={stats?.totalReactions ?? 0} />
 
           <div className="mt-8 px-3 flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
-            <Link to="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
+            <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
             <span>·</span>
-            <Link to="/terms" className="hover:text-slate-900 transition">Terms of Service</Link>
+            <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
           </div>
         </nav>
 
         {/* Profile card at the very bottom */}
-        <div className="border-t border-white/40 p-4 bg-white/30">
+        <div className="border-t border-white/5 p-4 bg-[#111111]">
           <div className="relative z-50">
             <button
               onClick={() => setProfileMenuOpen(o => !o)}
               className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
             >
-              <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                 <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover scale-110" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-bold text-slate-900 truncate">{userDisplayName}</div>
-                <div className="text-[10px] text-purple-500 mt-0.5 font-mono font-bold truncate uppercase">Observer</div>
+                <div className="text-[13px] font-bold text-white truncate">{userDisplayName}</div>
+                <div className="text-[10px] text-primary-500 mt-0.5 font-mono font-bold truncate uppercase">Observer</div>
               </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-slate-700 transition">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-white transition">
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
@@ -123,38 +123,38 @@ export function DesktopSidebar({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    style={{ backgroundColor: '#ffffff' }}
-                    className="absolute bottom-full left-0 right-0 mb-2 border border-slate-200 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                    style={{ backgroundColor: '#1a1a1a' }}
+                    className="absolute bottom-full left-0 right-0 mb-2 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]"
                   >
-                    <div className="p-3 border-b border-slate-100">
-                      <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
+                    <div className="p-3 border-b border-white/5">
+                      <div className="text-[12px] font-bold text-white">{profile?.name}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">
                         {profile?.email || user.email}
                       </div>
                     </div>
                     <Link
                       to={`/dashboard/profile/${user.id}`}
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/5 hover:text-white transition"
                     >
                       <UserIcon /> Profile
                     </Link>
                     <Link
                       to="/dashboard/discovery"
                       onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/5 hover:text-white transition"
                     >
                       <LightbulbIcon /> Discovery Mode
                     </Link>
                     <button
                       onClick={() => { setProfileMenuOpen(false); setForceShowTour(true); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/5 hover:text-white transition text-left"
                     >
                       <CompassIcon /> Replay Tour
                     </button>
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 transition text-left"
                     >
                       <LogOutIcon /> Sign out
                     </button>
@@ -169,7 +169,7 @@ export function DesktopSidebar({
   }
 
   return (
-        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-white/40 backdrop-blur-xl border-r border-white/40 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside className="hidden lg:flex w-[210px] min-w-[210px] bg-[#0a0a0a]/90 backdrop-blur-md border-r border-white/5 flex-col sticky top-[60px] h-[calc(100vh-60px)] self-start z-30 shadow-[4px_0_24px_rgba(0,0,0,0.2)]">
 
           <nav className="p-5 flex-1 overflow-y-auto custom-scrollbar">
 
@@ -231,25 +231,25 @@ export function DesktopSidebar({
           </nav>
 
           {/* Profile card at the very bottom */}
-          <div className="border-t border-white/40 p-4 bg-white/30">
+          <div className="border-t border-white/5 p-4 bg-[#111111]">
             <div className="relative z-50">
               <button
                 onClick={() => setProfileMenuOpen(o => !o)}
                 className="w-full flex items-center gap-3 py-1.5 bg-transparent border-none cursor-pointer text-left group hover:opacity-80 transition"
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                   <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover scale-110" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-slate-900 truncate">
+                  <div className="text-[13px] font-bold text-white truncate">
                     {userDisplayName}
                   </div>
-                <div className="text-[10px] text-slate-500 mt-0.5 truncate">
+                <div className="text-[10px] text-slate-400 mt-0.5 truncate">
                     {[profile?.domain, profile?.city].filter(Boolean).join(' · ') || profile?.role || 'Builder'}
                   </div>
                 </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-slate-700 transition">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-slate-400 group-hover:text-white transition">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
@@ -267,26 +267,26 @@ export function DesktopSidebar({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      style={{ backgroundColor: '#ffffff' }}
-                      className="absolute bottom-full left-0 right-0 mb-2 border border-slate-200 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                      style={{ backgroundColor: '#1a1a1a' }}
+                      className="absolute bottom-full left-0 right-0 mb-2 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]"
                     >
-                      <div className="p-3 border-b border-slate-100">
-                        <div className="text-[12px] font-bold text-slate-900">{profile?.name}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5 font-mono truncate">
+                      <div className="p-3 border-b border-white/5">
+                        <div className="text-[12px] font-bold text-white">{profile?.name}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">
                           {profile?.email || user.email}
                         </div>
                       </div>
                       <Link
                         to={`/dashboard/profile/${user.id}`}
                         onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/5 hover:text-white transition"
                       >
                         <UserIcon /> Profile
                       </Link>
                       <Link
                         to="/dashboard/discovery"
                         onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                        className="flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/5 hover:text-white transition"
                       >
                         <LightbulbIcon /> Discovery Mode
                       </Link>
@@ -295,13 +295,13 @@ export function DesktopSidebar({
                           setProfileMenuOpen(false);
                           setForceShowTour(true);
                         }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left"
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-slate-300 hover:bg-white/5 hover:text-white transition text-left"
                       >
                         <CompassIcon /> Replay Tour
                       </button>
                       <button
                         onClick={handleSignOut}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition text-left"
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 transition text-left"
                       >
                         <LogOutIcon /> Sign out
                       </button>

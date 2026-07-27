@@ -60,7 +60,7 @@ interface TimelineFeedProps {
 }
 
 const TAG_PALETTE: Record<string, { bg: string; color: string }> = {
-  design:      { bg: 'bg-purple-500/10', color: 'text-purple-400' },
+  design:      { bg: 'bg-primary-500/10', color: 'text-primary-400' },
   engineering: { bg: 'bg-emerald-500/10', color: 'text-emerald-400' },
   dev:         { bg: 'bg-blue-500/10',  color: 'text-blue-400' },
   product:     { bg: 'bg-primary-500/10', color: 'text-primary-400' },
@@ -179,8 +179,8 @@ export function TimelineFeed({
           <div className="text-[11px] uppercase tracking-widest text-slate-500 font-bold">
             {activeTab === 'overview' ? 'Overview — active updates' : 'Global timeline'}
           </div>
-          <div className="h-px bg-slate-200 flex-1 ml-4" />
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full">
+          <div className="h-px bg-white/10 flex-1 ml-4" />
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span>{rooms.length} live rooms</span>
           </div>
@@ -198,42 +198,42 @@ export function TimelineFeed({
       </div>
 
       {/* TIMELINE FEED */}
-      <div className="flex flex-col mb-12 bg-white sm:border sm:border-slate-200 sm:rounded-[24px] overflow-hidden sm:shadow-sm">
+      <div className="flex flex-col mb-12 bg-transparent sm:border sm:border-white/10 sm:rounded-[24px] overflow-hidden sm:shadow-sm">
         {loading ? (
           <>
             {[1, 2, 3].map(i => (
-              <div key={`skeleton-${i}`} className="bg-white sm:border sm:border-slate-200 sm:rounded-[24px] px-4 py-5 sm:p-6 sm:shadow-sm relative overflow-hidden">
-                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-10" />
+              <div key={`skeleton-${i}`} className="bg-[#111111] sm:border sm:border-white/10 sm:rounded-[24px] px-4 py-5 sm:p-6 sm:shadow-sm relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent z-10" />
                 <div className="flex justify-between items-start gap-2.5 sm:gap-3 mb-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl bg-slate-200 animate-pulse shrink-0" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full sm:rounded-2xl bg-white/5 animate-pulse shrink-0" />
                     <div className="flex-1 space-y-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
-                        <div className="h-3 w-16 bg-slate-100 rounded-full animate-pulse" />
+                        <div className="h-4 w-28 bg-white/5 rounded animate-pulse" />
+                        <div className="h-3 w-16 bg-white/5 rounded-full animate-pulse" />
                       </div>
-                      <div className="h-3 w-32 bg-slate-100 rounded animate-pulse" />
+                      <div className="h-3 w-32 bg-white/5 rounded animate-pulse" />
                     </div>
                   </div>
                 </div>
                 <div className="space-y-3 mb-5">
-                  <div className="h-4 w-full bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-[90%] bg-slate-100 rounded animate-pulse" />
-                  <div className="h-4 w-[60%] bg-slate-100 rounded animate-pulse" />
+                  <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+                  <div className="h-4 w-[90%] bg-white/5 rounded animate-pulse" />
+                  <div className="h-4 w-[60%] bg-white/5 rounded animate-pulse" />
                 </div>
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
-                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
-                  <div className="h-8 w-20 bg-slate-100 rounded-full animate-pulse hidden sm:block" />
-                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
-                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
-                  <div className="h-6 w-12 bg-slate-100 rounded animate-pulse sm:hidden" />
+                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                  <div className="h-8 w-20 bg-white/5 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-8 w-20 bg-white/5 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-8 w-20 bg-white/5 rounded-full animate-pulse hidden sm:block" />
+                  <div className="h-6 w-12 bg-white/5 rounded animate-pulse sm:hidden" />
+                  <div className="h-6 w-12 bg-white/5 rounded animate-pulse sm:hidden" />
+                  <div className="h-6 w-12 bg-white/5 rounded animate-pulse sm:hidden" />
                 </div>
               </div>
             ))}
           </>
         ) : filteredUpdates.length === 0 ? (
-          <motion.div layout className="p-8 sm:p-12 text-center text-slate-500 text-[14px] font-medium bg-white border border-slate-200 rounded-[24px] shadow-sm">
+          <motion.div layout className="p-8 sm:p-12 text-center text-slate-400 text-[14px] font-medium bg-[#111111] border border-white/10 rounded-[24px] shadow-sm">
             No updates posted yet.
           </motion.div>
         ) : (
@@ -270,7 +270,7 @@ export function TimelineFeed({
             Footer: () => (
                 <>
                   {hasNextUpdates ? (
-                    <div className="flex justify-center p-6 border-t border-slate-200 bg-slate-50">
+                    <div className="flex justify-center p-6 border-t border-white/10 bg-transparent">
                       <button
                         onClick={() => fetchNextUpdates()}
                         disabled={isFetchingNextUpdates}
@@ -290,12 +290,12 @@ export function TimelineFeed({
                       </button>
                     </div>
                   ) : !loading && filteredUpdates.length > 0 ? (
-                    <div className="mt-8 mb-12 p-8 sm:p-12 text-center bg-white border border-slate-200 rounded-[24px] shadow-sm flex flex-col items-center">
-                      <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mb-4 text-primary-500">
+                    <div className="mt-8 mb-12 p-8 sm:p-12 text-center bg-[#111111] border border-white/10 rounded-[24px] shadow-sm flex flex-col items-center">
+                      <div className="w-12 h-12 bg-primary-500/10 rounded-full flex items-center justify-center mb-4 text-primary-500">
                         <Sparkles className="w-6 h-6" />
                       </div>
-                      <h3 className="text-[18px] font-display font-extrabold text-slate-900 mb-2">You're all caught up!</h3>
-                      <p className="text-[14px] text-slate-500 max-w-md mx-auto mb-6">
+                      <h3 className="text-[18px] font-display font-extrabold text-white mb-2">You're all caught up!</h3>
+                      <p className="text-[14px] text-slate-400 max-w-md mx-auto mb-6">
                         You've seen all the latest updates. Why not discover more rooms or post an update of your own?
                       </p>
                       <div className="flex items-center gap-3">
@@ -304,7 +304,7 @@ export function TimelineFeed({
                         </Link>
                         <button 
                           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-[13px] font-bold transition-all"
+                          className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-[13px] font-bold transition-all"
                         >
                           Back to top
                         </button>

@@ -17,19 +17,22 @@ export function LandingFooter({
 }: LandingFooterProps) {
   const navigate = useNavigate();
   return (
-    <footer className="border-t border-slate-200/50 bg-[#FAFAF9] py-16 text-slate-500">
+    <footer className="bg-white py-16 text-slate-500 border-t border-slate-200">
               <div className="mx-auto max-w-7xl px-6">
                 <div className="grid gap-10 md:grid-cols-12">
 
                   {/* Footer Left Column: Logo & Newsletter */}
                   <div className="md:col-span-5 space-y-6">
                     <div className="flex items-center gap-3 text-lg font-bold tracking-tight text-slate-900">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M15 12L9 6 3 12l1.5 1.5L9 9l4.5 4.5L15 12Z" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] text-white">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m15 12-8.373 8.373a1 1 0 1 1-1.414-1.414L13.586 10.586"/>
+                          <path d="m18 13.4-9-9"/>
+                          <path d="M12 4.4 14.6 2l3.4 3.4L15.6 8z"/>
+                          <path d="M18.4 10.6 21 8l-3.4-3.4L15 7.2"/>
                         </svg>
                       </div>
-                      <span className="font-extrabold">patchwork</span>
+                      <span className="font-black tracking-tight text-xl text-[#0f172a]">patchwork</span>
                     </div>
                     <p className="text-xs text-slate-500 leading-relaxed max-w-xs">
                       Every great product begins with an idea, but every great builder is shaped by the journey. Patchwork exists to help builders document their thinking, collaborate with experts, earn trust through proof of work, and leave behind a record of how meaningful products are built.
@@ -47,11 +50,11 @@ export function LandingFooter({
                           value={newsletterEmail}
                           onChange={(e) => setNewsletterEmail(e.target.value)}
                           placeholder="you@builder.com"
-                          className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
+                          className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-primary-500 transition"
                         />
                         <button
                           type="submit"
-                          className="rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-xs font-bold text-white transition flex items-center justify-center gap-1.5 shrink-0 shadow-md"
+                          className="rounded-xl bg-primary-500 hover:bg-primary-600 px-4 py-2.5 text-xs font-bold text-white transition flex items-center justify-center gap-1.5 shrink-0"
                         >
                           {newsletterSent ? (
                             <Check className="h-3.5 w-3.5" />

@@ -46,7 +46,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
           <div className="flex-1 w-full space-y-6">
             <div className="flex items-center gap-4">
               {levelInfo?.currentLevel && (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white shrink-0">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-primary-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white shrink-0">
                   <Award className="w-8 h-8" />
                 </div>
               )}
@@ -69,7 +69,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
                 </div>
                 <div className="h-3 bg-slate-100 rounded-full overflow-hidden w-full relative border border-slate-200/50">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-1000 ease-out"
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-primary-500 transition-all duration-1000 ease-out"
                     style={{ width: `${levelInfo.progress}%` }}
                   />
                 </div>

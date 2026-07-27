@@ -39,10 +39,10 @@ export default function ExplorePage() {
           <Compass className="w-3.5 h-3.5 text-primary-400" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400">Directory</span>
         </div>
-        <h1 className="text-5xl sm:text-[40px] font-extrabold text-slate-900 font-display tracking-tight leading-tight mb-3">
+        <h1 className="text-5xl sm:text-[40px] font-extrabold text-slate-100 font-display tracking-tight leading-tight mb-3">
           Explore <span className="text-primary-400">Builders</span>
         </h1>
-        <p className="text-[15px] text-slate-600 font-medium max-w-lg mx-auto mb-8">
+        <p className="text-[15px] text-slate-400 font-medium max-w-lg mx-auto mb-8">
           Discover builders working in the open across Patchwork. Find inspiration and follow their progress.
         </p>
 
@@ -60,25 +60,25 @@ export default function ExplorePage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-slate-50 border border-slate-200 rounded-2xl p-6 h-[200px] animate-pulse">
+            <div key={i} className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 h-[200px] animate-pulse">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-slate-200" />
+                <div className="w-10 h-10 rounded-xl bg-slate-700" />
                 <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-1/2" />
-                  <div className="h-3 bg-slate-200 rounded w-1/3" />
+                  <div className="h-4 bg-slate-700 rounded w-1/2" />
+                  <div className="h-3 bg-slate-700 rounded w-1/3" />
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="h-3 bg-slate-200 rounded w-full" />
-                <div className="h-3 bg-slate-200 rounded w-4/5" />
+                <div className="h-3 bg-slate-700 rounded w-full" />
+                <div className="h-3 bg-slate-700 rounded w-4/5" />
               </div>
             </div>
           ))}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="bg-slate-50 border border-slate-200 rounded-[32px] px-6 py-16 text-center backdrop-blur-md">
-          <p className="text-slate-900 font-bold text-lg">No active rooms found</p>
-          <p className="text-slate-600 text-sm mt-2">Try adjusting your filters or search query.</p>
+        <div className="bg-transparent border border-slate-800 rounded-[32px] px-6 py-16 text-center backdrop-blur-md">
+          <p className="text-slate-100 font-bold text-lg">No active rooms found</p>
+          <p className="text-slate-400 text-sm mt-2">Try adjusting your filters or search query.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
