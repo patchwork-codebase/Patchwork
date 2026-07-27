@@ -41,28 +41,28 @@ export function SkillsCard({ profile }: SkillsCardProps) {
 
   if (!editing) {
     return (
-      <div className="bg-white border border-slate-200 rounded-[24px] p-6 mb-6 shadow-sm flex items-start justify-between">
+      <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 mb-6 shadow-2xl flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Wrench className="w-5 h-5 text-slate-400" />
-            <h3 className="font-bold text-[15px] text-slate-900">Tech Stack / Skills</h3>
+            <h3 className="font-bold text-[15px] text-white">Tech Stack / Skills</h3>
           </div>
           
           {hasSkills ? (
             <div className="flex flex-wrap gap-2 mt-4">
               {profile.skills.map((skill: string) => (
-                <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-[13px] font-medium">
+                <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-[13px] font-medium">
                   {skill}
                 </span>
               ))}
             </div>
           ) : (
-             <p className="text-[13px] text-slate-500">Add your technical skills and tools</p>
+             <p className="text-[13px] text-slate-400">Add your technical skills and tools</p>
           )}
         </div>
         <button
           onClick={() => setEditing(true)}
-          className="px-4 py-2 border border-slate-200 rounded-full text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="px-4 py-2 border border-white/10 rounded-full text-[13px] font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
         >
           {hasSkills ? 'Edit' : 'Add Skills'}
         </button>
@@ -71,10 +71,10 @@ export function SkillsCard({ profile }: SkillsCardProps) {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[24px] p-6 mb-6 shadow-sm">
+    <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 mb-6 shadow-2xl">
       <div className="flex items-center gap-3 mb-5">
         <Wrench className="w-5 h-5 text-primary-400" />
-        <h3 className="font-bold text-[16px] text-slate-900">Tech Stack / Skills</h3>
+        <h3 className="font-bold text-[16px] text-white">Tech Stack / Skills</h3>
       </div>
       
       <div className="flex gap-2 mb-3">
@@ -90,7 +90,7 @@ export function SkillsCard({ profile }: SkillsCardProps) {
               }
             }
           }}
-          className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 focus:outline-none focus:border-primary-500/50"
+          className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[13px] text-white focus:outline-none focus:border-primary-500/50 placeholder:text-slate-500"
           placeholder="Add a skill (e.g. React) and press Enter"
         />
         <button
@@ -101,7 +101,7 @@ export function SkillsCard({ profile }: SkillsCardProps) {
               setSkillInput('');
             }
           }}
-          className="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 text-[13px] font-bold rounded-xl transition-colors"
+          className="px-5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/10 text-[13px] font-bold rounded-xl transition-colors"
         >
           Add
         </button>
@@ -109,12 +109,12 @@ export function SkillsCard({ profile }: SkillsCardProps) {
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {skills.map(skill => (
-            <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-[13px] font-medium">
+            <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-[13px] font-medium">
               {skill}
               <button
                 type="button"
                 onClick={() => setSkills(skills.filter(s => s !== skill))}
-                className="text-slate-400 hover:text-red-400 transition-colors ml-1"
+                className="text-slate-500 hover:text-red-400 transition-colors ml-1"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -123,20 +123,20 @@ export function SkillsCard({ profile }: SkillsCardProps) {
         </div>
       )}
 
-      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-100">
+      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-white/10">
         <button
           onClick={() => {
             setEditing(false);
             setSkills(profile?.skills || []); // Reset on cancel
           }}
-          className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 rounded-full text-[13px] font-bold text-slate-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-full text-[13px] font-bold text-slate-300 transition-colors"
         >
           <X className="w-4 h-4" /> Cancel
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-full text-[13px] font-bold hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2 bg-white text-black rounded-full text-[13px] font-bold hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
           <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
         </button>

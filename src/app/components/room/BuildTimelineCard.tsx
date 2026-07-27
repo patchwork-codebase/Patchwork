@@ -61,7 +61,7 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
         <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${config.color}`}>
           {config.icon}
         </div>
-        <div className="w-px flex-1 bg-slate-100 mt-2 group-last:hidden" />
+        <div className="w-px flex-1 bg-white/10 mt-2 group-last:hidden" />
       </div>
 
       {/* Content */}
@@ -83,17 +83,17 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
           </div>
         </div>
 
-        <p className="text-[14px] text-slate-800 font-medium mb-1 leading-snug">
+        <p className="text-[14px] text-slate-300 font-medium mb-1 leading-snug">
           {event.eventSummary}
         </p>
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[11px] text-slate-400 font-medium">
-            by <span className="text-slate-600 font-semibold">{event.actorName}</span>
+            by <span className="text-white font-semibold">{event.actorName}</span>
           </span>
           {event.versionHash && (
             <span
-              className="text-[9px] font-mono text-slate-300 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-full truncate max-w-[180px]"
+              className="text-[9px] font-mono text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full truncate max-w-[180px]"
               title={`Integrity hash: ${event.versionHash}`}
             >
               #{event.versionHash.slice(0, 12)}
@@ -112,7 +112,7 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
         )}
 
         {expanded && hasData && (
-          <pre className="mt-2 text-[11px] text-slate-500 bg-slate-50 border border-slate-100 rounded-xl p-3 overflow-x-auto font-mono">
+          <pre className="mt-2 text-[11px] text-slate-400 bg-white/5 border border-white/10 rounded-xl p-3 overflow-x-auto font-mono">
             {JSON.stringify(event.eventData, null, 2)}
           </pre>
         )}
@@ -198,10 +198,10 @@ export function BuildTimelineCard({
       </div>
 
       {/* Timeline */}
-      <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-[15px] font-extrabold text-slate-900">Build Timeline</h3>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full">
+      <div className="bg-[#0a0a0a] border border-white/5 rounded-[24px] p-6 shadow-2xl relative">
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <h3 className="text-[15px] font-extrabold text-white">Build Timeline</h3>
+          <span className="text-[11px] font-mono text-slate-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full">
             {events.length} events
           </span>
         </div>
@@ -228,11 +228,11 @@ export function BuildTimelineCard({
       </div>
 
       {/* Integrity Notice */}
-      <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
-        <Shield className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+      <div className="flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl relative z-10">
+        <Shield className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
         <div>
-          <p className="text-[12px] font-bold text-emerald-700 mb-0.5">Tamper-Evident Timeline</p>
-          <p className="text-[11px] text-emerald-600 leading-relaxed">
+          <p className="text-[12px] font-bold text-emerald-400 mb-0.5">Tamper-Evident Timeline</p>
+          <p className="text-[11px] text-emerald-500 leading-relaxed">
             Each event is recorded with a cryptographic hash for integrity. Events cannot be deleted or modified. This timeline serves as verifiable evidence of authorship and build history.
           </p>
         </div>

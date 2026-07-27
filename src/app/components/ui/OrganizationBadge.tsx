@@ -10,7 +10,7 @@ export function OrganizationBadge({ orgName, orgLogo, isVerified }: Organization
   if (!orgName) return null;
 
   return (
-    <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium truncate">
+    <div className="flex items-center gap-1.5 text-[12px] text-slate-400 font-medium truncate">
       <span className="truncate">{orgName}</span>
       {isVerified && <VerifiedTick isVerified={true} className="w-3.5 h-3.5 shrink-0" />}
       {orgLogo && (

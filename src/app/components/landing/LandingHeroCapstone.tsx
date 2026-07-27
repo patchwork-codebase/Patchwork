@@ -26,7 +26,7 @@ export function LandingHeroCapstone({ onSignup }: Props) {
           
           {/* Left: Copy */}
           <div className="max-w-2xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight">
               We'll give you real <br />
               <span className="text-primary-500 relative inline-block">
                 proof of work
@@ -35,14 +35,14 @@ export function LandingHeroCapstone({ onSignup }: Props) {
               </span>
             </h1>
             
-            <p className="mt-6 text-lg sm:text-xl text-slate-600 leading-relaxed font-medium max-w-lg">
-              Stop relying on static resumes and hidden GitHub repos. Build in public, log your real-time decisions, and get verifiable proof of your product skills.
+            <p className="mt-6 text-base sm:text-lg text-slate-600 leading-relaxed font-medium max-w-lg">
+              Ideas are temporary. Execution creates impact. Build products, document your journey, collaborate with your team, and create verified Proof of Work that grows with every milestone.
             </p>
             
             <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
               <button 
                 onClick={onSignup}
-                className="w-full sm:w-auto px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-bold text-lg transition-all shadow-[0_8px_20px_rgba(255,91,34,0.3)] hover:shadow-[0_8px_25px_rgba(255,91,34,0.4)] hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-bold text-base transition-all shadow-[0_8px_20px_rgba(255,91,34,0.3)] hover:shadow-[0_8px_25px_rgba(255,91,34,0.4)] hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
                 Start Building Now <ArrowRight className="w-5 h-5" />
               </button>
@@ -54,7 +54,7 @@ export function LandingHeroCapstone({ onSignup }: Props) {
             {/* Soft backdrop shadow */}
             <div className="absolute inset-0 bg-primary-500/10 blur-3xl rounded-[40px]" />
             
-            <div className="relative bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[500px]">
+            <div className="relative bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[420px]">
               {/* Fake Browser/App Header */}
               <div className="h-12 border-b border-white/10 bg-[#111111] flex items-center px-4 gap-3 shrink-0">
                 <div className="flex gap-1.5">
@@ -87,17 +87,17 @@ export function LandingHeroCapstone({ onSignup }: Props) {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap mb-1">
-                        <span className="font-bold text-[15px] sm:text-[16px] text-white">
+                        <span className="font-bold text-[14px] sm:text-[15px] text-white">
                           {builderName}
                         </span>
-                        <span className="text-slate-600 text-[14px]">·</span>
-                        <span className="text-[13px] sm:text-[14px] text-slate-400 font-medium truncate">
+                        <span className="text-slate-600 text-[13px]">·</span>
+                        <span className="text-[12px] sm:text-[13px] text-slate-400 font-medium truncate">
                           MoniFlow Dashboard
                         </span>
                       </div>
                       
                       <div className="mt-1">
-                        <p className="text-[15px] sm:text-[16px] text-slate-300 leading-relaxed font-medium">
+                        <p className="text-[14px] sm:text-[15px] text-slate-300 leading-relaxed font-medium">
                           I've completely scrapped the v1 onboarding flow. The drop-off rate was way too high on the KYC step. 
                           I'm moving the KYC verification to happen *after* they create their first product listing.
                         </p>

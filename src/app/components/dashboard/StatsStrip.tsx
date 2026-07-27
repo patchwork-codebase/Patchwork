@@ -63,48 +63,52 @@ export function StatsStrip({
         label: 'followed rooms',
         value: observerStats?.roomsFollowed ?? 0,
         delta: 'tracking progress',
-        deltaColor: 'text-primary-600',
-        deltaBg: 'bg-primary-50',
-        deltaBorder: 'border-primary-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-primary-400',
+        deltaBg: 'bg-primary-500/10',
+        deltaBorder: 'border-primary-500/20',
+        numColor: 'text-white',
         icon: Bookmark,
         iconColor: 'text-primary-400',
+        iconBg: 'bg-primary-500/10',
         loading: observerStatsLoading,
       },
       {
         label: 'reactions given',
         value: observerStats?.totalReactions ?? 0,
         delta: 'insights shared',
-        deltaColor: 'text-amber-600',
-        deltaBg: 'bg-amber-50',
-        deltaBorder: 'border-amber-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-amber-400',
+        deltaBg: 'bg-amber-500/10',
+        deltaBorder: 'border-amber-500/20',
+        numColor: 'text-white',
         icon: MessageSquare,
         iconColor: 'text-amber-400',
+        iconBg: 'bg-amber-500/10',
         loading: observerStatsLoading,
       },
       {
         label: 'sharp critiques',
         value: observerStats?.sharpInsights ?? 0,
         delta: '⚡ high signal',
-        deltaColor: 'text-primary-600',
-        deltaBg: 'bg-primary-50',
-        deltaBorder: 'border-primary-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-purple-400',
+        deltaBg: 'bg-purple-500/10',
+        deltaBorder: 'border-purple-500/20',
+        numColor: 'text-white',
         icon: Zap,
-        iconColor: 'text-primary-400',
+        iconColor: 'text-purple-400',
+        iconBg: 'bg-purple-500/10',
         loading: observerStatsLoading,
       },
       {
         label: 'shipped products',
         value: observerStats?.shippedProducts ?? 0,
         delta: 'witnessed launches',
-        deltaColor: 'text-emerald-600',
-        deltaBg: 'bg-emerald-50',
-        deltaBorder: 'border-emerald-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-emerald-400',
+        deltaBg: 'bg-emerald-500/10',
+        deltaBorder: 'border-emerald-500/20',
+        numColor: 'text-white',
         icon: Rocket,
         iconColor: 'text-emerald-400',
+        iconBg: 'bg-emerald-500/10',
         loading: observerStatsLoading,
       },
     ]
@@ -113,48 +117,52 @@ export function StatsStrip({
         label: 'active rooms',
         value: activeRoomsCount,
         delta: activeRoomsDelta,
-        deltaColor: 'text-emerald-600',
-        deltaBg: 'bg-emerald-50',
-        deltaBorder: 'border-emerald-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-emerald-400',
+        deltaBg: 'bg-emerald-500/10',
+        deltaBorder: 'border-emerald-500/20',
+        numColor: 'text-white',
         icon: Activity,
-        iconColor: 'text-primary-500',
+        iconColor: 'text-emerald-400',
+        iconBg: 'bg-emerald-500/10',
         loading: myRoomsLoading,
       },
       {
         label: 'total reactions',
         value: totalReactions,
         delta: reactionsDelta,
-        deltaColor: 'text-amber-600',
-        deltaBg: 'bg-amber-50',
-        deltaBorder: 'border-amber-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-amber-400',
+        deltaBg: 'bg-amber-500/10',
+        deltaBorder: 'border-amber-500/20',
+        numColor: 'text-white',
         icon: MessageSquare,
-        iconColor: 'text-amber-500',
+        iconColor: 'text-amber-400',
+        iconBg: 'bg-amber-500/10',
         loading: reactionsLoading,
       },
       {
         label: 'observers',
         value: totalObservers,
         delta: observersDelta,
-        deltaColor: 'text-emerald-600',
-        deltaBg: 'bg-emerald-50',
-        deltaBorder: 'border-emerald-100',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-blue-400',
+        deltaBg: 'bg-blue-500/10',
+        deltaBorder: 'border-blue-500/20',
+        numColor: 'text-white',
         icon: Users,
-        iconColor: 'text-emerald-500',
+        iconColor: 'text-blue-400',
+        iconBg: 'bg-blue-500/10',
         loading: myRoomsLoading || observersLoading,
       },
       {
         label: 'build logs',
         value: totalBuildLogs,
         delta: buildLogsDelta,
-        deltaColor: 'text-slate-600',
-        deltaBg: 'bg-slate-100',
-        deltaBorder: 'border-slate-200',
-        numColor: 'text-slate-100',
+        deltaColor: 'text-purple-400',
+        deltaBg: 'bg-purple-500/10',
+        deltaBorder: 'border-purple-500/20',
+        numColor: 'text-white',
         icon: FileText,
-        iconColor: 'text-slate-400',
+        iconColor: 'text-purple-400',
+        iconBg: 'bg-purple-500/10',
         loading: myRoomsLoading,
       },
     ];
@@ -167,38 +175,38 @@ export function StatsStrip({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.05 }}
           key={s.label}
-          className="bg-transparent border border-slate-800 rounded-[20px] p-5 flex min-h-[140px] flex-col justify-between group hover:border-slate-700 hover:shadow-md transition-all cursor-default min-w-[160px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring relative overflow-hidden"
+          className="bg-[#0a0a0a] border border-white/5 rounded-[20px] p-5 flex min-h-[140px] flex-col justify-between group hover:border-white/10 hover:bg-[#111] hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300 cursor-default min-w-[160px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring relative overflow-hidden"
           tabIndex={0}
         >
-          {/* Subtle background gradient on hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          {/* Subtle background glow on hover */}
+          <div className={`absolute -inset-24 bg-gradient-to-br ${s.iconColor.replace('text-', 'from-')}/5 to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500 pointer-events-none`} />
 
           {s.loading ? (
             <div className="flex flex-col gap-3 w-full relative z-10">
               <div className="flex justify-between items-start w-full">
-                <div className="h-4 w-20 bg-slate-100 rounded animate-pulse" />
-                <div className="w-8 h-8 rounded-full bg-slate-50 animate-pulse" />
+                <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" />
               </div>
-              <div className="h-10 w-16 bg-slate-100 rounded animate-pulse mt-2" />
-              <div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse mt-3" />
+              <div className="h-10 w-16 bg-white/10 rounded animate-pulse mt-2" />
+              <div className="h-5 w-24 bg-white/10 rounded-full animate-pulse mt-3" />
             </div>
           ) : (
             <div className="flex flex-col h-full relative z-10">
               <div className="flex justify-between items-start w-full mb-3">
-                <div className="text-[12px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                <div className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-1 group-hover:text-slate-300 transition-colors">
                   {s.label}
                 </div>
                 {s.icon && (
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:shadow-sm transition-all ${s.iconColor}`}>
-                    <s.icon strokeWidth={2.5} size={16} />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${s.iconBg} ${s.iconColor} ring-1 ring-inset ${s.deltaBorder} group-hover:scale-110 transition-transform duration-300`}>
+                    <s.icon strokeWidth={2.5} size={18} />
                   </div>
                 )}
               </div>
-              <div className={`font-black text-[36px] font-display tracking-tight leading-none mb-4 ${s.numColor}`}>
+              <div className={`font-black text-[38px] font-display tracking-tight leading-none mb-4 ${s.numColor} drop-shadow-sm`}>
                 {s.value}
               </div>
               <div className="mt-auto">
-                <span className={`inline-flex items-center text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide border ${s.deltaBg} ${s.deltaColor} ${s.deltaBorder}`}>
+                <span className={`inline-flex items-center text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider border ${s.deltaBg} ${s.deltaColor} ${s.deltaBorder}`}>
                   {s.delta}
                 </span>
               </div>

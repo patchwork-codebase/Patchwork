@@ -34,6 +34,7 @@ import {
 import { LandingHeroCapstone } from "./LandingHeroCapstone";
 import { LandingLiveFeedMockup } from "./LandingLiveFeedMockup";
 import { LandingTargetAudience } from "./LandingTargetAudience";
+import { LandingSlider } from "./LandingSlider";
 import { LandingFeaturesCapstone } from "./LandingFeaturesCapstone";
 import { LandingWorkflowCapstone } from "./LandingWorkflowCapstone";
 import { LandingTestimonials } from "./LandingTestimonials";
@@ -285,40 +286,48 @@ export default function LandingPage() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-xl p-4 sm:hidden flex flex-col gap-4 z-50">
-            <div className="flex flex-col gap-2 bg-[#111111] p-2 rounded-xl">
+          <motion.div 
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-full left-4 right-4 mt-2 bg-white/70 backdrop-blur-3xl border border-white/50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] p-2.5 rounded-[24px] sm:hidden flex flex-col gap-2 z-50 overflow-hidden ring-1 ring-slate-900/5"
+          >
+            <div className="flex bg-slate-900/5 p-1 rounded-[16px]">
               <button 
                 onClick={() => { setAudience('builders'); setMobileMenuOpen(false); }}
-                className={`text-sm font-bold px-4 py-2.5 rounded-lg transition text-left ${audience === 'builders' ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white'}`}
+                className={`flex-1 text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-center ${audience === 'builders' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500'}`}
               >
                 For builders
               </button>
               <button 
                 onClick={() => { setAudience('observers'); setMobileMenuOpen(false); }}
-                className={`text-sm font-bold px-4 py-2.5 rounded-lg transition text-left ${audience === 'observers' ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white'}`}
+                className={`flex-1 text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-center ${audience === 'observers' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500'}`}
               >
                 For observers
               </button>
             </div>
-            <button
-              onClick={() => {
-                navigate("/login");
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-center text-sm font-bold text-slate-600 hover:text-slate-900 py-3.5 rounded-xl border border-slate-200"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => {
-                showOnboarding();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-center rounded-xl bg-primary-500 px-5 py-3.5 text-sm font-bold text-white shadow-md shadow-primary-500/20"
-            >
-              Use Patchwork
-            </button>
-          </div>
+            
+            <div className="flex flex-col gap-1 mt-1">
+              <button
+                onClick={() => {
+                  showOnboarding();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-[16px] bg-slate-900 px-5 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
+              >
+                <Sparkles className="w-4 h-4 text-primary-400" /> Start Building
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/login");
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-center text-[14px] font-bold text-slate-600 hover:text-slate-900 py-3.5 rounded-[16px] bg-transparent transition-colors"
+              >
+                Sign in to your account
+              </button>
+            </div>
+          </motion.div>
         )}
       </header>
 
@@ -329,7 +338,7 @@ export default function LandingPage() {
             <LandingHeroCapstone onSignup={showOnboarding} />
             <LandingLiveFeedMockup />
             <LandingTargetAudience />
-            <LandingFeaturesCapstone />
+            <LandingSlider />
             <LandingWorkflowCapstone />
             <LandingTestimonials />
             <LandingFAQs />

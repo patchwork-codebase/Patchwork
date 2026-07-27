@@ -74,7 +74,10 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
   if (!parent) return null;
 
   return (
-    <div className="w-full max-w-full bg-[#111111] border border-white/5 shadow-2xl rounded-[24px] mb-6 p-4 sm:p-6 sm:px-8 relative group focus-ring">
+    <div className="w-full max-w-full bg-[#0a0a0a] border border-white/5 shadow-2xl rounded-[24px] mb-6 p-4 sm:p-6 sm:px-8 relative group hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-white/10 hover:bg-[#111] transition-all duration-300 focus-ring overflow-hidden">
+      
+      {/* Subtle background glow on hover */}
+      <div className="absolute -inset-24 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500 pointer-events-none" />
 
       {/* 1. Context Header */}
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 relative z-10">

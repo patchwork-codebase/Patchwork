@@ -29,19 +29,19 @@ export function LandingTargetAudience() {
   ];
 
   return (
-    <section className="bg-[#0f0f0f] py-24 sm:py-32 border-t border-white/5">
+    <section className="bg-[#0f0f0f] py-16 sm:py-24 border-t border-white/5">
       <div className="mx-auto max-w-7xl px-6">
         
-        <div className="mb-20 max-w-3xl">
+        <div className="mb-16 max-w-2xl">
           <p className="text-[11px] font-bold text-primary-500 tracking-wider mb-4 uppercase">
             Who it's for
           </p>
-          <h2 className="text-3xl sm:text-5xl font-bold text-white tracking-tight leading-[1.2]">
+          <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight leading-[1.2]">
             Whether you're <span className="text-primary-500 italic">building, leading, designing, or learning</span>, this is your workspace.
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-x-12 gap-y-16">
+        <div className="grid md:grid-cols-2 gap-x-10 gap-y-12">
           {audiences.map((aud, idx) => (
             <div key={idx} className="relative">
               <div className="flex items-center gap-2 mb-4">
@@ -49,10 +49,10 @@ export function LandingTargetAudience() {
                 <span className="text-slate-600">·</span>
                 <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">{aud.tag}</span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
                 {aud.title}
               </h3>
-              <p className="text-[14px] text-slate-400 leading-relaxed font-medium">
+              <p className="text-[13px] text-slate-400 leading-relaxed font-medium">
                 {aud.desc}
               </p>
               

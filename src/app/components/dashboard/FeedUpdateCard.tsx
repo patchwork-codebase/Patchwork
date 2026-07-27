@@ -128,13 +128,16 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   return (
     <div
       onClick={toggleComments}
-      className="w-full max-w-full bg-[#111111] border border-white/5 shadow-2xl rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden group focus-ring"
+      className="w-full max-w-full bg-[#0a0a0a] border border-white/5 shadow-2xl rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-white/10 hover:bg-[#111] transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') toggleComments();
       }}
     >
-      <div className="flex items-start gap-3 sm:gap-4 mb-3">
+      {/* Subtle background glow on hover */}
+      <div className="absolute -inset-24 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500 pointer-events-none" />
+      
+      <div className="flex items-start gap-3 sm:gap-4 mb-3 relative z-10">
         <div
           onClick={(e) => {
             e.stopPropagation();

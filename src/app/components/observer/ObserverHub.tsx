@@ -186,7 +186,7 @@ export default function ObserverHub() {
           {/* ── SIMILAR PROBLEMS ── */}
           <div className="mt-12">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display font-extrabold text-[20px] text-slate-900 flex items-center gap-2">
+              <h2 className="font-display font-extrabold text-[20px] text-slate-100 flex items-center gap-2">
                 Similar problems <Compass className="w-5 h-5 text-emerald-500" />
               </h2>
             </div>

@@ -408,14 +408,14 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   };
 
   return (
-    <div className={isNested ? "flex flex-col h-full" : "bg-white rounded-[24px] border border-slate-200 overflow-hidden flex flex-col h-[500px] shadow-sm"}>
+    <div className={isNested ? "flex flex-col h-full" : "bg-[#0a0a0a] rounded-[24px] border border-white/5 overflow-hidden flex flex-col h-[500px] shadow-2xl hover:-translate-y-0.5 transition-all"}>
       {!isNested && (
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shrink-0 bg-white">
+        <div className="p-4 sm:p-5 border-b border-white/5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shrink-0 bg-[#0a0a0a]">
           <div>
-            <h3 className="text-[16px] font-extrabold text-slate-900 leading-tight">
+            <h3 className="text-[16px] font-extrabold text-white leading-tight">
               Milestone tracker
             </h3>
-            <span className="text-[12px] text-slate-500 font-medium">Synced with Integrations</span>
+            <span className="text-[12px] text-slate-400 font-medium">Synced with Integrations</span>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {!isObserver && (
@@ -423,21 +423,21 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                 <button
                   onClick={handleSync}
                   disabled={isSyncing}
-                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
                 >
                   Linear
                 </button>
                 <button
                   onClick={handleSyncClickUp}
                   disabled={isSyncing}
-                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
                 >
                   ClickUp
                 </button>
                 <button
                   onClick={handleSyncJira}
                   disabled={isSyncing}
-                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
                 >
                   Jira
                 </button>
@@ -455,7 +455,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
         <div className="space-y-4">
           {allMilestones.length === 0 ? (
             <div className="text-center py-8">
-              <p className={`text-[13px] font-medium ${isNested ? 'text-slate-500' : 'text-slate-500'}`}>No milestones tracked yet.</p>
+              <p className={`text-[13px] font-medium text-slate-400`}>No milestones tracked yet.</p>
             </div>
           ) : (
             allMilestones.map((milestone, index) => {
@@ -471,16 +471,16 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
               const hasPushback = itemReactions.some(r => r.type === 'pushback' && (r.observer_id === user?.id || r.observerId === user?.id));
 
               return (
-                <div key={milestone.id} className={`pb-5 ${index !== allMilestones.length - 1 ? `border-b ${isNested ? 'border-slate-200' : 'border-white/[0.08]'} mb-5` : ''}`}>
+                <div key={milestone.id} className={`pb-5 ${index !== allMilestones.length - 1 ? `border-b border-white/5 mb-5` : ''}`}>
                   <div className="flex items-center justify-between gap-4 mb-3">
                     <div className="flex items-center gap-4">
-                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${isNested ? 'border-slate-200 bg-slate-100' : 'border-white/[0.08] bg-ink'}`}>
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 border-white/10 bg-white/5`}>
                         <Icon className={`w-3.5 h-3.5 ${style.iconColor}`} />
                       </div>
                       <div>
-                        <h4 className={`text-[14px] font-bold leading-tight ${isNested ? 'text-slate-900' : 'text-white'}`}>{milestone.title}</h4>
+                        <h4 className={`text-[14px] font-bold leading-tight text-white`}>{milestone.title}</h4>
                         {milestone.description && (
-                          <p className={`text-[12px] mt-0.5 ${isNested ? 'text-slate-500' : 'text-slate-400'}`}>{milestone.description}</p>
+                          <p className={`text-[12px] mt-0.5 text-slate-400`}>{milestone.description}</p>
                         )}
                       </div>
                     </div>
@@ -492,13 +492,13 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                   <div className="flex items-center gap-3 px-2">
                     <button 
                       onClick={() => toggleReaction(milestone.id, 'sharp')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-400 border-primary-400/30' : `bg-transparent border-slate-200 ${isNested ? 'text-slate-500 hover:text-slate-900 hover:border-slate-400' : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'}`}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-400 border-primary-400/30' : `bg-transparent border-white/10 text-slate-400 hover:border-white/20 hover:text-white`}`}
                     >
                       <span>✦</span> Sharp {sharpCount > 0 && <span className="opacity-70">{sharpCount}</span>}
                     </button>
                     <button 
                       onClick={() => toggleReaction(milestone.id, 'pushback')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : `bg-transparent border-slate-200 ${isNested ? 'text-slate-500 hover:text-slate-900 hover:border-slate-400' : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'}`}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : `bg-transparent border-white/10 text-slate-400 hover:border-white/20 hover:text-white`}`}
                     >
                       <span>↩</span> Push back {pushbackCount > 0 && <span className="opacity-70">{pushbackCount}</span>}
                     </button>
@@ -507,7 +507,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                     
                     <button 
                       onClick={() => setReplyingTo(replyingTo === milestone.id ? null : milestone.id)}
-                      className={`flex items-center gap-1.5 text-[12px] font-bold transition-colors ${isNested ? 'text-slate-400 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                      className={`flex items-center gap-1.5 text-[12px] font-bold transition-colors text-slate-400 hover:text-white`}
                     >
                       <MessageCircle className="w-3.5 h-3.5" /> 
                       {itemReplies.length} {itemReplies.length === 1 ? 'Reply' : 'Replies'}
@@ -522,7 +522,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                         className="mt-4 space-y-3 px-2"
                       >
                         {itemReplies.map((reply: any) => (
-                          <div key={reply.id} className={`flex items-start gap-3 p-3 rounded-2xl border ${isNested ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-white/[0.05]'}`}>
+                          <div key={reply.id} className={`flex items-start gap-3 p-3 rounded-2xl border bg-white/5 border-white/10`}>
                             <UserAvatar 
                               userId={reply.observer_id || reply.observerId} 
                               name={reply.observerName} 
@@ -531,10 +531,10 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                             />
                             <div>
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className={`text-[12px] font-bold ${isNested ? 'text-slate-900' : 'text-white'}`}>Observer</span>
+                                <span className={`text-[12px] font-bold text-white`}>Observer</span>
                                 <span className="text-[10px] text-slate-500">{timeAgo(reply.created_at || reply.createdAt)}</span>
                               </div>
-                              <p className={`text-[13px] ${isNested ? 'text-slate-600' : 'text-slate-300'}`}>{reply.text}</p>
+                              <p className={`text-[13px] text-slate-300`}>{reply.text}</p>
                             </div>
                           </div>
                         ))}

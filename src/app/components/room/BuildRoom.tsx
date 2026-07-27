@@ -353,10 +353,10 @@ export default function BuildRoom() {
 
         <div className="relative mb-8 w-full group/tabs">
           {/* Scroll fade hints for mobile/desktop to indicate scrollability */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none opacity-100 transition-opacity" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none opacity-100 transition-opacity" />
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none opacity-100 transition-opacity rounded-l-2xl" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#0a0a0a] to-transparent z-10 pointer-events-none opacity-100 transition-opacity rounded-r-2xl" />
           
-          <div className="flex items-center gap-1.5 md:gap-2 bg-slate-50/80 p-1.5 rounded-2xl overflow-x-auto scrollbar-hide whitespace-nowrap border border-slate-200/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] relative z-0 snap-x">
+          <div className="flex items-center gap-1.5 md:gap-2 bg-[#0a0a0a] p-1.5 rounded-2xl overflow-x-auto scrollbar-hide whitespace-nowrap border border-white/5 shadow-2xl relative z-0 snap-x">
             {[
               { key: 'updates', label: 'Updates', icon: <MessageCircle className="w-4 h-4" />, count: room.updates.length, show: true },
               { key: 'overview', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4" />, count: null, show: true },
@@ -371,19 +371,19 @@ export default function BuildRoom() {
                 onClick={() => setActiveTab(tab.key as any)}
                 className={`snap-start px-4 md:px-5 py-2.5 text-[13px] font-bold rounded-xl transition-all flex items-center gap-2 focus-ring select-none relative group ${
                   activeTab === tab.key
-                    ? 'bg-white text-primary-600 ring-1 ring-slate-200 shadow-sm'
-                    : 'bg-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                    ? 'bg-white/10 text-white ring-1 ring-white/10 shadow-sm'
+                    : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <span className={`transition-colors ${activeTab === tab.key ? 'text-primary-500' : 'text-slate-400 group-hover:text-slate-500'}`}>
+                <span className={`transition-colors ${activeTab === tab.key ? 'text-primary-400' : 'text-slate-500 group-hover:text-slate-400'}`}>
                   {tab.icon}
                 </span>
                 {tab.label}
                 {tab.count !== null && (
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold tracking-widest ml-1 transition-colors ${
                     activeTab === tab.key 
-                      ? 'bg-primary-50 text-primary-600 ring-1 ring-primary-100' 
-                      : 'bg-slate-200/70 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-600'
+                      ? 'bg-primary-500/20 text-primary-400 ring-1 ring-primary-500/30' 
+                      : 'bg-white/5 text-slate-400 group-hover:bg-white/10 group-hover:text-white'
                   }`}>
                     {tab.count}
                   </span>
@@ -461,7 +461,7 @@ export default function BuildRoom() {
                 <div />
                 <button
                   onClick={() => setReactionModal({ open: true, updateId: null })}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-ink text-[13px] font-bold rounded-full hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] focus-ring"
+                  className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white border border-white/20 text-[13px] font-bold rounded-full hover:bg-white/20 hover:-translate-y-0.5 transition-all shadow-lg focus-ring"
                 >
                   <MessageCircle className="w-4 h-4" /> React to room
                 </button>
@@ -492,26 +492,26 @@ export default function BuildRoom() {
         {activeTab === 'reactions' && (
           <div className="space-y-4">
             {room.reactions.length === 0 ? (
-              <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
+              <div className="text-center py-20 bg-white/5 border-2 border-dashed border-white/10 rounded-[24px]">
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-30 text-primary-400" />
-                <p className="font-extrabold text-[16px] text-slate-900 font-display mb-2">No reactions yet</p>
+                <p className="font-extrabold text-[16px] text-white font-display mb-2">No reactions yet</p>
               </div>
             ) : (
               [...room.reactions].reverse().filter(r => r.text && r.text.trim().length > 0).map(r => {
                 const cfg = REACTION_CONFIG[r.type] || REACTION_CONFIG['reply'];
                 return (
-                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm focus-ring" tabIndex={0}>
+                  <div key={r.id} className="flex items-start gap-3 p-4 rounded-2xl bg-[#0a0a0a] border border-white/5 shadow-2xl hover:-translate-y-0.5 transition-all focus-ring" tabIndex={0}>
                     <div className="text-xl mt-0.5">{cfg.emoji}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                        <span className="text-[12px] font-bold text-slate-900 flex items-center gap-1">
+                        <span className="text-[12px] font-bold text-white flex items-center gap-1">
                           {r.observerName}
                           <VerifiedTick userId={r.observerId} className="w-3.5 h-3.5" />
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono font-medium">{timeAgo(r.createdAt)}</span>
                       </div>
-                      <p className="text-[14px] leading-relaxed font-medium text-slate-700 mb-2">{r.text}</p>
+                      <p className="text-[14px] leading-relaxed font-medium text-slate-300 mb-2">{r.text}</p>
                     </div>
                   </div>
                 );
