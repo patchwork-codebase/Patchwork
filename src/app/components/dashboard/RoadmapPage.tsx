@@ -42,8 +42,8 @@ export default function RoadmapPage() {
                   onClick={() => setTab(tab.key)}
                   className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-ring whitespace-nowrap snap-start active:scale-95 ${
                     isCurrent
-                      ? 'text-slate-100'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-t-lg'
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-t-lg'
                   }`}
                 >
                   {tab.label}

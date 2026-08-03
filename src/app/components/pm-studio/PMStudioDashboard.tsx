@@ -135,17 +135,17 @@ export default function PMStudioDashboard() {
           className="lg:col-span-2"
         >
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Your Skill Radar</h2>
-          <div className="bg-gradient-to-b from-[#1A1824] to-[#15131C] border border-slate-100 dark:border-white/5 rounded-3xl p-8 flex flex-col items-center justify-center min-h-[380px] text-center relative overflow-hidden shadow-2xl">
+          <div className="bg-white dark:bg-gradient-to-b dark:from-[#1A1824] dark:to-[#15131C] border border-slate-200 dark:border-white/5 rounded-3xl p-8 flex flex-col items-center justify-center min-h-[380px] text-center relative overflow-hidden shadow-xl dark:shadow-2xl">
             {/* Subtle radar rings background */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-              <div className="w-32 h-32 rounded-full border border-slate-500 absolute" />
-              <div className="w-48 h-48 rounded-full border border-slate-600 absolute" />
-              <div className="w-64 h-64 rounded-full border border-slate-300 dark:border-slate-700 absolute" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-10 dark:opacity-20 pointer-events-none">
+              <div className="w-32 h-32 rounded-full border border-slate-300 dark:border-slate-500 absolute" />
+              <div className="w-48 h-48 rounded-full border border-slate-300 dark:border-slate-600 absolute" />
+              <div className="w-64 h-64 rounded-full border border-slate-200 dark:border-slate-700 absolute" />
             </div>
 
             <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,0,0,0.5)] z-10 relative">
-                <Award className="w-8 h-8 text-slate-500 dark:text-slate-400" />
+              <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center mb-6 shadow-sm dark:shadow-[0_0_30px_rgba(0,0,0,0.5)] z-10 relative">
+                <Award className="w-8 h-8 text-slate-400 dark:text-slate-400" />
               </div>
             </div>
             
@@ -156,7 +156,7 @@ export default function PMStudioDashboard() {
             
             <button 
               onClick={() => navigate('/pm-studio/profile')}
-              className="mt-8 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-slate-100 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white transition-colors relative z-10 shadow-sm dark:shadow-none"
+              className="mt-8 px-6 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white transition-colors relative z-10 shadow-sm dark:shadow-none"
             >
               View Empty Profile
             </button>

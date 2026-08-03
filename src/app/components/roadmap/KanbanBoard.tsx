@@ -49,7 +49,7 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
       ref={setNodeRef}
       style={style}
       whileHover={isDragging ? undefined : { scale: 1.02, y: -2 }}
-      className={`bg-[#151A27] p-4 rounded-2xl border border-slate-800 shadow-sm flex flex-col gap-3 relative group hover:shadow-lg hover:border-primary-500/50 transition-all cursor-pointer ${isDragging ? 'cursor-grabbing shadow-2xl scale-105 border-primary-500 rotate-2 ring-4 ring-primary-500/20' : ''}`}
+      className={`bg-white dark:bg-[#151A27] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-3 relative group hover:shadow-lg hover:border-primary-500/50 transition-all cursor-pointer ${isDragging ? 'cursor-grabbing shadow-2xl scale-105 border-primary-500 rotate-2 ring-4 ring-primary-500/20' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -101,7 +101,7 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
           {item.roadmap_assignees && item.roadmap_assignees.length > 0 && (
             <div className="flex -space-x-1.5 overflow-hidden mr-1">
               {item.roadmap_assignees.map(a => (
-                <div key={a.user_id} className="relative inline-block rounded-full ring-1 ring-[#151A27]">
+                <div key={a.user_id} className="relative inline-block rounded-full ring-1 ring-white dark:ring-[#151A27]">
                   <UserAvatar userId={a.user_id} avatarUrl={a.users.avatar} name={a.users.name} className="w-5 h-5 rounded-full object-cover" />
                 </div>
               ))}
@@ -342,33 +342,33 @@ export function KanbanBoard() {
       id: 'now', 
       title: 'Now', 
       accent: 'bg-emerald-500 shadow-emerald-500/40',
-      text: 'text-emerald-400',
-      badge: 'bg-emerald-500/20 text-emerald-400',
-      columnBg: 'bg-slate-800/20 border border-slate-800/50 hover:bg-slate-800/40'
+      text: 'text-emerald-600 dark:text-emerald-400',
+      badge: 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+      columnBg: 'bg-slate-100 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800/40'
     },
     { 
       id: 'next', 
       title: 'Next', 
       accent: 'bg-amber-500 shadow-amber-500/40',
-      text: 'text-amber-400',
-      badge: 'bg-amber-500/20 text-amber-400',
-      columnBg: 'bg-slate-800/20 border border-slate-800/50 hover:bg-slate-800/40'
+      text: 'text-amber-600 dark:text-amber-400',
+      badge: 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
+      columnBg: 'bg-slate-100 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800/40'
     },
     { 
       id: 'later', 
       title: 'Later', 
       accent: 'bg-slate-400 shadow-slate-400/40',
-      text: 'text-slate-400',
-      badge: 'bg-slate-800 text-slate-400',
-      columnBg: 'bg-slate-800/20 border border-slate-800/50 hover:bg-slate-800/40'
+      text: 'text-slate-500 dark:text-slate-400',
+      badge: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
+      columnBg: 'bg-slate-100 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800/40'
     },
     { 
       id: 'completed', 
       title: 'Completed', 
       accent: 'bg-primary-500 shadow-primary-500/40',
-      text: 'text-primary-400',
-      badge: 'bg-primary-500/20 text-primary-400',
-      columnBg: 'bg-slate-800/20 border border-slate-800/50 hover:bg-slate-800/40'
+      text: 'text-primary-600 dark:text-primary-400',
+      badge: 'bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400',
+      columnBg: 'bg-slate-100 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800/40'
     }
   ];
 
@@ -405,7 +405,7 @@ export function KanbanBoard() {
                 </SortableContext>
                 
                 {addingToCol === col.id ? (
-                  <form onSubmit={(e) => handleCreate(e, col.id)} className="bg-[#151A27] p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-lg mt-1 relative overflow-hidden">
+                  <form onSubmit={(e) => handleCreate(e, col.id)} className="bg-white dark:bg-[#151A27] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg mt-1 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-primary-400" />
                     <input
                       autoFocus
