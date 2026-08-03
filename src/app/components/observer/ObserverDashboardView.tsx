@@ -188,11 +188,11 @@ export default function ObserverDashboardView({
 
       {/* ── HEADER — compact on mobile ── */}
       <div className="flex items-center gap-3 mb-4 sm:mb-6">
-        <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-[#111111] border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
+        <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
           <UserAvatar userId={user?.id || ''} name={profile?.name || user?.email} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover scale-110" />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-[18px] sm:text-[26px] text-white leading-tight tracking-tight m-0 truncate">
+          <h1 className="font-bold text-[18px] sm:text-[26px] text-slate-900 dark:text-white leading-tight tracking-tight m-0 truncate">
             {greeting}, <span className="text-primary-400">{firstName} 👋</span>
           </h1>
           {/* Badges + CTA on same row */}
@@ -201,7 +201,7 @@ export default function ObserverDashboardView({
               <Eye className="w-3 h-3" /> Observer
             </span>
             {profile?.domain && (
-              <span className="px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-mono font-bold uppercase hidden sm:inline-flex">
+              <span className="px-2 py-0.5 rounded-full border border-slate-100 bg-slate-50 text-slate-500 text-[10px] font-mono font-bold uppercase hidden sm:inline-flex shadow-sm dark:shadow-none">
                 {profile.domain}
               </span>
             )}
@@ -211,7 +211,7 @@ export default function ObserverDashboardView({
             <div className="ml-auto flex items-center gap-2">
               <Link
                 to="/dashboard/followed-rooms"
-                className="inline-flex sm:hidden items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-full text-[11px] font-bold shadow-sm transition-all shrink-0"
+                className="inline-flex sm:hidden items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-slate-100 dark:border-white/10 hover:bg-white/10 text-slate-900 dark:text-white rounded-full text-[11px] font-bold shadow-sm transition-all shrink-0"
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span>Following</span>
@@ -239,7 +239,7 @@ export default function ObserverDashboardView({
               </div>
               <div className="min-w-0">
                 <div className={`font-bold text-[22px] sm:text-[28px] tracking-tight leading-none ${s.color}`}>{s.value}</div>
-                <div className="text-[10px] sm:text-[11px] text-slate-400 lowercase mt-0.5 font-mono font-medium leading-tight">{s.label}</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 lowercase mt-0.5 font-mono font-medium leading-tight">{s.label}</div>
                 <div className={`text-[10px] font-bold mt-0.5 hidden sm:block ${s.deltaColor}`}>{s.delta}</div>
               </div>
             </>
@@ -286,9 +286,9 @@ export default function ObserverDashboardView({
         {/* ── CENTER: LIVE FEED ── */}
         <div>
           <div className="flex items-center gap-2 mb-5">
-            <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold">Live feed</div>
+            <div className="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">Live feed</div>
             <div className="h-px bg-white/10 flex-1 ml-2" />
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white/5 border border-slate-100 dark:border-white/10 px-3 py-1 rounded-full shadow-sm dark:shadow-none">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>{observerStats?.roomsFollowed ?? 0} rooms followed</span>
             </div>
@@ -303,7 +303,7 @@ export default function ObserverDashboardView({
                 className={`px-3 py-1.5 min-h-[36px] rounded-full text-[12px] font-bold capitalize transition-all border focus-ring shrink-0 snap-start ${
                   activeFilter === chip
                     ? "bg-primary-500 border-primary-500 text-white shadow-[0_0_10px_rgba(108,92,231,0.3)]"
-                    : "bg-[#111111] border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                    : "bg-white dark:bg-[#111111] border-slate-200 dark:border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {chip}
@@ -314,9 +314,9 @@ export default function ObserverDashboardView({
           {/* Feed */}
           <div className="flex flex-col gap-4 mb-12">
             {dbUpdates.length === 0 && filteredUpdates.length === 0 ? (
-              <div className="p-8 sm:p-12 text-center text-slate-400 text-[14px] font-medium bg-[#0a0a0a] border border-white/5 rounded-[24px] shadow-sm">
+              <div className="p-8 sm:p-12 text-center text-slate-500 dark:text-slate-400 text-[14px] font-medium bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[24px] shadow-sm">
                 <div className="text-3xl mb-3">☕</div>
-                <p className="font-semibold text-slate-300 mb-1">No builds in your feed yet</p>
+                <p className="font-semibold text-slate-600 dark:text-slate-300 mb-1">No builds in your feed yet</p>
                 <p className="text-[13px]">Follow some builders or rooms to see their updates here.</p>
                 <Link
                   to="/dashboard/explore"
@@ -326,7 +326,7 @@ export default function ObserverDashboardView({
                 </Link>
               </div>
             ) : filteredUpdates.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-[14px] font-medium bg-[#0a0a0a] border border-white/5 rounded-[24px] shadow-sm">
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-[14px] font-medium bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[24px] shadow-sm">
                 No builds matching this filter.
               </div>
             ) : (
@@ -364,7 +364,7 @@ export default function ObserverDashboardView({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="bg-[#0a0a0a] border border-white/5 shadow-2xl rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-white/10 hover:bg-[#111] transition-all duration-300 relative group overflow-hidden"
+                    className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 shadow-2xl rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-slate-100 dark:border-white/10 hover:bg-[#111] transition-all duration-300 relative group overflow-hidden"
                   >
                     {/* Subtle background glow on hover */}
                     <div className="absolute -inset-24 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500 pointer-events-none" />
@@ -373,16 +373,16 @@ export default function ObserverDashboardView({
                       {/* Header */}
                       <div className="flex justify-between items-start gap-3 mb-3">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0 border border-white/10 overflow-hidden bg-[#1a1a1a]">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shrink-0 border border-slate-100 dark:border-white/10 overflow-hidden bg-slate-50 dark:bg-[#1a1a1a] shadow-sm dark:shadow-none">
                             <UserAvatar userId={upd.authorId} name={upd.authorName} avatarUrl={upd.authorAvatar} className="w-full h-full object-cover" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
-                              <span className="font-extrabold text-[14px] sm:text-[15px] text-white flex items-center gap-1.5 min-w-0 max-w-full">
+                              <span className="font-extrabold text-[14px] sm:text-[15px] text-slate-900 dark:text-white flex items-center gap-1.5 min-w-0 max-w-full">
                                 <span className="truncate block leading-tight">{upd.authorName}</span>
                                 <VerifiedTick isVerified={!!upd.authorIsVerifiedExpert} className="w-3.5 h-3.5 shrink-0" />
                               </span>
-                              <span className="text-[12px] text-slate-400 font-medium truncate leading-tight">
+                              <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium truncate leading-tight">
                                 in {upd.rooms?.title || "Build Room"}
                               </span>
                             </div>
@@ -397,12 +397,12 @@ export default function ObserverDashboardView({
                       </div>
   
                       {/* Content */}
-                      <p className="text-[14px] sm:text-[15px] text-slate-300 leading-relaxed mb-4 whitespace-pre-wrap break-words">
+                      <p className="text-[14px] sm:text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed mb-4 whitespace-pre-wrap break-words">
                         {upd.content}
                       </p>
   
                       {/* Actions */}
-                      <div className="flex items-center gap-2 pt-3 border-t border-white/5 flex-wrap">
+                      <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-white/5 flex-wrap">
                       {(
                         [
                           { type: "sharp" as const, label: "✦ Sharp", activeClass: "bg-primary-500/10 border-primary-500/20 text-primary-400" },
@@ -424,7 +424,7 @@ export default function ObserverDashboardView({
                             className={`px-3 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-colors border flex items-center gap-1.5 focus-ring ${
                               isActive
                                 ? rxn.activeClass
-                                : "bg-white/5 shadow-sm border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20"
+                                : "bg-white/5 shadow-sm border-slate-200 dark:border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:border-slate-300 dark:border-white/20"
                             }`}
                           >
                             <span>{rxn.label}</span>
@@ -449,7 +449,7 @@ export default function ObserverDashboardView({
                         ) : (
                           <button
                             onClick={() => handleFollowRoom(upd.roomId)}
-                            className="text-[11px] font-bold text-slate-300 bg-white/5 border border-white/10 hover:bg-primary-500/10 hover:text-primary-400 hover:border-primary-500/20 px-2.5 py-1.5 rounded-full transition-all focus-ring min-h-[36px]"
+                            className="text-[11px] font-bold text-slate-300 bg-white/5 border border-slate-100 dark:border-white/10 hover:bg-primary-500/10 hover:text-primary-400 hover:border-primary-500/20 px-2.5 py-1.5 rounded-full transition-all focus-ring min-h-[36px] shadow-sm dark:shadow-none"
                           >
                             + Follow
                           </button>
@@ -477,12 +477,12 @@ export default function ObserverDashboardView({
         <div className="flex flex-col gap-6">
 
           {/* Watching now — real followed rooms */}
-          <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[20px] p-5">
-            <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-4">Watching now</div>
+          <div className="bg-white dark:bg-[#111111]/80 backdrop-blur-xl border border-slate-100 dark:border-white/10 shadow-2xl rounded-[20px] p-5">
+            <div className="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mb-4">Watching now</div>
             {observedRooms.length === 0 ? (
               <div className="text-[13px] text-slate-500 font-medium text-center py-4">
                 No rooms followed yet.<br />
-                <Link to="/dashboard/explore" className="text-primary-400 hover:text-white transition-colors font-bold">Explore builders →</Link>
+                <Link to="/dashboard/explore" className="text-primary-400 hover:text-slate-900 dark:text-white transition-colors font-bold">Explore builders →</Link>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -503,12 +503,12 @@ export default function ObserverDashboardView({
                         {isActive && (
                           <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-white/10"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-slate-100 dark:border-white/10"></span>
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-bold text-white truncate group-hover:text-primary-400 transition-colors">
+                        <div className="text-[13px] font-bold text-slate-900 dark:text-white truncate group-hover:text-primary-400 transition-colors">
                           {room.title}
                         </div>
                         <div className={`text-[11px] font-mono ${isActive ? "text-emerald-500 font-bold" : "text-slate-400"}`}>
@@ -523,8 +523,8 @@ export default function ObserverDashboardView({
           </div>
 
           {/* Suggested for you — real public rooms */}
-          <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[20px] p-5">
-            <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-4">Suggested for you</div>
+          <div className="bg-white dark:bg-[#111111]/80 backdrop-blur-xl border border-slate-100 dark:border-white/10 shadow-2xl rounded-[20px] p-5">
+            <div className="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mb-4">Suggested for you</div>
             {suggestedRooms.length === 0 ? (
               <div className="text-[13px] text-slate-500 font-medium text-center py-4">
                 You're following all active rooms!
@@ -532,14 +532,14 @@ export default function ObserverDashboardView({
             ) : (
               <div className="flex flex-col gap-3">
                 {suggestedRooms.map((room: any) => (
-                  <div key={room.id} className="border border-white/10 rounded-[14px] p-4 hover:border-primary-400/30 bg-white/5 hover:bg-white/10 transition-all group">
+                  <div key={room.id} className="border border-slate-100 dark:border-white/10 rounded-[14px] p-4 hover:border-primary-400/30 bg-white/5 hover:bg-white/10 transition-all group shadow-sm dark:shadow-none">
                     <div className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-wider mb-1">
                       {room.tags?.[0] || "Product"}
                     </div>
-                    <div className="text-[13px] font-bold text-white mb-1 group-hover:text-primary-400 transition-colors truncate">
+                    <div className="text-[13px] font-bold text-slate-900 dark:text-white mb-1 group-hover:text-primary-400 transition-colors truncate">
                       {room.title}
                     </div>
-                    <div className="text-[11px] text-slate-400 font-mono mb-3">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mb-3">
                       {room.updateCount ?? 0} updates · {room.observerCount ?? 0} observers
                     </div>
                     <button
@@ -560,25 +560,25 @@ export default function ObserverDashboardView({
           </div>
 
           {/* Your activity */}
-          <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[20px] p-5">
-            <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-4">Your activity this week</div>
+          <div className="bg-white dark:bg-[#111111]/80 backdrop-blur-xl border border-slate-100 dark:border-white/10 shadow-2xl rounded-[20px] p-5">
+            <div className="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mb-4">Your activity this week</div>
             {[
               { label: "Reactions given", value: observerStats?.totalReactions ?? 0, color: "text-white" },
               { label: "Rooms followed", value: observerStats?.roomsFollowed ?? 0, color: "text-white" },
               { label: "Sharp critiques", value: observerStats?.sharpInsights ?? 0, color: "text-primary-400" },
               { label: "Domain reputation", value: profile?.reputation ? `${profile.reputation} ★` : "0 ★", color: "text-amber-500" },
             ].map((row, i, arr) => (
-              <div key={i} className={`flex justify-between items-center py-2.5 ${i < arr.length - 1 ? "border-b border-white/10" : ""}`}>
-                <span className="text-[13px] text-slate-400 font-medium">{row.label}</span>
+              <div key={i} className={`flex justify-between items-center py-2.5 ${i < arr.length - 1 ? "border-b border-slate-200 dark:border-white/10" : ""}`}>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400 font-medium">{row.label}</span>
                 <span className={`text-[13px] font-bold font-mono ${row.color}`}>{row.value}</span>
               </div>
             ))}
           </div>
 
           {/* Weekly digest */}
-          <div className="bg-slate-900 rounded-[20px] p-5 text-white">
+          <div className="bg-slate-900 rounded-[20px] p-5 text-slate-900 dark:text-white">
             <div className="text-[15px] font-bold italic mb-2">This week's best builds</div>
-            <div className="text-[12px] text-slate-400 leading-relaxed mb-4">
+            <div className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
               Top build logs picked by the community this week. Follow more builders to see their progress.
             </div>
             <Link

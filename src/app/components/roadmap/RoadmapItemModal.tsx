@@ -92,7 +92,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                {item.status} / {item.sprint_id ? 'Sprint' : 'Unplanned'}
              </span>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -122,14 +122,14 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
 
               {/* Template Quick Insert Bar */}
               <div className="mb-3 flex items-center gap-2 flex-wrap text-xs">
-                <span className="text-slate-400 font-medium mr-1 text-[11px] uppercase tracking-wider">Templates:</span>
+                <span className="text-slate-500 dark:text-slate-400 font-medium mr-1 text-[11px] uppercase tracking-wider">Templates:</span>
                 <button
                   type="button"
                   onClick={() => {
                     const template = `### User Story\n**As a** [user/role]\n**I want to** [action/feature]\n**So that** [benefit/value]\n\n`;
                     setDescription(prev => prev ? `${prev.trim()}\n\n${template}` : template);
                   }}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-100 transition-all active:scale-95 cursor-pointer"
                 >
                   + User Story
                 </button>
@@ -139,7 +139,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                     const template = `### Acceptance Criteria\n- [ ] **Given** [context], **When** [action], **Then** [expected outcome]\n- [ ] **Given** [context], **When** [action], **Then** [expected outcome]\n\n`;
                     setDescription(prev => prev ? `${prev.trim()}\n\n${template}` : template);
                   }}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-100 transition-all active:scale-95 cursor-pointer"
                 >
                   + Acceptance Criteria
                 </button>
@@ -149,7 +149,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                     const template = `### Use Cases\n#### Scenario 1: [Name]\n1. **Actor**: [User/System]\n2. **Preconditions**: [State before]\n3. **Main Flow**: [Steps]\n4. **Postconditions**: [Outcome]\n\n`;
                     setDescription(prev => prev ? `${prev.trim()}\n\n${template}` : template);
                   }}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all active:scale-95 cursor-pointer"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-100 transition-all active:scale-95 cursor-pointer"
                 >
                   + Use Cases
                 </button>
@@ -160,10 +160,10 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={() => { if (description !== item.description) handleSaveField({ description }); }}
                 placeholder="Write your description, User Story, Acceptance Criteria, or Use Cases here..."
-                className="w-full min-h-[160px] text-slate-700 border border-slate-200 hover:border-slate-300 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 rounded-xl p-3.5 resize-y bg-slate-50 focus:bg-white transition-all text-sm outline-none font-mono leading-relaxed"
+                className="w-full min-h-[160px] text-slate-700 border border-slate-100 hover:border-slate-300 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 rounded-xl p-3.5 resize-y bg-slate-50 focus:bg-white transition-all text-sm outline-none font-mono leading-relaxed shadow-sm dark:shadow-none"
               />
               <div className="mt-2.5 flex items-center justify-between gap-3">
-                <span className="text-[12px] text-slate-400 font-medium flex items-center gap-1">
+                <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
                   {hasUnsavedChanges ? (
                     <span className="text-amber-600 font-semibold">• Unsaved changes</span>
                   ) : (
@@ -174,7 +174,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                   type="button"
                   onClick={() => handleSaveField({ title, description })}
                   disabled={isSaving || !hasUnsavedChanges}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 disabled:opacity-40 text-slate-900 dark:text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {isSaving ? 'Saving...' : 'Save Changes'}
@@ -185,7 +185,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
             {/* Comments Section */}
             <div className="pt-6 border-t border-slate-100">
               <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-slate-400" />
+                <MessageSquare className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Comments {comments && comments.length > 0 ? `(${comments.length})` : ''}
               </h3>
               
@@ -204,7 +204,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-slate-900">{comment.users.name}</span>
-                            <span className="text-xs text-slate-400">{format(new Date(comment.created_at), 'MMM d, h:mm a')}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{format(new Date(comment.created_at), 'MMM d, h:mm a')}</span>
                           </div>
                           {canDeleteComment && (
                             <button
@@ -217,7 +217,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                             </button>
                           )}
                         </div>
-                        <p className="text-sm text-slate-700 bg-slate-50 px-3 py-2 rounded-xl rounded-tl-none inline-block max-w-full leading-relaxed border border-slate-100/80">
+                        <p className="text-sm text-slate-700 bg-slate-50 px-3 py-2 rounded-xl rounded-tl-none inline-block max-w-full leading-relaxed border border-slate-100/80 shadow-sm dark:shadow-none">
                           {comment.content}
                         </p>
                       </div>
@@ -238,7 +238,7 @@ export function RoadmapItemModal({ item, onClose }: RoadmapItemModalProps) {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Ask a question or share an update..."
-                    className="w-full min-h-[80px] text-sm text-slate-900 border border-slate-200 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 rounded-lg p-3 pr-12 resize-y outline-none"
+                    className="w-full min-h-[80px] text-sm text-slate-900 border border-slate-100 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 rounded-lg p-3 pr-12 resize-y outline-none"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();

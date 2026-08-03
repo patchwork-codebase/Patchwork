@@ -23,7 +23,7 @@ export default function TermsOfService() {
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
-            className="mb-8 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+            className="mb-8 hover:bg-white/10 text-zinc-400 hover:text-slate-900 dark:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -43,7 +43,7 @@ export default function TermsOfService() {
 
           <div className="space-y-12 text-zinc-300 leading-relaxed">
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 1. Acceptance of Terms
               </h2>
               <p>
@@ -53,7 +53,7 @@ export default function TermsOfService() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 2. User License
               </h2>
               <p>
@@ -69,7 +69,7 @@ export default function TermsOfService() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 3. Disclaimer
               </h2>
               <p>

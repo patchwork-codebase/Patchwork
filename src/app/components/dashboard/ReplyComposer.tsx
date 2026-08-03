@@ -70,29 +70,29 @@ export function ReplyComposer({
 
   return (
     <div className="mt-3 flex flex-col gap-2 relative z-10" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-      <div className="w-full bg-[#111111] border border-white/10 rounded-xl overflow-hidden focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 transition-all">
+      <div className="w-full bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 rounded-xl overflow-hidden focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 transition-all shadow-sm dark:shadow-none">
         {/* Formatting Toolbar */}
-        <div className="flex items-center gap-1 px-3 py-2 border-b border-white/10 bg-white/5 overflow-x-auto">
-          <button onClick={() => insertFormatting('**', '**')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Bold"><Bold className="w-4 h-4" /></button>
-          <button onClick={() => insertFormatting('*', '*')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Italic"><Italic className="w-4 h-4" /></button>
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-100 dark:border-white/10 bg-white/5 overflow-x-auto shadow-sm dark:shadow-none">
+          <button onClick={() => insertFormatting('**', '**')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Bold"><Bold className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('*', '*')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Italic"><Italic className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-white/10 mx-1" />
-          <button onClick={() => insertFormatting('1. ')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Numbered List"><ListOrdered className="w-4 h-4" /></button>
-          <button onClick={() => insertFormatting('- ')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Bulleted List"><List className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('1. ')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Numbered List"><ListOrdered className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('- ')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Bulleted List"><List className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-white/10 mx-1" />
-          <button onClick={() => insertFormatting('[', '](url)')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Link"><LinkIcon className="w-4 h-4" /></button>
-          <button onClick={() => insertFormatting('`', '`')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Code"><Code className="w-4 h-4" /></button>
-          <button onClick={() => insertFormatting('> ')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Quote"><Quote className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('[', '](url)')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Link"><LinkIcon className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('`', '`')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Code"><Code className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('> ')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Quote"><Quote className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-white/10 mx-1" />
-          <button onClick={() => insertFormatting('@')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Mention"><AtSign className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('@')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Mention"><AtSign className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-white/10 mx-1" />
-          <button onClick={() => insertFormatting('![alt text](', ')')} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Image"><ImageIcon className="w-4 h-4" /></button>
+          <button onClick={() => insertFormatting('![alt text](', ')')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded transition-colors" title="Image"><ImageIcon className="w-4 h-4" /></button>
           <div className="relative flex items-center">
             <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className={`p-1.5 rounded transition-colors ${showEmojiPicker ? 'text-primary-500 bg-primary-500/20' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} title="Emoji"><Smile className="w-4 h-4" /></button>
           </div>
         </div>
         <InlineEmojiPicker
           isOpen={showEmojiPicker}
-          className="px-3 py-2 bg-[#111111] border-b border-white/10"
+          className="px-3 py-2 bg-white dark:bg-[#111111] border-b border-slate-100 dark:border-white/10 shadow-sm dark:shadow-none"
           buttonClassName="w-8 h-8 rounded-full hover:bg-white/10 text-white"
           onEmojiSelect={(emoji) => {
             setReplyText(prev => prev + emoji);
@@ -105,13 +105,13 @@ export function ReplyComposer({
           value={replyText}
           onChange={(e) => setReplyText(e.target.value)}
           placeholder={`Replying to @${update.authorName.toLowerCase().replace(/\s+/g, '')}...`}
-          className="w-full bg-transparent p-3 text-[16px] sm:text-[14px] text-white placeholder-slate-500 focus:outline-none resize-none min-h-[80px]"
+          className="w-full bg-transparent p-3 text-[16px] sm:text-[14px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none resize-none min-h-[80px]"
         />
       </div>
       <div className="flex justify-end gap-2 mt-1">
         <button
           onClick={onCancel}
-          className="px-4 py-2 rounded-full text-[13px] font-bold text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 rounded-full text-[13px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
         >
           Cancel
         </button>

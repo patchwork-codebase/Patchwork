@@ -151,12 +151,12 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
           >
             <div className="flex items-start justify-between p-5 border-b border-white/[0.08] shrink-0">
               <div>
-                <h2 className="text-[18px] font-bold text-white mb-1">{initialDecision ? 'Edit decision' : 'Log a decision'}</h2>
-                <p className="text-[12px] text-slate-400 font-medium">Record structured architectural choices, pivots, or blockers. (For general progress, use 'Post an update')</p>
+                <h2 className="text-[18px] font-bold text-slate-900 dark:text-white mb-1">{initialDecision ? 'Edit decision' : 'Log a decision'}</h2>
+                <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">Record structured architectural choices, pivots, or blockers. (For general progress, use 'Post an update')</p>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -165,7 +165,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
             <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto min-h-0">
               {/* Type Selection */}
               <div>
-                <label className="block text-[13px] font-bold text-slate-400 mb-3 uppercase tracking-wider">Type</label>
+                <label className="block text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">Type</label>
                 <div className="grid grid-cols-2 gap-3">
                   {TYPE_OPTIONS.map(opt => {
                     const isSelected = type === opt.id;
@@ -195,13 +195,13 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
 
               {/* Title */}
               <div>
-                <label className="block text-[13px] font-bold text-slate-400 mb-2">Title</label>
+                <label className="block text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-2">Title</label>
                 <input
                   type="text"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Moved KYC check from step 7 → step 1"
-                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
                   autoFocus
                 />
               </div>
@@ -209,10 +209,10 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
               {/* Privacy Toggle */}
               <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl">
                 <div>
-                  <h4 className="text-[14px] font-bold text-white mb-1 flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-slate-400" /> Private Decision
+                  <h4 className="text-[14px] font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Private Decision
                   </h4>
-                  <p className="text-[12px] text-slate-400">Only visible to you and invited builders. Observers cannot see this.</p>
+                  <p className="text-[12px] text-slate-500 dark:text-slate-400">Only visible to you and invited builders. Observers cannot see this.</p>
                 </div>
                 <button
                   type="button"
@@ -225,12 +225,12 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
 
               {/* Description */}
               <div>
-                <label className="block text-[13px] font-bold text-slate-400 mb-2">Description <span className="font-normal text-slate-600">(Optional)</span></label>
+                <label className="block text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-2">Description <span className="font-normal text-slate-600">(Optional)</span></label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Why was this decision made? What's the impact?"
-                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors resize-none h-24 mb-3"
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors resize-none h-24 mb-3"
                 />
                 {mediaPreview && (
                   <div className="relative w-[150px] mb-3 group/preview">
@@ -240,14 +240,14 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
                     <button 
                       type="button" 
                       onClick={() => setMediaPreview(null)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-slate-800 text-white rounded-full flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity hover:bg-slate-700 shadow-sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-full flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity hover:bg-slate-200 dark:bg-slate-700 shadow-sm"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 )}
                 <div className="flex gap-2">
-                  <label className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.08] text-slate-300 rounded-lg text-[12px] font-bold cursor-pointer transition-all">
+                  <label className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.08] text-slate-600 dark:text-slate-300 rounded-lg text-[12px] font-bold cursor-pointer transition-all">
                     <ImageIcon className="w-4 h-4 text-primary-400" />
                     Attach Image
                     <input
@@ -274,7 +274,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
 
               {/* External Link */}
               <div>
-                <label className="block text-[13px] font-bold text-slate-400 mb-2 flex items-center gap-1.5">
+                <label className="block text-[13px] font-bold text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
                   <LinkIcon className="w-3.5 h-3.5" /> Link <span className="font-normal text-slate-600">(Optional)</span>
                 </label>
                 <input
@@ -282,7 +282,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
                   value={externalLink}
                   onChange={e => setExternalLink(e.target.value)}
                   placeholder="e.g. Figma, Notion, GitHub PR..."
-                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
+                  className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl px-4 py-3 text-[14px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
                 />
               </div>
             </form>
@@ -291,7 +291,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-3 rounded-xl font-bold text-[14px] text-slate-300 hover:text-white hover:bg-white/[0.05] transition-colors"
+                  className="flex-1 py-3 rounded-xl font-bold text-[14px] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white/[0.05] transition-colors"
                 >
                   Cancel
                 </button>
@@ -299,7 +299,7 @@ export function LogDecisionModal({ isOpen, onClose, roomId, userId, onSuccess, i
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !title.trim()}
-                  className="flex-[2] py-3 rounded-xl font-bold text-[14px] text-white bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 transition-colors shadow-[0_0_20px_rgba(139,124,248,0.2)] disabled:shadow-none"
+                  className="flex-[2] py-3 rounded-xl font-bold text-[14px] text-white bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-100 dark:bg-slate-700 disabled:text-slate-400 transition-colors shadow-[0_0_20px_rgba(139,124,248,0.2)] disabled:shadow-none"
                 >
                   {isSubmitting ? 'Logging...' : 'Log Decision'}
                 </button>

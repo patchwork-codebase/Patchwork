@@ -36,7 +36,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-lg overflow-hidden py-1">
           {options.map(option => (
             <button
               key={option.value}
@@ -218,10 +218,10 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
           className="bg-[#1A1825] border border-white/[0.08] rounded-[24px] w-full max-w-[700px] shadow-2xl relative z-10 my-auto flex flex-col max-h-[90vh]"
         >
           <div className="p-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary-400" /> Edit Room Details
             </h2>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
+            <button onClick={onClose} className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-full hover:bg-white/5 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -229,7 +229,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
           <div className="p-6 overflow-y-auto custom-scrollbar">
             <form id="edit-room-form" onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-2">Cover Image (Optional)</label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-2">Cover Image (Optional)</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full h-32 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-primary-500/50 bg-ink/50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
@@ -238,7 +238,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                     <>
                       <SmartImage src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-white text-sm font-bold flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Change Image</span>
+                        <span className="text-slate-900 dark:text-white text-sm font-bold flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Change Image</span>
                       </div>
                     </>
                   ) : (
@@ -252,31 +252,31 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
               </div>
 
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-2">Room Title</label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-2">Room Title</label>
                 <input
                   type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   required maxLength={100}
                   placeholder="e.g., Redesigning the onboarding flow"
-                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-2">Description</label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-2">Description</label>
                 <textarea
                   value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={3} maxLength={500}
                   placeholder="What's the goal of this room? What are you trying to accomplish?"
-                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium resize-none"
+                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-2">Primary Project Link</label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-2">Primary Project Link</label>
                 <input
                   type="url" value={form.primaryLink} onChange={e => setForm(f => ({ ...f, primaryLink: e.target.value }))}
                   placeholder="https://figma.com/... or https://github.com/..."
-                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-ink/50 border border-white/[0.08] rounded-xl text-[15px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
                 />
               </div>
 
@@ -304,7 +304,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
 
               {/* Visibility Selector */}
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-3">Room Visibility</label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-3">Room Visibility</label>
                 <div className="grid grid-cols-1 gap-2">
                   {([
                     { value: 'public', icon: '🌍', label: 'Public', desc: 'Visible to everyone. In feed.' },
@@ -326,7 +326,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                       <span className="text-lg shrink-0">{opt.icon}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-bold text-white">{opt.label}</span>
+                          <span className="text-[13px] font-bold text-slate-900 dark:text-white">{opt.label}</span>
                           {form.visibility === opt.value && (
                             <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary-400/20 text-primary-400">Selected</span>
                           )}
@@ -340,7 +340,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
 
               {/* Protection Flags */}
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-3">Content Protection</label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-3">Content Protection</label>
                 <div className="space-y-2">
                   {([
                     { key: 'disableDownloads', label: 'Disable Downloads', desc: 'Prevent observers from downloading files', icon: '🛇' },
@@ -359,7 +359,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                       <div className="flex items-start gap-3">
                         <span className="text-lg">{flag.icon}</span>
                         <div>
-                          <p className="text-[13px] font-bold text-white">{flag.label}</p>
+                          <p className="text-[13px] font-bold text-slate-900 dark:text-white">{flag.label}</p>
                           <p className="text-[11px] text-slate-500 font-medium">{flag.desc}</p>
                         </div>
                       </div>
@@ -376,12 +376,12 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
               </div>
 
               <div>
-                <label className="block text-[13px] font-bold text-slate-300 mb-3">Tags <span className="text-slate-500 font-normal ml-1">(up to 5)</span></label>
+                <label className="block text-[13px] font-bold text-slate-600 dark:text-slate-300 mb-3">Tags <span className="text-slate-500 font-normal ml-1">(up to 5)</span></label>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {tags.map(tag => (
                     <span key={tag} className="inline-flex items-center gap-1.5 bg-primary-500/15 border border-primary-500/30 text-primary-400 text-[11px] px-3 py-1.5 rounded-md font-bold uppercase tracking-wider font-mono">
                       {tag}
-                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-white transition-colors"><X className="w-3.5 h-3.5" /></button>
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-slate-900 dark:text-white transition-colors"><X className="w-3.5 h-3.5" /></button>
                     </span>
                   ))}
                 </div>
@@ -390,18 +390,18 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
                     type="text" value={form.tagInput} onChange={e => setForm(f => ({ ...f, tagInput: e.target.value }))}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(form.tagInput); } }}
                     placeholder="Add a tag..."
-                    className="flex-1 px-5 py-3.5 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
+                    className="flex-1 px-5 py-3.5 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
                   />
                   <button
                     type="button" onClick={() => addTag(form.tagInput)} disabled={!form.tagInput.trim() || tags.length >= 5}
-                    className="px-5 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="px-5 py-3.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-slate-900 dark:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     + Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTED_TAGS.filter(t => !tags.includes(t)).map(tag => (
-                    <button key={tag} type="button" onClick={() => addTag(tag)} disabled={tags.length >= 5} className="text-[11px] px-3 py-1.5 border border-dashed border-white/20 rounded-md text-slate-400 hover:border-white/40 hover:text-white transition-colors disabled:opacity-30 uppercase tracking-wider font-bold font-mono">
+                    <button key={tag} type="button" onClick={() => addTag(tag)} disabled={tags.length >= 5} className="text-[11px] px-3 py-1.5 border border-dashed border-slate-300 dark:border-white/20 rounded-md text-slate-500 dark:text-slate-400 hover:border-white/40 hover:text-slate-900 dark:text-white transition-colors disabled:opacity-30 uppercase tracking-wider font-bold font-mono">
                       + {tag}
                     </button>
                   ))}
@@ -411,7 +411,7 @@ export function EditRoomModal({ open, onClose, room }: EditRoomModalProps) {
           </div>
 
           <div className="p-6 border-t border-white/[0.08] flex justify-end gap-3 shrink-0">
-            <button onClick={onClose} className="px-5 py-2.5 text-slate-400 hover:text-white rounded-xl text-[14px] font-bold transition-colors">Cancel</button>
+            <button onClick={onClose} className="px-5 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-xl text-[14px] font-bold transition-colors">Cancel</button>
             <button form="edit-room-form" type="submit" disabled={loading || !form.title.trim()} className="flex items-center gap-2 px-6 py-2.5 bg-primary-400 hover:bg-[#7b6ce8] text-white rounded-xl text-[14px] font-bold transition-all disabled:opacity-50 shadow-lg shadow-primary-400/20">
               <Save className="w-4 h-4" /> {loading ? 'Saving...' : 'Save Changes'}
             </button>

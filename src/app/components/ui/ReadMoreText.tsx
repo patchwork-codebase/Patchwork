@@ -83,8 +83,8 @@ function QuoteBlock({ lines }: { lines: string[] }) {
 
   // Generic blockquote styling
   return (
-    <div className="my-2.5 p-3 bg-slate-50/90 rounded-2xl border border-slate-200/80 border-l-4 border-l-slate-400 flex items-start gap-2.5 shadow-xs text-[13px]">
-      <Quote className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+    <div className="my-2.5 p-3 bg-slate-50/90 rounded-2xl border border-slate-100/80 border-l-4 border-l-slate-400 flex items-start gap-2.5 shadow-xs text-[13px]">
+      <Quote className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 mt-0.5" />
       <div className="text-slate-600 italic font-medium leading-relaxed whitespace-pre-wrap">
         {cleanText}
       </div>

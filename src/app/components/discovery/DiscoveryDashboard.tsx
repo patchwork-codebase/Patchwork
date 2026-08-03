@@ -28,7 +28,7 @@ export default function DiscoveryDashboard() {
   if (!project) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-        <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+        <AlertCircle className="w-12 h-12 text-slate-500 dark:text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900">Project Not Found</h2>
         <Link to="/dashboard/discovery" className="text-primary-400 hover:underline mt-4 inline-block">Return to Hub</Link>
       </div>
@@ -65,7 +65,7 @@ export default function DiscoveryDashboard() {
         
         {/* Confidence Gauge & Share */}
         <div className="flex md:flex-col flex-row gap-3 shrink-0 items-center w-full md:w-auto justify-between md:justify-center">
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex md:flex-col flex-row items-center justify-between md:justify-center md:min-w-[150px] shadow-sm gap-2">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 flex md:flex-col flex-row items-center justify-between md:justify-center md:min-w-[150px] shadow-sm gap-2">
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Confidence Score</div>
             <div className={`text-2xl sm:text-3xl font-black ${
               project.confidence_score >= 70 ? 'text-emerald-500' :
@@ -80,7 +80,7 @@ export default function DiscoveryDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 mb-8 overflow-x-auto">
+      <div className="flex border-b border-slate-100 mb-8 overflow-x-auto">
         {['overview', 'hypotheses', 'interviews', 'signals', 'decision'].map(tab => (
           <button
             key={tab}
@@ -97,7 +97,7 @@ export default function DiscoveryDashboard() {
       </div>
 
       {/* Content Area */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-8 min-h-[400px]">
+      <div className="bg-white border border-slate-100 rounded-3xl p-4 sm:p-8 min-h-[400px] shadow-sm dark:shadow-none">
         {activeTab === 'overview' && (
           <ProblemStatementForm project={project} isObserver={isObserver} />
         )}

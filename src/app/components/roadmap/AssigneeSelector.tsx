@@ -168,7 +168,7 @@ export function AssigneeSelector({ roomId, assignedUserIds, onAssign, onUnassign
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-400 hover:bg-slate-50 transition-colors ml-1 bg-white"
+          className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-dashed border-slate-300 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-600 hover:border-slate-400 hover:bg-slate-50 transition-colors ml-1 bg-white"
         >
           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
         </button>
@@ -182,10 +182,10 @@ export function AssigneeSelector({ roomId, assignedUserIds, onAssign, onUnassign
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-200 z-50 overflow-hidden"
+            className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-100 z-50 overflow-hidden"
           >
             <div className="p-2 border-b border-slate-100 relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search members..."

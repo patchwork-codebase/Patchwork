@@ -30,7 +30,7 @@ export function ExploreSearch({ value, onChange, placeholder = "Search builders 
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
-        className="flex-1 bg-transparent border-none outline-none text-[15px] font-medium text-slate-100 placeholder:text-slate-500 py-3 pr-4"
+        className="flex-1 bg-transparent border-none outline-none text-[15px] font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 py-3 pr-4"
       />
       {value && (
         <button
@@ -41,8 +41,8 @@ export function ExploreSearch({ value, onChange, placeholder = "Search builders 
           className="pr-4 pl-2 py-3 flex items-center justify-center shrink-0 group"
           aria-label="Clear search"
         >
-          <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
-            <X className="w-3 h-3 text-slate-400 group-hover:text-slate-300" />
+          <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:bg-slate-700 transition-colors">
+            <X className="w-3 h-3 text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:text-slate-300" />
           </div>
         </button>
       )}

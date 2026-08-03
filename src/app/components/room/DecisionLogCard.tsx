@@ -183,14 +183,14 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   };
 
   return (
-    <div className={isNested ? "flex flex-col h-full" : "bg-transparent rounded-[24px] border border-slate-800 shadow-sm overflow-hidden flex flex-col h-[500px]"}>
+    <div className={isNested ? "flex flex-col h-full" : "bg-white dark:bg-transparent rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-[500px]"}>
       {!isNested ? (
-        <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shrink-0">
           <div>
-            <h3 className="text-[16px] font-extrabold text-slate-100 leading-tight flex items-center gap-2">
+            <h3 className="text-[16px] font-extrabold text-slate-900 dark:text-slate-100 leading-tight flex items-center gap-2">
               Decision log
             </h3>
-            <span className="text-[12px] text-slate-400 font-medium">12 decisions · day 1-12</span>
+            <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">12 decisions · day 1-12</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {isBuilder && (
@@ -201,25 +201,25 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                 <span>+</span> <span className="hidden sm:inline">Log a decision</span><span className="sm:hidden">Log</span>
               </button>
             )}
-            <button className="text-[11px] sm:text-[12px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider shrink-0 whitespace-nowrap">
+            <button className="text-[11px] sm:text-[12px] font-bold text-slate-500 hover:text-slate-900 dark:text-white transition-colors uppercase tracking-wider shrink-0 whitespace-nowrap">
               View All
             </button>
           </div>
         </div>
       ) : (
-        <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between shrink-0 bg-transparent">
+        <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-transparent">
           <div className="flex items-center gap-2">
             <span className="flex items-center justify-center w-5 h-5 rounded bg-primary-400/10 text-primary-400 text-[11px] font-bold border border-primary-400/20">
               {allDecisions.length}
             </span>
-            <span className="text-[12px] text-slate-400 font-medium">decisions logged</span>
+            <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">decisions logged</span>
           </div>
           {isBuilder && (
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsModalOpen(true)}
-              className="group relative overflow-hidden bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
+              className="group relative overflow-hidden bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-200 dark:bg-slate-700 border border-slate-100 dark:border-slate-700 text-slate-900 dark:text-white px-4 py-1.5 rounded-full font-bold text-[12px] transition-all flex items-center gap-1.5 shadow-sm"
             >
               <Plus className="w-3.5 h-3.5 text-primary-400" />
               <span className="relative z-10">Log a decision</span>
@@ -247,7 +247,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
               const hasPushback = itemReactions.some(r => r.type === 'pushback' && (r.observer_id === user?.id || r.observerId === user?.id));
 
               return (
-                <div key={decision.id} className={`pb-5 ${index !== allDecisions.length - 1 ? 'border-b border-slate-800' : ''}`}>
+                <div key={decision.id} className={`pb-5 ${index !== allDecisions.length - 1 ? 'border-b border-slate-200 dark:border-slate-800' : ''}`}>
                   <div className="flex items-start gap-3">
                     <div className={`mt-0.5 w-4 h-4 rounded-full border-2 ${style.border} flex items-center justify-center shrink-0`}>
                       {decision.type === 'shipped' ? <CheckCircle className={`w-2.5 h-2.5 ${style.text}`} /> : <div className={`w-1.5 h-1.5 rounded-full ${style.bg}`} />}
@@ -258,26 +258,26 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                         {decision.is_private && <Lock className="w-2.5 h-2.5 ml-1" />}
                       </div>
                       <div className="flex items-start justify-between gap-4">
-                        <h4 className="text-[14px] font-bold text-slate-100 mb-1">{decision.title}</h4>
+                        <h4 className="text-[14px] font-bold text-slate-900 dark:text-slate-100 mb-1">{decision.title}</h4>
                         {isBuilder && (
                           <div className="flex items-center gap-1 shrink-0">
-                            <button onClick={() => { setEditingDecision(decision); setIsModalOpen(true); }} className="p-1.5 text-slate-400 hover:text-primary-400 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700">
+                            <button onClick={() => { setEditingDecision(decision); setIsModalOpen(true); }} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-primary-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 rounded-lg transition-colors border border-slate-300 dark:border-slate-700">
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={() => setDecisionToDelete(decision.id)} className="p-1.5 text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700">
+                            <button onClick={() => setDecisionToDelete(decision.id)} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 rounded-lg transition-colors border border-slate-300 dark:border-slate-700">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         )}
                       </div>
                       {decision.description && (
-                        <p className="text-[13px] text-slate-400 leading-relaxed mb-2">
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-2">
                           {decision.description}
                         </p>
                       )}
                       
                       {decision.media_url && (
-                        <div className="mb-3 w-fit rounded-xl overflow-hidden border border-slate-200">
+                        <div className="mb-3 w-fit rounded-xl overflow-hidden border border-slate-100">
                           <SmartImage src={decision.media_url} aspectRatio="auto" alt="Decision context" />
                         </div>
                       )}
@@ -287,7 +287,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                           href={decision.external_link.startsWith('http') ? decision.external_link : `https://${decision.external_link}`}
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg text-[12px] font-bold transition-colors mb-3"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg text-[12px] font-bold transition-colors mb-3"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                           View External Resource
@@ -303,13 +303,13 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <button 
                           onClick={() => toggleReaction(decision.id, 'sharp')}
-                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-400 border-primary-400/30' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:border-slate-600 hover:text-slate-200'}`}
+                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-600 dark:text-primary-400 border-primary-400/30' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-200'}`}
                         >
                           <span>✦</span> Sharp {sharpCount > 0 && <span className="opacity-70">{sharpCount}</span>}
                         </button>
                         <button 
                           onClick={() => toggleReaction(decision.id, 'pushback')}
-                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:border-slate-600 hover:text-slate-200'}`}
+                          className={`flex items-center whitespace-nowrap gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-200'}`}
                         >
                           <span>↩</span> Push back {pushbackCount > 0 && <span className="opacity-70">{pushbackCount}</span>}
                         </button>
@@ -318,7 +318,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                         
                         <button 
                           onClick={() => setReplyingTo(replyingTo === decision.id ? null : decision.id)}
-                          className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 hover:text-slate-200 transition-colors"
+                          className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 hover:text-slate-700 dark:text-slate-200 transition-colors"
                         >
                           <MessageCircle className="w-3.5 h-3.5" /> 
                           {itemReplies.length} {itemReplies.length === 1 ? 'Reply' : 'Replies'}
@@ -335,7 +335,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                             className="mt-4 space-y-3"
                           >
                             {itemReplies.map((reply: any) => (
-                              <div key={reply.id} className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-2xl">
+                              <div key={reply.id} className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-2xl">
                                 <UserAvatar 
                                   userId={reply.observer_id || reply.observerId} 
                                   name={reply.observerName} 
@@ -344,10 +344,10 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                                 />
                                 <div>
                                   <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-[12px] font-bold text-slate-100">Observer</span>
+                                    <span className="text-[12px] font-bold text-slate-900 dark:text-slate-100">Observer</span>
                                     <span className="text-[10px] text-slate-500">{timeAgo(reply.created_at || reply.createdAt)}</span>
                                   </div>
-                                  <p className="text-[13px] text-slate-300">{reply.text}</p>
+                                  <p className="text-[13px] text-slate-600 dark:text-slate-300">{reply.text}</p>
                                 </div>
                               </div>
                             ))}
@@ -361,7 +361,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="mt-4 p-3 bg-slate-800 border border-slate-700 shadow-sm rounded-2xl relative"
+                            className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-sm rounded-2xl relative"
                           >
                             <textarea
                               ref={replyTextareaRef}
@@ -369,7 +369,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                               placeholder="Write your reply..."
-                              className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-slate-100 placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
+                              className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-slate-900 dark:text-slate-100 placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
                             />
                             <InlineEmojiPicker
                               isOpen={showEmojiPicker}
@@ -391,7 +391,7 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
                               <button
                                 onClick={() => submitReply(decision.id)}
                                 disabled={!replyText.trim()}
-                                className="px-4 py-1.5 bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-ring"
+                                className="px-4 py-1.5 bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-100 dark:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-ring"
                               >
                                 <Send className="w-3.5 h-3.5" /> Send
                               </button>
@@ -418,15 +418,15 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
       />
 
       <AlertDialog open={!!decisionToDelete} onOpenChange={(open) => !open && setDecisionToDelete(null)}>
-        <AlertDialogContent className="bg-[#0D0B14] border border-white/[0.08] text-white">
+        <AlertDialogContent className="bg-[#0D0B14] border border-white/[0.08] text-slate-900 dark:text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this decision?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-slate-500 dark:text-slate-400">
               This action cannot be undone. This decision will be permanently removed from your log.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-white/[0.08] text-slate-300 hover:bg-white/[0.05] hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-white/[0.08] text-slate-600 dark:text-slate-300 hover:bg-white/[0.05] hover:text-slate-900 dark:text-white">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={executeDelete} className="bg-rose-500 hover:bg-rose-600 text-white border-0">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -50,7 +50,7 @@ const RANK_STYLES: Record<number, { bg: string; border: string; icon: React.Reac
     bg: 'bg-gradient-to-br from-slate-50 to-gray-50',
     border: 'border-slate-300/60',
     ring: 'ring-slate-400/20',
-    icon: <Medal className="w-5 h-5 text-slate-400" />,
+    icon: <Medal className="w-5 h-5 text-slate-500 dark:text-slate-400" />,
   },
   2: {
     bg: 'bg-gradient-to-br from-orange-50 to-amber-50',

@@ -212,11 +212,11 @@ export function BuilderTypePanel({ domain, onSetTab }: BuilderTypePanelProps) {
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-[18px] font-extrabold text-white leading-tight">
+            <h2 className="text-[18px] font-extrabold text-slate-900 dark:text-white leading-tight">
               {config.emoji} {config.label} Dashboard
             </h2>
           </div>
-          <p className="text-[13px] text-slate-400 font-medium mt-0.5">{config.tagline}</p>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">{config.tagline}</p>
         </div>
       </div>
 
@@ -237,7 +237,7 @@ export function BuilderTypePanel({ domain, onSetTab }: BuilderTypePanelProps) {
                 <ActionIcon className={`w-4 h-4 ${config.color}`} />
               </div>
               <div>
-                <div className="text-[13px] font-bold text-white">{action.label}</div>
+                <div className="text-[13px] font-bold text-slate-900 dark:text-white">{action.label}</div>
                 <div className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">{action.description}</div>
               </div>
             </motion.button>

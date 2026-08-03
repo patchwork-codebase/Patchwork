@@ -92,10 +92,10 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
           className="bg-[#1A1825] border border-white/[0.08] rounded-[24px] w-full max-w-[500px] shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-hidden"
         >
           <div className="p-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Lock className="w-5 h-5 text-primary-400" /> Private Room Access
             </h2>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
+            <button onClick={onClose} className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-full hover:bg-white/5 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -105,16 +105,16 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
             {/* Invite Link Section */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-[15px] font-bold text-white flex items-center gap-2">
-                  <LinkIcon className="w-4 h-4 text-slate-400" /> Shareable Invite Link
+                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <LinkIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Shareable Invite Link
                 </h3>
-                <p className="text-[13px] text-slate-400 mt-1">
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">
                   Anyone with this link can join and view your private room.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-ink/50 border border-white/[0.08] rounded-xl px-4 py-3 text-[13px] font-mono text-slate-300 truncate select-all">
+                <div className="flex-1 bg-ink/50 border border-white/[0.08] rounded-xl px-4 py-3 text-[13px] font-mono text-slate-600 dark:text-slate-300 truncate select-all">
                   {inviteLink || "Generating..."}
                 </div>
                 <button
@@ -143,10 +143,10 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
             {/* Domain Whitelist Section */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-[15px] font-bold text-white flex items-center gap-2">
+                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Auto-Join by Domain
                 </h3>
-                <p className="text-[13px] text-slate-400 mt-1">
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">
                   Users who sign up with email addresses matching these domains will automatically get access to this room.
                 </p>
               </div>
@@ -158,12 +158,12 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
                   onChange={(e) => setDomainInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain(); } }}
                   placeholder="e.g. yourcompany.com"
-                  className="flex-1 px-4 py-3 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
+                  className="flex-1 px-4 py-3 bg-ink/50 border border-white/[0.08] rounded-xl text-[14px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-500/50 transition-all font-medium"
                 />
                 <button
                   onClick={handleAddDomain}
                   disabled={!domainInput.trim() || updateAccessMutation.isPending}
-                  className="px-4 py-3 bg-white/[0.05] border border-white/[0.08] rounded-xl text-white hover:bg-white/[0.1] transition-all disabled:opacity-30 flex items-center justify-center font-bold text-[13px]"
+                  className="px-4 py-3 bg-white/[0.05] border border-white/[0.08] rounded-xl text-slate-900 dark:text-white hover:bg-white/[0.1] transition-all disabled:opacity-30 flex items-center justify-center font-bold text-[13px]"
                 >
                   <Plus className="w-4 h-4" /> Add
                 </button>
@@ -172,7 +172,7 @@ export function PrivateRoomAccessModal({ open, onClose, room }: PrivateRoomAcces
               <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
                 {room.whitelistedDomains?.map((domain: string) => (
                   <div key={domain} className="flex items-center justify-between px-4 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-lg group">
-                    <span className="text-[13px] font-mono text-slate-300">@{domain}</span>
+                    <span className="text-[13px] font-mono text-slate-600 dark:text-slate-300">@{domain}</span>
                     <button
                       onClick={() => handleRemoveDomain(domain)}
                       disabled={updateAccessMutation.isPending}

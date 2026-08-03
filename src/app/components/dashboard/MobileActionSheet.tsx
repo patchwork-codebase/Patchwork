@@ -53,7 +53,7 @@ export function MobileActionSheet({ fabActionSheetOpen, setFabActionSheetOpen, s
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-[#111111] border-t border-white/10 rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto"
+              className="bg-white dark:bg-[#111111] border-t border-slate-100 dark:border-white/10 rounded-t-3xl p-5 sm:p-6 pb-[env(safe-area-inset-bottom)] max-h-[85vh] overflow-y-auto shadow-sm dark:shadow-none"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
@@ -63,26 +63,26 @@ export function MobileActionSheet({ fabActionSheetOpen, setFabActionSheetOpen, s
                     setFabActionSheetOpen(false);
                     setComposerSheetOpen(true);
                   }}
-                  className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl text-left border border-white/5 active:scale-95 transition-all"
+                  className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl text-left border border-slate-100 dark:border-white/5 active:scale-95 transition-all shadow-sm dark:shadow-none"
                 >
                   <div className="w-10 h-10 rounded-full bg-primary-400/20 flex items-center justify-center text-primary-400">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                   </div>
                   <div>
-                    <div className="text-[15px] font-bold text-white">Post an update</div>
-                    <div className="text-[12px] font-medium text-slate-400">Share what you're working on</div>
+                    <div className="text-[15px] font-bold text-slate-900 dark:text-white">Post an update</div>
+                    <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">Share what you're working on</div>
                   </div>
                 </button>
                 <Link
                   to="/dashboard/create"
-                  className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl text-left border border-white/5 active:scale-95 transition-all"
+                  className="w-full flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-2xl text-left border border-slate-100 dark:border-white/5 active:scale-95 transition-all shadow-sm dark:shadow-none"
                 >
                   <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-500">
                     <IconPlus />
                   </div>
                   <div>
-                    <div className="text-[15px] font-bold text-white">Create new room</div>
-                    <div className="text-[12px] font-medium text-slate-400">Initialize a new project space</div>
+                    <div className="text-[15px] font-bold text-slate-900 dark:text-white">Create new room</div>
+                    <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">Initialize a new project space</div>
                   </div>
                 </Link>
               </div>

@@ -12,7 +12,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
 
   if (loading) {
     return (
-      <div className="bg-white border border-slate-200 rounded-[32px] p-8 animate-pulse space-y-6">
+      <div className="bg-white border border-slate-100 rounded-[32px] p-8 animate-pulse space-y-6 shadow-sm dark:shadow-none">
         <div className="h-8 bg-slate-200 rounded-lg w-1/4"></div>
         <div className="h-32 bg-slate-100 rounded-2xl w-full"></div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
@@ -39,14 +39,14 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
       </div>
 
       {/* Level & Score Card */}
-      <div className="bg-white border border-slate-200 rounded-[32px] p-6 sm:p-8 relative overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 relative overflow-hidden shadow-sm">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
         
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start justify-between">
           <div className="flex-1 w-full space-y-6">
             <div className="flex items-center gap-4">
               {levelInfo?.currentLevel && (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-primary-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white shrink-0">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-primary-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-slate-900 dark:text-white shrink-0">
                   <Award className="w-8 h-8" />
                 </div>
               )}
@@ -56,7 +56,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
                   Level {levelInfo?.currentLevel ? levelInfo.currentLevel.title : 'New Builder'}
                 </div>
                 <div className="text-[32px] font-extrabold text-slate-900 leading-none">
-                  {totalReputation.toLocaleString()} <span className="text-[16px] text-slate-400 font-medium">REP</span>
+                  {totalReputation.toLocaleString()} <span className="text-[16px] text-slate-500 dark:text-slate-400 font-medium">REP</span>
                 </div>
               </div>
             </div>
@@ -67,13 +67,13 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
                   <span className="text-slate-500">Progress to {levelInfo.nextLevel.title}</span>
                   <span className="text-indigo-600">{Math.floor(levelInfo.progress)}%</span>
                 </div>
-                <div className="h-3 bg-slate-100 rounded-full overflow-hidden w-full relative border border-slate-200/50">
+                <div className="h-3 bg-slate-100 rounded-full overflow-hidden w-full relative border border-slate-100/50">
                   <div 
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-primary-500 transition-all duration-1000 ease-out"
                     style={{ width: `${levelInfo.progress}%` }}
                   />
                 </div>
-                <p className="text-[12px] text-slate-400 font-medium">
+                <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">
                   {levelInfo.pointsToNext.toLocaleString()} points until next level
                 </p>
               </div>
@@ -95,7 +95,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-[16px] font-extrabold text-slate-900 flex items-center gap-2">
-              <Target className="w-4 h-4 text-slate-400" /> Achievements
+              <Target className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Achievements
             </h3>
             <span className="text-[12px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
               {userBadges?.filter(ub => ub.badge?.badge_type !== 'level').length || 0} / {achievementBadges.length}
@@ -115,10 +115,10 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
         {/* Proof Timeline Section */}
         <div className="lg:col-span-1 space-y-6">
           <h3 className="text-[16px] font-extrabold text-slate-900 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-slate-400" /> Proof Timeline
+            <Activity className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Proof Timeline
           </h3>
 
-          <div className="bg-white border border-slate-200 rounded-[24px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[24px] p-5 shadow-sm dark:shadow-none">
             {reputationEvents && reputationEvents.length > 0 ? (
               <div className="space-y-5">
                 {reputationEvents.map((event, index) => (
@@ -141,7 +141,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
                           +{event.points}
                         </span>
                       </div>
-                      <div className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
+                      <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Clock className="w-3 h-3" /> {timeAgo(event.created_at)}
                       </div>
                     </div>
@@ -149,7 +149,7 @@ export function ProofOfWorkDashboard({ userId, totalReputation = 0 }: { userId: 
                 ))}
               </div>
             ) : (
-              <div className="text-center py-10 text-slate-400">
+              <div className="text-center py-10 text-slate-500 dark:text-slate-400">
                 <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-[13px] font-medium">No reputation events yet.</p>
               </div>

@@ -10,23 +10,23 @@ function RoadmapItemCard({ item, onClick }: { item: RoadmapItem; onClick: () => 
   return (
     <div
       onClick={onClick}
-      className="bg-[#151A27] p-4 rounded-2xl border border-slate-800 shadow-sm flex flex-col gap-3 relative group hover:border-primary-500/50 hover:shadow-lg transition-all cursor-pointer"
+      className="bg-[#151A27] p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-3 relative group hover:border-primary-500/50 hover:shadow-lg transition-all cursor-pointer"
     >
       <div className="flex items-start justify-between">
-        <h4 className="font-bold text-white text-[14px] leading-tight pr-6">{item.title}</h4>
+        <h4 className="font-bold text-slate-900 dark:text-white text-[14px] leading-tight pr-6">{item.title}</h4>
       </div>
       {item.description && (
-        <p className="text-[12px] text-slate-400 line-clamp-2">{item.description}</p>
+        <p className="text-[12px] text-slate-500 dark:text-slate-400 line-clamp-2">{item.description}</p>
       )}
       <div className="flex flex-wrap gap-1.5 mt-1">
         {item.labels?.map(label => (
-          <span key={label} className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300">
+          <span key={label} className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
             {label}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500">
           {item.sprint_id ? (
              <span className="flex items-center gap-1 text-primary-400 bg-primary-400/10 px-2 py-0.5 rounded-full">

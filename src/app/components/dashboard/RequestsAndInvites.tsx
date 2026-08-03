@@ -115,7 +115,7 @@ export function RequestsAndInvites() {
   if (loading) {
     return (
       <div className="flex justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-slate-500 dark:text-slate-400" />
       </div>
     );
   }
@@ -125,9 +125,9 @@ export function RequestsAndInvites() {
   }
 
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-[20px] overflow-hidden shadow-sm mb-6">
-      <div className="bg-white/5 border-b border-white/10 px-5 py-4">
-        <h2 className="text-[15px] font-bold text-white flex items-center gap-2">
+    <div className="bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 rounded-[20px] overflow-hidden shadow-sm mb-6">
+      <div className="bg-white/5 border-b border-slate-100 dark:border-white/10 px-5 py-4 shadow-sm dark:shadow-none">
+        <h2 className="text-[15px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Inbox className="w-4 h-4 text-primary-400" /> Pending Requests & Invites
         </h2>
       </div>
@@ -140,17 +140,17 @@ export function RequestsAndInvites() {
                 <UserPlus className="w-5 h-5 text-amber-500" />
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] sm:text-[14px] text-white leading-snug">
+                <p className="text-[13px] sm:text-[14px] text-slate-900 dark:text-white leading-snug">
                   <span className="font-bold">{req.users?.email || 'Someone'}</span> wants to join <Link to={`/dashboard/room/${req.room_id}`} className="font-bold hover:underline">{req.rooms?.title}</Link>
                 </p>
-                <p className="text-[12px] text-slate-400 font-mono mt-1">{timeAgo(req.created_at)}</p>
+                <p className="text-[12px] text-slate-500 dark:text-slate-400 font-mono mt-1">{timeAgo(req.created_at)}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 sm:self-auto self-end">
               <button
                 onClick={() => handleReviewRequest(req.id, 'declined')}
                 disabled={actionLoading === req.id}
-                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors disabled:opacity-50"
+                className="w-8 h-8 rounded-full border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors disabled:opacity-50"
                 title="Decline"
               >
                 <X className="w-4 h-4" />
@@ -174,12 +174,12 @@ export function RequestsAndInvites() {
                 <span className="text-[18px]">💌</span>
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] sm:text-[14px] text-white leading-snug">
+                <p className="text-[13px] sm:text-[14px] text-slate-900 dark:text-white leading-snug">
                   <span className="font-bold truncate inline-block max-w-full align-bottom">{inv.rooms?.builder_name}</span> invited you to collaborate on <span className="font-bold">{inv.rooms?.title}</span>
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-slate-400">Role: {inv.role}</span>
-                  <span className="text-[12px] text-slate-400 font-mono">{timeAgo(inv.created_at)}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-slate-500 dark:text-slate-400">Role: {inv.role}</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 font-mono">{timeAgo(inv.created_at)}</span>
                 </div>
               </div>
             </div>
@@ -187,7 +187,7 @@ export function RequestsAndInvites() {
               <button
                 onClick={() => handleDeclineInvite(inv.id)}
                 disabled={actionLoading === inv.id}
-                className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-400 hover:bg-white/10 text-[12px] font-bold transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg border border-slate-100 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white/10 text-[12px] font-bold transition-colors disabled:opacity-50 shadow-sm dark:shadow-none"
               >
                 Decline
               </button>

@@ -26,7 +26,7 @@ export default function DecisionDeepLink() {
     <div className="min-h-screen bg-[#0E0C16] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="w-8 h-8 text-primary-400 animate-spin" />
-        <p className="text-slate-400 font-medium text-sm">Opening decision log...</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Opening decision log...</p>
       </div>
     </div>
   );

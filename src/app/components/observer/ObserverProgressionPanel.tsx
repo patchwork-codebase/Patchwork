@@ -203,16 +203,16 @@ export function ObserverProgressionPanel() {
             >
               <button
                 onClick={() => setBuilderModalOpen(false)}
-                className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer animate-in fade-in"
+                className="absolute top-4 right-4 p-1 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer animate-in fade-in"
               >
                 <X className="w-4 h-4" />
               </button>
               
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold text-white font-display flex items-center gap-2">
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white font-display flex items-center gap-2">
                   <Hammer className="w-5 h-5 text-primary-400" /> Upgrade to Builder
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">Select your builder track to activate your Builder Dashboard.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Select your builder track to activate your Builder Dashboard.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -229,7 +229,7 @@ export function ObserverProgressionPanel() {
                       }`}
                     >
                       <div className="text-lg mb-1">{track.emoji}</div>
-                      <div className="text-[13px] font-bold text-white leading-tight">{track.label}</div>
+                      <div className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight">{track.label}</div>
                       <div className="text-[10px] text-slate-500 mt-1.5 leading-snug font-medium">{track.desc}</div>
                     </button>
                   );
@@ -239,7 +239,7 @@ export function ObserverProgressionPanel() {
               <div className="flex gap-3 border-t border-white/[0.06] pt-4">
                 <button
                   onClick={() => setBuilderModalOpen(false)}
-                  className="flex-1 py-2.5 border border-white/[0.08] hover:bg-white/5 text-slate-300 font-bold rounded-xl text-sm transition-all cursor-pointer"
+                  className="flex-1 py-2.5 border border-white/[0.08] hover:bg-white/5 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -272,16 +272,16 @@ export function ObserverProgressionPanel() {
             >
               <button
                 onClick={() => setLeaderModalOpen(false)}
-                className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
+                className="absolute top-4 right-4 p-1 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
               
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold text-white font-display flex items-center gap-2">
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white font-display flex items-center gap-2">
                   <Award className="w-5 h-5 text-amber-500" /> Leader Verification
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">Apply for credentialed status within the Patchwork ecosystem.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Apply for credentialed status within the Patchwork ecosystem.</p>
               </div>
 
               <form onSubmit={handleSubmitLeader} className="space-y-4">
@@ -297,7 +297,7 @@ export function ObserverProgressionPanel() {
                       value={leaderLinkedin}
                       onChange={e => setLeaderLinkedin(e.target.value)}
                       placeholder="https://linkedin.com/in/username"
-                      className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all"
+                      className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export function ObserverProgressionPanel() {
                       value={leaderRole}
                       onChange={e => setLeaderRole(e.target.value)}
                       placeholder="e.g. CPO at Paystack / Product Director"
-                      className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all"
+                      className="w-full pl-9 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -329,7 +329,7 @@ export function ObserverProgressionPanel() {
                     onChange={e => setLeaderExperience(e.target.value)}
                     placeholder="Briefly state your leadership achievements, previous roles, and verification credentials..."
                     rows={4}
-                    className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
                   />
                 </div>
 
@@ -337,7 +337,7 @@ export function ObserverProgressionPanel() {
                   <button
                     type="button"
                     onClick={() => setLeaderModalOpen(false)}
-                    className="flex-1 py-2.5 border border-white/[0.08] hover:bg-white/5 text-slate-300 font-bold rounded-xl text-sm transition-all cursor-pointer"
+                    className="flex-1 py-2.5 border border-white/[0.08] hover:bg-white/5 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm transition-all cursor-pointer"
                   >
                     Cancel
                   </button>

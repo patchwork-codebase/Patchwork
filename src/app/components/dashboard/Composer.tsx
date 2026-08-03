@@ -66,8 +66,8 @@ export function Composer({
   if (profile?.role !== 'builder') return null;
 
   return (
-    <div className="hidden sm:flex bg-[#111111]/80 backdrop-blur-md border border-white/10 shadow-sm rounded-[24px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6 transition-all duration-300 focus-within:shadow-xl focus-within:-translate-y-1 focus-within:bg-[#1a1a1a]/80 relative">
-        <div className="w-10 h-10 rounded-[12px] bg-white/5 border border-white/10 overflow-hidden shrink-0 mt-1">
+    <div className="hidden sm:flex bg-white/80 dark:bg-[#111111]/80 backdrop-blur-md border border-slate-100 dark:border-white/10 shadow-sm rounded-[24px] p-3 sm:p-5 gap-3 sm:gap-4 items-start mb-6 transition-all duration-300 focus-within:shadow-xl focus-within:-translate-y-1 focus-within:bg-white dark:focus-within:bg-slate-50 dark:bg-[#1a1a1a]/80 relative">
+        <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-white/5 border border-slate-100 dark:border-white/10 overflow-hidden shrink-0 mt-1 shadow-sm dark:shadow-none">
           <UserAvatar 
             userId={user?.id || ''} 
             name={profile?.name || user?.email} 
@@ -81,12 +81,12 @@ export function Composer({
           onChange={(e) => setUpdateContent(e.target.value)}
           placeholder="What are you building right now?"
           aria-label="New update content"
-          className="w-full bg-transparent border-none outline-none text-white text-[16px] sm:text-[14px] resize-none placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-primary-400 rounded-md p-1"
+          className="w-full bg-transparent border-none outline-none text-slate-900 dark:text-white text-[16px] sm:text-[14px] resize-none placeholder:text-slate-500 dark:text-slate-400 dark:placeholder:text-slate-500 min-h-[50px] sm:min-h-[60px] disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-primary-400 rounded-md p-1"
         />
 
         {mediaPreview && (
           <div className="relative w-[200px] mb-4 group/preview mt-3">
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+            <div className="rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 bg-white/5 shadow-sm dark:shadow-none">
               <SmartImage src={mediaPreview} aspectRatio="auto" alt="Upload preview" className="max-h-[200px] object-cover" />
             </div>
             <button
@@ -103,11 +103,11 @@ export function Composer({
             value={codeSnippet}
             onChange={e => setCodeSnippet(e.target.value)}
             placeholder="Paste your code snippet here..."
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white text-[16px] sm:text-[14px] font-mono resize-none placeholder:text-slate-500 min-h-[100px] rounded-lg p-3 mt-3 focus-ring"
+            className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/10 text-slate-900 dark:text-white text-[16px] sm:text-[14px] font-mono resize-none placeholder:text-slate-500 min-h-[100px] rounded-lg p-3 mt-3 focus-ring shadow-sm dark:shadow-none"
           />
         )}
 
-        <div className="flex items-center justify-between border-t border-white/10 pt-3 mt-2">
+        <div className="flex items-center justify-between border-t border-slate-100 dark:border-white/10 pt-3 mt-2">
           <div className="flex items-center gap-1 sm:gap-2">
             {myRooms && myRooms.length > 0 ? (
               <>
@@ -115,7 +115,7 @@ export function Composer({
                   <button
                     type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-full transition-all focus-ring"
+                    className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-full transition-all focus-ring"
                   >
                     <Smile className="w-[18px] h-[18px]" />
                     <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Emoji</span>
@@ -134,7 +134,7 @@ export function Composer({
                           transition={{ duration: 0.15 }}
                           className="absolute z-50 mt-2"
                         >
-                          <Suspense fallback={<div className="w-[300px] h-[400px] flex items-center justify-center bg-[#111111] rounded-xl shadow-lg border border-white/10"><div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" /></div>}>
+                          <Suspense fallback={<div className="w-[300px] h-[400px] flex items-center justify-center bg-white dark:bg-[#111111] rounded-xl shadow-lg border border-slate-100 dark:border-white/10"><div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" /></div>}>
                             <EmojiPicker 
                               onEmojiClick={(emojiData) => {
                                 setUpdateContent(prev => prev + emojiData.emoji);
@@ -148,7 +148,7 @@ export function Composer({
                   </AnimatePresence>
                 </div>
 
-                <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-full cursor-pointer transition-all focus-ring">
+                <label className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-full cursor-pointer transition-all focus-ring">
                   <ImageIcon className="w-[18px] h-[18px]" />
                   <span className="hidden sm:inline sm:ml-1.5 text-[13px] font-semibold">Media</span>
                   <input
@@ -199,7 +199,7 @@ export function Composer({
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 4, scale: 0.95 }}
                           transition={{ duration: 0.12 }}
-                          className="absolute left-0 bottom-full mb-2 min-w-[180px] w-max max-w-[280px] bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden"
+                          className="absolute left-0 bottom-full mb-2 min-w-[180px] w-max max-w-[280px] bg-slate-50 dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden"
                         >
                           {myRooms.map(r => (
                             <button
@@ -225,7 +225,7 @@ export function Composer({
                 </div>
               </>
             ) : (
-              <span className="text-slate-400 text-[12px] font-medium">Create a room first</span>
+              <span className="text-slate-500 dark:text-slate-400 text-[12px] font-medium">Create a room first</span>
             )}
           </div>
 

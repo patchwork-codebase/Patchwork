@@ -49,7 +49,7 @@ function Input({ value, onChange, placeholder, type = "text" }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all"
+      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 hover:border-slate-300 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none"
     />
   );
 }
@@ -63,7 +63,7 @@ function Textarea({ value, onChange, placeholder, rows = 4 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all resize-none"
+      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 hover:border-slate-300 focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all resize-none shadow-sm dark:shadow-none"
     />
   );
 }
@@ -187,7 +187,7 @@ export default function VerifiedExpertApplication() {
         <h1 className="text-[28px] font-extrabold text-slate-900 mb-3">Application under review</h1>
         <p className="text-slate-600 mb-2">We received your application and are reviewing it.</p>
         <p className="text-slate-500 text-[13px] mb-8">This usually takes 3–5 business days.</p>
-        <Link to={`/dashboard/profile/${user?.id}`} className="inline-flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-bold rounded-full transition-all">
+        <Link to={`/dashboard/profile/${user?.id}`} className="inline-flex items-center gap-2 px-6 py-3 border border-slate-100 text-slate-700 bg-white hover:bg-slate-50 font-bold rounded-full transition-all shadow-sm dark:shadow-none">
           <ArrowLeft className="w-4 h-4" /> Back to profile
         </Link>
       </div>
@@ -210,7 +210,7 @@ export default function VerifiedExpertApplication() {
         <p className="text-slate-500 text-[13px] mb-8">
           You can re-apply after {cooldownEnd.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.
         </p>
-        <Link to={`/dashboard/profile/${user?.id}`} className="inline-flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-bold rounded-full transition-all">
+        <Link to={`/dashboard/profile/${user?.id}`} className="inline-flex items-center gap-2 px-6 py-3 border border-slate-100 text-slate-700 bg-white hover:bg-slate-50 font-bold rounded-full transition-all shadow-sm dark:shadow-none">
           <ArrowLeft className="w-4 h-4" /> Back to profile
         </Link>
       </div>
@@ -256,7 +256,7 @@ export default function VerifiedExpertApplication() {
       </div>
 
       {/* Step card */}
-      <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-md">
+      <div className="bg-white border border-slate-100 rounded-[24px] p-6 sm:p-8 shadow-md">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -398,7 +398,7 @@ export default function VerifiedExpertApplication() {
                     <select
                       value={timezone}
                       onChange={e => setTimezone(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 outline-none appearance-none transition-all focus:border-primary-400/50 cursor-pointer"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 outline-none appearance-none transition-all focus:border-primary-400/50 cursor-pointer shadow-sm dark:shadow-none"
                     >
                       <option value="">Select your timezone</option>
                       {TIMEZONES.map(tz => (
@@ -434,12 +434,12 @@ export default function VerifiedExpertApplication() {
                       onChange={e => setLangInput(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addCustomLang())}
                       placeholder="Add another language..."
-                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 outline-none focus:border-primary-400/40"
+                      className="flex-1 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 outline-none focus:border-primary-400/40 shadow-sm dark:shadow-none"
                     />
                     <button
                       type="button"
                       onClick={addCustomLang}
-                      className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl transition-all"
+                      className="px-3 py-2 bg-white border border-slate-100 hover:bg-slate-50 text-slate-700 rounded-xl transition-all shadow-sm dark:shadow-none"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -477,7 +477,7 @@ export default function VerifiedExpertApplication() {
           {step > 0 && (
             <button
               onClick={() => setStep(s => s - 1)}
-              className="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-[14px] transition-all border border-slate-200"
+              className="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-[14px] transition-all border border-slate-100 shadow-sm dark:shadow-none"
             >
               Back
             </button>

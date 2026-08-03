@@ -25,7 +25,7 @@ export function DecisionMatrixBlock({ data }: DecisionMatrixBlockProps) {
   return (
     <div className="my-3 overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-b from-indigo-50/60 to-slate-50/50 p-3 sm:p-4 text-xs sm:text-sm">
       <div className="flex items-center gap-1.5 font-bold text-indigo-950 mb-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-600 text-white text-[10px]">
+        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-600 text-slate-900 dark:text-white text-[10px]">
           ⚖️
         </span>
         <span>Decision Trade-off Matrix</span>
@@ -52,7 +52,7 @@ export function DecisionMatrixBlock({ data }: DecisionMatrixBlockProps) {
                 {opt.selected ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-slate-400 shrink-0" />
+                  <XCircle className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
                 )}
                 {opt.title}
               </span>

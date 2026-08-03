@@ -101,7 +101,7 @@ export function RoomFeed({
 
   if (!room.updates || room.updates.length === 0) {
     return (
-      <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px]">
+      <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-100 rounded-[24px] shadow-sm dark:shadow-none">
         <Hammer className="w-12 h-12 mx-auto mb-4 opacity-30 text-primary-400" />
         <p className="font-extrabold text-[16px] text-slate-900 font-display mb-2">No updates yet</p>
         {isBuilder && (
@@ -136,7 +136,7 @@ export function RoomFeed({
   return (
     <>
       <div className="flex justify-end mb-4">
-        <div className="flex bg-white/5 border border-white/10 rounded-full p-1 shadow-sm shrink-0">
+        <div className="flex bg-white/5 border border-slate-100 dark:border-white/10 rounded-full p-1 shadow-sm shrink-0">
           <button
             onClick={() => setSortOrder('desc')}
             className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
@@ -188,7 +188,7 @@ export function RoomFeed({
           const isTarget = update.id === updateIdToScroll;
 
           return (
-            <div key={update.id} id={`update-${update.id}`} className={`w-full max-w-full bg-[#0a0a0a] border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] ${isTarget ? 'border-primary-400/50 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400/50' : 'border-white/5 shadow-2xl hover:border-white/10'}`} tabIndex={0}>
+            <div key={update.id} id={`update-${update.id}`} className={`w-full max-w-full bg-white dark:bg-[#0a0a0a] border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] ${isTarget ? 'border-primary-400/50 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400/50' : 'border-slate-100 dark:border-white/5 shadow-2xl hover:border-slate-200 dark:border-white/10'}`} tabIndex={0}>
               {isTarget && (
                 <div className="absolute inset-0 bg-primary-400/5 pointer-events-none animate-pulse" />
               )}
@@ -196,11 +196,11 @@ export function RoomFeed({
 
               <div className="flex items-start justify-between gap-4 mb-6 relative z-10">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl border border-slate-200 shadow-sm overflow-hidden shrink-0">
+                  <div className="w-10 h-10 rounded-xl border border-slate-100 shadow-sm overflow-hidden shrink-0">
                     <UserAvatar userId={update.authorId} name={update.authorName} avatarUrl={update.authorId === room.builderId ? (room.builderAvatarUrl || undefined) : undefined} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <div className="text-[15px] font-extrabold text-white font-display flex items-center gap-1.5">
+                    <div className="text-[15px] font-extrabold text-slate-900 dark:text-white font-display flex items-center gap-1.5">
                       {update.authorName}
                       <VerifiedTick isVerified={!!room.builderIsVerifiedExpert} className="w-4 h-4" />
                     </div>
@@ -235,13 +235,13 @@ export function RoomFeed({
                             className="bg-[#0E0C16] border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.8)] sm:rounded-[24px]"
                           >
                             <AlertDialogHeader>
-                              <AlertDialogTitle className="text-[20px] font-display font-extrabold text-white">Delete this update?</AlertDialogTitle>
-                              <AlertDialogDescription className="text-slate-400 text-[14px] font-medium leading-relaxed mt-2">
+                              <AlertDialogTitle className="text-[20px] font-display font-extrabold text-slate-900 dark:text-white">Delete this update?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-slate-500 dark:text-slate-400 text-[14px] font-medium leading-relaxed mt-2">
                                 This action cannot be undone. This will permanently remove your update from the timeline.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="mt-6 border-t border-white/[0.05] pt-4">
-                              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
+                              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-slate-900 dark:text-white border-0 font-semibold transition-all">Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -261,7 +261,7 @@ export function RoomFeed({
                 {!isBuilder && room.status === 'active' && (
                   <button
                     onClick={() => setReactionModal({ open: true, updateId: update.id })}
-                    className="text-[11px] text-slate-400 hover:text-white border border-white/10 hover:border-white/20 rounded-full px-4 py-2 hover:bg-white/5 transition-all font-bold uppercase tracking-widest focus-ring"
+                    className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white border border-slate-100 dark:border-white/10 hover:border-slate-300 dark:border-white/20 rounded-full px-4 py-2 hover:bg-white/5 transition-all font-bold uppercase tracking-widest focus-ring shadow-sm dark:shadow-none"
                   >
                     React
                   </button>
@@ -273,7 +273,7 @@ export function RoomFeed({
               ) : (
                 <ReadMoreText
                   content={update.content}
-                  className="text-[15px] text-slate-300 leading-relaxed whitespace-pre-wrap break-words font-medium border-l-[3px] border-primary-400/40 pl-4 sm:pl-5 mb-4 relative z-10"
+                  className="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words font-medium border-l-[3px] border-primary-400/40 pl-4 sm:pl-5 mb-4 relative z-10"
                 />
               )}
 
@@ -290,7 +290,7 @@ export function RoomFeed({
               })()}
 
                 {update.mediaUrl && (
-                  <div className="mb-6 w-full max-w-full relative z-10 rounded-2xl overflow-hidden border border-white/10 bg-[#111111] shadow-sm">
+                  <div className="mb-6 w-full max-w-full relative z-10 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/10 bg-white dark:bg-[#111111] shadow-sm">
                     <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" />
                   </div>
                 )}
@@ -335,7 +335,7 @@ export function RoomFeed({
                           return (
                             <div key={r.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${isHighSignal
                                 ? 'bg-amber-500/10 border-amber-500/20 shadow-sm'
-                                : 'bg-white/5 border-white/10'
+                                : 'bg-white/5 border-slate-200 dark:border-white/10'
                               }`}>
                               <div className="text-xl mt-0.5">{cfg.emoji}</div>
                               <div className="flex-1 min-w-0">
@@ -344,7 +344,7 @@ export function RoomFeed({
                                   {hasText && (
                                     <FeedbackBadge text={r.text as string} isExpert={false} preCalculated={analysis} />
                                   )}
-                                  <span className="text-[11px] font-bold text-white flex items-center gap-1">
+                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white flex items-center gap-1">
                                     {r.observerName}
                                     <VerifiedTick userId={r.observerId} className="w-3 h-3" />
                                   </span>
@@ -372,7 +372,7 @@ export function RoomFeed({
                                      </button>
                                    )}
                                 </div>
-                                <ReadMoreText text={r.text as string} className="text-[13px] text-slate-300 leading-relaxed font-medium break-words" />
+                                <ReadMoreText text={r.text as string} className="text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium break-words" />
                               </div>
                             </div>
                           );

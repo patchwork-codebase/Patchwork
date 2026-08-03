@@ -82,10 +82,10 @@ export function MemberPermissionsModal({ open, onClose, roomId, member }: Member
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="bg-white rounded-3xl shadow-2xl border border-slate-200/80 w-full max-w-md overflow-hidden"
+          className="bg-white rounded-3xl shadow-2xl border border-slate-100/80 w-full max-w-md overflow-hidden"
         >
           {/* Header */}
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shadow-sm dark:shadow-none">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-primary-500/10 border border-primary-500/20 text-primary-600 flex items-center justify-center">
                 <Shield className="w-5 h-5" />
@@ -97,7 +97,7 @@ export function MemberPermissionsModal({ open, onClose, roomId, member }: Member
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -117,7 +117,7 @@ export function MemberPermissionsModal({ open, onClose, roomId, member }: Member
                       : 'bg-white border-slate-200/80 hover:bg-slate-50/80'
                   }`}
                 >
-                  <div className="p-2 rounded-xl bg-white border border-slate-200/60 shrink-0 mt-0.5 shadow-xs">
+                  <div className="p-2 rounded-xl bg-white border border-slate-100/60 shrink-0 mt-0.5 shadow-xs">
                     {item.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -137,7 +137,7 @@ export function MemberPermissionsModal({ open, onClose, roomId, member }: Member
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2">
+          <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2 shadow-sm dark:shadow-none">
             <button
               onClick={onClose}
               className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200/70 rounded-xl transition-all"

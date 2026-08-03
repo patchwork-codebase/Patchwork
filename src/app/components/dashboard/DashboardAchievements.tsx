@@ -103,17 +103,17 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
   };
 
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-3xl shadow-sm p-6 mb-8 flex flex-col font-sans">
+    <div className="bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 rounded-3xl shadow-sm p-6 mb-8 flex flex-col font-sans">
       
       {/* Top Section */}
       <div className="flex justify-between items-center mb-5">
-        <h3 className="text-lg font-bold text-white">Achievements</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Achievements</h3>
         <Link to="/dashboard/achievements" className="text-teal-600 font-bold hover:text-teal-700 text-[13px] flex items-center gap-1 group">
           View all <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
-      <h4 className="text-[14px] font-bold text-slate-400 mb-4 tracking-tight uppercase">Milestones in progress</h4>
+      <h4 className="text-[14px] font-bold text-slate-500 dark:text-slate-400 mb-4 tracking-tight uppercase">Milestones in progress</h4>
 
       <div className="flex flex-col gap-3 mb-6">
         {nextLevels.map((lvl) => {
@@ -121,15 +121,15 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
           const progress = Math.min(100, Math.max(0, (currentReputation / lvl.points_required) * 100));
           
           return (
-            <div key={lvl.id} className="group flex flex-col p-4 rounded-2xl border border-white/10 bg-[#1a1a1a] hover:border-white/20 transition-all shadow-sm hover:shadow-md">
+            <div key={lvl.id} className="group flex flex-col p-4 rounded-2xl border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-[#1a1a1a] hover:border-slate-300 dark:border-white/20 transition-all shadow-sm hover:shadow-md">
               <div className="flex justify-between items-center mb-4">
                  <div className="flex items-center gap-4">
                    <PremiumBadgeSVG points={lvl.points_required} colorTheme={lvl.color_theme || 'blue'} completed={isCompleted} />
                    <div className="flex items-center gap-2 relative group/tooltip">
-                     <span className="font-black text-white text-[17px] tracking-tight cursor-default">{lvl.title}</span>
-                     <Info className="w-4 h-4 text-slate-300 cursor-help hover:text-slate-400 transition-colors" />
+                     <span className="font-black text-slate-900 dark:text-white text-[17px] tracking-tight cursor-default">{lvl.title}</span>
+                     <Info className="w-4 h-4 text-slate-600 dark:text-slate-300 cursor-help hover:text-slate-500 dark:text-slate-400 transition-colors" />
                      
-                     <div className="absolute bottom-full left-0 mb-2 w-56 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 bg-black text-slate-300 text-[12px] p-3 rounded-xl shadow-xl z-20 pointer-events-none translate-y-1 group-hover/tooltip:translate-y-0">
+                     <div className="absolute bottom-full left-0 mb-2 w-56 opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 bg-black text-slate-600 dark:text-slate-300 text-[12px] p-3 rounded-xl shadow-xl z-20 pointer-events-none translate-y-1 group-hover/tooltip:translate-y-0">
                        <div className="absolute -bottom-1 left-6 w-3 h-3 bg-black rotate-45"></div>
                        {lvl.description || `Earn ${lvl.points_required} points to unlock this milestone.`}
                      </div>
@@ -152,19 +152,19 @@ export function DashboardAchievements({ user }: DashboardAchievementsProps) {
         })}
         
         {nextLevels.length === 0 && (
-          <p className="text-slate-400 text-sm italic text-center py-4">You have completed all current milestones!</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm italic text-center py-4">You have completed all current milestones!</p>
         )}
       </div>
 
-      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
-        <div className="w-12 h-12 rounded-xl bg-[#1a1a1a] shadow-sm border border-white/10 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm dark:shadow-none">
+        <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-[#1a1a1a] shadow-sm border border-slate-100 dark:border-white/10 flex items-center justify-center shrink-0">
            <Award className={`w-6 h-6 ${awardsCount > 0 ? 'text-amber-500 fill-amber-100' : 'text-slate-300'}`} />
         </div>
         <div className="flex-1">
-          <p className="text-white font-bold text-[15px] leading-tight mb-0.5">
+          <p className="text-slate-900 dark:text-white font-bold text-[15px] leading-tight mb-0.5">
             {awardsCount > 0 ? `You achieved ${awardsCount} awards` : "No awards yet"}
           </p>
-          <p className="text-slate-400 text-[13px] leading-tight">Keep building to unlock more</p>
+          <p className="text-slate-500 dark:text-slate-400 text-[13px] leading-tight">Keep building to unlock more</p>
         </div>
       </div>
 

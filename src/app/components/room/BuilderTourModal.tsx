@@ -103,7 +103,7 @@ export function BuilderTourModal({ isOpen, onClose, roomId }: BuilderTourModalPr
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-xl bg-ink border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden relative"
+        className="w-full max-w-xl bg-ink border border-slate-100 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden relative"
       >
         {/* Background glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 blur-3xl rounded-full pointer-events-none" />
@@ -111,13 +111,13 @@ export function BuilderTourModal({ isOpen, onClose, roomId }: BuilderTourModalPr
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-white/10 text-slate-300 border border-white/10 font-mono">
+            <span className="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 font-mono shadow-sm dark:shadow-none">
               {currentStep.badge}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors cursor-pointer"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-full hover:bg-white/5 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -138,22 +138,22 @@ export function BuilderTourModal({ isOpen, onClose, roomId }: BuilderTourModalPr
                 <StepIcon className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="text-xl sm:text-2xl font-black text-white font-display">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-display">
                   {currentStep.title}
                 </h3>
               </div>
             </div>
 
-            <p className="text-[14px] sm:text-[15px] text-slate-300 font-medium leading-relaxed">
+            <p className="text-[14px] sm:text-[15px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
               {currentStep.description}
             </p>
 
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 space-y-2.5">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block font-mono">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-mono">
                 Key Highlights:
               </span>
               {currentStep.tips.map((tip, i) => (
-                <div key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300 font-medium">
+                <div key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span>{tip}</span>
                 </div>
@@ -163,7 +163,7 @@ export function BuilderTourModal({ isOpen, onClose, roomId }: BuilderTourModalPr
         </AnimatePresence>
 
         {/* Footer Navigation */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/10">
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-1.5">
             {TOUR_STEPS.map((_, i) => (
               <div
@@ -179,7 +179,7 @@ export function BuilderTourModal({ isOpen, onClose, roomId }: BuilderTourModalPr
             {currentStepIndex > 0 && (
               <button
                 onClick={handlePrev}
-                className="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>

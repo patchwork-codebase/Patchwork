@@ -73,11 +73,11 @@ export function NdaGateModal({
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
                   NDA Protected
                 </div>
-                <h2 className="text-[20px] font-extrabold text-white font-display leading-tight mb-1">
+                <h2 className="text-[20px] font-extrabold text-slate-900 dark:text-white font-display leading-tight mb-1">
                   {ndaTitle}
                 </h2>
-                <p className="text-slate-400 text-[13px] font-medium">
-                  <span className="text-white font-bold">{builderName}</span> requires you to accept this agreement before accessing <span className="text-white font-bold">"{roomTitle}"</span>.
+                <p className="text-slate-500 dark:text-slate-400 text-[13px] font-medium">
+                  <span className="text-slate-900 dark:text-white font-bold">{builderName}</span> requires you to accept this agreement before accessing <span className="text-slate-900 dark:text-white font-bold">"{roomTitle}"</span>.
                 </p>
               </div>
             </div>
@@ -92,17 +92,17 @@ export function NdaGateModal({
             ) : (
               <>
                 <div className="flex items-center gap-2 mb-4">
-                  <FileText className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
                     Agreement Terms
                   </span>
                 </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 max-h-[340px] overflow-y-auto">
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 max-h-[340px] overflow-y-auto shadow-sm dark:shadow-none">
                   <pre className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">
                     {ndaBody}
                   </pre>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-4 leading-relaxed">
                   Your acceptance is recorded with a timestamp and associated with your Patchwork account. This record is available to the builder and may be used as evidence of agreement.
                 </p>
               </>
@@ -139,7 +139,7 @@ export function NdaGateModal({
                 )}
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 text-center mt-3">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center mt-3">
               By clicking "Accept & Enter", you digitally sign this agreement. Your acceptance is timestamped and cannot be undone.
             </p>
           </div>

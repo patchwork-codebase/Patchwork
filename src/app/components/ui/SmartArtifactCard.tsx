@@ -17,9 +17,9 @@ export function SmartArtifactCard({ url }: { url: string }) {
   else if (isJira) { Icon = FileText; providerName = 'Jira'; }
 
   return (
-    <div className="mt-4 border border-slate-200 bg-slate-50 rounded-2xl overflow-hidden relative group">
+    <div className="mt-4 border border-slate-100 bg-slate-50 rounded-2xl overflow-hidden relative group shadow-sm dark:shadow-none">
       <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 border-b border-slate-200 bg-white hover:bg-slate-50 transition">
+      <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 border-b border-slate-100 bg-white hover:bg-slate-50 transition shadow-sm dark:shadow-none">
         <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
           <Icon className="w-4 h-4 text-slate-700" />
         </div>
@@ -28,7 +28,7 @@ export function SmartArtifactCard({ url }: { url: string }) {
           <div className="text-sm font-bold text-slate-900 truncate">{url}</div>
         </div>
       </a>
-      <div className="p-4 bg-slate-50 border-t border-slate-200 text-[13px] leading-relaxed text-slate-600 relative">
+      <div className="p-4 bg-slate-50 border-t border-slate-100 text-[13px] leading-relaxed text-slate-600 relative shadow-sm dark:shadow-none">
         <Sparkles className="w-4 h-4 absolute top-4 left-4 text-primary-400 opacity-50" />
         <div className="pl-6">
           {isLoading ? (
@@ -36,7 +36,7 @@ export function SmartArtifactCard({ url }: { url: string }) {
               <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" />
               <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
               <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-              <span className="ml-2 text-slate-400 italic font-medium tracking-wide text-[12px]">Generating AI summary...</span>
+              <span className="ml-2 text-slate-500 dark:text-slate-400 italic font-medium tracking-wide text-[12px]">Generating AI summary...</span>
             </div>
           ) : error ? (
             <p className="text-rose-500 italic">{(error as Error).message || "Failed to generate AI summary for this artifact."}</p>

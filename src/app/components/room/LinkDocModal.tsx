@@ -86,13 +86,13 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
             className="bg-[#0D0B14] border border-white/[0.08] rounded-3xl w-full max-w-[500px] overflow-hidden relative z-10 shadow-2xl"
           >
             <div className="flex items-center justify-between p-5 border-b border-white/[0.08]">
-              <h2 className="text-[18px] font-bold text-white flex items-center gap-2">
+              <h2 className="text-[18px] font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary-400" />
                 Link Notion Document
               </h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -102,10 +102,10 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
               {!notionAccount ? (
                 <div className="text-center py-8">
                   <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileText className="w-6 h-6 text-slate-400" />
+                    <FileText className="w-6 h-6 text-slate-500 dark:text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">Notion Not Connected</h3>
-                  <p className="text-[13px] text-slate-400 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Notion Not Connected</h3>
+                  <p className="text-[13px] text-slate-500 dark:text-slate-400 mb-6">
                     Connect your Notion workspace in profile settings to browse and link live documents.
                   </p>
                   <button 
@@ -121,13 +121,13 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
               ) : (
                 <>
                   <div className="relative">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Notion pages..."
-                      className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
+                      className="w-full bg-[#1A1820] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2.5 text-[13px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary-400 transition-colors"
                     />
                   </div>
 
@@ -142,12 +142,12 @@ export function LinkDocModal({ isOpen, onClose, roomId, userId }: LinkDocModalPr
                       searchResults.map((doc) => (
                         <div key={doc.id} className="flex items-center justify-between p-3 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.05] rounded-xl transition-colors group">
                           <div className="flex items-center gap-3">
-                            <FileText className="w-4 h-4 text-slate-400" />
-                            <span className="text-[13px] font-semibold text-white">{doc.title}</span>
+                            <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                            <span className="text-[13px] font-semibold text-slate-900 dark:text-white">{doc.title}</span>
                           </div>
                           <button
                             onClick={() => handleLinkDoc(doc)}
-                            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[12px] font-bold rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white text-[12px] font-bold rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                           >
                             Link
                           </button>

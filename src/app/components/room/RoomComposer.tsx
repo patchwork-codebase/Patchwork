@@ -232,7 +232,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
           </div>
         </div>
       )}
-      <form onSubmit={handlePostUpdate} className="bg-white border border-slate-200 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-visible group">
+      <form onSubmit={handlePostUpdate} className="bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 rounded-[24px] p-6 mb-8 shadow-sm relative overflow-visible group">
         <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline gap-2">
           <div className="flex items-center gap-3">
@@ -241,24 +241,24 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
             </div>
             <span className="text-[14px] font-extrabold text-primary-400 font-display">Post an update</span>
           </div>
-          <span className="text-[11px] text-slate-500 font-medium ml-0 sm:ml-2">For general progress and commits (Use the 'Log Decision' tab below for architectural choices)</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium ml-0 sm:ml-2">For general progress and commits (Use the 'Log Decision' tab below for architectural choices)</span>
         </div>
         {/* Update type selector */}
         {(() => {
           const UPDATE_TYPES = [
-            { value: 'general',       label: 'General',       color: 'bg-slate-100 text-slate-600 border-slate-200' },
+            { value: 'general',       label: 'General',       color: 'bg-white/5 text-slate-400 border-slate-200 dark:border-white/10' },
             { value: 'decision',      label: '⚡ Decision',    color: 'bg-primary-400/10 text-primary-500 border-primary-400/30' },
-            { value: 'scrap',         label: '🗑 Scrap',       color: 'bg-rose-50 text-rose-600 border-rose-200' },
-            { value: 'pivot',         label: '🔄 Pivot',       color: 'bg-orange-50 text-orange-600 border-orange-200' },
-            { value: 'blocker',       label: '🚧 Blocker',     color: 'bg-red-50 text-red-600 border-red-200' },
-            { value: 'insight',       label: '💡 Insight',     color: 'bg-amber-50 text-amber-600 border-amber-200' },
-            { value: 'open_question', label: '❓ Open question', color: 'bg-blue-50 text-blue-600 border-blue-200' },
-            { value: 'shipped',       label: '🚀 Shipped',     color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+            { value: 'scrap',         label: '🗑 Scrap',       color: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
+            { value: 'pivot',         label: '🔄 Pivot',       color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+            { value: 'blocker',       label: '🚧 Blocker',     color: 'bg-red-500/10 text-red-500 border-red-500/20' },
+            { value: 'insight',       label: '💡 Insight',     color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+            { value: 'open_question', label: '❓ Open question', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+            { value: 'shipped',       label: '🚀 Shipped',     color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
             { value: 'crossroad',     label: '🛤️ Crossroad',    color: 'bg-indigo-500/10 text-indigo-500 border-indigo-400/30' },
           ] as const;
           return (
             <div className="mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Update type</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Update type</p>
               <div className="flex flex-wrap gap-1.5">
                 {UPDATE_TYPES.map(t => (
                   <button
@@ -268,7 +268,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
                     className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
                       updateType === t.value
                         ? t.color + ' ring-1 ring-offset-1 ring-current'
-                        : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                        : 'bg-transparent text-slate-400 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:border-white/20 hover:bg-white/5'
                     }`}
                   >
                     {t.label}
@@ -286,7 +286,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
           placeholder="What did you just ship, learn, or decide? Be specific — give observers something to react to."
           rows={3}
           maxLength={500}
-          className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-xl text-[14px] focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 resize-none mb-1 text-slate-900 placeholder-slate-500 font-medium transition-all focus-ring"
+          className="w-full px-5 py-4 bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/10 rounded-xl text-[14px] focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 resize-none mb-1 text-slate-700 dark:text-slate-200 placeholder-slate-500 font-medium transition-all focus-ring shadow-sm dark:shadow-none"
         />
         <span className={`absolute bottom-3 right-3 text-[11px] font-mono font-bold transition-colors ${
           newUpdate.length >= 480 ? 'text-rose-400' : 'text-slate-400'
@@ -313,7 +313,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
                    value={crossroadOptionA}
                    onChange={e => setCrossroadOptionA(e.target.value)}
                    placeholder="e.g., Build custom auth"
-                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all"
+                   className="w-full px-4 py-2.5 bg-white border border-slate-100 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all shadow-sm dark:shadow-none"
                  />
                </div>
                <div>
@@ -323,7 +323,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
                    value={crossroadOptionB}
                    onChange={e => setCrossroadOptionB(e.target.value)}
                    placeholder="e.g., Use Supabase auth"
-                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all"
+                   className="w-full px-4 py-2.5 bg-white border border-slate-100 rounded-lg text-[13px] focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-slate-400 transition-all shadow-sm dark:shadow-none"
                  />
                </div>
              </div>
@@ -332,7 +332,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
       
       {mediaPreview && (
         <div className="relative w-[200px] mb-4 group/preview">
-          <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+          <div className="rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shadow-sm dark:shadow-none">
             <SmartImage src={mediaPreview} aspectRatio="auto" alt="Upload preview" className="max-h-[200px] object-cover" />
           </div>
         </div>
@@ -344,13 +344,13 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
           onChange={e => setCodeSnippet(e.target.value)}
           placeholder="Paste your code snippet here..."
           rows={5}
-          className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono text-slate-800 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 resize-none mb-4 transition-all focus-ring"
+          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl text-[13px] font-mono text-slate-800 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 resize-none mb-4 transition-all focus-ring shadow-sm dark:shadow-none"
         />
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
         <div className="grid grid-cols-2 sm:flex items-center gap-2">
-          <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-full text-[12px] font-bold cursor-pointer transition-all focus-ring">
+          <label className="flex justify-center items-center gap-2 px-4 py-2.5 bg-transparent hover:bg-white/5 border border-slate-100 dark:border-white/10 text-slate-500 dark:text-slate-400 rounded-full text-[12px] font-bold cursor-pointer transition-all focus-ring shadow-sm dark:shadow-none">
             <ImageIcon className="w-4 h-4 text-primary-400" />
             Attach visual
             <input
@@ -376,7 +376,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border ${showEmojiPicker ? 'border-primary-400 text-primary-400' : 'border-slate-200 text-slate-600'} rounded-full text-[12px] font-bold transition-all focus-ring`}
+              className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-transparent hover:bg-white/5 border ${showEmojiPicker ? 'border-primary-400 text-primary-400' : 'border-slate-200 dark:border-white/10 text-slate-400'} rounded-full text-[12px] font-bold transition-all focus-ring`}
             >
               <Smile className="w-4 h-4" />
               Emoji
@@ -389,7 +389,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
                     onClick={() => setShowEmojiPicker(false)} 
                   />
                   <div className="absolute z-50 mt-2 bottom-full mb-2">
-                    <Suspense fallback={<div className="w-[300px] h-[400px] flex items-center justify-center bg-white rounded-xl shadow-lg border border-slate-200"><div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" /></div>}>
+                    <Suspense fallback={<div className="w-[300px] h-[400px] flex items-center justify-center bg-white rounded-xl shadow-lg border border-slate-100"><div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" /></div>}>
                       <EmojiPicker 
                         onEmojiClick={(emojiData) => {
                           setNewUpdate(prev => prev + emojiData.emoji);
@@ -405,7 +405,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
           <button
             type="button"
             onClick={() => setShowCodeInput(!showCodeInput)}
-            className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border ${showCodeInput ? 'border-primary-400 text-primary-400' : 'border-slate-200 text-slate-600'} rounded-full text-[12px] font-bold transition-all focus-ring`}
+            className={`flex justify-center items-center gap-2 px-4 py-2.5 bg-transparent hover:bg-white/5 border ${showCodeInput ? 'border-primary-400 text-primary-400' : 'border-slate-200 dark:border-white/10 text-slate-400'} rounded-full text-[12px] font-bold transition-all focus-ring`}
           >
             <Code className="w-4 h-4" />
             Code snippet
@@ -415,7 +415,7 @@ export function RoomComposer({ roomId, user, profile, room, newUpdate, setNewUpd
         <button
           type="submit"
           disabled={postingUpdate || (!newUpdate.trim() && !codeSnippet.trim() && !mediaPreview)}
-          className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-white text-slate-700 border border-slate-200 text-[13px] font-bold rounded-full hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-50 focus-ring"
+          className="flex justify-center items-center gap-2 px-6 py-3 w-full sm:w-auto bg-primary-500 text-white border-transparent text-[13px] font-bold rounded-full hover:bg-primary-400 transition-all disabled:opacity-50 focus-ring"
         >
           {postingUpdate ? 'Posting...' : <><Send className="w-4 h-4" /> Post Update</>}
         </button>

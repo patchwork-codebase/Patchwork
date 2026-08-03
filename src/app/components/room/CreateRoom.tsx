@@ -46,7 +46,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-lg overflow-hidden py-1">
           {options.map(option => (
             <button
               key={option.value}
@@ -193,8 +193,8 @@ export default function CreateRoom() {
             <Hammer className="w-6 h-6" />
           </div>
 
-          <h2 className="text-[28px] font-extrabold text-white mb-2 font-display">Upgrade to Builder</h2>
-          <p className="text-slate-400 mb-6 text-[13.5px] leading-relaxed max-w-md mx-auto font-medium">
+          <h2 className="text-[28px] font-extrabold text-slate-900 dark:text-white mb-2 font-display">Upgrade to Builder</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 text-[13.5px] leading-relaxed max-w-md mx-auto font-medium">
             Only builders can create rooms. Select a track below to activate your Builder status and get started.
           </p>
 
@@ -212,7 +212,7 @@ export default function CreateRoom() {
                   }`}
                 >
                   <span className="text-[14px] mr-1">{track.emoji}</span>
-                  <span className="text-[13px] font-bold text-white leading-tight">{track.label}</span>
+                  <span className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight">{track.label}</span>
                   <p className="text-[10px] text-slate-500 mt-1 leading-snug font-medium line-clamp-1">{track.desc}</p>
                 </button>
               );
@@ -220,7 +220,7 @@ export default function CreateRoom() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/[0.06]">
-            <Link to="/dashboard" className="flex-1 py-3 border border-white/[0.08] hover:bg-white/5 text-slate-300 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+            <Link to="/dashboard" className="flex-1 py-3 border border-white/[0.08] hover:bg-white/5 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
               <ArrowLeft size={16} /> Back to dashboard
             </Link>
             <button
@@ -391,7 +391,7 @@ export default function CreateRoom() {
               </h3>
               {loadingTemplates ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-slate-600 dark:text-slate-300 animate-spin" />
                 </div>
               ) : (
                 <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3">
@@ -437,19 +437,19 @@ export default function CreateRoom() {
               <label className="block text-[13px] font-bold text-slate-700 mb-2">Cover Image (Optional)</label>
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400/50 bg-slate-50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+                className="w-full h-32 md:h-48 rounded-xl border-2 border-dashed border-slate-100 hover:border-primary-400/50 bg-slate-50 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group shadow-sm dark:shadow-none"
               >
                 {form.coverImage ? (
                   <>
                     <SmartImage src={form.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-white text-sm font-bold flex items-center gap-2">
+                      <span className="text-slate-900 dark:text-white text-sm font-bold flex items-center gap-2">
                         <ImageIcon className="w-4 h-4" /> Change Image
                       </span>
                     </div>
                   </>
                 ) : (
-                  <div className="text-slate-400 flex flex-col items-center gap-2">
+                  <div className="text-slate-500 dark:text-slate-400 flex flex-col items-center gap-2">
                     <ImageIcon className="w-8 h-8 opacity-50" />
                     <span className="text-[13px] font-medium text-slate-500">Click to upload cover image</span>
                   </div>
@@ -480,10 +480,10 @@ export default function CreateRoom() {
                   }}
                   placeholder="e.g. Redesigning merchant onboarding flow"
                   maxLength={100}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all font-medium"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all font-medium shadow-sm dark:shadow-none"
                 />
                 <div className="flex justify-end mt-1.5">
-                  <span className="text-[11px] font-mono text-slate-400">{form.title.length}/100</span>
+                  <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">{form.title.length}/100</span>
                 </div>
               </div>
 
@@ -492,7 +492,7 @@ export default function CreateRoom() {
                   URL Slug <span className="text-rose-500">*</span>
                 </label>
                 <div className="flex items-center">
-                  <span className="px-4 py-4 bg-slate-100 border border-r-0 border-slate-200 rounded-l-xl text-slate-500 text-[14px] font-mono">patchwork.sh/</span>
+                  <span className="px-4 py-4 bg-slate-100 border border-r-0 border-slate-100 rounded-l-xl text-slate-500 text-[14px] font-mono">patchwork.sh/</span>
                   <input
                     type="text" required
                     value={form.slug}
@@ -510,7 +510,7 @@ export default function CreateRoom() {
                 {slugError ? (
                   <div className="mt-1.5 text-[12px] font-bold text-rose-500">{slugError}</div>
                 ) : (
-                  <div className="mt-1.5 text-[12px] font-medium text-slate-400">Must be unique to you</div>
+                  <div className="mt-1.5 text-[12px] font-medium text-slate-500 dark:text-slate-400">Must be unique to you</div>
                 )}
               </div>
             </div>
@@ -534,10 +534,10 @@ export default function CreateRoom() {
                 placeholder="What are you building? Give observers context."
                 rows={4}
                 maxLength={500}
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed shadow-sm dark:shadow-none"
               />
               <div className="flex justify-end mt-1.5">
-                <span className="text-[11px] font-mono text-slate-400">{form.description.length}/500</span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">{form.description.length}/500</span>
               </div>
             </div>
 
@@ -548,7 +548,7 @@ export default function CreateRoom() {
                 value={form.primaryLink}
                 onChange={e => setForm((f: any) => ({ ...f, primaryLink: e.target.value }))}
                 placeholder="https://github.com/your/repo or your live site"
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -575,13 +575,13 @@ export default function CreateRoom() {
                   onChange={e => setForm((f: any) => ({ ...f, tagInput: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (form.tagInput.trim()) addTag(form.tagInput); } }}
                   placeholder="Add a tag..."
-                  className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium"
+                  className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 transition-all font-medium shadow-sm dark:shadow-none"
                 />
                 <button
                   type="button"
                   onClick={() => addTag(form.tagInput)}
                   disabled={!form.tagInput.trim() || tags.length >= 5}
-                  className="px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="px-5 py-3.5 bg-white border border-slate-100 rounded-xl text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shadow-sm dark:shadow-none"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -714,14 +714,14 @@ export default function CreateRoom() {
                 <div className="mt-4">
                   <label className="block text-[13px] font-bold text-slate-700 mb-2">
                     Custom NDA Text
-                    <span className="ml-2 text-[11px] font-normal text-slate-400">(Optional — leave blank to use the Patchwork standard NDA)</span>
+                    <span className="ml-2 text-[11px] font-normal text-slate-500 dark:text-slate-400">(Optional — leave blank to use the Patchwork standard NDA)</span>
                   </label>
                   <textarea
                     value={form.ndaText}
                     onChange={(e) => setForm((f: any) => ({ ...f, ndaText: e.target.value }))}
                     rows={5}
                     placeholder="Enter your custom NDA terms here, or leave blank to use the Patchwork standard confidentiality agreement..."
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed"
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/50 transition-all resize-none font-medium leading-relaxed shadow-sm dark:shadow-none"
                   />
                 </div>
               )}
@@ -771,13 +771,13 @@ export default function CreateRoom() {
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
+      <div className="bg-white border border-slate-100 rounded-[32px] p-8 md:p-10 shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col min-h-[400px]">
           <AnimatePresence mode="wait">
             {renderStepContent()}
           </AnimatePresence>
 
-          <div className="mt-auto pt-8 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+          <div className="mt-auto pt-8 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
             {currentStep === 0 ? (
               <Link
                 to="/dashboard"
@@ -810,7 +810,7 @@ export default function CreateRoom() {
                     type="button"
                     onClick={() => { setSubmitStatus('draft'); handleSubmit('draft'); }}
                     disabled={loading || !form.title.trim()}
-                    className="px-6 py-3 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-full text-[14px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-center"
+                    className="px-6 py-3 border border-slate-100 bg-white hover:bg-slate-50 text-slate-700 rounded-full text-[14px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-center shadow-sm dark:shadow-none"
                   >
                     {loading && submitStatus === 'draft' ? 'Saving...' : 'Save as Draft'}
                   </button>

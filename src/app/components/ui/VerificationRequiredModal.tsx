@@ -51,15 +51,15 @@ export default function VerificationRequiredModal() {
 
           <div className="relative z-10 flex flex-col items-center">
             <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-400 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(108,92,231,0.3)] mb-6">
-              <Mail className="w-8 h-8 text-white" />
+              <Mail className="w-8 h-8 text-slate-900 dark:text-white" />
             </div>
 
-            <h2 className="text-[24px] font-extrabold text-white tracking-tight mb-3">
+            <h2 className="text-[24px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
               Verify your email
             </h2>
             
-            <p className="text-[15px] text-slate-400 leading-relaxed mb-8">
-              We've sent a verification link to <strong className="text-white font-medium">{user?.email}</strong>. 
+            <p className="text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed mb-8">
+              We've sent a verification link to <strong className="text-slate-900 dark:text-white font-medium">{user?.email}</strong>. 
               Please verify your email address to access the platform.
             </p>
 
@@ -67,7 +67,7 @@ export default function VerificationRequiredModal() {
               <button
                 onClick={handleResend}
                 disabled={resending}
-                className="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)] disabled:opacity-50"
+                className="w-full py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)] disabled:opacity-50"
               >
                 {resending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                 {resending ? 'Sending...' : 'Resend Verification Email'}
@@ -75,7 +75,7 @@ export default function VerificationRequiredModal() {
 
               <button
                 onClick={handleSignOut}
-                className="w-full py-3.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.08] text-slate-300 hover:text-white text-[14px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white text-[14px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out

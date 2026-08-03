@@ -94,12 +94,12 @@ export function AddIntegrationModal({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-[16px] font-extrabold text-white">Add Integration</h2>
-            <p className="text-[12px] text-slate-400 mt-0.5">Connect a tool to your Build Room</p>
+            <h2 className="text-[16px] font-extrabold text-slate-900 dark:text-white">Add Integration</h2>
+            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Connect a tool to your Build Room</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/[0.05] transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded-xl hover:bg-white/[0.05] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -133,7 +133,7 @@ export function AddIntegrationModal({
         {/* URL Input */}
         <div className="px-5 pb-4 space-y-3">
           <div>
-            <label className="block text-[12px] font-bold text-slate-300 mb-2">
+            <label className="block text-[12px] font-bold text-slate-600 dark:text-slate-300 mb-2">
               Paste URL <span className="text-rose-400">*</span>
             </label>
             <div className="relative">
@@ -181,7 +181,7 @@ export function AddIntegrationModal({
           </div>
 
           <div>
-            <label className="block text-[12px] font-bold text-slate-300 mb-2">
+            <label className="block text-[12px] font-bold text-slate-600 dark:text-slate-300 mb-2">
               Label <span className="text-slate-500 font-normal">(optional)</span>
             </label>
             <input
@@ -190,7 +190,7 @@ export function AddIntegrationModal({
               onChange={e => setLabel(e.target.value)}
               maxLength={40}
               placeholder="e.g. Design System, Main Repo…"
-              className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/20 transition-all"
+              className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-[13px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/20 transition-all"
             />
           </div>
         </div>
@@ -199,7 +199,7 @@ export function AddIntegrationModal({
         <div className="px-5 pb-5 flex items-center gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.06] text-slate-300 font-bold text-[13px] rounded-xl transition-colors"
+            className="flex-1 py-3 bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.06] text-slate-600 dark:text-slate-300 font-bold text-[13px] rounded-xl transition-colors"
           >
             Cancel
           </button>

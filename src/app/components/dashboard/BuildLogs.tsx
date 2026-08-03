@@ -59,7 +59,7 @@ export default function BuildLogs() {
   const stalledRooms = myRooms.filter(r => r.status === 'paused' || r.status === 'stalled');
 
   if (isLoading) {
-    return <div className="p-8 text-slate-400">Loading build logs...</div>;
+    return <div className="p-8 text-slate-500 dark:text-slate-400">Loading build logs...</div>;
   }
 
   return (
@@ -67,10 +67,10 @@ export default function BuildLogs() {
       {/* Header + metrics */}
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-100 m-0 mb-1 font-display tracking-tight leading-tight">
+          <h2 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 dark:text-slate-100 m-0 mb-1 font-display tracking-tight leading-tight">
             {isObserver ? 'Build logs' : 'Build logs'}
           </h2>
-          <p className="text-[13px] text-slate-400 m-0 font-medium">
+          <p className="text-[13px] text-slate-500 dark:text-slate-400 m-0 font-medium">
             {isObserver
               ? 'Active, shipped, and completed builds across Patchwork.'
               : 'Compiled histories of your completed, in-progress, and stalled rooms.'}
@@ -83,7 +83,7 @@ export default function BuildLogs() {
             { label: "Completed", count: completedRooms.length, color: "text-primary-400", dot: "bg-primary-400" },
             { label: "Stalled", count: stalledRooms.length, color: "text-rose-500", dot: "bg-rose-500" },
           ].map(m => (
-            <div key={m.label} className="bg-transparent border border-slate-800 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-4 text-center shadow-sm">
+            <div key={m.label} className="bg-transparent border border-slate-100 dark:border-slate-800 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-4 text-center shadow-sm">
               <div className={`text-[18px] sm:text-[24px] font-black font-display leading-none ${m.color}`}>{m.count}</div>
               <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-1.5 sm:mt-2">
                 <span className={`w-1.5 h-1.5 rounded-full ${m.dot}`} />
@@ -102,8 +102,8 @@ export default function BuildLogs() {
             onClick={() => setBuildLogFilter(f)}
             className={`px-4 sm:px-5 py-2.5 min-h-[44px] sm:min-h-auto rounded-full text-[13px] sm:text-[14px] font-bold capitalize transition-all snap-start active:scale-95 border focus-ring ${
               buildLogFilter === f
-                ? 'bg-slate-800 text-white border-slate-700 shadow-sm'
-                : 'bg-transparent text-slate-400 border-slate-700 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-slate-900 dark:bg-slate-800 text-white border-slate-900 dark:border-slate-700 shadow-sm'
+                : 'bg-transparent text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
             }`}
           >
             {f === "all" ? "All logs" : f}
@@ -163,16 +163,16 @@ export default function BuildLogs() {
                     <h3 className="m-0 text-[15px] sm:text-[16px] font-extrabold text-slate-900 font-display line-clamp-2 break-words mb-1.5">{room.title}</h3>
                       <div className="flex items-center gap-2 mb-2">
                         {room.builderAvatarUrl ? (
-                          <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-5 h-5 rounded-full object-cover border border-slate-200" />
+                          <UserAvatar userId={room.builderId || ''} name={room.builderName} avatarUrl={room.builderAvatarUrl} className="w-5 h-5 rounded-full object-cover border border-slate-100" />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-200">
+                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase border border-slate-100">
                             {room.builderName?.substring(0, 2) || '??'}
                           </div>
                         )}
                         <span className="text-[12px] font-bold text-slate-700">{room.builderName}</span>
                         {room.projectStage && (
                           <>
-                            <span className="text-slate-300">·</span>
+                            <span className="text-slate-600 dark:text-slate-300">·</span>
                             <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wide border border-primary-100">{room.projectStage}</span>
                           </>
                         )}
@@ -184,7 +184,7 @@ export default function BuildLogs() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative shadow-inner">
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 relative shadow-inner">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles size={14} className="text-rose-500" />
                     <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Patchwork Nudge</span>
@@ -209,14 +209,14 @@ export default function BuildLogs() {
                       disabled={archivingId === room.id}
                       title="Archive room"
                       aria-label="Archive room"
-                      className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
+                      className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-100 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl active:scale-95 transition-all shadow-sm focus-ring disabled:opacity-50">
                       {archivingId === room.id ? <span className="w-4 h-4 border-2 border-slate-300 border-t-rose-600 rounded-full animate-spin" /> : <Archive size={18} />}
                     </button>
                   )}
                   <Link to={`/dashboard/room/${room.id}`}
                     title="View room"
                     aria-label="View room"
-                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
+                    className="inline-flex items-center justify-center w-11 h-11 bg-white hover:bg-slate-50 border border-slate-100 text-slate-600 hover:text-slate-900 rounded-xl active:scale-95 transition-all shadow-sm focus-ring">
                     <ArrowUpRight size={18} />
                   </Link>
                 </div>
@@ -226,9 +226,9 @@ export default function BuildLogs() {
 
           {/* New Room Placeholder — only for builders */}
           {!isObserver && (
-            <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-200 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-200 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors">
-                <span className="text-[24px] sm:text-[28px] text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
+            <Link to="/dashboard/create" className="bg-white border-2 border-dashed border-slate-100 hover:border-primary-500/30 hover:bg-slate-50 rounded-[20px] sm:rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] sm:min-h-[260px] cursor-pointer active:scale-95 transition-all group shadow-sm focus-ring">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-dashed border-slate-100 group-hover:border-primary-500/30 flex items-center justify-center bg-slate-50 group-hover:bg-primary-500/5 transition-colors shadow-sm dark:shadow-none">
+                <span className="text-[24px] sm:text-[28px] text-slate-500 dark:text-slate-400 group-hover:text-primary-400 font-light leading-none transition-colors">+</span>
               </div>
               <div className="text-center">
                 <h3 className="m-0 mb-1.5 text-[14px] sm:text-[15px] font-extrabold text-slate-900 group-hover:text-primary-500 font-display transition-colors">Open a new build room</h3>
@@ -259,9 +259,9 @@ export default function BuildLogs() {
 
         if (!hasVisibleRooms) {
           return (
-            <div className="flex flex-col items-center justify-center py-24 px-4 text-center border-2 border-dashed border-slate-200 rounded-[24px] mt-8 bg-white/50">
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center border-2 border-dashed border-slate-100 rounded-[24px] mt-8 bg-white/50 shadow-sm dark:shadow-none">
               <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center mb-5 shadow-sm">
-                <Archive className="w-8 h-8 text-slate-300" />
+                <Archive className="w-8 h-8 text-slate-600 dark:text-slate-300" />
               </div>
               <h3 className="text-[18px] font-extrabold text-slate-900 mb-2 font-display">No logs found</h3>
               <p className="text-[14px] text-slate-500 max-w-[280px] mb-8 font-medium">
@@ -276,7 +276,7 @@ export default function BuildLogs() {
                   <Compass size={16} /> Explore builders
                 </Link>
               ) : (
-                <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
+                <Link to="/dashboard/create" className="bg-[#0F172A] hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-6 py-3 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-95 inline-flex items-center gap-2">
                   <Sparkles size={16} /> Open a new room
                 </Link>
               )}

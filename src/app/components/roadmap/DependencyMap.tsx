@@ -62,7 +62,7 @@ export function DependencyMap() {
   return (
     <div className="max-w-3xl mx-auto space-y-10">
       {/* Create Dependency Form */}
-      <div className="relative overflow-hidden bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group">
+      <div className="relative overflow-hidden bg-white p-6 sm:p-8 rounded-3xl border border-slate-100/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         
         <div className="relative z-10">
@@ -75,42 +75,42 @@ export function DependencyMap() {
           
           <div className="flex flex-col sm:flex-row items-end gap-5">
             <div className="flex-1 w-full">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 ml-1">This Task</label>
+              <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5 ml-1">This Task</label>
               <div className="relative">
                 <select 
                   value={selectedItem}
                   onChange={(e) => setSelectedItem(e.target.value)}
-                  className="w-full appearance-none p-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-[14px] font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-400 focus:bg-white transition-all cursor-pointer shadow-sm hover:shadow-md"
+                  className="w-full appearance-none p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl text-[14px] font-medium text-slate-700 outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-400 focus:bg-white transition-all cursor-pointer shadow-sm hover:shadow-md"
                 >
-                  <option value="" className="text-slate-400">Select the blocked task...</option>
+                  <option value="" className="text-slate-500 dark:text-slate-400">Select the blocked task...</option>
                   {items?.map(item => (
                     <option key={item.id} value={item.id}>{item.title}</option>
                   ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 dark:text-slate-400">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
             </div>
             
-            <div className="shrink-0 pb-4 hidden sm:flex items-center justify-center w-8 text-slate-300">
+            <div className="shrink-0 pb-4 hidden sm:flex items-center justify-center w-8 text-slate-600 dark:text-slate-300">
               <ArrowRight className="w-5 h-5" />
             </div>
             
             <div className="flex-1 w-full">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 ml-1">Is Blocked By</label>
+              <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5 ml-1">Is Blocked By</label>
               <div className="relative">
                 <select 
                   value={selectedBlocker}
                   onChange={(e) => setSelectedBlocker(e.target.value)}
-                  className="w-full appearance-none p-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-[14px] font-medium text-slate-700 outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-400 focus:bg-white transition-all cursor-pointer shadow-sm hover:shadow-md"
+                  className="w-full appearance-none p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl text-[14px] font-medium text-slate-700 outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-400 focus:bg-white transition-all cursor-pointer shadow-sm hover:shadow-md"
                 >
-                  <option value="" className="text-slate-400">Select a blocker...</option>
+                  <option value="" className="text-slate-500 dark:text-slate-400">Select a blocker...</option>
                   {items?.map(item => (
                     <option key={item.id} value={item.id} disabled={item.id === selectedItem}>{item.title}</option>
                   ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 dark:text-slate-400">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export function DependencyMap() {
             <button 
               onClick={handleAddDependency}
               disabled={!selectedItem || !selectedBlocker}
-              className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl text-[14px] font-bold shadow-lg shadow-primary-500/25 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-slate-900 dark:text-white rounded-xl text-[14px] font-bold shadow-lg shadow-primary-500/25 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
               Link Tasks
             </button>
@@ -137,8 +137,8 @@ export function DependencyMap() {
         </div>
         
         {blockedItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 border border-dashed border-slate-200/80 rounded-3xl bg-slate-50/50">
-            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 mb-4 border border-slate-100">
+          <div className="flex flex-col items-center justify-center p-12 border border-dashed border-slate-100/80 rounded-3xl bg-slate-50/50 shadow-sm dark:shadow-none">
+            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 mb-4 border border-slate-100">
               <LinkIcon className="w-8 h-8" />
             </div>
             <p className="text-slate-500 text-[14px] font-medium max-w-[250px] text-center">No dependencies mapped yet. Linking tasks helps you identify bottlenecks.</p>
@@ -148,7 +148,7 @@ export function DependencyMap() {
             {blockedItems.map(item => {
               const itemDeps = dependencies?.filter(d => d.item_id === item.id) || [];
               return (
-                <motion.div whileHover={{ scale: 1.01, y: -2 }} key={item.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <motion.div whileHover={{ scale: 1.01, y: -2 }} key={item.id} className="bg-white rounded-2xl border border-slate-100/80 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                   <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-transparent flex items-center justify-between">
                     <div className="font-bold text-slate-900 text-[15px]">{item.title}</div>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 text-rose-600 rounded-lg text-[12px] font-bold border border-rose-100/50">

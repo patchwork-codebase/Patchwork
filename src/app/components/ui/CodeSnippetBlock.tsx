@@ -61,14 +61,14 @@ export function CodeSnippetBlock({ code }: { code: string }) {
             e.stopPropagation();
             handleCopy();
           }}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/[0.05] rounded-md transition-all focus-ring"
+          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/[0.05] rounded-md transition-all focus-ring"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
       <div className="p-4 overflow-x-auto text-[13px]">
-        <Suspense fallback={<pre className="m-0 text-slate-300 font-mono whitespace-pre-wrap">{code}</pre>}>
+        <Suspense fallback={<pre className="m-0 text-slate-600 dark:text-slate-300 font-mono whitespace-pre-wrap">{code}</pre>}>
           <SyntaxHighlighter
             language="typescript"
             style={vscDarkPlus}

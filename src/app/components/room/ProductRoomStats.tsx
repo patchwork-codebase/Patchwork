@@ -41,7 +41,7 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-[#0a0a0a] rounded-[20px] p-5 h-[120px] animate-pulse border border-white/5" />
+          <div key={i} className="bg-white dark:bg-[#0a0a0a] rounded-[20px] p-5 h-[120px] animate-pulse border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-none" />
         ))}
       </div>
     );
@@ -50,10 +50,10 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       {/* Decisions Made */}
-      <div className="bg-[#0a0a0a] border border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
-        <h4 className="text-[11px] font-bold text-slate-400 uppercase font-mono mb-2">Decisions Made</h4>
+      <div className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
+        <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase font-mono mb-2">Decisions Made</h4>
         <div>
-          <p className="text-[32px] font-bold text-white leading-none mb-1">
+          <p className="text-[32px] font-bold text-slate-900 dark:text-white leading-none mb-1">
             {allDecisions.length}
           </p>
           <p className="text-[11px] font-medium text-emerald-400 mt-1.5">
@@ -63,39 +63,39 @@ export function ProductRoomStats({ roomId, reactionsCount, roomCreatedAt }: Prod
       </div>
 
       {/* Things Scrapped */}
-      <div className="bg-[#0a0a0a] border border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
-        <h4 className="text-[11px] font-bold text-slate-400 uppercase font-mono mb-2">Things Scrapped</h4>
+      <div className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
+        <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase font-mono mb-2">Things Scrapped</h4>
         <div>
-          <p className="text-[32px] font-bold text-white leading-none mb-1">
+          <p className="text-[32px] font-bold text-slate-900 dark:text-white leading-none mb-1">
             {allScrapped.length}
           </p>
-          <p className="text-[11px] font-medium text-slate-400 mt-1.5">
+          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1.5">
             decisions pivoted
           </p>
         </div>
       </div>
 
       {/* Observer Reactions */}
-      <div className="bg-[#0a0a0a] border border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
-        <h4 className="text-[11px] font-bold text-slate-400 uppercase font-mono mb-2">Observer Reactions</h4>
+      <div className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
+        <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase font-mono mb-2">Observer Reactions</h4>
         <div>
-          <p className="text-[32px] font-bold text-white leading-none mb-1">
+          <p className="text-[32px] font-bold text-slate-900 dark:text-white leading-none mb-1">
             {reactionsCount}
           </p>
-          <p className="text-[11px] font-medium text-slate-400 mt-1.5">
+          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1.5">
             total engagements
           </p>
         </div>
       </div>
 
       {/* Days Active */}
-      <div className="bg-[#0a0a0a] border border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
-        <h4 className="text-[11px] font-bold text-slate-400 uppercase font-mono mb-2">Days Active</h4>
+      <div className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[20px] p-5 flex flex-col justify-between relative overflow-hidden group shadow-2xl hover:-translate-y-0.5 transition-all">
+        <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase font-mono mb-2">Days Active</h4>
         <div>
-          <p className="text-[32px] font-bold text-white leading-none mb-1">
+          <p className="text-[32px] font-bold text-slate-900 dark:text-white leading-none mb-1">
             {daysActive}
           </p>
-          <p className="text-[11px] font-medium text-slate-400 mt-1.5">
+          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1.5">
             since creation
           </p>
         </div>

@@ -84,7 +84,7 @@ export function AiBuildDigestCard({ room, isBuilder, onPostAsUpdate }: AiBuildDi
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 border border-primary-500/20 rounded-[24px] p-6 text-white shadow-xl relative overflow-hidden mb-6">
+    <div className="bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 border border-primary-500/20 rounded-[24px] p-6 text-slate-900 dark:text-white shadow-xl relative overflow-hidden mb-6">
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="flex items-center justify-between gap-4 mb-4 relative z-10">
@@ -93,13 +93,13 @@ export function AiBuildDigestCard({ room, isBuilder, onPostAsUpdate }: AiBuildDi
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold font-display tracking-tight text-white flex items-center gap-2">
+            <h3 className="text-base font-extrabold font-display tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               AI Weekly Build Digest
               <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-300 border border-primary-400/30">
                 AI Beta
               </span>
             </h3>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Instant 3-bullet executive summary of recent updates, decisions, and velocity.
             </p>
           </div>
@@ -127,14 +127,14 @@ export function AiBuildDigestCard({ room, isBuilder, onPostAsUpdate }: AiBuildDi
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={copyToClipboard}
-              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-white/10"
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-slate-100 dark:border-white/10 shadow-sm dark:shadow-none"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? 'Copied' : 'Copy'}
             </button>
             <button
               onClick={generateDigest}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/10 rounded-lg transition-colors"
               title="Regenerate"
             >
               <RefreshCw className="w-4 h-4" />
@@ -144,8 +144,8 @@ export function AiBuildDigestCard({ room, isBuilder, onPostAsUpdate }: AiBuildDi
       </div>
 
       {digest && (
-        <div className="mt-4 pt-4 border-t border-white/10 relative z-10">
-          <div className="bg-slate-950/60 border border-white/10 rounded-xl p-4 text-xs leading-relaxed text-slate-300 font-mono whitespace-pre-line">
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/10 relative z-10">
+          <div className="bg-slate-950/60 border border-slate-100 dark:border-white/10 rounded-xl p-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300 font-mono whitespace-pre-line">
             {digest}
           </div>
           {isBuilder && onPostAsUpdate && (

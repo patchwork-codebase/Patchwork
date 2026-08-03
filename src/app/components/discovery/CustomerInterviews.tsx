@@ -112,13 +112,13 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
       </div>
 
       {isFormOpen ? (
-        <form onSubmit={handleSave} className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300">
-          <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+        <form onSubmit={handleSave} className="bg-slate-50 border border-slate-100/80 rounded-2xl p-6 md:p-8 space-y-6 animate-in fade-in duration-300 shadow-sm dark:shadow-none">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-4">
             <h3 className="text-lg font-bold text-slate-900">{interviewId ? 'Edit Interview Record' : 'Record Customer Interview'}</h3>
             <button 
               type="button" 
               onClick={() => setIsFormOpen(false)}
-              className="text-slate-400 hover:text-slate-600 font-bold text-sm"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-600 font-bold text-sm"
             >
               Cancel
             </button>
@@ -132,7 +132,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Sarah Jenkins"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 type="date"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -153,7 +153,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 value={role}
                 onChange={e => setRole(e.target.value)}
                 placeholder="e.g. Senior PM"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -164,7 +164,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 value={company}
                 onChange={e => setCompany(e.target.value)}
                 placeholder="e.g. Stripe"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -175,7 +175,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 value={recordingUrl}
                 onChange={e => setRecordingUrl(e.target.value)}
                 placeholder="e.g. Loom, Grain, or Google Drive link"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -186,7 +186,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
                 placeholder="e.g. Struggles with validating target market, willing to pay for an automated signal tracking tool."
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -197,7 +197,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 onChange={e => setInsights(e.target.value)}
                 placeholder="- Insight 1: Automating survey results is critical.&#10;- Insight 2: Prefers Slack integration over dashboard tools."
                 rows={3}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
 
@@ -208,12 +208,12 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Raw conversation transcripts or detailed notes of the chat..."
                 rows={6}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button 
               type="button" 
               onClick={() => setIsFormOpen(false)}
@@ -240,8 +240,8 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 ))}
               </div>
             ) : interviews?.length === 0 ? (
-              <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50">
-                <MessageSquare className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <div className="text-center py-16 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50 shadow-sm dark:shadow-none">
+                <MessageSquare className="w-12 h-12 text-slate-500 dark:text-slate-400 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-slate-900 mb-1">No Interviews Yet</h3>
                 <p className="text-sm text-slate-500 max-w-sm mx-auto mb-6">Talk to your customers first. Document qualitative learnings here.</p>
                 {!isObserver && (
@@ -279,13 +279,13 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                           <div className="flex gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button 
                               onClick={(e) => { e.stopPropagation(); openEditForm(i); }}
-                              className="p-1 text-slate-400 hover:text-primary-400 rounded hover:bg-slate-100"
+                              className="p-1 text-slate-500 dark:text-slate-400 hover:text-primary-400 rounded hover:bg-slate-100"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button 
                               onClick={(e) => handleDelete(i.id, e)}
-                              className="p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-slate-100"
+                              className="p-1 text-slate-500 dark:text-slate-400 hover:text-rose-500 rounded hover:bg-slate-100"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -297,12 +297,12 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                         {i.summary || "No summary provided."}
                       </p>
 
-                      <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                      <div className="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {i.interview_date ? new Date(i.interview_date).toLocaleDateString() : 'N/A'}
                         </span>
-                        {!selectedInterview && <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:translate-x-0.5 transition-transform" />}
+                        {!selectedInterview && <ChevronRight className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300 group-hover:translate-x-0.5 transition-transform" />}
                       </div>
                     </div>
                   );
@@ -313,10 +313,10 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
 
           {/* Details panel */}
           {selectedInterview && (
-            <div className="lg:col-span-2 bg-slate-50/50 border border-slate-200/80 rounded-2xl p-6 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="lg:col-span-2 bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm dark:shadow-none">
               <button 
                 onClick={() => setSelectedInterview(null)}
-                className="absolute top-4 right-4 p-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
+                className="absolute top-4 right-4 p-1.5 bg-white border border-slate-100 rounded-lg hover:bg-slate-100 transition-colors shadow-sm dark:shadow-none"
               >
                 <X className="w-4 h-4 text-slate-500" />
               </button>
@@ -335,7 +335,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400 mt-3 pt-3 border-t border-slate-200/60">
+                  <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-500 dark:text-slate-400 mt-3 pt-3 border-t border-slate-100/60">
                     <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5"/> {selectedInterview.interview_date ? new Date(selectedInterview.interview_date).toLocaleDateString() : 'N/A'}</span>
                     {selectedInterview.recording_url && (
                       <a 
@@ -351,8 +351,8 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 </div>
 
                 {selectedInterview.summary && (
-                  <div className="bg-white p-4 rounded-xl border border-slate-100">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">One-line Summary</h4>
+                  <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm dark:shadow-none">
+                    <h4 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">One-line Summary</h4>
                     <p className="text-slate-800 text-sm font-medium">{selectedInterview.summary}</p>
                   </div>
                 )}
@@ -371,7 +371,7 @@ export default function CustomerInterviews({ projectId, isObserver = false }: Cu
                 {selectedInterview.notes && (
                   <div>
                     <h4 className="text-xs font-bold text-slate-950 uppercase tracking-wider mb-2">Full Notes</h4>
-                    <div className="bg-white text-slate-700 text-sm p-5 rounded-xl border border-slate-200/60 max-h-[300px] overflow-y-auto whitespace-pre-wrap leading-relaxed font-sans">
+                    <div className="bg-white text-slate-700 text-sm p-5 rounded-xl border border-slate-100/60 max-h-[300px] overflow-y-auto whitespace-pre-wrap leading-relaxed font-sans shadow-sm dark:shadow-none">
                       {selectedInterview.notes}
                     </div>
                   </div>

@@ -408,14 +408,14 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   };
 
   return (
-    <div className={isNested ? "flex flex-col h-full" : "bg-[#0a0a0a] rounded-[24px] border border-white/5 overflow-hidden flex flex-col h-[500px] shadow-2xl hover:-translate-y-0.5 transition-all"}>
+    <div className={isNested ? "flex flex-col h-full" : "bg-white dark:bg-[#0a0a0a] rounded-[24px] border border-slate-200 dark:border-white/5 overflow-hidden flex flex-col h-[500px] shadow-2xl hover:-translate-y-0.5 transition-all"}>
       {!isNested && (
-        <div className="p-4 sm:p-5 border-b border-white/5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shrink-0 bg-[#0a0a0a]">
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shrink-0 bg-white dark:bg-[#0a0a0a] shadow-sm dark:shadow-none">
           <div>
-            <h3 className="text-[16px] font-extrabold text-white leading-tight">
+            <h3 className="text-[16px] font-extrabold text-slate-900 dark:text-white leading-tight">
               Milestone tracker
             </h3>
-            <span className="text-[12px] text-slate-400 font-medium">Synced with Integrations</span>
+            <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">Synced with Integrations</span>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {!isObserver && (
@@ -423,21 +423,21 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                 <button
                   onClick={handleSync}
                   disabled={isSyncing}
-                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                  className="bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap shadow-sm dark:shadow-none"
                 >
                   Linear
                 </button>
                 <button
                   onClick={handleSyncClickUp}
                   disabled={isSyncing}
-                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                  className="bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap shadow-sm dark:shadow-none"
                 >
                   ClickUp
                 </button>
                 <button
                   onClick={handleSyncJira}
                   disabled={isSyncing}
-                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap"
+                  className="bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white px-3 py-1.5 rounded-full font-bold text-[11px] transition-colors flex items-center gap-1.5 active:scale-95 disabled:opacity-50 whitespace-nowrap shadow-sm dark:shadow-none"
                 >
                   Jira
                 </button>
@@ -455,7 +455,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
         <div className="space-y-4">
           {allMilestones.length === 0 ? (
             <div className="text-center py-8">
-              <p className={`text-[13px] font-medium text-slate-400`}>No milestones tracked yet.</p>
+              <p className={`text-[13px] font-medium text-slate-500 dark:text-slate-400`}>No milestones tracked yet.</p>
             </div>
           ) : (
             allMilestones.map((milestone, index) => {
@@ -471,16 +471,16 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
               const hasPushback = itemReactions.some(r => r.type === 'pushback' && (r.observer_id === user?.id || r.observerId === user?.id));
 
               return (
-                <div key={milestone.id} className={`pb-5 ${index !== allMilestones.length - 1 ? `border-b border-white/5 mb-5` : ''}`}>
+                <div key={milestone.id} className={`pb-5 ${index !== allMilestones.length - 1 ? 'border-b border-slate-200 dark:border-white/5 mb-5' : ''}`}>
                   <div className="flex items-center justify-between gap-4 mb-3">
                     <div className="flex items-center gap-4">
-                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 border-white/10 bg-white/5`}>
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-sm dark:shadow-none`}>
                         <Icon className={`w-3.5 h-3.5 ${style.iconColor}`} />
                       </div>
                       <div>
-                        <h4 className={`text-[14px] font-bold leading-tight text-white`}>{milestone.title}</h4>
+                        <h4 className={`text-[14px] font-bold leading-tight text-slate-900 dark:text-white`}>{milestone.title}</h4>
                         {milestone.description && (
-                          <p className={`text-[12px] mt-0.5 text-slate-400`}>{milestone.description}</p>
+                          <p className={`text-[12px] mt-0.5 text-slate-500 dark:text-slate-400`}>{milestone.description}</p>
                         )}
                       </div>
                     </div>
@@ -492,13 +492,13 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                   <div className="flex items-center gap-3 px-2">
                     <button 
                       onClick={() => toggleReaction(milestone.id, 'sharp')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-400 border-primary-400/30' : `bg-transparent border-white/10 text-slate-400 hover:border-white/20 hover:text-white`}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasSharp ? 'bg-primary-400/10 text-primary-600 dark:text-primary-400 border-primary-400/30' : `bg-slate-50 dark:bg-transparent border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white`}`}
                     >
                       <span>✦</span> Sharp {sharpCount > 0 && <span className="opacity-70">{sharpCount}</span>}
                     </button>
                     <button 
                       onClick={() => toggleReaction(milestone.id, 'pushback')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : `bg-transparent border-white/10 text-slate-400 hover:border-white/20 hover:text-white`}`}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold border transition-all ${hasPushback ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30' : `bg-slate-50 dark:bg-transparent border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white`}`}
                     >
                       <span>↩</span> Push back {pushbackCount > 0 && <span className="opacity-70">{pushbackCount}</span>}
                     </button>
@@ -507,7 +507,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                     
                     <button 
                       onClick={() => setReplyingTo(replyingTo === milestone.id ? null : milestone.id)}
-                      className={`flex items-center gap-1.5 text-[12px] font-bold transition-colors text-slate-400 hover:text-white`}
+                      className={`flex items-center gap-1.5 text-[12px] font-bold transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white`}
                     >
                       <MessageCircle className="w-3.5 h-3.5" /> 
                       {itemReplies.length} {itemReplies.length === 1 ? 'Reply' : 'Replies'}
@@ -522,7 +522,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                         className="mt-4 space-y-3 px-2"
                       >
                         {itemReplies.map((reply: any) => (
-                          <div key={reply.id} className={`flex items-start gap-3 p-3 rounded-2xl border bg-white/5 border-white/10`}>
+                          <div key={reply.id} className={`flex items-start gap-3 p-3 rounded-2xl border bg-white/5 border-slate-100 dark:border-white/10 shadow-sm dark:shadow-none`}>
                             <UserAvatar 
                               userId={reply.observer_id || reply.observerId} 
                               name={reply.observerName} 
@@ -531,10 +531,10 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                             />
                             <div>
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className={`text-[12px] font-bold text-white`}>Observer</span>
+                                <span className={`text-[12px] font-bold text-slate-900 dark:text-white`}>Observer</span>
                                 <span className="text-[10px] text-slate-500">{timeAgo(reply.created_at || reply.createdAt)}</span>
                               </div>
-                              <p className={`text-[13px] text-slate-300`}>{reply.text}</p>
+                              <p className={`text-[13px] text-slate-600 dark:text-slate-300`}>{reply.text}</p>
                             </div>
                           </div>
                         ))}
@@ -554,18 +554,18 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder="Write your reply..."
-                          className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-white placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
+                          className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-slate-900 dark:text-white placeholder-slate-500 resize-none h-16 focus-visible:outline-none"
                         />
                         <InlineEmojiPicker
                           isOpen={showEmojiPicker}
-                          className="px-1 py-2 bg-transparent border-t border-white/5"
+                          className="px-1 py-2 bg-transparent border-t border-slate-100 dark:border-white/5"
                           buttonClassName="w-8 h-8 rounded-full hover:bg-white/10"
                           onEmojiSelect={(emoji) => {
                             setReplyText(prev => prev + emoji);
                             replyTextareaRef.current?.focus();
                           }}
                         />
-                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-white/10">
                           <button 
                             onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
                             className={`p-1.5 rounded transition-colors ${showEmojiPicker ? 'text-primary-400 bg-primary-500/20' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} 
@@ -576,7 +576,7 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
                           <button
                             onClick={() => submitReply(milestone.id)}
                             disabled={!replyText.trim()}
-                            className="px-4 py-1.5 bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-ring"
+                            className="px-4 py-1.5 bg-primary-400 hover:bg-[#7a6ce0] disabled:bg-slate-100 dark:bg-slate-700 disabled:text-slate-400 text-white text-[12px] font-bold rounded-full transition-colors flex items-center gap-1.5 focus-ring"
                           >
                             <Send className="w-3.5 h-3.5" /> Send
                           </button>

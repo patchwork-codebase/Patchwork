@@ -387,11 +387,11 @@ export default function Integrations({ userId }: { userId: string }) {
   const connectedCount = [githubAccount, linkedinAccount, linearAccount, notionAccount, clickupAccount, jiraAccount].filter(Boolean).length;
 
   return (
-    <div className="mb-10 bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
+    <div className="mb-10 bg-white border border-slate-100 rounded-[24px] p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-[17px] font-extrabold text-slate-900 font-display">Integrations</h2>
-          <p className="text-[12.5px] text-slate-400 mt-0.5">
+          <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-0.5">
             {connectedCount} of 4 connected
           </p>
         </div>
@@ -470,12 +470,12 @@ export default function Integrations({ userId }: { userId: string }) {
                 onChange={e => setLinearPAT(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveLinear()}
                 placeholder="Personal Access Token"
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#5E6AD2] focus:ring-1 focus:ring-[#5E6AD2] transition-all"
+                className="flex-1 bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#5E6AD2] focus:ring-1 focus:ring-[#5E6AD2] transition-all shadow-sm dark:shadow-none"
               />
               <button
                 onClick={handleSaveLinear}
                 disabled={connecting === 'linear' || !linearPAT.trim()}
-                className="px-3 py-1.5 bg-[#5E6AD2] hover:bg-[#4d57ba] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+                className="px-3 py-1.5 bg-[#5E6AD2] hover:bg-[#4d57ba] disabled:opacity-40 text-slate-900 dark:text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
               >
                 {connecting === 'linear' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
               </button>
@@ -508,12 +508,12 @@ export default function Integrations({ userId }: { userId: string }) {
                 onChange={e => setNotionSecret(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveNotion()}
                 placeholder="Integration Secret"
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all"
+                className="flex-1 bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#1a1a1a] focus:ring-1 focus:ring-[#1a1a1a] transition-all shadow-sm dark:shadow-none"
               />
               <button
                 onClick={handleSaveNotion}
                 disabled={connecting === 'notion' || !notionSecret.trim()}
-                className="px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#333333] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+                className="px-3 py-1.5 bg-slate-50 dark:bg-[#1a1a1a] hover:bg-[#333333] disabled:opacity-40 text-slate-900 dark:text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
               >
                 {connecting === 'notion' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
               </button>
@@ -545,12 +545,12 @@ export default function Integrations({ userId }: { userId: string }) {
                 onChange={e => setClickupPAT(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveClickup()}
                 placeholder="Personal Access Token"
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#7B68EE] focus:ring-1 focus:ring-[#7B68EE] transition-all"
+                className="flex-1 bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#7B68EE] focus:ring-1 focus:ring-[#7B68EE] transition-all shadow-sm dark:shadow-none"
               />
               <button
                 onClick={handleSaveClickup}
                 disabled={connecting === 'clickup' || !clickupPAT.trim()}
-                className="px-3 py-1.5 bg-[#7B68EE] hover:bg-[#6A5AE0] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+                className="px-3 py-1.5 bg-[#7B68EE] hover:bg-[#6A5AE0] disabled:opacity-40 text-slate-900 dark:text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
               >
                 {connecting === 'clickup' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
               </button>
@@ -581,14 +581,14 @@ export default function Integrations({ userId }: { userId: string }) {
                 value={jiraDomain}
                 onChange={e => setJiraDomain(e.target.value)}
                 placeholder="Domain (e.g. your-company.atlassian.net)"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all"
+                className="w-full bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all shadow-sm dark:shadow-none"
               />
               <input
                 type="email"
                 value={jiraEmail}
                 onChange={e => setJiraEmail(e.target.value)}
                 placeholder="Jira Email"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all"
+                className="w-full bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all shadow-sm dark:shadow-none"
               />
               <div className="flex items-center gap-2">
                 <input
@@ -597,12 +597,12 @@ export default function Integrations({ userId }: { userId: string }) {
                   onChange={e => setJiraPAT(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSaveJira()}
                   placeholder="Personal Access Token"
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all"
+                  className="flex-1 bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC] transition-all shadow-sm dark:shadow-none"
                 />
                 <button
                   onClick={handleSaveJira}
                   disabled={connecting === 'jira' || !jiraPAT.trim() || !jiraDomain.trim() || !jiraEmail.trim()}
-                  className="px-3 py-1.5 bg-[#0052CC] hover:bg-[#0043A6] disabled:opacity-40 text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
+                  className="px-3 py-1.5 bg-[#0052CC] hover:bg-[#0043A6] disabled:opacity-40 text-slate-900 dark:text-white text-[11px] font-bold rounded-lg transition-colors shrink-0"
                 >
                   {connecting === 'jira' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Save'}
                 </button>

@@ -34,10 +34,10 @@ export default function CookiesPolicyModal() {
 
   return (
     <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-[420px] z-50">
-      <div className="bg-zinc-900/90 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-2xl relative">
+      <div className="bg-zinc-900/90 backdrop-blur-xl border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-2xl relative">
         <button 
           onClick={() => setIsVisible(false)}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-slate-900 dark:text-white transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -47,7 +47,7 @@ export default function CookiesPolicyModal() {
             <Cookie className="w-6 h-6 text-orange-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">We value your privacy</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">We value your privacy</h3>
             <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
               We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
             </p>
@@ -60,7 +60,7 @@ export default function CookiesPolicyModal() {
               </button>
               <button 
                 onClick={handleDecline}
-                className="flex-1 border border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className="flex-1 border border-slate-100 dark:border-white/10 text-zinc-300 hover:text-slate-900 dark:text-white hover:bg-white/5 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm dark:shadow-none"
               >
                 Decline
               </button>

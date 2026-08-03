@@ -352,7 +352,7 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none"
+        className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none"
       >
         <Share2 className="w-3.5 h-3.5" />
         LinkedIn Carousel
@@ -362,22 +362,22 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
       <canvas ref={canvasRef} className="hidden" />
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-4xl bg-slate-950 border-slate-800 text-white p-6 rounded-2xl flex flex-col h-[85vh] sm:h-[80vh] outline-none">
+        <DialogContent className="max-w-4xl bg-slate-950 border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white p-6 rounded-2xl flex flex-col h-[85vh] sm:h-[80vh] outline-none">
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               LinkedIn Carousel Generator
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 select-none">
                 Export Ready
               </span>
             </DialogTitle>
-            <p className="text-xs text-slate-400">Preview and export your discovery journey as visual slide assets optimized for LinkedIn swipe posts.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Preview and export your discovery journey as visual slide assets optimized for LinkedIn swipe posts.</p>
           </DialogHeader>
 
           {/* Interactive Slideshow Preview */}
-          <div className="flex-1 flex flex-col justify-center items-center bg-slate-900 border border-slate-800 rounded-xl p-4 overflow-hidden relative group">
+          <div className="flex-1 flex flex-col justify-center items-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl p-4 overflow-hidden relative group shadow-sm dark:shadow-none">
             
             {/* Live mockup of slide layout */}
-            <div className="w-full max-w-[640px] aspect-[16/9] bg-gradient-to-br from-slate-950 via-slate-900 to-[#12102e] border border-slate-800/80 rounded-lg p-8 relative flex flex-col justify-between shadow-2xl">
+            <div className="w-full max-w-[640px] aspect-[16/9] bg-gradient-to-br from-slate-950 via-slate-900 to-[#12102e] border border-slate-100 dark:border-slate-800/80 rounded-lg p-8 relative flex flex-col justify-between shadow-2xl">
               
               {/* Header mockup */}
               <div className="flex justify-between items-center text-[8px] font-mono tracking-widest text-violet-400 uppercase select-none">
@@ -389,13 +389,13 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
               {currentSlide === 0 && (
                 <div className="my-auto space-y-4">
                   <div className="w-12 h-1 bg-violet-600 rounded" />
-                  <h2 className="text-xl sm:text-2xl font-black text-white leading-tight uppercase tracking-tight max-w-[80%]">{project.title}</h2>
-                  <p className="text-[10px] font-mono font-bold text-slate-400">PRODUCT DISCOVERY JOURNAL</p>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tight max-w-[80%]">{project.title}</h2>
+                  <p className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">PRODUCT DISCOVERY JOURNAL</p>
                   
                   {/* Miniature gauge */}
                   <div className="absolute right-8 bottom-12 flex flex-col items-center gap-1.5">
-                    <div className="w-14 h-14 rounded-full border-4 border-slate-800 flex items-center justify-center relative">
-                      <span className="text-[10px] font-mono font-bold text-white">{project.confidence_score}%</span>
+                    <div className="w-14 h-14 rounded-full border-4 border-slate-100 dark:border-slate-800 flex items-center justify-center relative">
+                      <span className="text-[10px] font-mono font-bold text-slate-900 dark:text-white">{project.confidence_score}%</span>
                       {/* Score Arc mock */}
                       <svg className="absolute -inset-1 transform -rotate-90 w-16 h-16 pointer-events-none">
                         <circle 
@@ -417,19 +417,19 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
               {/* Problem Slide Mockup */}
               {currentSlide === 1 && (
                 <div className="my-auto space-y-4">
-                  <span className="text-[7px] font-mono text-slate-400 tracking-wider">PROBLEM STATEMENT</span>
-                  <p className="text-xs sm:text-sm font-bold text-slate-200 leading-relaxed max-w-[90%]">
+                  <span className="text-[7px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">PROBLEM STATEMENT</span>
+                  <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 leading-relaxed max-w-[90%]">
                     {project.problem_statement || 'No problem statement recorded yet.'}
                   </p>
-                  <span className="text-[7px] font-mono text-slate-400 tracking-wider block pt-2">TARGET AUDIENCE</span>
-                  <p className="text-[10px] font-semibold text-slate-300">{project.audience || 'General builders.'}</p>
+                  <span className="text-[7px] font-mono text-slate-500 dark:text-slate-400 tracking-wider block pt-2">TARGET AUDIENCE</span>
+                  <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">{project.audience || 'General builders.'}</p>
                 </div>
               )}
 
               {/* Assumptions Slide Mockup */}
               {currentSlide === 2 && (
                 <div className="my-auto space-y-3.5">
-                  <span className="text-[7px] font-mono text-slate-400 tracking-wider block mb-1">CORE ASSUMPTIONS BOARD</span>
+                  <span className="text-[7px] font-mono text-slate-500 dark:text-slate-400 tracking-wider block mb-1">CORE ASSUMPTIONS BOARD</span>
                   {loadingAssumptions ? (
                     <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
                   ) : assumptions.length === 0 ? (
@@ -442,7 +442,7 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
                         }`}>
                           {item.status.toUpperCase()}
                         </span>
-                        <p className="text-[9px] text-slate-300 font-medium line-clamp-1">{item.assumption}</p>
+                        <p className="text-[9px] text-slate-600 dark:text-slate-300 font-medium line-clamp-1">{item.assumption}</p>
                       </div>
                     ))
                   )}
@@ -452,17 +452,17 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
               {/* Interviews Slide Mockup */}
               {currentSlide === 3 && (
                 <div className="my-auto space-y-3">
-                  <span className="text-[7px] font-mono text-slate-400 tracking-wider block mb-1">CUSTOMER FEEDBACK SUMMARY</span>
+                  <span className="text-[7px] font-mono text-slate-500 dark:text-slate-400 tracking-wider block mb-1">CUSTOMER FEEDBACK SUMMARY</span>
                   {loadingInterviews ? (
                     <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
                   ) : interviews.length === 0 ? (
                     <p className="text-xs text-slate-500 italic">No interviews logged yet.</p>
                   ) : (
                     interviews.slice(0, 2).map((item, idx) => (
-                      <div key={idx} className="bg-slate-900/90 p-2 border border-slate-800 rounded">
+                      <div key={idx} className="bg-white dark:bg-slate-900/90 p-2 border border-slate-100 dark:border-slate-800 rounded shadow-sm dark:shadow-none">
                         <div className="text-[8px] font-bold text-violet-400">{item.interviewee_name}</div>
                         <div className="text-[6px] font-mono text-slate-500">{item.interviewee_role} at {item.interviewee_company}</div>
-                        <p className="text-[8px] text-slate-300 italic mt-1 line-clamp-1">"{item.summary}"</p>
+                        <p className="text-[8px] text-slate-600 dark:text-slate-300 italic mt-1 line-clamp-1">"{item.summary}"</p>
                       </div>
                     ))
                   )}
@@ -472,13 +472,13 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
               {/* Verdict Slide Mockup */}
               {currentSlide === 4 && (
                 <div className="my-auto space-y-4">
-                  <span className="text-[7px] font-mono text-slate-400 tracking-wider block">DISCOVERY VERDICT</span>
+                  <span className="text-[7px] font-mono text-slate-500 dark:text-slate-400 tracking-wider block">DISCOVERY VERDICT</span>
                   <div className="text-sm font-mono font-bold text-violet-400 uppercase tracking-wide">
                     {project.status === 'converted' ? 'CONVERTED TO ACTIVE BUILD' :
                      project.status === 'killed' ? 'IDEA SHELVED / ARCHIVED' :
                      'ACTIVE DISCOVERY PHASE'}
                   </div>
-                  <p className="text-[9px] text-slate-400 leading-relaxed max-w-[85%]">
+                  <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-[85%]">
                     {project.status === 'converted' ? 'This concept passed validation metrics and has transitioned to active code development.' :
                      project.status === 'killed' ? 'Customer inputs invalidated assumptions, saving engineering cycles.' :
                      'Continuing research loops and calculating confidence before launching build room.'}
@@ -496,15 +496,15 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
             {/* Navigation buttons */}
             <button 
               onClick={handlePrev} 
-              className="absolute left-4 p-2 bg-slate-950/80 border border-slate-800 hover:bg-slate-800 rounded-full transition-colors cursor-pointer select-none"
+              className="absolute left-4 p-2 bg-slate-950/80 border border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:bg-slate-800 rounded-full transition-colors cursor-pointer select-none"
             >
-              <ChevronLeft className="w-5 h-5 text-slate-400" />
+              <ChevronLeft className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </button>
             <button 
               onClick={handleNext} 
-              className="absolute right-4 p-2 bg-slate-950/80 border border-slate-800 hover:bg-slate-800 rounded-full transition-colors cursor-pointer select-none"
+              className="absolute right-4 p-2 bg-slate-950/80 border border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:bg-slate-800 rounded-full transition-colors cursor-pointer select-none"
             >
-              <ChevronRight className="w-5 h-5 text-slate-400" />
+              <ChevronRight className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </button>
           </div>
 
@@ -529,7 +529,7 @@ export default function LinkedInDeckGenerator({ project }: LinkedInDeckGenerator
             </button>
             <button 
               onClick={() => setIsOpen(false)}
-              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold rounded-xl text-sm transition-colors cursor-pointer border border-slate-800"
+              className="px-6 py-3 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-xl text-sm transition-colors cursor-pointer border border-slate-100 dark:border-slate-800 shadow-sm dark:shadow-none"
             >
               Close
             </button>

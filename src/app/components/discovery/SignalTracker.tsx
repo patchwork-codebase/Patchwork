@@ -68,7 +68,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
       {/* Form panel */}
       {!isObserver && (
         <div className="space-y-6">
-          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
+          <div className="bg-slate-50 border border-slate-100/60 rounded-2xl p-6 shadow-sm">
             <h3 className="text-md font-bold text-slate-900 flex items-center gap-1.5 mb-2">
               <Plus className="w-4 h-4 text-primary-400" /> Log Market Signal
             </h3>
@@ -80,7 +80,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                 <select
                   value={type}
                   onChange={e => setType(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
                 >
                   {SIGNAL_TYPES.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -140,7 +140,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                     onChange={e => setWeight(parseInt(e.target.value))}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-400"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                     <span>Weak (1%)</span>
                     <span>Strong (50%)</span>
                   </div>
@@ -155,7 +155,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                   onChange={e => setDescription(e.target.value)}
                   placeholder="e.g. 40 out of 100 landing page visitors clicked 'Join Waitlist'. Highly positive validation score."
                   rows={3}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 leading-normal"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 leading-normal shadow-sm dark:shadow-none"
                 />
               </div>
 
@@ -182,8 +182,8 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
             ))}
           </div>
         ) : signals?.length === 0 ? (
-          <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-            <BarChart2 className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+          <div className="text-center py-16 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50 shadow-sm dark:shadow-none">
+            <BarChart2 className="w-10 h-10 text-slate-500 dark:text-slate-400 mx-auto mb-3" />
             <h4 className="text-md font-bold text-slate-900 mb-1">No Signals Recorded</h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">Market validation is based on signals. Log positive metrics or critical concerns to track project confidence.</p>
           </div>
@@ -192,10 +192,10 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
             {signals?.map(s => {
               const label = SIGNAL_TYPES.find(t => t.value === s.type)?.label || s.type;
               return (
-                <div key={s.id} className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div key={s.id} className="bg-white border border-slate-100 rounded-2xl p-4 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{label}</span>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</span>
                       <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full uppercase tracking-wider ${
                         s.status === 'positive' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                         s.status === 'negative' ? 'bg-rose-50 text-rose-600 border-rose-100' :
@@ -222,7 +222,7 @@ export default function SignalTracker({ projectId, isObserver = false }: SignalT
                     {!isObserver && (
                       <button
                         onClick={() => handleDelete(s.id)}
-                        className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-50 transition-colors shrink-0"
+                        className="text-slate-600 dark:text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-50 transition-colors shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

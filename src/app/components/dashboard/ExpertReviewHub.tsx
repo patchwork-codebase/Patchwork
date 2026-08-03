@@ -37,13 +37,13 @@ export default function ExpertReviewHub() {
         {/* Main Content */}
         <div className="flex-1 w-full">
           <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-white font-display flex items-center gap-3">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white font-display flex items-center gap-3">
               <ShieldCheck className="w-8 h-8 text-primary" /> Review Hub
             </h1>
-            <p className="text-slate-400 mt-2">Manage your incoming review requests and provide structured feedback.</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-2">Manage your incoming review requests and provide structured feedback.</p>
           </div>
 
-          <div className="flex gap-4 mb-6 border-b border-white/10">
+          <div className="flex gap-4 mb-6 border-b border-slate-100 dark:border-white/10">
             <button
               onClick={() => { setActiveTab('incoming'); setSelectedRequest(null); }}
               className={`pb-3 font-bold text-sm px-2 ${activeTab === 'incoming' ? 'text-white border-b-2 border-primary' : 'text-slate-400 hover:text-white'}`}
@@ -68,7 +68,7 @@ export default function ExpertReviewHub() {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <button 
                 onClick={() => setSelectedRequest(null)}
-                className="mb-4 text-sm font-bold text-slate-400 hover:text-white flex items-center gap-1"
+                className="mb-4 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white flex items-center gap-1"
               >
                 ← Back to list
               </button>
@@ -79,16 +79,16 @@ export default function ExpertReviewHub() {
               />
             </div>
           ) : (
-            <div className="flex-1 bg-white border border-slate-200 rounded-[24px] flex flex-col overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)] relative min-h-[500px]">
+            <div className="flex-1 bg-white border border-slate-100 rounded-[24px] flex flex-col overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)] relative min-h-[500px]">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center flex-1 text-slate-400">
+              <div className="flex flex-col items-center justify-center flex-1 text-slate-500 dark:text-slate-400">
                 <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary-400" />
                 <p>Loading requests...</p>
               </div>
             ) : filteredRequests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center flex-1 text-slate-400 p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
-                  <Inbox className="w-8 h-8 text-slate-300" />
+              <div className="flex flex-col items-center justify-center flex-1 text-slate-500 dark:text-slate-400 p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-sm dark:shadow-none">
+                  <Inbox className="w-8 h-8 text-slate-600 dark:text-slate-300" />
                 </div>
                 <h3 className="text-[16px] font-bold text-slate-700 mb-1">No {activeTab} requests</h3>
                 <p className="text-[13px]">You're all caught up! When a builder requests your expertise, it will appear here.</p>
@@ -109,13 +109,13 @@ export default function ExpertReviewHub() {
                           }`}>
                             {req.priority} Priority
                           </span>
-                          <span className="text-xs text-slate-400 flex items-center gap-1">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                             <Clock className="w-3.5 h-3.5" /> Due {new Date(req.deadline).toLocaleDateString()}
                           </span>
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 mb-1">{roomTitle}</h3>
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 relative">
+                          <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-100 overflow-hidden shrink-0 relative">
                             <UserAvatar userId={req.builder_id} name={builderName} avatarUrl={req.users?.avatar} />
                           </div>
                           <p className="text-sm text-slate-500">Requested by <span className="text-slate-700 font-medium">{builderName}</span></p>
@@ -129,7 +129,7 @@ export default function ExpertReviewHub() {
                             <button className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors">
                               Decline
                             </button>
-                            <button className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-900 hover:bg-slate-50 transition-all shadow-sm border border-slate-200">
+                            <button className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-900 hover:bg-slate-50 transition-all shadow-sm border border-slate-100">
                               Accept Request
                             </button>
                           </>
@@ -143,7 +143,7 @@ export default function ExpertReviewHub() {
                           </button>
                         )}
                         {activeTab === 'completed' && (
-                          <button className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-2">
+                          <button className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-100 transition-colors flex items-center gap-2 shadow-sm dark:shadow-none">
                             View Report <ChevronRight className="w-4 h-4" />
                           </button>
                         )}
@@ -159,7 +159,7 @@ export default function ExpertReviewHub() {
         {/* Capacity Sidebar */}
         <div className="w-full md:w-[320px] shrink-0">
           <div className="bg-ink-80 border border-white/[0.08] rounded-2xl p-6 sticky top-8">
-            <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
+            <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-6 flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" /> Capacity Management
             </h3>
 
@@ -167,8 +167,8 @@ export default function ExpertReviewHub() {
               <div>
                 <div className="flex justify-between items-end mb-2">
                   <div>
-                    <p className="text-sm text-slate-400 font-medium">Active Reviews</p>
-                    <p className="text-2xl font-bold text-white">{capacity.active} <span className="text-slate-500 text-lg">/ {capacity.activeLimit}</span></p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Active Reviews</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{capacity.active} <span className="text-slate-500 text-lg">/ {capacity.activeLimit}</span></p>
                   </div>
                   <span className="text-xs font-bold text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded-md">
                     Available
@@ -182,8 +182,8 @@ export default function ExpertReviewHub() {
               <div>
                 <div className="flex justify-between items-end mb-2">
                   <div>
-                    <p className="text-sm text-slate-400 font-medium flex items-center gap-1.5"><Calendar className="w-4 h-4" /> This Month</p>
-                    <p className="text-2xl font-bold text-white">{capacity.monthly} <span className="text-slate-500 text-lg">/ {capacity.monthlyLimit}</span></p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5"><Calendar className="w-4 h-4" /> This Month</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{capacity.monthly} <span className="text-slate-500 text-lg">/ {capacity.monthlyLimit}</span></p>
                   </div>
                 </div>
                 <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden">

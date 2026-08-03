@@ -78,7 +78,7 @@ export function FollowersListModal({ isOpen, onClose, userId, type }: FollowersL
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden gap-0 bg-white sm:rounded-[24px] max-w-[90vw] rounded-[24px]">
-        <DialogHeader className="px-6 py-4 sm:py-5 border-b border-slate-100 bg-white z-10 relative">
+        <DialogHeader className="px-6 py-4 sm:py-5 border-b border-slate-100 bg-white z-10 relative shadow-sm dark:shadow-none">
           <DialogTitle className="text-[18px] sm:text-[20px] font-bold font-display text-center capitalize">
             {type}
           </DialogTitle>
@@ -95,7 +95,7 @@ export function FollowersListModal({ isOpen, onClose, userId, type }: FollowersL
           ) : users.length === 0 ? (
             <div className="text-center flex flex-col items-center justify-center h-[200px] text-slate-500 text-[14px]">
               <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
-                <Users className="w-5 h-5 text-slate-300" />
+                <Users className="w-5 h-5 text-slate-600 dark:text-slate-300" />
               </div>
               No {type} found.
             </div>

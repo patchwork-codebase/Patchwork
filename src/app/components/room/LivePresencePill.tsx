@@ -36,7 +36,7 @@ export function LivePresencePill({ viewers = [], typingUsers = [], className = '
             </div>
           ))}
           {viewers.length > 5 && (
-            <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-bold text-[10px] flex items-center justify-center ring-2 ring-white">
+            <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-100 text-slate-600 font-bold text-[10px] flex items-center justify-center ring-2 ring-white">
               +{viewers.length - 5}
             </div>
           )}

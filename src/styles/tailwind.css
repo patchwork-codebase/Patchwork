@@ -3,6 +3,8 @@
 
 @import 'tw-animate-css';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --animate-shimmer: shimmer 1.5s infinite;
   @keyframes shimmer {

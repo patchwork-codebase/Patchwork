@@ -101,14 +101,14 @@ export function ReactionGroup({
               e.stopPropagation(); 
               handleToggleReaction(type); 
             }}
-            className={`flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-[#1a1a1a] shadow-xs border active:scale-95 cursor-pointer ${
+            className={`flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-slate-50 dark:bg-[#1a1a1a] shadow-xs border active:scale-95 cursor-pointer ${
               isActive 
                 ? 'border-primary-500 bg-primary-500/10 text-primary-400 shadow-primary-500/10' 
-                : 'border-white/10 hover:border-white/20 text-slate-400 hover:bg-white/5'
+                : 'border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-300 dark:border-white/20 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
             }`}
           >
             <div className={`w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-              isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-white/5 text-slate-500 group-hover:bg-white/10 group-hover:text-white'
+              isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-500 group-hover:bg-slate-300 dark:group-hover:bg-white/10 group-hover:text-slate-900 dark:group-hover:text-white'
             }`}>
                <span className="text-[12px] font-bold leading-none mb-[0.5px]">{config.icon}</span>
             </div>
@@ -120,12 +120,12 @@ export function ReactionGroup({
       {showReplyButton && (
         <button 
           onClick={(e) => { e.stopPropagation(); onReplyClick?.(e); }}
-          className="flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-[#1a1a1a] shadow-xs border border-white/10 hover:border-white/20 hover:bg-white/5 active:scale-95 cursor-pointer ml-0.5"
+          className="flex items-center transition-all duration-150 group pr-2.5 pl-1 py-1 rounded-full bg-slate-50 dark:bg-[#1a1a1a] shadow-xs border border-slate-100 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-300 dark:border-white/20 hover:bg-slate-100 dark:hover:bg-white/5 active:scale-95 cursor-pointer ml-0.5"
         >
-          <div className="w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 bg-white/5 text-slate-500 group-hover:bg-primary-500/20 group-hover:text-primary-400">
+          <div className="w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-500 group-hover:bg-primary-500/20 group-hover:text-primary-500 dark:group-hover:text-primary-400">
             <MessageCircle className="w-3.5 h-3.5" strokeWidth={2} />
           </div>
-          {replyCount > 0 && <span className="ml-1.5 text-[12px] font-bold text-slate-400 group-hover:text-primary-400">{replyCount}</span>}
+          {replyCount > 0 && <span className="ml-1.5 text-[12px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-primary-400">{replyCount}</span>}
         </button>
       )}
     </div>

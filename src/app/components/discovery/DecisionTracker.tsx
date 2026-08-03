@@ -99,7 +99,7 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
       {project.status !== 'active' || currentDecision ? (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-4">
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 text-center space-y-4 shadow-sm dark:shadow-none">
           <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
           <h3 className="text-xl font-bold text-slate-900">Discovery Conclusion Logged</h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
@@ -113,8 +113,8 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
             Outcome: {project.status === 'converted' ? 'Proceeded to Build' : project.status.replace(/_/g, ' ')}
           </div>
           {currentDecision?.rationale && (
-            <div className="max-w-lg mx-auto bg-white border border-slate-100 p-4 rounded-xl text-left text-xs text-slate-600">
-              <span className="font-bold text-slate-400 block mb-1">DECISION RATIONALE</span>
+            <div className="max-w-lg mx-auto bg-white border border-slate-100 p-4 rounded-xl text-left text-xs text-slate-600 shadow-sm dark:shadow-none">
+              <span className="font-bold text-slate-500 dark:text-slate-400 block mb-1">DECISION RATIONALE</span>
               {currentDecision.rationale}
             </div>
           )}
@@ -128,8 +128,8 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
           )}
         </div>
       ) : isObserver ? (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-4">
-          <Lock className="w-12 h-12 text-slate-400 mx-auto" />
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 text-center space-y-4 shadow-sm dark:shadow-none">
+          <Lock className="w-12 h-12 text-slate-500 dark:text-slate-400 mx-auto" />
           <h3 className="text-xl font-bold text-slate-900">No Decision Logged</h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
             The project builders have not logged a final discovery verdict yet.
@@ -138,7 +138,7 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Decision selection */}
-          <div className="lg:col-span-1 bg-slate-50 border border-slate-200/80 rounded-2xl p-6 space-y-4">
+          <div className="lg:col-span-1 bg-slate-50 border border-slate-100/80 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
             <h3 className="text-base font-bold text-slate-900">Log Discovery Outcome</h3>
             <p className="text-xs text-slate-500">Based on your customer conversations and market confidence, what is the next step?</p>
             
@@ -210,7 +210,7 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
           </div>
 
           {/* Form details */}
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-6">
+          <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-6 md:p-8 space-y-6 shadow-sm dark:shadow-none">
             <h3 className="text-lg font-bold text-slate-900">
               {decisionType === 'proceed_to_build' ? 'Configure Build Room' : 'Outcome Details'}
             </h3>
@@ -228,20 +228,20 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
                         setRoomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
                       }}
                       placeholder="Room Title"
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                      className="w-full px-4 py-3 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">URL Slug</label>
                     <div className="flex">
-                      <span className="px-3 bg-slate-100 border border-r-0 border-slate-200 rounded-l-xl text-slate-500 text-xs flex items-center font-mono">patchwork.sh/</span>
+                      <span className="px-3 bg-slate-100 border border-r-0 border-slate-100 rounded-l-xl text-slate-500 text-xs flex items-center font-mono">patchwork.sh/</span>
                       <input
                         type="text" required
                         value={roomSlug}
                         onChange={e => setRoomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                         placeholder="room-slug"
-                        className="w-full px-4 py-3 border border-slate-200 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-mono"
+                        className="w-full px-4 py-3 border border-slate-100 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-mono"
                       />
                     </div>
                   </div>
@@ -253,7 +253,7 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
                       onChange={e => setRoomDescription(e.target.value)}
                       placeholder="What will this room focus on?"
                       rows={3}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                      className="w-full px-4 py-3 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                     />
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function DecisionTracker({ project, isObserver = false }: Decisio
                       : 'Provide a final explanation for logging this state...'
                   }
                   rows={4}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                  className="w-full px-4 py-3 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
                 />
               </div>
 

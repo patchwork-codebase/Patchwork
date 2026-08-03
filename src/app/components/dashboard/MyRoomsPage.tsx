@@ -51,14 +51,14 @@ export default function MyRoomsPage() {
     <div className="max-w-[1000px] mx-auto w-full p-4 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-100 font-display tracking-tight mb-2 flex items-center gap-2">
+          <h1 className="text-[28px] sm:text-[32px] font-extrabold text-slate-900 dark:text-slate-100 font-display tracking-tight mb-2 flex items-center gap-2">
             {isObserver ? (
               <><Eye className="w-7 h-7 text-primary-400" /> Following</>
             ) : (
               'My Rooms'
             )}
           </h1>
-          <p className="text-slate-400 font-medium">
+          <p className="text-slate-500 dark:text-slate-400 font-medium">
             {isObserver
               ? 'Rooms you are watching and following'
               : 'Manage your active build rooms and feature rollouts'}
@@ -85,22 +85,22 @@ export default function MyRoomsPage() {
       {isLoading ? (
         <div className="flex flex-col gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-transparent border border-slate-800 rounded-[24px] py-6 px-6 flex flex-col gap-4 animate-pulse">
-              <div className="h-6 w-1/3 bg-slate-800 rounded" />
-              <div className="h-4 w-1/4 bg-slate-800 rounded" />
+            <div key={i} className="bg-transparent border border-slate-100 dark:border-slate-800 rounded-[24px] py-6 px-6 flex flex-col gap-4 animate-pulse">
+              <div className="h-6 w-1/3 bg-slate-100 dark:bg-slate-800 rounded" />
+              <div className="h-4 w-1/4 bg-slate-100 dark:bg-slate-800 rounded" />
             </div>
           ))}
         </div>
       ) : rooms.length === 0 ? (
-        <div className="bg-transparent border border-slate-800 rounded-[32px] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm mt-8">
+        <div className="bg-transparent border border-slate-100 dark:border-slate-800 rounded-[32px] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm mt-8">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-[40px] pointer-events-none" />
-          <div className="w-16 h-16 rounded-3xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-6 text-primary-400 shadow-sm">
+          <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center mb-6 text-primary-400 shadow-sm">
             {isObserver ? <Eye className="w-8 h-8 text-primary-400" /> : <FolderGit2 className="w-8 h-8" />}
           </div>
-          <h3 className="text-slate-100 text-[20px] font-bold mb-2">
+          <h3 className="text-slate-900 dark:text-slate-100 text-[20px] font-bold mb-2">
             {isObserver ? 'Not following any rooms yet' : 'No Build Rooms Yet'}
           </h3>
-          <p className="text-slate-400 text-[15px] max-w-[360px] leading-relaxed mb-8">
+          <p className="text-slate-500 dark:text-slate-400 text-[15px] max-w-[360px] leading-relaxed mb-8">
             {isObserver
               ? 'Follow builders and rooms to see their progress here. Discover what people are building on Patchwork.'
               : 'Create your first room to start documenting your product decisions and sharing updates with your team.'}
@@ -133,13 +133,13 @@ export default function MyRoomsPage() {
               >
                 <div
                   onClick={() => navigate(`/dashboard/room/${room.id}`)}
-                  className="block bg-transparent border border-slate-800 rounded-[24px] p-6 hover:bg-slate-800/50 hover:border-slate-700 hover:shadow-md transition-all group cursor-pointer relative overflow-hidden"
+                  className="block bg-transparent border border-slate-100 dark:border-slate-800 rounded-[24px] p-6 hover:bg-slate-100 dark:bg-slate-800/50 hover:border-slate-300 dark:border-slate-700 hover:shadow-md transition-all group cursor-pointer relative overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-slate-800 rounded-full blur-[50px] -mr-24 -mt-24 pointer-events-none group-hover:bg-primary-500/5 transition-colors duration-500" />
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-slate-50 dark:bg-slate-800 rounded-full blur-[50px] -mr-24 -mt-24 pointer-events-none group-hover:bg-primary-500/5 transition-colors duration-500" />
 
                   <div className="flex flex-col gap-3 relative">
                     {/* Title first */}
-                    <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-100 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
+                    <h2 className="text-[17px] sm:text-[19px] font-extrabold text-slate-900 dark:text-slate-100 font-display line-clamp-2 break-words group-hover:text-primary-500 transition-colors leading-snug">
                       {room.title}
                     </h2>
 
@@ -153,17 +153,17 @@ export default function MyRoomsPage() {
                           Pinned by Patchwork
                         </div>
                       )}
-                      <span className="capitalize px-2 py-0.5 bg-slate-800 rounded-md text-slate-300 text-[11px] font-bold border border-slate-700">
+                      <span className="capitalize px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-300 text-[11px] font-bold border border-slate-300 dark:border-slate-700">
                         {isShipped ? <span className="text-primary-400">Shipped</span>
                           : room.status === 'draft' ? <span className="text-amber-500">Draft</span>
                           : isPaused ? 'Paused' : 'Live'}
                       </span>
                       {isObserver && room.builderName && (
-                        <span className="text-[11px] text-slate-400 font-medium">by {room.builderName}</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">by {room.builderName}</span>
                       )}
                     </div>
 
-                    <p className="text-[13px] sm:text-[14px] text-slate-400 font-medium line-clamp-2 leading-relaxed pl-5">
+                    <p className="text-[13px] sm:text-[14px] text-slate-500 dark:text-slate-400 font-medium line-clamp-2 leading-relaxed pl-5">
                       {room.description || "No description provided for this room."}
                     </p>
 
@@ -171,28 +171,28 @@ export default function MyRoomsPage() {
                       <span>
                         Day {Math.max(1, Math.floor((Date.now() - new Date(room.createdAt || room.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
                       </span>
-                      <span className="text-slate-300">·</span>
+                      <span className="text-slate-600 dark:text-slate-300">·</span>
                       <span>{room.updateCount || 0} updates</span>
                       {!isObserver && (
                         <>
-                          <span className="text-slate-300">·</span>
+                          <span className="text-slate-600 dark:text-slate-300">·</span>
                           <ObserverAvatarStack room={room} />
                         </>
                       )}
                       {room.updatedAt && (
                         <>
-                          <span className="text-slate-300">·</span>
-                          <span className="text-slate-400">{timeAgo(room.updatedAt)}</span>
+                          <span className="text-slate-600 dark:text-slate-300">·</span>
+                          <span className="text-slate-500 dark:text-slate-400">{timeAgo(room.updatedAt)}</span>
                         </>
                       )}
                     </div>
 
                     <div className="flex items-center justify-between gap-3 pl-5 pt-1">
                       {!isObserver && (
-                        <div className="flex items-center gap-2 text-slate-400 bg-slate-800/50 px-2.5 py-1.5 rounded-xl border border-slate-700 shadow-sm group-hover:bg-slate-800 transition-colors">
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 shadow-sm group-hover:bg-slate-100 dark:bg-slate-800 transition-colors">
                           <Figma className="w-3.5 h-3.5 hover:text-primary-500 transition-colors cursor-help" />
-                          <NotionIcon className="w-3.5 h-3.5 hover:text-slate-100 transition-colors cursor-help" />
-                          <Github className="w-3.5 h-3.5 hover:text-slate-100 transition-colors cursor-help" />
+                          <NotionIcon className="w-3.5 h-3.5 hover:text-slate-900 dark:text-slate-100 transition-colors cursor-help" />
+                          <Github className="w-3.5 h-3.5 hover:text-slate-900 dark:text-slate-100 transition-colors cursor-help" />
                         </div>
                       )}
                       <button className="text-[12px] font-bold text-primary-500 bg-primary-500/10 hover:bg-primary-500/20 px-3 py-1.5 rounded-lg transition-colors shrink-0 ml-auto">

@@ -124,7 +124,7 @@ export default function CredentialPage() {
         }
       `}</style>
       {/* Public Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4">
+      <header className="bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-4 shadow-sm dark:shadow-none">
         <Link to="/" className="flex items-center gap-2.5 font-black text-[22px] tracking-tight text-slate-900 group">
           <div className="bg-primary-500 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform text-white">
             <HammerIcon />
@@ -141,33 +141,33 @@ export default function CredentialPage() {
         <div className="lg:col-span-8 flex flex-col">
           {/* Certificate Container */}
           {credential?.badge?.badge_type === 'recognition' ? (
-            <div id="certificate-container" className="bg-[#111111] p-2 md:p-4 relative flex-1 min-h-[600px] flex flex-col overflow-hidden shadow-xl rounded-2xl print:p-0 print:border-none print:shadow-none print:rounded-none">
-              <div className="bg-[#1E1E1E] border border-white/10 rounded-xl relative flex-1 flex flex-col md:flex-row overflow-hidden print:border-none print:rounded-none">
+            <div id="certificate-container" className="bg-white dark:bg-[#111111] p-2 md:p-4 relative flex-1 min-h-[600px] flex flex-col overflow-hidden shadow-xl rounded-2xl print:p-0 print:border-none print:shadow-none print:rounded-none">
+              <div className="bg-[#1E1E1E] border border-slate-100 dark:border-white/10 rounded-xl relative flex-1 flex flex-col md:flex-row overflow-hidden print:border-none print:rounded-none">
                 
                 {/* Left Side: Content */}
                 <div className="flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative z-10">
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-12">
-                    <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center bg-white/5">
+                    <div className="w-8 h-8 rounded-full border border-slate-300 dark:border-white/20 flex items-center justify-center bg-white/5">
                       <HammerIcon />
                     </div>
-                    <span className="text-white font-bold tracking-tight text-lg">Patchwork</span>
+                    <span className="text-slate-900 dark:text-white font-bold tracking-tight text-lg">Patchwork</span>
                   </div>
 
-                  <p className="text-slate-400 text-sm md:text-base tracking-wide mb-4">Certificate of Achievement</p>
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-10 leading-tight">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base tracking-wide mb-4">Certificate of Achievement</p>
+                  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-10 leading-tight">
                     {certificateTitle}
                   </h1>
 
                   <p className="text-teal-400/80 text-sm md:text-base tracking-wide mb-2">Awarded to</p>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">{recipientName}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-6">{recipientName}</h2>
 
-                  <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-12 max-w-lg">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-12 max-w-lg">
                     Congratulations on reaching this significant award milestone. {credential?.badge?.description || "Recognized for exceptional mentorship and impactful contributions, embodying the spirit of guidance and inspiration within the Patchwork global community."}
                   </p>
 
                   <div className="mt-auto relative w-48">
-                    <div className="w-full h-12 border-b border-slate-700 mb-3 relative flex items-end">
+                    <div className="w-full h-12 border-b border-slate-300 dark:border-slate-700 mb-3 relative flex items-end">
                       <svg className="absolute bottom-1 left-0 w-32 h-16 opacity-60" viewBox="0 0 200 60" preserveAspectRatio="xMinYMid meet">
                         <path 
                           d="M 10 40 C 15 20, 25 15, 30 20 C 35 25, 30 40, 35 45 C 40 50, 45 40, 50 30 C 55 10, 65 15, 60 40 C 55 60, 40 55, 55 35 C 70 15, 80 15, 90 25 C 100 35, 105 25, 115 15 C 120 10, 125 10, 130 20 C 135 30, 125 45, 130 50 C 135 55, 145 40, 150 30 C 160 10, 175 10, 170 30 C 165 50, 180 50, 190 35" 
@@ -189,7 +189,7 @@ export default function CredentialPage() {
                 </div>
 
                 {/* Right Side: Visuals */}
-                <div className="hidden md:block w-[35%] relative bg-[#1A1A1A] border-l border-white/5 flex flex-col items-center justify-center">
+                <div className="hidden md:block w-[35%] relative bg-[#1A1A1A] border-l border-slate-100 dark:border-white/5 flex flex-col items-center justify-center">
                   <div className="absolute top-0 w-32 h-3/4 bg-black/60 shadow-2xl flex items-end justify-center" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 20px), 0 100%)' }}>
                   </div>
                   <div className="relative z-10 w-48 h-48 mt-[-15%] flex items-center justify-center">
@@ -216,7 +216,7 @@ export default function CredentialPage() {
 
                   {/* Header Logo */}
                   <div className="absolute top-10 left-12 flex items-center gap-3">
-                     <div className="w-9 h-9 rounded-md bg-[#5a5eea] flex items-center justify-center text-white font-bold text-2xl leading-none shadow-sm">p</div>
+                     <div className="w-9 h-9 rounded-md bg-[#5a5eea] flex items-center justify-center text-slate-900 dark:text-white font-bold text-2xl leading-none shadow-sm">p</div>
                      <div className="flex flex-col">
                        <span className="font-extrabold text-[#0f172a] text-xl leading-tight tracking-tight">patchwork</span>
                        <span className="text-[10px] text-[#5a5eea] font-bold uppercase tracking-widest mt-[-2px]">The home for builders</span>
@@ -242,17 +242,17 @@ export default function CredentialPage() {
                   <div className="absolute top-[215px] left-12 w-56 h-64 flex items-center justify-center z-10">
                     <div className="absolute inset-0 bg-[#5a5eea] shadow-lg" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
                        <div className="absolute top-8 left-0 right-0 flex justify-center">
-                          <Star className="w-5 h-5 text-white fill-current opacity-90" />
+                          <Star className="w-5 h-5 text-slate-900 dark:text-white fill-current opacity-90" />
                        </div>
                        <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-center">
                           {credential?.badge?.points_required ? (
-                            <span className="text-6xl font-black text-white tracking-tighter drop-shadow-md">{credential.badge.points_required}</span>
+                            <span className="text-6xl font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-md">{credential.badge.points_required}</span>
                           ) : (
-                            <Award className="w-20 h-20 text-white fill-current drop-shadow-md opacity-90" />
+                            <Award className="w-20 h-20 text-slate-900 dark:text-white fill-current drop-shadow-md opacity-90" />
                           )}
                        </div>
-                       <div className="absolute bottom-12 left-0 right-0 h-12 bg-white/10 border-t border-white/20 flex items-center justify-center backdrop-blur-sm">
-                          <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-white text-center">
+                       <div className="absolute bottom-12 left-0 right-0 h-12 bg-white/10 border-t border-slate-300 dark:border-white/20 flex items-center justify-center backdrop-blur-sm">
+                          <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-slate-900 dark:text-white text-center">
                              {credential?.badge?.badge_type === 'recognition' ? 'Recognition' : (credential?.badge?.badge_type === 'level' ? 'Level Unlocked' : 'Achievement')}
                           </span>
                        </div>
@@ -267,7 +267,7 @@ export default function CredentialPage() {
                      </h2>
                      <p className="text-slate-500 text-[13px] mb-2">has successfully achieved the milestone</p>
                      <p className="text-2xl font-bold text-[#4f46e5] mb-8">{certificateTitle}</p>
-                     <p className="text-slate-400 text-[12px] max-w-sm mx-auto leading-relaxed">
+                     <p className="text-slate-500 dark:text-slate-400 text-[12px] max-w-sm mx-auto leading-relaxed">
                        You've reached an important milestone on your builder journey.<br/>Keep building, sharing, and inspiring!
                      </p>
                   </div>
@@ -279,7 +279,7 @@ export default function CredentialPage() {
                          <Calendar className="w-5 h-5" />
                        </div>
                        <div>
-                         <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Achieved on</div>
+                         <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">Achieved on</div>
                          <div className="text-[13px] font-bold text-slate-800">{certificateDate}</div>
                        </div>
                      </div>
@@ -290,7 +290,7 @@ export default function CredentialPage() {
                            <BarChart2 className="w-5 h-5" />
                          </div>
                          <div>
-                           <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Points Value</div>
+                           <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">Points Value</div>
                            <div className="text-[13px] font-bold text-slate-800">{credential.badge.points_required} XP</div>
                          </div>
                        </div>
@@ -300,7 +300,7 @@ export default function CredentialPage() {
                            <Award className="w-5 h-5" />
                          </div>
                          <div>
-                           <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Category</div>
+                           <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">Category</div>
                            <div className="text-[13px] font-bold text-slate-800 capitalize">
                              {credential?.badge?.badge_type || 'Achievement'}
                            </div>
@@ -328,7 +328,7 @@ export default function CredentialPage() {
 
                     {/* QR Code Placeholder / Verification Block */}
                     <div className="flex items-center gap-4">
-                       <div className="w-16 h-16 bg-white border border-slate-200 rounded-lg p-1.5 shadow-sm">
+                       <div className="w-16 h-16 bg-white border border-slate-100 rounded-lg p-1.5 shadow-sm">
                           <svg viewBox="0 0 100 100" className="w-full h-full text-slate-800">
                              <rect x="0" y="0" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="8"/>
                              <rect x="12" y="12" width="16" height="16" fill="currentColor" />
@@ -399,7 +399,7 @@ export default function CredentialPage() {
           <section>
             <h3 className="font-bold text-slate-900 mb-3 text-sm">Certificate recipient</h3>
             <div className="bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_30px_rgba(0,0,0,0.03)] rounded-2xl p-4 flex items-center gap-4 transition-shadow hover:shadow-[0_15px_35px_rgba(0,0,0,0.06)]">
-              <UserAvatar userId={avatarId} name={recipientName} avatarUrl={actualProfile?.avatar_url || actualProfile?.avatar} className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-sm" />
+              <UserAvatar userId={avatarId} name={recipientName} avatarUrl={actualProfile?.avatar_url || actualProfile?.avatar} className="w-12 h-12 rounded-full border border-slate-100 object-cover shadow-sm" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-bold text-slate-900 text-sm truncate">{recipientName}</h4>
                 <p className="text-xs text-slate-500 truncate">{recipientRole}</p>
@@ -421,7 +421,7 @@ export default function CredentialPage() {
                   <CheckCircle className="w-3 h-3" />
                   Verified Credential
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
                   {credential?.badge?.points_required ? `${credential.badge.points_required} Points` : 'Milestone'}
                 </span>
               </div>
@@ -437,10 +437,10 @@ export default function CredentialPage() {
                   type="text" 
                   readOnly 
                   value={`https://patchwork.app/credentials/${certId}`}
-                  className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-4 pr-12 text-xs text-slate-600 shadow-sm focus:outline-none focus:border-teal-500 transition"
+                  className="w-full bg-white border border-slate-100 rounded-xl py-3 pl-4 pr-12 text-xs text-slate-600 shadow-sm focus:outline-none focus:border-teal-500 transition"
                 />
                 <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-slate-50 rounded-lg transition group">
-                  <Copy className="w-4 h-4 text-slate-400 group-hover:text-slate-700" />
+                  <Copy className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-slate-700" />
                 </button>
               </div>
 
@@ -451,7 +451,7 @@ export default function CredentialPage() {
                       const text = `I just earned the ${certificateTitle} milestone on Patchwork! Check out my builder profile and journey:\n\n${window.location.href}`;
                       window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank');
                     }}
-                    className="bg-[#0A66C2] hover:bg-[#004182] text-white flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[13px] font-bold transition shadow-sm">
+                    className="bg-[#0A66C2] hover:bg-[#004182] text-slate-900 dark:text-white flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[13px] font-bold transition shadow-sm">
                     <Linkedin className="w-4 h-4 fill-current shrink-0" /> Share Post
                   </button>
                   <button 
@@ -459,15 +459,15 @@ export default function CredentialPage() {
                       const text = `I just earned the ${certificateTitle} milestone on @JoinPatchwork! Check out my builder journey:`;
                       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
                     }}
-                    className="bg-slate-900 hover:bg-black text-white flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[13px] font-bold transition shadow-sm">
+                    className="bg-slate-900 hover:bg-black text-slate-900 dark:text-white flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-[13px] font-bold transition shadow-sm">
                     <span className="font-serif italic text-base leading-none shrink-0">X</span> Share on X
                   </button>
                 </div>
                 <button 
                   onClick={() => window.open(generateLinkedInCertUrl(certificateTitle, certificateDate, window.location.href), '_blank')}
-                  className="bg-white hover:bg-slate-50 border border-slate-200 text-[#0A66C2] flex items-center justify-center gap-3 py-3 px-4 rounded-xl text-[13px] font-bold transition shadow-sm">
+                  className="bg-white hover:bg-slate-50 border border-slate-100 text-[#0A66C2] flex items-center justify-center gap-3 py-3 px-4 rounded-xl text-[13px] font-bold transition shadow-sm">
                   <div className="bg-[#0A66C2] rounded-[4px] p-0.5 flex items-center justify-center shrink-0">
-                    <Linkedin className="w-[14px] h-[14px] text-white fill-current stroke-[0.5]" />
+                    <Linkedin className="w-[14px] h-[14px] text-slate-900 dark:text-white fill-current stroke-[0.5]" />
                   </div>
                   Add to LinkedIn Profile
                 </button>

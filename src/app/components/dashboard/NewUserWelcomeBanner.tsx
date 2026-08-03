@@ -48,12 +48,12 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12, height: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="relative mb-6 rounded-[24px] overflow-hidden bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#111111] border border-white/10 shadow-sm"
+      className="relative mb-6 rounded-[24px] overflow-hidden bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#111111] border border-slate-100 dark:border-white/10 shadow-sm"
     >
       {/* Dismiss */}
       <button
         onClick={onDismiss}
-        className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all shadow-sm z-10"
+        className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-all shadow-sm z-10"
       >
         <X className="w-3.5 h-3.5" />
       </button>
@@ -66,7 +66,7 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-widest text-primary-400 mb-0.5">Welcome to Patchwork</p>
-            <h2 className="text-[16px] sm:text-[19px] font-extrabold text-white leading-tight pr-8">
+            <h2 className="text-[16px] sm:text-[19px] font-extrabold text-slate-900 dark:text-white leading-tight pr-8">
               You're in, {userName}! Here's how to get started.
             </h2>
           </div>
@@ -81,7 +81,7 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
               className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[12px] font-bold whitespace-nowrap transition-all shrink-0 ${
                 activeStep === i
                   ? "bg-primary-500 border-primary-500 text-white"
-                  : "bg-[#1a1a1a] border-white/10 text-slate-400 hover:border-white/20 hover:text-white"
+                  : "bg-slate-50 dark:bg-[#1a1a1a] border-slate-200 dark:border-white/10 text-slate-400 hover:border-slate-300 dark:border-white/20 hover:text-white"
               }`}
             >
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${activeStep === i ? "bg-white/20 text-white" : "bg-white/10 text-slate-400"}`}>
@@ -100,7 +100,7 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2 }}
-            className="flex items-start gap-4 bg-[#1a1a1a] rounded-[16px] p-4 border border-white/10 shadow-sm"
+            className="flex items-start gap-4 bg-slate-50 dark:bg-[#1a1a1a] rounded-[16px] p-4 border border-slate-100 dark:border-white/10 shadow-sm"
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${STEPS[activeStep].bg}`}>
               {(() => {
@@ -109,8 +109,8 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
               })()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-bold text-white mb-1">{STEPS[activeStep].title}</p>
-              <p className="text-[13px] text-slate-400 leading-relaxed">{STEPS[activeStep].description}</p>
+              <p className="text-[14px] font-bold text-slate-900 dark:text-white mb-1">{STEPS[activeStep].title}</p>
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed">{STEPS[activeStep].description}</p>
               {STEPS[activeStep].cta && STEPS[activeStep].href && (
                 <button
                   onClick={() => navigate(STEPS[activeStep].href!)}
@@ -123,7 +123,7 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
               {activeStep < STEPS.length - 1 && (
                 <button
                   onClick={() => setActiveStep(i => i + 1)}
-                  className="mt-3 ml-2 text-[12px] font-bold text-slate-400 hover:text-primary-500 transition-colors"
+                  className="mt-3 ml-2 text-[12px] font-bold text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors"
                 >
                   Next →
                 </button>

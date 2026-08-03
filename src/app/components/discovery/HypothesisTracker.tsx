@@ -73,7 +73,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
       {/* Create / Edit Form */}
       {!isObserver && (
         <div className="space-y-6">
-          <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
+          <div className="bg-slate-50 border border-slate-100/60 rounded-2xl p-6 shadow-sm">
             {editingHypothesis ? (
               <form onSubmit={handleEditSave} className="space-y-4">
                 <div className="flex justify-between items-center mb-2">
@@ -83,7 +83,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                   <button 
                     type="button" 
                     onClick={() => setEditingHypothesis(null)}
-                    className="text-xs text-slate-400 hover:text-slate-600 font-bold"
+                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 font-bold"
                   >
                     Cancel
                   </button>
@@ -97,7 +97,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                     onChange={e => setEditingHypothesis({ ...editingHypothesis, statement: e.target.value })}
                     placeholder="If we [do X], then [Y will happen]..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-3 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -108,7 +108,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                     onChange={e => setEditingHypothesis({ ...editingHypothesis, success_indicators: e.target.value })}
                     placeholder="What proves this is true? (e.g. 5 conversions)"
                     rows={2}
-                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-3 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -119,7 +119,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                     onChange={e => setEditingHypothesis({ ...editingHypothesis, failure_indicators: e.target.value })}
                     placeholder="What disproves this? (e.g. 0 interviews)"
                     rows={2}
-                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-3 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -145,7 +145,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                     onChange={e => setStatement(e.target.value)}
                     placeholder="e.g. We believe solo builders will pay $10/mo for structured discovery tools because it saves hours of wasted build time."
                     rows={3}
-                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-3 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -156,7 +156,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                     onChange={e => setSuccessIndicators(e.target.value)}
                     placeholder="e.g. At least 5 out of 10 interviewees express intent to purchase."
                     rows={2}
-                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-3 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -167,7 +167,7 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                     onChange={e => setFailureIndicators(e.target.value)}
                     placeholder="e.g. Builders say they prefer simple notes/Notion docs for everything."
                     rows={2}
-                    className="w-full px-3 py-2 border border-slate-200 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-3 py-2 border border-slate-100 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -195,21 +195,21 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
             ))}
           </div>
         ) : hypotheses?.length === 0 ? (
-          <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-            <BookOpen className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+          <div className="text-center py-16 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50 shadow-sm dark:shadow-none">
+            <BookOpen className="w-10 h-10 text-slate-500 dark:text-slate-400 mx-auto mb-3" />
             <h4 className="text-md font-bold text-slate-900 mb-1">No Hypotheses Formulated</h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">Formulate a hypothesis statements on the left to start validating.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {hypotheses?.map((h, idx) => (
-              <div key={h.id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-sm transition-all flex flex-col sm:flex-row justify-between items-start gap-4">
+              <div key={h.id} className="bg-white border border-slate-100 rounded-2xl p-6 hover:shadow-sm transition-all flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="space-y-4 flex-1 w-full">
                   <div className="flex items-center gap-2">
                     <span className="flex items-center justify-center bg-slate-100 text-slate-600 text-xs font-bold rounded-full w-5 h-5">
                       {idx + 1}
                     </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Hypothesis</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hypothesis</span>
                   </div>
                   <p className="text-sm font-bold text-slate-800 leading-relaxed">{h.statement}</p>
                   
@@ -233,13 +233,13 @@ export default function HypothesisTracker({ projectId, isObserver = false }: Hyp
                   <div className="flex gap-1.5 border-t border-slate-100 pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-4 shrink-0 w-full sm:w-auto justify-end">
                     <button 
                       onClick={() => setEditingHypothesis(h)}
-                      className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-primary-400 transition-colors"
+                      className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary-400 transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDelete(h.id)}
-                      className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
+                      className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

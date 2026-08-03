@@ -128,7 +128,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   return (
     <div
       onClick={toggleComments}
-      className="w-full max-w-full bg-[#0a0a0a] border border-white/5 shadow-2xl rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-white/10 hover:bg-[#111] transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
+      className="w-full max-w-full bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 shadow-2xl rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-slate-300 dark:hover:border-slate-100 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-[#111] transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') toggleComments();
@@ -143,7 +143,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             e.stopPropagation();
             if (update.authorId) navigate(`/dashboard/profile/${update.authorId}`);
           }}
-          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-500 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-[#1a1a1a] ring-1 ring-white/10'} cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all`}
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isLaunch ? 'ring-2 ring-primary-500 shadow-[0_0_15px_rgba(139,124,248,0.3)]' : 'bg-slate-100 dark:bg-[#1a1a1a] ring-1 ring-slate-200 dark:ring-white/10'} cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all`}
         >
           <UserAvatar
             userId={update.authorId}
@@ -156,7 +156,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           {/* Clean Header: Builder Name · Room Title */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap mb-1" onClick={(e) => e.stopPropagation()}>
-            <span className="font-bold text-[15px] sm:text-[16px] text-white hover:underline cursor-pointer">
+            <span className="font-bold text-[15px] sm:text-[16px] text-slate-900 dark:text-white hover:underline cursor-pointer">
               {builderName}
             </span>
             {!update.authorOrgName && <VerifiedTick isVerified={!!update.authorIsVerifiedExpert} className="w-4 h-4 shrink-0" />}
@@ -169,7 +169,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             )}
             <span className="text-slate-600 text-[14px]">·</span>
             <span 
-              className="text-[13px] sm:text-[14px] text-slate-400 hover:underline cursor-pointer font-medium truncate max-w-[180px] sm:max-w-none"
+              className="text-[13px] sm:text-[14px] text-slate-500 dark:text-slate-400 hover:underline cursor-pointer font-medium truncate max-w-[180px] sm:max-w-none"
               onClick={() => navigate(`/dashboard/room/${update.roomId}`)}
             >
               {roomTitle}
@@ -182,8 +182,8 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           <div className="mt-1 w-full max-w-full">
             {update.content && (
               update.content.includes("figma.com/") ? (
-                <div className="my-3 rounded-[20px] overflow-hidden border border-white/10 shadow-sm bg-[#1a1a1a] relative group">
-                  <div className="absolute top-3 left-3 bg-[#0a0a0a]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-300 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="my-3 rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm bg-slate-50 dark:bg-[#1a1a1a] relative group">
+                  <div className="absolute top-3 left-3 bg-white dark:bg-[#0a0a0a]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-600 dark:text-slate-300 shadow-sm z-10 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span>Figma Design</span>
                   </div>
                   <FigmaEmbed content={update.content} />
@@ -191,13 +191,13 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
               ) : (
                 <ReadMoreText
                   content={update.content}
-                  className="text-[15px] sm:text-[16px] text-slate-300 leading-relaxed whitespace-pre-wrap break-words font-medium"
+                  className="text-[15px] sm:text-[16px] text-slate-800 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words font-medium"
                 />
               )
             )}
 
             {update.mediaUrl && (
-              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-white/10 bg-[#1a1a1a] relative group">
+              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-[#1a1a1a] relative group shadow-sm dark:shadow-none">
                 <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
               </div>
             )}
@@ -215,7 +215,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
             )}
 
             {update.codeSnippet && !update.diffData && (
-              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-white/10">
+              <div className="mt-3 rounded-[20px] overflow-hidden shadow-sm border border-slate-100 dark:border-white/10">
                 <CodeSnippetBlock code={update.codeSnippet} />
               </div>
             )}
@@ -229,12 +229,12 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
 
             <div className="flex items-center gap-3 shrink-0 ml-auto pt-2">
               {update.updateType && update.updateType !== 'general' && UPDATE_TYPE_UI[update.updateType.toLowerCase()] && (
-                <span className={`text-[11px] font-bold border ${UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.color || 'bg-white/5 text-slate-300 border-white/10'} px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1.5 shadow-sm`}>
+                <span className={`text-[11px] font-bold border ${UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.color || 'bg-white/5 text-slate-300 border-slate-200 dark:border-white/10'} px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1.5 shadow-sm`}>
                   <span>{UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.icon || '📌'}</span>
                   {UPDATE_TYPE_UI[update.updateType.toLowerCase()]?.label || update.updateType}
                 </span>
               )}
-              <span className="text-[12px] sm:text-[13px] text-slate-400 font-medium whitespace-nowrap">{timeString}</span>
+              <span className="text-[12px] sm:text-[13px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">{timeString}</span>
               {update.authorId === user?.id && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -251,10 +251,10 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                       )}
                     </button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-[#111111] border border-white/10 sm:rounded-[24px] text-white">
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 sm:rounded-[24px] text-slate-900 dark:text-white shadow-sm dark:shadow-none">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-[20px] font-display font-bold">Delete update?</AlertDialogTitle>
-                      <AlertDialogDescription className="text-slate-400">This action cannot be undone.</AlertDialogDescription>
+                      <AlertDialogDescription className="text-slate-500 dark:text-slate-400">This action cannot be undone.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -314,7 +314,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                     e.stopPropagation();
                     setShowAllReplies(true);
                   }}
-                  className="relative ml-2 flex items-center gap-2 text-[13px] font-medium text-slate-400 hover:text-primary-400 transition-colors py-2 group"
+                  className="relative ml-2 flex items-center gap-2 text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-primary-400 transition-colors py-2 group"
                 >
                   <div className="w-4 h-[2px] bg-white/10 group-hover:bg-primary-500 transition-colors" />
                   View {replies.length - 1} earlier repl{replies.length - 1 === 1 ? 'y' : 'ies'}...

@@ -115,7 +115,7 @@ function getNotifConfig(n: any) {
     default:
       return {
         icon: '🔔',
-        iconBg: 'bg-[#1a1a1a]',
+        iconBg: 'bg-slate-50 dark:bg-[#1a1a1a]',
         text: 'sent you a notification',
         preview: null,
         primaryLink: null,
@@ -147,16 +147,16 @@ export default function Notifications() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full max-w-[800px] mx-auto px-5 sm:px-6 py-8"
     >
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-400 hover:text-white mb-6 sm:mb-8 transition-colors group">
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white mb-6 sm:mb-8 transition-colors group">
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Dashboard
       </Link>
 
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-bold text-2xl sm:text-[28px] text-white leading-tight tracking-tight m-0">
+          <h1 className="font-bold text-2xl sm:text-[28px] text-slate-900 dark:text-white leading-tight tracking-tight m-0">
             Notifications
           </h1>
-          <p className="text-slate-400 mt-1 text-[14px]">
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-[14px]">
             {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
           </p>
         </div>
@@ -164,20 +164,20 @@ export default function Notifications() {
 
       <RequestsAndInvites />
 
-      <div className="bg-[#111111] border border-white/10 rounded-[20px] overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 rounded-[20px] overflow-hidden shadow-sm">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-3">
             <div className="w-6 h-6 rounded-full border-2 border-primary-500/20 border-t-primary-500 animate-spin" />
             <span className="text-[14px]">Loading notifications...</span>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="p-16 flex flex-col items-center justify-center text-center text-slate-400 relative overflow-hidden">
+          <div className="p-16 flex flex-col items-center justify-center text-center text-slate-500 dark:text-slate-400 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-[40px] pointer-events-none" />
-            <div className="w-16 h-16 rounded-[20px] bg-[#1a1a1a] border border-white/10 flex items-center justify-center mx-auto mb-5 shadow-sm">
+            <div className="w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/10 flex items-center justify-center mx-auto mb-5 shadow-sm">
               <span className="text-2xl">🔔</span>
             </div>
-            <h3 className="text-white font-extrabold text-[20px] mb-2 tracking-tight">You're all caught up!</h3>
-            <p className="text-[14px] text-slate-400 max-w-[280px] leading-relaxed mb-6">
+            <h3 className="text-slate-900 dark:text-white font-extrabold text-[20px] mb-2 tracking-tight">You're all caught up!</h3>
+            <p className="text-[14px] text-slate-500 dark:text-slate-400 max-w-[280px] leading-relaxed mb-6">
               No notifications yet. Discover active rooms to follow.
             </p>
             <Link
@@ -214,23 +214,23 @@ export default function Notifications() {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] text-slate-300 leading-snug">
+                      <p className="text-[14px] text-slate-600 dark:text-slate-300 leading-snug">
                         {config.actorLink ? (
                           <Link
                             to={config.actorLink}
-                            className="font-extrabold text-white hover:text-primary-400 transition-colors"
+                            className="font-extrabold text-slate-900 dark:text-white hover:text-primary-400 transition-colors"
                           >
                             {actorName}
                           </Link>
                         ) : (
-                          <strong className="font-extrabold text-white">{actorName}</strong>
+                          <strong className="font-extrabold text-slate-900 dark:text-white">{actorName}</strong>
                         )}{' '}
                         {config.text}
                       </p>
 
                       {/* Preview snippet */}
                       {config.preview && (
-                        <div className="mt-2 text-[13px] text-slate-400 bg-[#1a1a1a] border border-white/10 p-2.5 rounded-xl line-clamp-2 italic">
+                        <div className="mt-2 text-[13px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/10 p-2.5 rounded-xl line-clamp-2 italic shadow-sm dark:shadow-none">
                           "{config.preview}"
                         </div>
                       )}
@@ -261,7 +261,7 @@ export default function Notifications() {
                           {config.actorLink && (
                             <Link
                               to={config.actorLink}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-white/10 text-slate-300 text-[12px] font-bold rounded-xl border border-white/20 hover:border-white/30 transition-all active:scale-95"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-transparent hover:bg-white/10 text-slate-600 dark:text-slate-300 text-[12px] font-bold rounded-xl border border-slate-300 dark:border-white/20 hover:border-white/30 transition-all active:scale-95"
                             >
                               View profile
                             </Link>

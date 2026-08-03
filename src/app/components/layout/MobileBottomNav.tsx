@@ -33,7 +33,7 @@ export function MobileBottomNav({
       {/* ── MOBILE BOTTOM NAV ─────────────────────────────── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
         {/* Safe-area spacer + glass bar */}
-        <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border-t border-white/5 shadow-2xl pb-[env(safe-area-inset-bottom)]">
+        <div className="bg-white dark:bg-[#0a0a0a]/95 backdrop-blur-3xl border-t border-slate-100 dark:border-white/5 shadow-2xl pb-[env(safe-area-inset-bottom)]">
           <nav className="flex items-stretch justify-around px-2 pt-2 pb-2">
 
             {/* Home */}
@@ -202,13 +202,13 @@ export function MobileBottomNav({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
+              className="fixed bottom-0 left-0 right-0 bg-white z-[70] lg:hidden rounded-t-3xl border-t border-slate-100 pb-[env(safe-area-inset-bottom)] shadow-sm dark:shadow-none"
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-5" />
 
               <div className="max-h-[85vh] overflow-y-auto px-5 pb-5 custom-scrollbar">
                 {/* User Profile Header Card */}
-                <div className="flex items-center gap-3 mb-5 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl">
+                <div className="flex items-center gap-3 mb-5 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl shadow-sm dark:shadow-none">
                   <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0">
                     <UserAvatar userId={user?.id || ''} name={userDisplayName} avatarUrl={profile?.avatar || profile?.avatarUrl || profile?.avatar_url} className="w-full h-full object-cover" />
                   </div>
@@ -220,28 +220,28 @@ export function MobileBottomNav({
 
                 {/* SECTION 1: ACCOUNT */}
                 <div className="mb-4">
-                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Account</div>
+                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Account</div>
                   <div className="space-y-0.5">
                     <Link
                       to={`/dashboard/profile/${user.id}`}
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <UserIcon className="w-4 h-4 text-slate-400" /> My Profile
+                      <UserIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> My Profile
                     </Link>
                     <Link
                       to="/dashboard/achievements"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <AwardIcon className="w-4 h-4 text-slate-400" /> Achievements
+                      <AwardIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Achievements
                     </Link>
                   </div>
                 </div>
 
                 {/* SECTION 2: PRODUCT OPS */}
                 <div className="mb-4">
-                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Product Ops</div>
+                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Product Ops</div>
                   <div className="space-y-0.5">
                     <Link
                       to="/dashboard/roadmap"
@@ -255,28 +255,28 @@ export function MobileBottomNav({
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <FileTextIcon className="w-4 h-4 text-slate-400" /> Build Logs
+                      <FileTextIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Build Logs
                     </Link>
                   </div>
                 </div>
 
                 {/* SECTION 3: EXPLORE & UTILITIES */}
                 <div className="mb-5">
-                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Explore</div>
+                  <div className="px-2 mb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Explore</div>
                   <div className="space-y-0.5">
                     <Link
                       to="/dashboard/discovery"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <LightbulbIcon className="w-4 h-4 text-slate-400" /> Discovery Mode
+                      <LightbulbIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Discovery Mode
                     </Link>
                     <Link
                       to="/dashboard/experts"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition"
                     >
-                      <AwardIcon className="w-4 h-4 text-slate-400" /> Expert Directory
+                      <AwardIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Expert Directory
                     </Link>
                     <button
                       onClick={() => {
@@ -285,13 +285,13 @@ export function MobileBottomNav({
                       }}
                       className="w-full flex items-center gap-3 px-3.5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition text-left"
                     >
-                      <CompassIcon className="w-4 h-4 text-slate-400" /> Replay Tour
+                      <CompassIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Replay Tour
                     </button>
                   </div>
                 </div>
 
                 {/* FOOTER & SIGNOUT */}
-                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-medium text-slate-500 px-2 mb-4">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-500 px-2 mb-4">
                   <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900 transition">Privacy Policy</Link>
                   <span>·</span>
                   <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-slate-900 transition">Terms of Service</Link>

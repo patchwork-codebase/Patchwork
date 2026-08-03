@@ -127,7 +127,7 @@ export default function VerifyEmail() {
       <div className="w-full max-w-[460px] bg-white/[0.02] border border-white/[0.06] rounded-[32px] p-8 md:p-10 backdrop-blur-md shadow-2xl relative overflow-hidden text-center">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500/50 to-transparent opacity-50" />
 
-        <div className="font-extrabold text-[24px] text-white font-display tracking-tight mb-8">
+        <div className="font-extrabold text-[24px] text-slate-900 dark:text-white font-display tracking-tight mb-8">
           patchwork
         </div>
 
@@ -138,8 +138,8 @@ export default function VerifyEmail() {
               <Loader2 className="w-16 h-16 text-primary-400 animate-spin" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-extrabold text-white font-display">Verifying your email</h2>
-              <p className="text-sm text-slate-400">Please wait while we confirm your address.</p>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white font-display">Verifying your email</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Please wait while we confirm your address.</p>
             </div>
           </div>
         )}
@@ -151,8 +151,8 @@ export default function VerifyEmail() {
               <CheckCircle className="w-16 h-16 text-emerald-400 animate-bounce" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-extrabold text-white font-display">Email Verified! 🎉</h2>
-              <p className="text-sm text-slate-400">
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white font-display">Email Verified! 🎉</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 You can now post updates, create rooms, and engage with builders on Patchwork.
               </p>
             </div>
@@ -172,7 +172,7 @@ export default function VerifyEmail() {
               <XCircle className="w-16 h-16 text-rose-400" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-extrabold text-white font-display">Verification Failed</h2>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white font-display">Verification Failed</h2>
               <p className="text-sm text-rose-300/80 bg-rose-500/10 border border-rose-500/10 py-2.5 px-4 rounded-xl leading-relaxed">
                 {errorMsg}
               </p>
@@ -181,14 +181,14 @@ export default function VerifyEmail() {
             {/* Resend section */}
             {!resendSent ? (
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-left space-y-3">
-                <p className="text-[13px] font-bold text-white">Request a new verification link</p>
-                <p className="text-[12px] text-slate-400">Your link may have expired. Get a fresh one below.</p>
+                <p className="text-[13px] font-bold text-slate-900 dark:text-white">Request a new verification link</p>
+                <p className="text-[12px] text-slate-500 dark:text-slate-400">Your link may have expired. Get a fresh one below.</p>
                 <input
                   type="email"
                   value={resendEmail}
                   onChange={e => setResendEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-white placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[13px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
                 />
                 <button
                   onClick={handleResend}
@@ -216,7 +216,7 @@ export default function VerifyEmail() {
               >
                 Go to Dashboard
               </button>
-              <Link to="/login" className="block text-xs font-bold text-slate-400 hover:text-white transition-colors">
+              <Link to="/login" className="block text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
                 Back to Login
               </Link>
             </div>

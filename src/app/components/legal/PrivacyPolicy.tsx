@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
-            className="mb-8 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+            className="mb-8 hover:bg-white/10 text-zinc-400 hover:text-slate-900 dark:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
 
           <div className="space-y-12 text-zinc-300 leading-relaxed">
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white">1. Information We Collect</h2>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">1. Information We Collect</h2>
               <p>
                 We collect information to provide better services to all our users. The types of information we collect include:
               </p>
@@ -54,14 +54,14 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white">2. How We Use Information</h2>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">2. How We Use Information</h2>
               <p>
                 We use the information we collect from all our services to provide, maintain, protect, and improve them, to develop new ones, and to protect our users. We also use this information to offer you tailored content.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white">3. Information Security</h2>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">3. Information Security</h2>
               <p>
                 We work hard to protect our users from unauthorized access to or unauthorized alteration, disclosure, or destruction of information we hold. We use encryption to keep your data private while in transit and review our information collection, storage, and processing practices regularly.
               </p>

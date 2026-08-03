@@ -33,9 +33,9 @@ export function SuggestedBuilders({ currentUserId }: { currentUserId?: string })
   if (builders.length === 0) return null;
 
   return (
-    <div className="py-5 border-y border-white/10 bg-[#111111] sm:rounded-2xl sm:border sm:my-4 sm:px-5">
+    <div className="py-5 border-y border-slate-100 dark:border-white/10 bg-white dark:bg-[#111111] sm:rounded-2xl sm:border sm:my-4 sm:px-5 shadow-sm dark:shadow-none">
       <div className="flex items-center justify-between mb-4 px-4 sm:px-0">
-        <h3 className="font-display font-extrabold text-[15px] sm:text-[17px] text-white">People to follow</h3>
+        <h3 className="font-display font-extrabold text-[15px] sm:text-[17px] text-slate-900 dark:text-white">People to follow</h3>
         <Link to="/dashboard/explore" className="text-[13px] font-bold text-primary-500 hover:text-primary-600 transition-colors">See all</Link>
       </div>
       
@@ -65,23 +65,23 @@ function SuggestedBuilderCard({
   const { isFollowing, isLoading, toggleFollow } = useFollow(builder.id, currentUserId);
 
   return (
-    <div className="snap-start shrink-0 w-[150px] border border-white/10 rounded-[20px] p-4 flex flex-col items-center text-center bg-[#1a1a1a] relative transition-shadow hover:shadow-sm">
+    <div className="snap-start shrink-0 w-[150px] border border-slate-100 dark:border-white/10 rounded-[20px] p-4 flex flex-col items-center text-center bg-slate-50 dark:bg-[#1a1a1a] relative transition-shadow hover:shadow-sm">
       <button 
         onClick={() => onDismiss(builder.id)}
-        className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors"
+        className="absolute top-3 right-3 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
       >
         <X className="w-3.5 h-3.5" />
       </button>
       
-      <div className="w-[60px] h-[60px] rounded-full overflow-hidden border border-white/10 mb-3 mt-1">
+      <div className="w-[60px] h-[60px] rounded-full overflow-hidden border border-slate-100 dark:border-white/10 mb-3 mt-1">
         <UserAvatar userId={builder.id} name={builder.name} avatarUrl={builder.avatar || builder.avatarUrl} className="w-full h-full object-cover" />
       </div>
       
-      <div className="text-[13px] font-bold text-white truncate w-full mb-0.5">
+      <div className="text-[13px] font-bold text-slate-900 dark:text-white truncate w-full mb-0.5">
         {builder.name || builder.email.split('@')[0]}
       </div>
       
-      <div className="text-[11px] text-slate-400 line-clamp-2 h-8 leading-snug mb-3 w-full">
+      <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 h-8 leading-snug mb-3 w-full">
         {builder.organizationName ? `Builder at ${builder.organizationName}` : builder.bio || 'Builder on Patchwork'}
       </div>
       

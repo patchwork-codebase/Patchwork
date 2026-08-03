@@ -33,9 +33,9 @@ class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
             
-            <h1 className="text-2xl font-bold text-white mb-3">Something went wrong</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Something went wrong</h1>
             
-            <p className="text-slate-400 text-[15px] mb-8 leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 text-[15px] mb-8 leading-relaxed">
               We encountered an unexpected error while trying to load this screen. Our team has been notified.
             </p>
             
@@ -50,7 +50,7 @@ class ErrorBoundary extends Component<Props, State> {
             {import.meta.env.DEV && this.state.error && (
               <div className="mt-8 text-left bg-black/40 p-4 rounded-lg overflow-x-auto border border-red-500/20">
                 <p className="text-red-400 font-mono text-xs font-bold mb-2">Error Details (Dev Only):</p>
-                <pre className="text-slate-300 font-mono text-[11px] whitespace-pre-wrap">
+                <pre className="text-slate-600 dark:text-slate-300 font-mono text-[11px] whitespace-pre-wrap">
                   {this.state.error.toString()}
                 </pre>
               </div>

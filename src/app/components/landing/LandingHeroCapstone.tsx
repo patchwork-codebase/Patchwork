@@ -27,16 +27,16 @@ export function LandingHeroCapstone({ onSignup }: Props) {
           {/* Left: Copy */}
           <div className="max-w-2xl">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight">
-              We'll give you real <br />
+              Build. Collaborate. <br />
               <span className="text-primary-500 relative inline-block">
-                proof of work
+                Grow.
                 {/* Accent line under text */}
                 <span className="absolute bottom-1 left-0 w-full h-[6px] bg-primary-100 -z-10 rounded-full" />
               </span>
             </h1>
             
             <p className="mt-6 text-base sm:text-lg text-slate-600 leading-relaxed font-medium max-w-lg">
-              Ideas are temporary. Execution creates impact. Build products, document your journey, collaborate with your team, and create verified Proof of Work that grows with every milestone.
+              Patchwork is where builders document their work, collaborate with teams, receive expert feedback, and create a verified record of their impact. Whether you’re designing, developing, researching, analysing, or leading a product, every contribution becomes part of your professional story
             </p>
             
             <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">

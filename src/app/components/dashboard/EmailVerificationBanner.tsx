@@ -54,9 +54,9 @@ export function EmailVerificationBanner() {
             <ShieldAlert className="w-5 h-5 text-amber-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[15px] font-extrabold text-white mb-1">Verify your email to unlock Patchwork</h3>
-            <p className="text-[13px] text-slate-400 leading-relaxed mb-4">
-              You won't be able to <strong className="text-white">post updates</strong>, <strong className="text-white">create rooms</strong>, or <strong className="text-white">react to builds</strong> until your email is confirmed.
+            <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white mb-1">Verify your email to unlock Patchwork</h3>
+            <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+              You won't be able to <strong className="text-slate-900 dark:text-white">post updates</strong>, <strong className="text-slate-900 dark:text-white">create rooms</strong>, or <strong className="text-slate-900 dark:text-white">react to builds</strong> until your email is confirmed.
               We sent a link to <span className="text-amber-500 font-semibold">{profile?.email || user?.email}</span>.
             </p>
             <div className="flex flex-wrap items-center gap-3">
@@ -72,7 +72,7 @@ export function EmailVerificationBanner() {
                     : <><Mail className="w-3.5 h-3.5" /> Resend verification email</>
                 }
               </button>
-              <p className="text-[12px] text-slate-400">Check your spam folder if you don't see it.</p>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400">Check your spam folder if you don't see it.</p>
             </div>
           </div>
         </div>

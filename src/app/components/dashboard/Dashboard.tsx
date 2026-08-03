@@ -216,7 +216,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
         {/* Left: avatar + identity */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-[#1a1a1a] border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
+          <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-2xl bg-slate-100 dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/10 flex items-center justify-center overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0">
             <UserAvatar 
               userId={user?.id || ''} 
               name={profile?.name || user?.email}
@@ -226,7 +226,7 @@ export default function Dashboard() {
           </div>
           <div className="min-w-0 flex-1">
             {/* Greeting + name — single truncating line */}
-            <h1 className="font-bold text-[16px] sm:text-[24px] text-white leading-snug tracking-tight m-0 flex items-center gap-2">
+            <h1 className="font-bold text-[16px] sm:text-[24px] text-slate-900 dark:text-white leading-snug tracking-tight m-0 flex items-center gap-2">
               <span className="truncate">{greeting}, <span className="text-primary-500">{firstName}</span></span>
               <VerifiedTick isVerified={!!(profile as any)?.isVerifiedExpert} className="w-3.5 h-3.5 sm:w-5 sm:h-5 shrink-0" />
               <motion.span 
@@ -253,11 +253,11 @@ export default function Dashboard() {
             </h1>
             {/* Handle + badges — flex wrap on desktop */}
             <div className="flex sm:flex-wrap items-center gap-1.5 mt-1 overflow-x-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0">{handle}</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium shrink-0">{handle}</span>
               {profile?.city && (
-                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium shrink-0 hidden sm:inline">· {profile.city}</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium shrink-0 hidden sm:inline">· {profile.city}</span>
               )}
-              <span className="text-slate-300 shrink-0">·</span>
+              <span className="text-slate-600 dark:text-slate-300 shrink-0">·</span>
               {profile?.domain && (
                 <span className={`px-2 py-0.5 rounded-full border ${domainStyle.border} ${domainStyle.bg} ${domainStyle.text} text-[9px] sm:text-[10px] font-mono font-bold uppercase shrink-0`}>
                   {profile.domain}
@@ -282,7 +282,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/dashboard/notifications"
-            className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-[#111111] hover:bg-white/5 border border-white/10 rounded-full text-slate-400 transition-all shadow-sm focus-ring"
+            className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-slate-100 dark:bg-[#111111] hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-100 dark:border-white/10 rounded-full text-slate-500 dark:text-slate-400 transition-all shadow-sm focus-ring"
           >
             <Bell className="w-[15px] h-[15px] sm:w-[18px] sm:h-[18px]" />
             {unreadCount > 0 && (
@@ -318,7 +318,7 @@ export default function Dashboard() {
 
       {/* INLINE TEXT TABS */}
       <div className="relative">
-        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-white/10 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-100 dark:border-white/10 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
           {[
             { key: 'overview' as const, label: 'Overview' },
             { key: 'feed' as const, label: 'Global timeline' },
@@ -329,8 +329,8 @@ export default function Dashboard() {
                 key={tab.key}
                 onClick={() => setTab(tab.key)}
                 className={`relative px-4 py-3 min-h-[44px] text-[14px] sm:text-[15px] font-bold transition-all focus-ring whitespace-nowrap snap-start active:scale-95 ${isCurrent
-                    ? 'text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5 rounded-t-lg'
+                    ? 'text-slate-900 dark:text-white'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-t-lg'
                   }`}
               >
                 {tab.label}
@@ -345,7 +345,7 @@ export default function Dashboard() {
             );
           })}
         </div>
-        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-[#0a0a0a] to-transparent pointer-events-none sm:hidden" />
+        <div className="absolute right-0 top-0 bottom-8 w-12 bg-gradient-to-l from-slate-50 dark:from-[#0a0a0a] to-transparent pointer-events-none sm:hidden" />
       </div>
 
       {/* MAIN COLUMNS GRID */}

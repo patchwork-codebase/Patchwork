@@ -21,15 +21,15 @@ export default function RoadmapPage() {
       <div className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-4 sm:py-8 h-full flex flex-col">
         
         <div className="mb-6 sm:mb-8">
-          <h1 className="font-bold text-[24px] sm:text-[28px] text-slate-100 leading-snug tracking-tight">
+          <h1 className="font-bold text-[24px] sm:text-[28px] text-slate-900 dark:text-slate-100 leading-snug tracking-tight">
             Roadmap view
           </h1>
-          <p className="text-slate-400 mt-1">Plan what you're building, when you're building it, and why.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Plan what you're building, when you're building it, and why.</p>
         </div>
 
         {/* INLINE TEXT TABS */}
         <div className="relative shrink-0">
-          <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-800 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-2 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-100 dark:border-slate-800 relative overflow-x-auto scrollbar-hide snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
             {[
               { key: 'kanban' as const, label: 'Kanban boards' },
               { key: 'sprints' as const, label: 'Sprint planning' },

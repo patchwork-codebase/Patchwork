@@ -114,24 +114,24 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
            <button
              title={roomLinkedRepo.github_repo_name.split('/')[1]}
              aria-label={`Repository: ${roomLinkedRepo.github_repo_name}`}
-             className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95">
+             className="flex items-center justify-center w-9 h-9 border border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95">
              <Github className="w-4 h-4" />
            </button>
         ) : (
           <button
             title="Link Repository"
             aria-label="Link Repository"
-            className="flex items-center justify-center w-9 h-9 border border-slate-200 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95">
+            className="flex items-center justify-center w-9 h-9 border border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 hover:text-slate-900 transition-all shadow-sm focus-ring active:scale-95">
             <LinkIcon className="w-4 h-4" />
           </button>
         )}
       </DialogTrigger>
       <DialogContent className="w-[calc(100vw-32px)] sm:max-w-[500px] bg-ink border border-white/[0.08] p-4 sm:p-6 shadow-2xl">
         <DialogHeader className="mb-4">
-          <DialogTitle className="text-xl font-extrabold text-white font-display flex items-center gap-2">
+          <DialogTitle className="text-xl font-extrabold text-slate-900 dark:text-white font-display flex items-center gap-2">
             <Github className="w-5 h-5" /> Link GitHub Repository
           </DialogTitle>
-          <DialogDescription className="text-[14px] text-slate-400 font-medium">
+          <DialogDescription className="text-[14px] text-slate-500 dark:text-slate-400 font-medium">
             Connect a repository to automatically generate draft updates from your commits.
           </DialogDescription>
         </DialogHeader>
@@ -139,7 +139,7 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
         {!githubAccount ? (
           <div className="py-8 text-center bg-white/[0.02] border border-white/[0.05] rounded-2xl">
             <Github className="w-10 h-10 mx-auto mb-3 text-slate-600" />
-            <p className="text-[14px] text-slate-300 mb-4">You need to connect your GitHub account first.</p>
+            <p className="text-[14px] text-slate-600 dark:text-slate-300 mb-4">You need to connect your GitHub account first.</p>
             <button 
               onClick={() => {
                 setOpen(false);
@@ -157,14 +157,14 @@ export function LinkRepositoryModal({ roomId, userId }: { roomId: string, userId
                 <Loader2 className="w-6 h-6 animate-spin text-primary-400" />
               </div>
             ) : repos.length === 0 ? (
-              <div className="text-center py-8 text-slate-400 text-sm">No repositories found.</div>
+              <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm">No repositories found.</div>
             ) : (
               repos.map(repo => {
                 const isLinked = linkedRepos?.some(r => String(r.github_repo_id) === String(repo.id) && r.linked_room_id === roomId);
                 return (
                   <div key={repo.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:border-white/[0.1] transition-colors">
                     <div>
-                      <h4 className="font-bold text-white text-[14px]">{repo.name}</h4>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-[14px]">{repo.name}</h4>
                       <p className="text-[12px] text-slate-500">{repo.full_name}</p>
                     </div>
                     {isLinked ? (

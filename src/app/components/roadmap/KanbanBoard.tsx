@@ -54,24 +54,24 @@ function SortableItem({ id, item, onDelete }: { id: string; item: RoadmapItem; o
       {...listeners}
     >
       <div className="flex items-start justify-between">
-        <h4 className="font-bold text-white text-[14px] leading-tight pr-6">{item.title}</h4>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-3 top-4 cursor-grab text-slate-400">
+        <h4 className="font-bold text-slate-900 dark:text-white text-[14px] leading-tight pr-6">{item.title}</h4>
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-3 top-4 cursor-grab text-slate-500 dark:text-slate-400">
           <GripVertical className="w-4 h-4" />
         </div>
       </div>
       {item.description && (
-        <p className="text-[12px] text-slate-400 line-clamp-2">{item.description}</p>
+        <p className="text-[12px] text-slate-500 dark:text-slate-400 line-clamp-2">{item.description}</p>
       )}
       <div className="flex flex-wrap gap-1.5 mt-1">
         {item.labels?.map(label => (
-          <span key={label} className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300">
+          <span key={label} className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
             {label}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800">
-        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           {item.sprint_id ? (
              <span className="flex items-center gap-1 text-primary-400 bg-primary-400/10 px-2 py-0.5 rounded-full">
                <Calendar className="w-3 h-3" /> Sprint
@@ -405,7 +405,7 @@ export function KanbanBoard() {
                 </SortableContext>
                 
                 {addingToCol === col.id ? (
-                  <form onSubmit={(e) => handleCreate(e, col.id)} className="bg-[#151A27] p-4 rounded-2xl border border-slate-800 shadow-lg mt-1 relative overflow-hidden">
+                  <form onSubmit={(e) => handleCreate(e, col.id)} className="bg-[#151A27] p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-lg mt-1 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-primary-400" />
                     <input
                       autoFocus
@@ -413,17 +413,17 @@ export function KanbanBoard() {
                       placeholder="What needs to be done?"
                       value={newItemTitle}
                       onChange={(e) => setNewItemTitle(e.target.value)}
-                      className="w-full text-[13px] font-medium outline-none bg-transparent text-white placeholder:text-slate-400"
+                      className="w-full text-[13px] font-medium outline-none bg-transparent text-slate-900 dark:text-white placeholder:text-slate-500 dark:text-slate-400"
                     />
                     <div className="flex items-center gap-2 mt-4">
                       <button type="submit" className="px-4 py-1.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-[12px] font-bold transition-colors">Add</button>
-                      <button type="button" onClick={() => setAddingToCol(null)} className="px-4 py-1.5 text-slate-400 hover:bg-slate-800 rounded-lg text-[12px] font-bold transition-colors">Cancel</button>
+                      <button type="button" onClick={() => setAddingToCol(null)} className="px-4 py-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-lg text-[12px] font-bold transition-colors">Cancel</button>
                     </div>
                   </form>
                 ) : (
                   <button
                     onClick={() => setAddingToCol(col.id)}
-                    className="flex items-center justify-center gap-2 p-3 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-2xl transition-all text-[13px] font-bold mt-1 w-full border-2 border-dashed border-transparent hover:border-slate-700 hover:shadow-sm"
+                    className="flex items-center justify-center gap-2 p-3 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:bg-slate-800/50 rounded-2xl transition-all text-[13px] font-bold mt-1 w-full border-2 border-dashed border-transparent hover:border-slate-300 dark:border-slate-700 hover:shadow-sm"
                   >
                     <Plus className="w-4 h-4" /> Add task
                   </button>

@@ -80,7 +80,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Problem Statement Card */}
       <div className="lg:col-span-2 space-y-6">
-        <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 shadow-sm">
+        <div className="bg-slate-50 border border-slate-100/60 rounded-2xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-slate-900">Define the Problem</h3>
             {isEditing ? (
@@ -119,7 +119,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                   onChange={(e) => setProblem(e.target.value)}
                   placeholder="What pain point are you validating?"
                   rows={4}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                  className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                 />
               </div>
 
@@ -131,7 +131,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                     value={audience}
                     onChange={(e) => setAudience(e.target.value)}
                     placeholder="Who has this problem? (e.g. Solo SaaS Builders)"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
                 <div>
@@ -141,7 +141,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                     value={market}
                     onChange={(e) => setMarket(e.target.value)}
                     placeholder="Industry or niche segment"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 shadow-sm dark:shadow-none"
                   />
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                 <select 
                   value={painLevel} 
                   onChange={(e) => setPainLevel(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium"
+                  className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 font-medium shadow-sm dark:shadow-none"
                 >
                   <option value="High">High (Must-solve / hair-on-fire)</option>
                   <option value="Medium">Medium (Nice-to-have / inconvenience)</option>
@@ -162,23 +162,23 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
           ) : (
             <div className="space-y-6">
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Problem Statement</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Problem Statement</h4>
                 <p className="text-slate-800 leading-relaxed text-[15px] whitespace-pre-wrap">
                   {project.problem_statement || (isObserver ? "No problem statement defined yet." : "Not defined yet. Click edit to add a problem statement.")}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-200/60">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100/60">
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Target Audience</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Target Audience</h4>
                   <p className="text-slate-800 font-medium text-sm">{project.audience || "Not defined"}</p>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Market Segment</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Market Segment</h4>
                   <p className="text-slate-800 font-medium text-sm">{project.market || "Not defined"}</p>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Pain Level</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Pain Level</h4>
                   <span className={`inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                     project.pain_level === 'High' ? 'bg-rose-100 text-rose-600' :
                     project.pain_level === 'Medium' ? 'bg-amber-100 text-amber-600' :
@@ -195,7 +195,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
 
       {/* Assumptions List Card */}
       <div className="space-y-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
           <h3 className="text-lg font-bold text-slate-900 mb-2">Assumptions</h3>
           <p className="text-xs text-slate-500 mb-4">List leap-of-faith assumptions that must be true for this project to succeed.</p>
 
@@ -206,7 +206,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                 placeholder="e.g. Builders care about validation..."
                 value={newAssumption}
                 onChange={(e) => setNewAssumption(e.target.value)}
-                className="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                className="flex-1 px-3.5 py-2 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
               />
               <button 
                 type="submit" 
@@ -225,13 +225,13 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
               ))}
             </div>
           ) : assumptions?.length === 0 ? (
-            <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
-              <p className="text-xs text-slate-400 font-medium">No assumptions added yet.</p>
+            <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50 shadow-sm dark:shadow-none">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No assumptions added yet.</p>
             </div>
           ) : (
             <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
               {assumptions?.map(a => (
-                <div key={a.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200/50 flex justify-between items-start gap-2">
+                <div key={a.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100/50 flex justify-between items-start gap-2 shadow-sm dark:shadow-none">
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-slate-800 leading-normal break-words">{a.assumption}</p>
                     <div className="flex gap-1.5 mt-2">
@@ -279,7 +279,7 @@ export default function ProblemStatementForm({ project, isObserver = false }: Pr
                   {!isObserver && (
                     <button 
                       onClick={() => handleDeleteAssumption(a.id)}
-                      className="text-slate-300 hover:text-rose-500 p-1 rounded transition-colors"
+                      className="text-slate-600 dark:text-slate-300 hover:text-rose-500 p-1 rounded transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

@@ -62,7 +62,7 @@ export function PwaInstallPrompt() {
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-50 bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700/50 p-4"
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-50 bg-slate-900 text-slate-900 dark:text-white rounded-2xl shadow-2xl border border-slate-300 dark:border-slate-700/50 p-4"
         >
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center shrink-0">
@@ -70,7 +70,7 @@ export function PwaInstallPrompt() {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-bold mb-1">Install Patchwork</h3>
-              <p className="text-xs text-slate-400 mb-3 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
                 Install our app on your device for a faster, app-like experience with offline support.
               </p>
               <div className="flex gap-2">
@@ -82,7 +82,7 @@ export function PwaInstallPrompt() {
                 </button>
                 <button
                   onClick={handleDismiss}
-                  className="px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors flex items-center justify-center"
+                  className="px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors flex items-center justify-center"
                 >
                   <X className="w-4 h-4" />
                 </button>

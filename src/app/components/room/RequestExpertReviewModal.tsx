@@ -165,7 +165,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white border border-slate-200 rounded-[24px] w-full max-w-[550px] relative z-10 my-auto flex flex-col max-h-[90vh]"
+          className="bg-white border border-slate-100 rounded-[24px] w-full max-w-[550px] relative z-10 my-auto flex flex-col max-h-[90vh] shadow-sm dark:shadow-none"
         >
           <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
@@ -178,7 +178,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                 {step === 1 ? "Select an Expert" : "Request Details"}
               </h2>
             </div>
-            <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors">
+            <button type="button" onClick={onClose} className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -187,13 +187,13 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
             {step === 1 ? (
               <div className="space-y-6">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search by domain (e.g., UX Design, React, Growth)..."
                     value={domainFilter}
                     onChange={(e) => setDomainFilter(e.target.value)}
-                    className="w-full pl-12 pr-5 py-4 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                    className="w-full pl-12 pr-5 py-4 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all shadow-sm dark:shadow-none"
                   />
                 </div>
                 
@@ -207,7 +207,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                     />
                   ))}
                   {filteredExperts.length === 0 && (
-                    <div className="col-span-full py-12 text-center text-slate-400">
+                    <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400">
                       No experts found matching "{domainFilter}"
                     </div>
                   )}
@@ -215,8 +215,8 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
               </div>
             ) : (
               <form id="request-review-form" onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 mb-5">
-                  <UserAvatar userId={selectedExpert?.id || ''} name={selectedExpert?.name || ''} avatarUrl={selectedExpert?.avatar} className="w-10 h-10 rounded-full border border-slate-200 object-cover" />
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 mb-5 shadow-sm dark:shadow-none">
+                  <UserAvatar userId={selectedExpert?.id || ''} name={selectedExpert?.name || ''} avatarUrl={selectedExpert?.avatar} className="w-10 h-10 rounded-full border border-slate-100 object-cover" />
                   <div>
                     <h4 className="text-slate-900 font-bold text-[15px]">{selectedExpert?.name}</h4>
                     <p className="text-slate-500 text-[13px] font-medium">Reviewing your build</p>
@@ -230,9 +230,9 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                       required
                       value={selectedRoomId}
                       onChange={e => setSelectedRoomId(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
+                      className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
-                      <option value="" disabled className="text-slate-400">Choose the room you want reviewed...</option>
+                      <option value="" disabled className="text-slate-500 dark:text-slate-400">Choose the room you want reviewed...</option>
                       {userRooms?.map(room => (
                         <option key={room.id} value={room.id}>
                           {room.title || "Untitled Room"}
@@ -248,7 +248,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                     required rows={2}
                     value={form.buildSummary} onChange={e => setForm(f => ({ ...f, buildSummary: e.target.value }))}
                     placeholder="Briefly describe what you've built..."
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -258,7 +258,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                     required rows={2}
                     value={form.specificChallenge} onChange={e => setForm(f => ({ ...f, specificChallenge: e.target.value }))}
                     placeholder="What specific area do you need help with?"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -268,7 +268,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                     required rows={3}
                     value={form.questions} onChange={e => setForm(f => ({ ...f, questions: e.target.value }))}
                     placeholder="1. Is the UX intuitive?\n2. What would you do differently?"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -277,7 +277,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                     <label className="block text-[13px] font-bold text-slate-700 mb-2">Priority</label>
                     <select
                       value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
+                      className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       <option value="low">Low - When you have time</option>
                       <option value="medium">Medium - Within a week</option>
@@ -289,12 +289,12 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
                     <input
                       type="date"
                       value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                      className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[15px] text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm dark:shadow-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 p-5 bg-slate-50 border border-slate-100 rounded-xl mt-2">
+                <div className="flex flex-col gap-4 p-5 bg-slate-50 border border-slate-100 rounded-xl mt-2 shadow-sm dark:shadow-none">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-[14px] font-bold text-slate-900">Make request public</h4>
@@ -313,7 +313,7 @@ export function RequestExpertReviewModal({ open, onClose, roomId, initialExpert 
             )}
           </div>
 
-          <div className="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50/50 rounded-b-[24px]">
+          <div className="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50/50 rounded-b-[24px] shadow-sm dark:shadow-none">
             <button
               type="button"
               onClick={onClose}

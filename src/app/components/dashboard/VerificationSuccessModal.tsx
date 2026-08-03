@@ -30,7 +30,7 @@ export default function VerificationSuccessModal({ isOpen, onClose, role }: Prop
 
       {/* Modal */}
       <div 
-        className={`relative w-full max-w-md bg-[#111111] border border-emerald-500/30 rounded-3xl p-8 shadow-[0_0_80px_rgba(16,185,129,0.15)] transition-all duration-500 transform ${show ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}
+        className={`relative w-full max-w-md bg-white dark:bg-[#111111] border border-emerald-500/30 rounded-3xl p-8 shadow-[0_0_80px_rgba(16,185,129,0.15)] transition-all duration-500 transform ${show ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}
       >
         <div className="absolute -top-12 left-1/2 -translate-x-1/2">
           <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center backdrop-blur-md border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
@@ -39,13 +39,13 @@ export default function VerificationSuccessModal({ isOpen, onClose, role }: Prop
         </div>
 
         <div className="mt-10 text-center">
-          <h2 className="text-2xl font-extrabold text-white font-display mb-2">Email Verified!</h2>
-          <p className="text-slate-400 text-[15px] mb-8">
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white font-display mb-2">Email Verified!</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-[15px] mb-8">
             Your account is fully activated. You now have access to all {role} features.
           </p>
 
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-5 mb-8 text-left space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Unlocked Features</h3>
+          <div className="bg-slate-50 dark:bg-[#1a1a1a] border border-slate-100 dark:border-white/10 rounded-2xl p-5 mb-8 text-left space-y-4 shadow-sm dark:shadow-none">
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Unlocked Features</h3>
             
             {role === 'builder' ? (
               <>
@@ -53,13 +53,13 @@ export default function VerificationSuccessModal({ isOpen, onClose, role }: Prop
                   <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
                     <Rocket className="w-4 h-4 text-primary-400" />
                   </div>
-                  <span className="text-sm font-medium text-slate-300">Initialize and manage build rooms</span>
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Initialize and manage build rooms</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
                     <Plus className="w-4 h-4 text-primary-400" />
                   </div>
-                  <span className="text-sm font-medium text-slate-300">Post updates to your timeline</span>
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Post updates to your timeline</span>
                 </div>
               </>
             ) : (
@@ -67,7 +67,7 @@ export default function VerificationSuccessModal({ isOpen, onClose, role }: Prop
                 <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0">
                   <MessageSquare className="w-4 h-4 text-primary-400" />
                 </div>
-                <span className="text-sm font-medium text-slate-300">Comment and react to updates</span>
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Comment and react to updates</span>
               </div>
             )}
           </div>

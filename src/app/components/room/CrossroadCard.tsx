@@ -94,13 +94,13 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[24px] p-4 sm:p-6 md:p-8 mb-6 shadow-sm relative group">
+    <div className="bg-white border border-slate-100 rounded-[24px] p-4 sm:p-6 md:p-8 mb-6 shadow-sm relative group">
       <div className="relative z-10">
         
         {/* Header Label */}
         <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-5 flex-wrap gap-3">
            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm dark:shadow-none">
                 <Compass className="w-5 h-5 text-slate-600" />
               </div>
               <div>
@@ -122,8 +122,8 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
              {update.crossroadData?.context || "I'm weighing two approaches for the architecture. Need some advice from the community."}
            </p>
            
-           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center mt-0.5">
+           <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-start gap-4 shadow-sm dark:shadow-none">
+              <div className="shrink-0 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center mt-0.5 shadow-sm dark:shadow-none">
                  <AlertCircle className="w-4 h-4 text-slate-500" />
               </div>
               <div>
@@ -153,7 +153,7 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
                      <span className={`text-[11px] font-bold uppercase tracking-widest ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
                        Option {String.fromCharCode(65 + idx)}
                      </span>
-                     {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />}
+                     {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-900" />}
                   </div>
                   <h4 className="text-lg font-bold text-slate-900 mb-1.5">{opt.title}</h4>
                   <p className="text-[13.5px] text-slate-500 leading-relaxed line-clamp-2">{opt.description}</p>
@@ -164,7 +164,7 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
 
         {/* Action Area (Rationale Input) */}
         <div className={`transition-all duration-500 overflow-hidden ${selectedOption && !submitted ? 'max-h-[300px] opacity-100 mb-8' : 'max-h-0 opacity-0 mb-0'}`}>
-           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+           <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm dark:shadow-none">
               <label className="block text-[13px] font-medium text-slate-700 mb-3">
                 You selected <span className="font-bold text-slate-900">{selectedOption}</span>. Stake your reputation by leaving a rationale:
               </label>
@@ -176,11 +176,11 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
                 className="w-full bg-white border border-slate-300 rounded-xl p-4 text-slate-900 text-[14px] placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 resize-none h-24 mb-4 shadow-sm transition-all"
               />
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                 <span className="text-[12px] font-medium text-slate-400">{rationale.length}/140 chars</span>
+                 <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{rationale.length}/140 chars</span>
                  <button 
                    onClick={handleSubmit}
                    disabled={rationale.length < 5 || voteMutation.isPending}
-                   className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
+                   className="w-full sm:w-auto bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
                  >
                    {voteMutation.isPending ? 'Staking...' : 'Stake Rationale'} <Zap className="w-3.5 h-3.5 fill-current" />
                  </button>
@@ -192,24 +192,24 @@ export function CrossroadCard({ update }: CrossroadCardProps) {
         <div className="border-t border-slate-100 pt-6">
            <div className="flex items-center justify-between mb-5">
              <h4 className="text-[13px] font-bold text-slate-800 flex items-center gap-2">
-               <MessageCircle className="w-4 h-4 text-slate-400" /> Staked Rationales
+               <MessageCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Staked Rationales
              </h4>
              <span className="text-[12px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">{votes.length} Votes</span>
            </div>
            
            <div className="space-y-4">
               {isLoading && (
-                 <div className="text-center py-4 text-slate-400 text-sm">Loading rationales...</div>
+                 <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">Loading rationales...</div>
               )}
               {!isLoading && votes.length === 0 && !submitted && (
-                 <p className="text-slate-400 text-[13px] font-medium bg-white border border-slate-200 border-dashed rounded-xl p-6 text-center">No rationales staked yet. Be the first to share your expertise!</p>
+                 <p className="text-slate-500 dark:text-slate-400 text-[13px] font-medium bg-white border border-slate-100 border-dashed rounded-xl p-6 text-center shadow-sm dark:shadow-none">No rationales staked yet. Be the first to share your expertise!</p>
               )}
               {votes.map((r: any) => {
                 const u = r.user || {};
                 return (
-                  <div key={r.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={r.id} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 relative">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-100 overflow-hidden shrink-0 relative">
                           <UserAvatar userId={r.user_id} name={u.name || 'User'} avatarUrl={u.avatar_url || u.avatarUrl || u.avatar} />
                         </div>
                         <div>

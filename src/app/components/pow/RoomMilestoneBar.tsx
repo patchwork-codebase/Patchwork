@@ -29,9 +29,9 @@ export function RoomMilestoneBar({ currentPhase = "beta", interactive = false, o
   const currentIndex = Math.max(0, phaseKeys.indexOf(currentPhase in PHASES ? currentPhase : "beta"));
 
   return (
-    <div className="w-full my-3 rounded-xl border border-slate-800 bg-transparent p-3 shadow-xs">
+    <div className="w-full my-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-transparent p-3 shadow-xs">
       <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
           <Flag className="w-3.5 h-3.5 text-primary-500" /> Project Lifecycle
         </span>
         <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold ${activeConfig.color}`}>
@@ -43,7 +43,7 @@ export function RoomMilestoneBar({ currentPhase = "beta", interactive = false, o
       {/* Progress Track */}
       <div className="relative flex items-center justify-between">
         {/* Background Line */}
-        <div className="absolute top-1/2 left-3 right-3 -translate-y-1/2 h-0.5 bg-slate-800 z-0" />
+        <div className="absolute top-1/2 left-3 right-3 -translate-y-1/2 h-0.5 bg-slate-100 dark:bg-slate-800 z-0" />
 
         {/* Active Line Fill */}
         <div

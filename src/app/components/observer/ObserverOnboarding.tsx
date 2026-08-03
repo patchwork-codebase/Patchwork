@@ -108,7 +108,7 @@ export default function ObserverOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[#08070D] text-white px-4 sm:px-6 py-12">
+    <div className="min-h-screen bg-[#08070D] text-slate-900 dark:text-white px-4 sm:px-6 py-12">
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
@@ -116,10 +116,10 @@ export default function ObserverOnboarding() {
               Observer onboarding
             </span>
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Start observing builders in real time.
               </h1>
-              <p className="max-w-2xl text-sm text-slate-400 leading-relaxed">
+              <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                 Pick the domains you care about, follow a few live rooms, and jump into a feed of real updates. The more rooms you follow, the better your observer feed becomes.
               </p>
             </div>
@@ -128,9 +128,9 @@ export default function ObserverOnboarding() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500">Choose your interests</div>
-                  <p className="mt-2 text-sm text-slate-400">These will tailor the rooms and builders we recommend first.</p>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">These will tailor the rooms and builders we recommend first.</p>
                 </div>
-                <div className="text-[11px] font-bold text-slate-300">{selectedTopics.length} selected</div>
+                <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{selectedTopics.length} selected</div>
               </div>
               <div className="flex flex-wrap gap-3">
                 {topics.map(topic => (
@@ -153,9 +153,9 @@ export default function ObserverOnboarding() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-slate-500">Recommended live rooms</div>
-                  <p className="mt-2 text-sm text-slate-400">Follow the rooms you want to observe and jump straight into the global timeline.</p>
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Follow the rooms you want to observe and jump straight into the global timeline.</p>
                 </div>
-                <div className="text-[11px] font-bold text-slate-300">{followedRooms.length} followed</div>
+                <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{followedRooms.length} followed</div>
               </div>
 
               <div className="space-y-4">
@@ -172,8 +172,8 @@ export default function ObserverOnboarding() {
                         <div className="flex items-center justify-between gap-4">
                           <div>
                             <div className="text-[13px] uppercase tracking-[0.2em] text-slate-500">{room.tags?.[0] || 'Product'}</div>
-                            <h2 className="mt-2 text-lg font-semibold text-white">{room.title}</h2>
-                            <div className="flex items-center gap-2 text-sm text-slate-400 mt-1"><ObserverAvatarStack room={room} /> · {room.updateCount} updates</div>
+                            <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{room.title}</h2>
+                            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mt-1"><ObserverAvatarStack room={room} /> · {room.updateCount} updates</div>
                           </div>
                           <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isFollowed ? 'bg-white text-ink' : 'bg-primary-500 text-white'}`}>
                             {isFollowed ? 'Following' : 'Follow'}
@@ -183,7 +183,7 @@ export default function ObserverOnboarding() {
                     );
                   })
                 ) : (
-                  <div className="rounded-3xl border border-white/[0.08] bg-[#0F0C17] p-6 text-slate-400">Loading rooms...</div>
+                  <div className="rounded-3xl border border-white/[0.08] bg-[#0F0C17] p-6 text-slate-500 dark:text-slate-400">Loading rooms...</div>
                 )}
               </div>
             </div>
@@ -211,9 +211,9 @@ export default function ObserverOnboarding() {
             <div className="space-y-4">
               <div className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Why observe</div>
               <div className="space-y-3">
-                <p className="text-sm text-slate-300">• See the exact moment builders make a decision, not just the finished outcome.</p>
-                <p className="text-sm text-slate-300">• React with structured signals, so your feedback is fast and useful.</p>
-                <p className="text-sm text-slate-300">• Build a discovery feed that delivers the most relevant updates first.</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">• See the exact moment builders make a decision, not just the finished outcome.</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">• React with structured signals, so your feedback is fast and useful.</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">• Build a discovery feed that delivers the most relevant updates first.</p>
               </div>
             </div>
           </div>

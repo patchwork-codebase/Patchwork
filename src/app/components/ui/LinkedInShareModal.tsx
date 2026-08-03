@@ -91,13 +91,13 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
                 <Linkedin className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Share to LinkedIn</h3>
-                <p className="text-sm text-slate-400">Share your milestone with your professional network.</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Share to LinkedIn</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Share your milestone with your professional network.</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-white transition-all"
+              className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-all"
             >
               <X className="w-4 h-4" />
             </button>
@@ -107,20 +107,20 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
             {accountLoading || loading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 text-[#0077b5] animate-spin mb-4" />
-                <p className="text-slate-400 font-medium">Drafting your LinkedIn post...</p>
+                <p className="text-slate-500 dark:text-slate-400 font-medium">Drafting your LinkedIn post...</p>
               </div>
             ) : success ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-6 border border-emerald-500/30">
                   <Check className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Published Successfully!</h3>
-                <p className="text-slate-400 max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Published Successfully!</h3>
+                <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                   Your build log milestone has been shared to your LinkedIn feed. Keep building!
                 </p>
                 <button
                   onClick={onClose}
-                  className="mt-8 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.1] text-white rounded-xl font-bold transition-all"
+                  className="mt-8 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.1] text-slate-900 dark:text-white rounded-xl font-bold transition-all"
                 >
                   Close
                 </button>
@@ -130,8 +130,8 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
                 <div className="w-16 h-16 bg-white/[0.02] border border-white/[0.05] rounded-2xl flex items-center justify-center mb-6">
                   <Linkedin className="w-8 h-8 text-slate-500" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">LinkedIn Not Connected</h3>
-                <p className="text-slate-400 mb-8 max-w-sm">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">LinkedIn Not Connected</h3>
+                <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm">
                   You need to connect your LinkedIn account in your profile settings before you can share posts.
                 </p>
                 <button
@@ -144,7 +144,7 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
             ) : (
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[13px] font-bold text-slate-300">Edit Post</span>
+                  <span className="text-[13px] font-bold text-slate-600 dark:text-slate-300">Edit Post</span>
                   <span className={`text-[12px] font-bold ${statusColor}`}>
                     {charCount} / 3000 chars
                   </span>
@@ -152,7 +152,7 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full h-[300px] bg-white/[0.02] border border-white/[0.08] rounded-2xl p-4 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-[#0077b5]/50 focus:ring-1 focus:ring-[#0077b5]/30 transition-all resize-none"
+                  className="w-full h-[300px] bg-white/[0.02] border border-white/[0.08] rounded-2xl p-4 text-[14px] text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-[#0077b5]/50 focus:ring-1 focus:ring-[#0077b5]/30 transition-all resize-none"
                   placeholder="What did you build today?"
                 />
                 {isOverLimit && (
@@ -167,14 +167,14 @@ export function LinkedInShareModal({ open, onClose, roomId, userId, roomTitle }:
               <button
                 onClick={onClose}
                 disabled={publishing}
-                className="px-5 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] text-white text-[13px] font-bold rounded-xl transition-all disabled:opacity-50"
+                className="px-5 py-2.5 bg-white/[0.05] hover:bg-white/[0.1] text-slate-900 dark:text-white text-[13px] font-bold rounded-xl transition-all disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePublish}
                 disabled={publishing || isOverLimit || !content.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#0077b5] hover:bg-[#006097] text-white text-[13px] font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5]/50"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#0077b5] hover:bg-[#006097] text-slate-900 dark:text-white text-[13px] font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077b5]/50"
               >
                 {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Linkedin className="w-4 h-4" />}
                 Publish to LinkedIn

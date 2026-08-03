@@ -8,16 +8,20 @@ import CookiesPolicyModal from "./components/legal/CookiesPolicyModal";
 import UpdateNotification from "./components/ui/UpdateNotification";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 
+import { ThemeProvider } from "./components/ui/ThemeProvider";
+
 export default function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <CookiesPolicyModal />
-        <UpdateNotification />
-        <Toaster position="bottom-right" richColors />
-        <Analytics />
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system" storageKey="patchwork-theme">
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <CookiesPolicyModal />
+          <UpdateNotification />
+          <Toaster position="bottom-right" richColors />
+          <Analytics />
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

@@ -46,24 +46,24 @@ export function TrendingTopics({ updates, rooms }: TrendingTopicsProps) {
   if (trendingTags.length === 0) return null;
 
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-[24px] shadow-sm p-6 overflow-hidden relative">
+    <div className="bg-white dark:bg-[#111111] border border-slate-100 dark:border-white/10 rounded-[24px] shadow-sm p-6 overflow-hidden relative transition-colors duration-300">
       <div className="flex items-center gap-2 mb-6 relative z-10">
         <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
           <Flame className="w-4 h-4" />
         </div>
-        <h3 className="font-bold text-[15px] text-white">Trending Topics</h3>
+        <h3 className="font-bold text-[15px] text-slate-900 dark:text-white">Trending Topics</h3>
       </div>
       
       <div className="flex flex-col gap-4 relative z-10">
         {trendingTags.map(({ tag, count }, idx) => (
           <div key={tag} className="flex items-center justify-between group cursor-pointer">
             <div className="flex items-center gap-3 min-w-0">
-              <span className="text-[13px] font-bold text-slate-400 group-hover:text-primary-500 transition-colors w-4">{idx + 1}</span>
+              <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-primary-500 transition-colors w-4">{idx + 1}</span>
               <div className="flex flex-col min-w-0">
-                <span className="text-[14px] font-bold text-white group-hover:text-primary-500 transition-colors truncate">
+                <span className="text-[14px] font-bold text-slate-900 dark:text-white group-hover:text-primary-500 transition-colors truncate">
                   #{tag}
                 </span>
-                <span className="text-[11px] text-slate-400">{count} updates</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">{count} updates</span>
               </div>
             </div>
           </div>

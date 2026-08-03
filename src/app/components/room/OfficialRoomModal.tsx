@@ -27,7 +27,7 @@ export function OfficialRoomModal({ open, onClose }: OfficialRoomModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-white dark:bg-slate-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
       <motion.div
@@ -43,7 +43,7 @@ export function OfficialRoomModal({ open, onClose }: OfficialRoomModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

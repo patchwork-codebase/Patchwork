@@ -38,7 +38,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
           setIsOpen(!isOpen);
           setSearch("");
         }}
-        className="w-full flex items-center justify-between px-3 py-3 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[13.5px] text-white focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all disabled:opacity-50 text-left cursor-pointer"
+        className="w-full flex items-center justify-between px-3 py-3 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[13.5px] text-slate-900 dark:text-white focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all disabled:opacity-50 text-left cursor-pointer"
       >
         <span className={selectedOption ? "text-white font-medium truncate" : "text-slate-500 font-medium truncate"}>
           {displayLabel}
@@ -71,7 +71,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
                   placeholder={`Search ${label.toLowerCase()}...`}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 transition-all mb-2"
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 transition-all mb-2"
                 />
               )}
               <div className="flex-1 overflow-y-auto max-h-[180px] space-y-0.5 pr-1">
@@ -133,7 +133,7 @@ function TestimonialSlider() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35, ease: "easeInOut" }}
-          className="w-full bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"
+          className="w-full bg-white border border-slate-100 rounded-2xl p-5 shadow-sm"
         >
           <p className="text-[14px] text-slate-700 italic leading-relaxed min-h-[48px] font-medium">{t.quote}</p>
           <p className="text-[12px] text-primary-600 font-mono font-bold mt-3">{t.handle}</p>
@@ -158,7 +158,7 @@ function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, o
           type="button"
           disabled={loading}
           onClick={onGoogle}
-          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-100 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50 shadow-sm dark:shadow-none"
         >
           <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
             <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -174,7 +174,7 @@ function SocialAuth({ onGoogle, onLinkedin, loading }: { onGoogle: () => void, o
           type="button"
           disabled={loading}
           onClick={onLinkedin}
-          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border border-slate-100 hover:bg-slate-50 rounded-xl text-[14px] text-slate-700 font-bold transition-all disabled:opacity-50 shadow-sm dark:shadow-none"
         >
           <Linkedin className="w-5 h-5 text-[#0A66C2] fill-[#0A66C2]" />
           LinkedIn
@@ -303,13 +303,13 @@ export default function AuthPage() {
       <div className="absolute inset-0 bg-[radial-gradient(slate-200_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.4]" />
       
       {/* ── LEFT PANEL ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] p-14 relative overflow-hidden z-10 border-r border-slate-200/50 bg-white">
+      <div className="hidden lg:flex flex-col justify-between w-[45%] p-14 relative overflow-hidden z-10 border-r border-slate-100/50 bg-white shadow-sm dark:shadow-none">
         
         {/* Animated Platform Teaser */}
         <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -right-20 top-1/2 -translate-y-1/2 w-[400px] h-[480px] bg-white border border-slate-200 rounded-[32px] shadow-2xl opacity-60 pointer-events-none rotate-[-5deg] p-6 hidden xl:block"
+          className="absolute -right-20 top-1/2 -translate-y-1/2 w-[400px] h-[480px] bg-white border border-slate-100 rounded-[32px] shadow-2xl opacity-60 pointer-events-none rotate-[-5deg] p-6 hidden xl:block"
         >
           <div className="w-full h-10 border-b border-slate-100 flex items-center gap-2 mb-4">
             <div className="w-3 h-3 rounded-full bg-rose-400" />
@@ -318,8 +318,8 @@ export default function AuthPage() {
           </div>
           <div className="space-y-4">
             <div className="w-3/4 h-6 bg-slate-100 rounded-lg" />
-            <div className="w-full h-24 bg-slate-50 rounded-xl border border-slate-100" />
-            <div className="w-5/6 h-24 bg-slate-50 rounded-xl border border-slate-100" />
+            <div className="w-full h-24 bg-slate-50 rounded-xl border border-slate-100 shadow-sm dark:shadow-none" />
+            <div className="w-5/6 h-24 bg-slate-50 rounded-xl border border-slate-100 shadow-sm dark:shadow-none" />
           </div>
         </motion.div>
 
@@ -335,7 +335,7 @@ export default function AuthPage() {
               animate={{ rotate: [0, -45, 15, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
             >
-              <Hammer className="w-4 h-4 text-white" />
+              <Hammer className="w-4 h-4 text-slate-900 dark:text-white" />
             </motion.div>
           </div>
           <span className="text-xl font-bold tracking-tight text-slate-900">patch·work</span>
@@ -393,7 +393,7 @@ export default function AuthPage() {
               animate={{ rotate: [0, -45, 15, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
             >
-              <Hammer className="w-4 h-4 text-white" />
+              <Hammer className="w-4 h-4 text-slate-900 dark:text-white" />
             </motion.div>
           </div>
           <span className="text-lg font-bold text-slate-900">patch·work</span>
@@ -401,7 +401,7 @@ export default function AuthPage() {
 
         {/* Removed Tab Switcher for cleaner UI */}
 
-        <div className="w-full max-w-sm sm:max-w-md bg-white border border-slate-200 p-8 sm:p-10 rounded-[32px] shadow-sm">
+        <div className="w-full max-w-sm sm:max-w-md bg-white border border-slate-100 p-8 sm:p-10 rounded-[32px] shadow-sm">
           <AnimatePresence mode="wait">
             {/* ── LOGIN FORM ── */}
             {tab === 'login' && (
@@ -439,7 +439,7 @@ export default function AuthPage() {
                     value={loginForm.email}
                     onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -451,7 +451,7 @@ export default function AuthPage() {
                     value={loginForm.password}
                     onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm dark:shadow-none"
                   />
                   <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -469,7 +469,7 @@ export default function AuthPage() {
                   whileTap={{ scale: loading ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : <>Sign in <ArrowRight className="w-4 h-4" /></>}
                 </motion.button>
@@ -553,7 +553,7 @@ export default function AuthPage() {
                       value={signup.fname}
                       onChange={e => setSignup(s => ({ ...s, fname: e.target.value }))}
                       required
-                      className="w-full pl-9 pr-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
+                      className="w-full pl-9 pr-3 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm dark:shadow-none"
                     />
                   </div>
                   <input
@@ -561,7 +561,7 @@ export default function AuthPage() {
                     placeholder="Last name"
                     value={signup.lname}
                     onChange={e => setSignup(s => ({ ...s, lname: e.target.value }))}
-                    className="w-full px-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
+                    className="w-full px-3 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -574,7 +574,7 @@ export default function AuthPage() {
                     value={signup.email}
                     onChange={e => setSignup(s => ({ ...s, email: e.target.value }))}
                     required
-                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm dark:shadow-none"
                   />
                 </div>
 
@@ -588,7 +588,7 @@ export default function AuthPage() {
                       value={signup.password}
                       onChange={e => setSignup(s => ({ ...s, password: e.target.value }))}
                       required
-                      className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all"
+                      className="w-full pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400 focus:bg-white transition-all shadow-sm dark:shadow-none"
                     />
                     <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -632,7 +632,7 @@ export default function AuthPage() {
                   whileTap={{ scale: (loading || !canSubmitSignup) ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading || !canSubmitSignup}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
                 >
                   {loading
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</>
@@ -666,7 +666,7 @@ export default function AuthPage() {
           <Link to="/privacy" className="hover:text-slate-900 transition-colors duration-200">
             Privacy Policy
           </Link>
-          <span className="text-slate-300">·</span>
+          <span className="text-slate-600 dark:text-slate-300">·</span>
           <Link to="/terms" className="hover:text-slate-900 transition-colors duration-200">
             Terms of Service
           </Link>

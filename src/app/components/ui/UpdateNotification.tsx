@@ -64,23 +64,23 @@ export default function UpdateNotification() {
       <div className="bg-[#242424] border border-white/[0.08] rounded-xl p-5 shadow-2xl">
         <div className="flex gap-4 items-start">
           <div className="bg-white/10 rounded-lg p-1.5 shrink-0 mt-0.5">
-            <Info className="w-5 h-5 text-slate-300" />
+            <Info className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-bold text-[15px] mb-1">A new version of this page is available</h3>
-            <p className="text-slate-400 text-[14px]">Refresh to see the latest changes.</p>
+            <h3 className="text-slate-900 dark:text-white font-bold text-[15px] mb-1">A new version of this page is available</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-[14px]">Refresh to see the latest changes.</p>
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 mt-5">
           <button 
             onClick={() => setHasNewVersion(false)}
-            className="px-4 py-2 rounded-lg text-[13px] font-bold text-slate-300 hover:text-white hover:bg-white/[0.06] transition-colors border border-white/[0.08]"
+            className="px-4 py-2 rounded-lg text-[13px] font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white/[0.06] transition-colors border border-white/[0.08]"
           >
             Not now
           </button>
           <button 
             onClick={() => window.location.reload()}
-            className="px-5 py-2 bg-[#00875A] hover:bg-[#00704A] text-white rounded-lg text-[13px] font-bold transition-colors shadow-sm"
+            className="px-5 py-2 bg-[#00875A] hover:bg-[#00704A] text-slate-900 dark:text-white rounded-lg text-[13px] font-bold transition-colors shadow-sm"
           >
             Refresh
           </button>

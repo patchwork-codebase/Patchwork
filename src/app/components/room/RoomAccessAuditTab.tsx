@@ -71,26 +71,26 @@ function AccessLogRow({ entry }: { entry: AccessLogEntry }) {
             <span className="text-[12px] text-slate-500">{config.label}</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Clock className="w-3 h-3 text-slate-300" />
-            <span className="text-[11px] text-slate-400 font-mono whitespace-nowrap" title={entry.createdAt}>
+            <Clock className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap" title={entry.createdAt}>
               {timeAgo(entry.createdAt)}
             </span>
           </div>
         </div>
         {entry.userEmail && entry.userName && (
-          <p className="text-[11px] text-slate-400 mt-0.5 truncate">{entry.userEmail}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{entry.userEmail}</p>
         )}
         {hasMetadata && (
           <button
             onClick={() => setExpanded(e => !e)}
-            className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600 transition-colors"
+            className="mt-1 flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-600 transition-colors"
           >
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             {expanded ? 'Hide' : 'Show'} details
           </button>
         )}
         {expanded && hasMetadata && (
-          <pre className="mt-2 text-[10px] text-slate-500 bg-slate-50 border border-slate-100 rounded-lg p-2.5 overflow-x-auto font-mono">
+          <pre className="mt-2 text-[10px] text-slate-500 bg-slate-50 border border-slate-100 rounded-lg p-2.5 overflow-x-auto font-mono shadow-sm dark:shadow-none">
             {JSON.stringify(entry.metadata, null, 2)}
           </pre>
         )}
@@ -149,24 +149,24 @@ export function RoomAccessAuditTab({ roomId }: RoomAccessAuditTabProps) {
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-100 rounded-[24px] shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search by name or email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400/50 placeholder:text-slate-400"
+              className="w-full pl-9 pr-4 py-2.5 text-[13px] bg-slate-50 border border-slate-100 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:border-primary-400/50 placeholder:text-slate-500 dark:text-slate-400 shadow-sm dark:shadow-none"
             />
           </div>
           <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <select
               value={filter}
               onChange={e => setFilter(e.target.value)}
-              className="pl-9 pr-8 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-400/30 appearance-none cursor-pointer"
+              className="pl-9 pr-8 py-2.5 text-[13px] bg-slate-50 border border-slate-100 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-400/30 appearance-none cursor-pointer shadow-sm dark:shadow-none"
             >
               {FILTER_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -183,11 +183,11 @@ export function RoomAccessAuditTab({ roomId }: RoomAccessAuditTabProps) {
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12">
-              <Eye className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-              <p className="text-[14px] font-semibold text-slate-400">
+              <Eye className="w-10 h-10 mx-auto mb-3 text-slate-600 dark:text-slate-300" />
+              <p className="text-[14px] font-semibold text-slate-500 dark:text-slate-400">
                 {entries.length === 0 ? 'No access events yet' : 'No events match your filters'}
               </p>
-              <p className="text-[12px] text-slate-300 mt-1">
+              <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-1">
                 Events are recorded as people interact with your room.
               </p>
             </div>
@@ -199,8 +199,8 @@ export function RoomAccessAuditTab({ roomId }: RoomAccessAuditTabProps) {
         </div>
 
         {filtered.length > 0 && (
-          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
-            <p className="text-[11px] text-slate-400 font-medium">
+          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 shadow-sm dark:shadow-none">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
               Showing {filtered.length} of {entries.length} events · All times in local timezone
             </p>
           </div>

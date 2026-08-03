@@ -76,7 +76,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
 
   return (
     <div className="mb-8 space-y-4">
-      <h3 className="text-[14px] font-extrabold text-white flex items-center gap-2 uppercase tracking-widest font-display">
+      <h3 className="text-[14px] font-extrabold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-widest font-display">
         <Github className="w-4 h-4 text-primary-400" /> Review GitHub Drafts
       </h3>
       
@@ -87,17 +87,17 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
           <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <span className="flex items-center gap-1 text-[11px] font-bold text-slate-300 bg-white/5 px-2 py-1 rounded-md">
+                <span className="flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white/5 px-2 py-1 rounded-md">
                   <GitCommit className="w-3 h-3" /> {draft.commit_hash.substring(0, 7)}
                 </span>
                 <span className="text-[12px] text-slate-500">{new Date(draft.created_at).toLocaleString()}</span>
               </div>
-              <h4 className="text-[16px] font-bold text-white mb-2 leading-snug">{draft.commit_title}</h4>
+              <h4 className="text-[16px] font-bold text-slate-900 dark:text-white mb-2 leading-snug">{draft.commit_title}</h4>
               {draft.commit_message && draft.commit_message !== draft.commit_title && (
-                <p className="text-[13px] text-slate-400 mb-3 line-clamp-2">{draft.commit_message}</p>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">{draft.commit_message}</p>
               )}
               {draft.diff_preview && (
-                <div className="bg-ink/50 border border-white/[0.05] rounded-lg p-3 text-[12px] text-slate-300 font-mono whitespace-pre-wrap">
+                <div className="bg-ink/50 border border-white/[0.05] rounded-lg p-3 text-[12px] text-slate-600 dark:text-slate-300 font-mono whitespace-pre-wrap">
                   {draft.diff_preview}
                 </div>
               )}
@@ -115,7 +115,7 @@ export function DraftUpdates({ roomId, profile }: { roomId: string, profile: any
               <button
                 onClick={() => handleDiscard(draft.id)}
                 disabled={publishing === draft.id || discarding === draft.id}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-[13px] font-bold transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[13px] font-bold transition-colors disabled:opacity-50"
               >
                 {discarding === draft.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
                 Discard

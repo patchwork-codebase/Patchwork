@@ -68,13 +68,13 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
       <div className="flex-1 pb-6 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mr-2">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mr-2">
               {config.label}
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Clock className="w-3 h-3 text-slate-300" />
-            <span className="text-[11px] text-slate-400 font-mono whitespace-nowrap">
+            <Clock className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
               {new Date(event.createdAt).toLocaleDateString('en-GB', {
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit'
@@ -83,17 +83,17 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
           </div>
         </div>
 
-        <p className="text-[14px] text-slate-300 font-medium mb-1 leading-snug">
+        <p className="text-[14px] text-slate-600 dark:text-slate-300 font-medium mb-1 leading-snug">
           {event.eventSummary}
         </p>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] text-slate-400 font-medium">
-            by <span className="text-white font-semibold">{event.actorName}</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+            by <span className="text-slate-900 dark:text-white font-semibold">{event.actorName}</span>
           </span>
           {event.versionHash && (
             <span
-              className="text-[9px] font-mono text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full truncate max-w-[180px]"
+              className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-white/5 border border-slate-100 dark:border-white/10 px-2 py-0.5 rounded-full truncate max-w-[180px] shadow-sm dark:shadow-none"
               title={`Integrity hash: ${event.versionHash}`}
             >
               #{event.versionHash.slice(0, 12)}
@@ -104,7 +104,7 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
         {hasData && (
           <button
             onClick={() => setExpanded(e => !e)}
-            className="mt-2 flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 transition-colors focus-ring rounded"
+            className="mt-2 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-600 transition-colors focus-ring rounded"
           >
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             {expanded ? 'Hide' : 'Show'} details
@@ -112,7 +112,7 @@ function TimelineEventRow({ event, index }: { event: BuildTimelineEvent; index: 
         )}
 
         {expanded && hasData && (
-          <pre className="mt-2 text-[11px] text-slate-400 bg-white/5 border border-white/10 rounded-xl p-3 overflow-x-auto font-mono">
+          <pre className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl p-3 overflow-x-auto font-mono shadow-sm dark:shadow-none">
             {JSON.stringify(event.eventData, null, 2)}
           </pre>
         )}
@@ -145,7 +145,7 @@ export function BuildTimelineCard({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900 rounded-[24px] p-6 sm:p-8 relative overflow-hidden border border-slate-800 shadow-xl">
+      <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 sm:p-8 relative overflow-hidden border border-slate-100 dark:border-slate-800 shadow-xl">
         {/* Background effects */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none" />
@@ -158,17 +158,17 @@ export function BuildTimelineCard({
             </div>
             
             <div>
-              <h2 className="text-[22px] sm:text-[26px] font-extrabold text-white font-display mb-1 tracking-tight">{roomTitle}</h2>
-              <p className="text-slate-400 text-[14px] font-medium">
-                Built by <span className="text-white font-semibold">{builderName}</span>
+              <h2 className="text-[22px] sm:text-[26px] font-extrabold text-slate-900 dark:text-white font-display mb-1 tracking-tight">{roomTitle}</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-[14px] font-medium">
+                Built by <span className="text-slate-900 dark:text-white font-semibold">{builderName}</span>
               </p>
             </div>
 
             {authorshipTimestamp && (
-              <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-white/10 w-fit backdrop-blur-sm">
+              <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-slate-100 dark:border-white/10 w-fit backdrop-blur-sm shadow-sm dark:shadow-none">
                 <Clock className="w-4 h-4 text-primary-400" />
-                <span className="text-[12px] text-slate-300 font-mono">
-                  Established <span className="text-white font-semibold">{new Date(authorshipTimestamp).toLocaleDateString('en-GB', {
+                <span className="text-[12px] text-slate-600 dark:text-slate-300 font-mono">
+                  Established <span className="text-slate-900 dark:text-white font-semibold">{new Date(authorshipTimestamp).toLocaleDateString('en-GB', {
                     day: '2-digit', month: 'short', year: 'numeric'
                   })}</span> at {new Date(authorshipTimestamp).toLocaleTimeString('en-GB', {
                     hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
@@ -181,15 +181,15 @@ export function BuildTimelineCard({
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">
                 <Shield className="w-3.5 h-3.5" /> SHA-256 Chain Verified
               </div>
-              <span className="text-xs text-slate-400 font-mono">
-                Build Velocity: <strong className="text-white">{events.length} immutable events</strong>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                Build Velocity: <strong className="text-slate-900 dark:text-white">{events.length} immutable events</strong>
               </span>
             </div>
           </div>
 
           <button
             onClick={handlePrint}
-            className="flex items-center justify-center gap-2 text-[13px] font-bold text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2.5 rounded-xl transition-all focus-ring shadow-lg w-full sm:w-auto shrink-0 group"
+            className="flex items-center justify-center gap-2 text-[13px] font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:text-white bg-white/10 hover:bg-white/20 border border-slate-100 dark:border-white/10 px-5 py-2.5 rounded-xl transition-all focus-ring shadow-lg w-full sm:w-auto shrink-0 group"
           >
             <Download className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
             Export Record
@@ -198,10 +198,10 @@ export function BuildTimelineCard({
       </div>
 
       {/* Timeline */}
-      <div className="bg-[#0a0a0a] border border-white/5 rounded-[24px] p-6 shadow-2xl relative">
+      <div className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[24px] p-6 shadow-2xl relative">
         <div className="flex items-center justify-between mb-6 relative z-10">
-          <h3 className="text-[15px] font-extrabold text-white">Build Timeline</h3>
-          <span className="text-[11px] font-mono text-slate-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full">
+          <h3 className="text-[15px] font-extrabold text-slate-900 dark:text-white">Build Timeline</h3>
+          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-white/5 border border-slate-100 dark:border-white/10 px-2.5 py-1 rounded-full shadow-sm dark:shadow-none">
             {events.length} events
           </span>
         </div>
@@ -211,10 +211,10 @@ export function BuildTimelineCard({
             <div className="w-8 h-8 border-4 border-primary-400 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-slate-500 dark:text-slate-400">
             <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p className="text-[14px] font-semibold text-slate-500">No events yet</p>
-            <p className="text-[12px] mt-1 max-w-xs mx-auto leading-relaxed text-slate-400">
+            <p className="text-[12px] mt-1 max-w-xs mx-auto leading-relaxed text-slate-500 dark:text-slate-400">
               Timeline events are recorded automatically as you build — posting updates, adding decisions, members joining, and more.
             </p>
           </div>

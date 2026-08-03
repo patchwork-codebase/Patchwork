@@ -44,9 +44,9 @@ function IntegrationPill({
         aria-label={`Open ${displayLabel}`}
         className={`group flex items-center gap-2 px-3 py-2 rounded-xl border ${cfg.borderColor} ${cfg.bgColor} transition-all hover:scale-105 hover:shadow-lg active:scale-95 focus-ring`}
       >
-        <IntegrationPlatformIcon platform={integration.platform} className="w-4 h-4 text-white shrink-0" />
+        <IntegrationPlatformIcon platform={integration.platform} className="w-4 h-4 text-slate-900 dark:text-white shrink-0" />
         <div className="flex flex-col gap-0.5">
-          <span className="text-[12px] font-semibold text-white/90 max-w-[100px] truncate hidden sm:block leading-tight">
+          <span className="text-[12px] font-semibold text-slate-900 dark:text-white/90 max-w-[100px] truncate hidden sm:block leading-tight">
             {displayLabel}
           </span>
           {integration.platform === 'notion' && (
@@ -56,7 +56,7 @@ function IntegrationPill({
             </span>
           )}
         </div>
-        <ExternalLink className="w-3 h-3 text-white/40 group-hover:text-white/70 transition-colors shrink-0 hidden sm:block ml-1" />
+        <ExternalLink className="w-3 h-3 text-slate-900 dark:text-white/40 group-hover:text-slate-900 dark:text-white/70 transition-colors shrink-0 hidden sm:block ml-1" />
       </a>
 
       {/* Builder-only remove button */}

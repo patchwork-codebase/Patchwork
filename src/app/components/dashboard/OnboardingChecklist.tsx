@@ -164,7 +164,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40, scale: 0.96 }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="w-full max-w-md bg-white border border-slate-200 rounded-[24px] p-8 relative shadow-xl"
+        className="w-full max-w-md bg-white border border-slate-100 rounded-[24px] p-8 relative shadow-xl"
       >
         <button
           onClick={onClose}
@@ -195,7 +195,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
                     stepId === 'update' && role === 'builder' ? 'e.g. Just decided to drop the mobile-first approach...' :
                       'e.g. I want updates about early-stage product decisions and launch pivots.'
               }
-              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all mb-6 resize-none"
+              className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder-slate-500 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all mb-6 resize-none shadow-sm dark:shadow-none"
             />
           )}
 
@@ -205,7 +205,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
             <select
               value={selectedDomain}
               onChange={(e) => setSelectedDomain(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all shadow-sm dark:shadow-none"
             >
               {DOMAINS.map(d => (
                 <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
@@ -215,7 +215,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
         )}
 
         {stepId === 'room' && role === 'observer' && (
-          <p className="text-[13px] text-slate-600 mb-6 bg-slate-50 border border-slate-200 rounded-xl p-4">
+          <p className="text-[13px] text-slate-600 mb-6 bg-slate-50 border border-slate-100 rounded-xl p-4 shadow-sm dark:shadow-none">
             Explore the Global Timeline tab to find rooms you want to follow. Click "Follow" on any room.
           </p>
         )}
@@ -232,7 +232,7 @@ function StepModal({ stepId, emoji, title, role, userId, userName, onComplete, o
             whileTap={{ scale: saving ? 1 : 0.98 }}
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_16px_rgba(108,92,231,0.3)]"
+            className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_16px_rgba(108,92,231,0.3)]"
           >
             {saving
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
@@ -377,7 +377,7 @@ export function OnboardingChecklist({ role, userId, userName }: OnboardingCheckl
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6 bg-white border border-slate-200 rounded-[20px] p-5 relative overflow-hidden shadow-sm"
+        className="mb-6 bg-white border border-slate-100 rounded-[20px] p-5 relative overflow-hidden shadow-sm"
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[2px] bg-gradient-to-r from-transparent via-primary-400/50 to-transparent" />
 

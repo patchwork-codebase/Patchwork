@@ -29,7 +29,7 @@ export function MetricImpactBadge({ data }: MetricImpactBadgeProps) {
             {data.beforeVal}
             {data.unit}
           </span>
-          <span className="text-slate-400">→</span>
+          <span className="text-slate-500 dark:text-slate-400">→</span>
           <span className="text-emerald-700 font-extrabold">
             {data.afterVal}
             {data.unit}

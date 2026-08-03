@@ -39,10 +39,10 @@ export default function ExpertsDirectory() {
           <AwardIcon className="w-3.5 h-3.5 text-primary-500" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-primary-500">Directory</span>
         </div>
-        <h1 className="text-5xl sm:text-[40px] font-extrabold text-slate-100 font-display tracking-tight leading-tight mb-3">
+        <h1 className="text-5xl sm:text-[40px] font-extrabold text-slate-900 dark:text-slate-100 font-display tracking-tight leading-tight mb-3">
           Expert <span className="text-primary-400">Directory</span>
         </h1>
-        <p className="text-[15px] text-slate-400 font-medium max-w-lg mx-auto mb-8">
+        <p className="text-[15px] text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto mb-8">
           Discover verified experts across Patchwork. Browse by domain, request reviews, and get valuable feedback on your builds.
         </p>
 
@@ -64,33 +64,33 @@ export default function ExpertsDirectory() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-transparent border border-slate-800 rounded-2xl p-5 h-[280px] animate-pulse flex flex-col">
+            <div key={i} className="bg-transparent border border-slate-100 dark:border-slate-800 rounded-2xl p-5 h-[280px] animate-pulse flex flex-col">
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-14 h-14 rounded-full bg-slate-700 shrink-0" />
+                <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
                 <div className="space-y-2 flex-1 pt-1">
-                  <div className="h-4 bg-slate-700 rounded w-2/3" />
-                  <div className="h-3 bg-slate-700 rounded w-1/2" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+                  <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2" />
                 </div>
               </div>
               <div className="flex gap-2 mb-4">
-                <div className="h-6 bg-slate-700 rounded w-16" />
-                <div className="h-6 bg-slate-700 rounded w-20" />
+                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-16" />
+                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-20" />
               </div>
               <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="h-14 bg-slate-700 rounded-xl" />
-                <div className="h-14 bg-slate-700 rounded-xl" />
+                <div className="h-14 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+                <div className="h-14 bg-slate-200 dark:bg-slate-700 rounded-xl" />
               </div>
               <div className="mt-auto flex justify-between items-center">
-                <div className="h-8 bg-slate-700 rounded w-20" />
-                <div className="h-9 bg-slate-700 rounded-xl w-28" />
+                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-20" />
+                <div className="h-9 bg-slate-200 dark:bg-slate-700 rounded-xl w-28" />
               </div>
             </div>
           ))}
         </div>
       ) : experts.length === 0 ? (
-        <div className="bg-transparent border border-slate-800 rounded-[32px] px-6 py-16 text-center">
-          <p className="text-slate-100 font-bold text-lg">No experts found</p>
-          <p className="text-slate-400 text-sm mt-2">Try adjusting your filters or search query.</p>
+        <div className="bg-transparent border border-slate-100 dark:border-slate-800 rounded-[32px] px-6 py-16 text-center">
+          <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">No experts found</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">Try adjusting your filters or search query.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

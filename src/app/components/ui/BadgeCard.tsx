@@ -57,7 +57,7 @@ export function BadgeCard({ badge, userBadge, className = '' }: BadgeCardProps) 
       )}
       
       {isEarned && badge.badge_type !== 'level' && (
-        <button className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 hover:bg-white/30 rounded-full p-1.5 text-white">
+        <button className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/20 hover:bg-white/30 rounded-full p-1.5 text-slate-900 dark:text-white">
           <Icons.Share2 className="w-3 h-3" />
         </button>
       )}

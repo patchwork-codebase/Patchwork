@@ -37,7 +37,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
           setIsOpen(!isOpen);
           setSearch("");
         }}
-        className="w-full flex items-center justify-between px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[14px] text-white focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all disabled:opacity-50 text-left cursor-pointer"
+        className="w-full flex items-center justify-between px-3 py-3.5 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] rounded-xl text-[14px] text-slate-900 dark:text-white focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all disabled:opacity-50 text-left cursor-pointer"
       >
         <span className={selectedOption ? "text-white font-medium truncate" : "text-slate-500 font-medium truncate"}>
           {displayLabel}
@@ -70,7 +70,7 @@ function SearchableSelect({ label, value, onChange, options, disabled, searchabl
                   placeholder={`Search ${label.toLowerCase()}...`}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 transition-all mb-2"
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-[13px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 transition-all mb-2"
                 />
               )}
               <div className="flex-1 overflow-y-auto max-h-[180px] space-y-0.5 pr-1">
@@ -254,10 +254,10 @@ export default function OnboardingWizard() {
               className="flex flex-col h-full"
             >
               <div className="text-center mb-8">
-                <h2 className="text-[28px] font-extrabold text-white tracking-tight mb-2">
+                <h2 className="text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
                   Welcome to Patchwork
                 </h2>
-                <p className="text-[15px] text-slate-400 leading-relaxed">
+                <p className="text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   How do you plan to use the platform?
                 </p>
               </div>
@@ -270,8 +270,8 @@ export default function OnboardingWizard() {
                   <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'builder' ? 'bg-primary-400' : 'bg-white/[0.05]'}`}>
                     <Hammer className={`w-6 h-6 ${userRole === 'builder' ? 'text-white' : 'text-slate-400'}`} />
                   </div>
-                  <h3 className="text-[18px] font-bold text-white mb-2">Builder</h3>
-                  <p className="text-[13px] text-slate-400">I want to share my work and build in public.</p>
+                  <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mb-2">Builder</h3>
+                  <p className="text-[13px] text-slate-500 dark:text-slate-400">I want to share my work and build in public.</p>
                 </button>
                 <button
                   onClick={() => setUserRole('observer')}
@@ -280,15 +280,15 @@ export default function OnboardingWizard() {
                   <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${userRole === 'observer' ? 'bg-primary-400' : 'bg-white/[0.05]'}`}>
                     <Eye className={`w-6 h-6 ${userRole === 'observer' ? 'text-white' : 'text-slate-400'}`} />
                   </div>
-                  <h3 className="text-[18px] font-bold text-white mb-2">Observer</h3>
-                  <p className="text-[13px] text-slate-400">I want to discover and follow other builders.</p>
+                  <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mb-2">Observer</h3>
+                  <p className="text-[13px] text-slate-500 dark:text-slate-400">I want to discover and follow other builders.</p>
                 </button>
               </div>
 
               <div className="mt-auto pt-4 flex gap-3">
                 <button
                   onClick={handleNext}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </button>
@@ -306,10 +306,10 @@ export default function OnboardingWizard() {
               className="flex flex-col h-full"
             >
               <div className="text-center mb-8">
-                <h2 className="text-[28px] font-extrabold text-white tracking-tight mb-2">
+                <h2 className="text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
                   {role === 'builder' ? 'What do you build?' : 'What are you tracking?'}
                 </h2>
-                <p className="text-[15px] text-slate-400 leading-relaxed">
+                <p className="text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   {role === 'builder' 
                     ? "Set your primary domain so we can match you with the right observers." 
                     : "Tell us what domains you are interested in observing."}
@@ -333,7 +333,7 @@ export default function OnboardingWizard() {
                     value={interestsText}
                     onChange={e => setInterestsText(e.target.value)}
                     placeholder="e.g. Product Design, Fintech, Growth Strategies..."
-                    className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all resize-none"
+                    className="w-full px-4 py-3.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-[14px] text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-primary-400/50 focus:ring-1 focus:ring-primary-400/30 transition-all resize-none"
                   />
                   <p className="text-[12px] text-slate-500 mt-2">Comma separated values work best.</p>
                 </div>
@@ -343,7 +343,7 @@ export default function OnboardingWizard() {
                 <button
                   onClick={handleNext}
                   disabled={role === 'builder' ? !builderType || builderType !== 'product-manager' : !interestsText}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </button>
@@ -362,10 +362,10 @@ export default function OnboardingWizard() {
               className="flex flex-col h-full"
             >
               <div className="text-center mb-8">
-                <h2 className="text-[28px] font-extrabold text-white tracking-tight mb-2">
+                <h2 className="text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
                   Where are you based?
                 </h2>
-                <p className="text-[15px] text-slate-400 leading-relaxed">
+                <p className="text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   Add your location to connect with local builders and observers. (Optional)
                 </p>
               </div>
@@ -422,14 +422,14 @@ export default function OnboardingWizard() {
               <div className="mt-auto pt-4 flex gap-3">
                 <button
                   onClick={() => setStep(1)}
-                  className="px-6 py-3.5 bg-white/[0.05] hover:bg-white/[0.08] text-white text-[14px] font-bold rounded-xl transition-all"
+                  className="px-6 py-3.5 bg-white/[0.05] hover:bg-white/[0.08] text-slate-900 dark:text-white text-[14px] font-bold rounded-xl transition-all"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-primary-500 to-primary-400 hover:opacity-90 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-[0_4px_20px_rgba(108,92,231,0.3)]"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Completing setup...</> : <>Complete Setup <Check className="w-4 h-4" /></>}
                 </button>

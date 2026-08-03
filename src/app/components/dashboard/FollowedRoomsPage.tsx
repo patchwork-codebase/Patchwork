@@ -85,7 +85,7 @@ export default function FollowedRoomsPage() {
         </div>
         <Link
           to="/dashboard/explore"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all focus-ring whitespace-nowrap"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all focus-ring whitespace-nowrap shadow-sm dark:shadow-none"
         >
           <Search className="w-4 h-4" />
           Discover more
@@ -93,7 +93,7 @@ export default function FollowedRoomsPage() {
       </div>
 
       {rooms.length === 0 ? (
-        <div className="bg-white border border-slate-200 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center text-center">
+        <div className="bg-white border border-slate-100 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-sm dark:shadow-none">
           <div className="w-16 h-16 rounded-2xl bg-primary-500/10 text-primary-500 flex items-center justify-center mb-6">
             <Compass className="w-8 h-8" />
           </div>
@@ -110,7 +110,7 @@ export default function FollowedRoomsPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="divide-y divide-slate-100">
             {rooms.map((room) => (
               <div 
@@ -178,7 +178,7 @@ export default function FollowedRoomsPage() {
                         )}
                       </button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-white border border-slate-200 sm:rounded-[24px]">
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()} className="bg-white border border-slate-100 sm:rounded-[24px] shadow-sm dark:shadow-none">
                       <AlertDialogHeader>
                         <AlertDialogTitle className="text-[20px] font-display font-bold">Unfollow room?</AlertDialogTitle>
                         <AlertDialogDescription>

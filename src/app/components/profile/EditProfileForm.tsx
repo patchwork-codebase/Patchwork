@@ -32,7 +32,7 @@ function CustomSelect({ value, onChange, options, label }: { value: string, onCh
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-lg overflow-hidden py-1">
           {options.map(option => (
             <button
               key={option.value}
@@ -113,7 +113,7 @@ export function EditProfileForm({
                     <input
                       value={editForm.name}
                       onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                      className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium"
+                      className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all font-medium shadow-sm dark:shadow-none"
                       placeholder="Your name"
                     />
                   </div>
@@ -124,13 +124,13 @@ export function EditProfileForm({
                       onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))}
                       rows={3}
                       placeholder="Tell observers about yourself..."
-                      className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all resize-none font-medium"
+                      className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[14px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all resize-none font-medium shadow-sm dark:shadow-none"
                     />
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2">Role</label>
                     <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-2 px-4 py-2 border border-slate-200 bg-slate-50 rounded-xl text-[13px] font-bold text-slate-900 w-fit capitalize">
+                      <div className="flex items-center gap-2 px-4 py-2 border border-slate-100 bg-slate-50 rounded-xl text-[13px] font-bold text-slate-900 w-fit capitalize shadow-sm dark:shadow-none">
                         {profile.role === 'builder' ? <Hammer className="w-4 h-4 text-primary-500" /> : <Eye className="w-4 h-4 text-slate-500" />}
                         {profile.role}
                       </div>
@@ -167,7 +167,7 @@ export function EditProfileForm({
                               type="button"
                               onClick={handleUpgrade}
                               disabled={isSubmittingUpgrade || !upgradeDomain}
-                              className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[13px] font-bold transition-all shadow-sm disabled:opacity-50"
+                              className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl text-[13px] font-bold transition-all shadow-sm disabled:opacity-50"
                             >
                               <Check className="w-4 h-4" /> {isSubmittingUpgrade ? 'Upgrading...' : 'Confirm Upgrade'}
                             </button>
@@ -202,7 +202,7 @@ export function EditProfileForm({
 
                   {/* Expert Settings Form */}
                   {profile.isVerifiedExpert && (
-                    <div className="pt-6 mt-2 border-t border-slate-200 space-y-5">
+                    <div className="pt-6 mt-2 border-t border-slate-100 space-y-5">
                       <div>
                         <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-1">Expert Availability</h3>
                         <p className="text-[12px] text-slate-600">Manage your review capacity and response times.</p>
@@ -230,7 +230,7 @@ export function EditProfileForm({
                             max="20"
                             value={editForm.expert_open_slots}
                             onChange={e => setEditForm(f => ({ ...f, expert_open_slots: parseInt(e.target.value) || 0 }))}
-                            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all shadow-sm"
+                            className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all shadow-sm"
                           />
                         </div>
                         <div>
@@ -241,7 +241,7 @@ export function EditProfileForm({
                             max="168"
                             value={editForm.expert_avg_response_hours}
                             onChange={e => setEditForm(f => ({ ...f, expert_avg_response_hours: parseInt(e.target.value) || 24 }))}
-                            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all shadow-sm"
+                            className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-900 w-full focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 transition-all shadow-sm"
                           />
                         </div>
                       </div>
@@ -249,7 +249,7 @@ export function EditProfileForm({
                   )}
 
                   {/* Notification Settings Form */}
-                  <div className="pt-6 mt-2 border-t border-slate-200 space-y-5">
+                  <div className="pt-6 mt-2 border-t border-slate-100 space-y-5">
                     <div>
                       <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest mb-1">Notification Preferences</h3>
                       <p className="text-[12px] text-slate-600">Choose how you want to be notified about activity.</p>

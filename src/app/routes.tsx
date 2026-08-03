@@ -142,6 +142,18 @@ export const router = createBrowserRouter([
         path: "/room/:id",
         lazy: () => import("./components/room/BuildRoom").then(m => ({ Component: m.default })),
       },
+      {
+        path: "/pm-studio",
+        lazy: () => import("./components/pm-studio/PMStudioLayout").then(m => ({ Component: m.default })),
+        children: [
+          { index: true, lazy: () => import("./components/pm-studio/PMStudioDashboard").then(m => ({ Component: m.default })) },
+          { path: "decisions", lazy: () => import("./components/pm-studio/PMDecisionList").then(m => ({ Component: m.default })) },
+          { path: "decisions/:id", lazy: () => import("./components/pm-studio/PMDecisionSimulator").then(m => ({ Component: m.default })) },
+          { path: "case-studies", lazy: () => import("./components/pm-studio/PMCaseStudyList").then(m => ({ Component: m.default })) },
+          { path: "case-studies/:id", lazy: () => import("./components/pm-studio/PMScenarioPlayer").then(m => ({ Component: m.default })) },
+          { path: "profile", lazy: () => import("./components/pm-studio/PMProfile").then(m => ({ Component: m.default })) },
+        ]
+      },
 
       // Authenticated dashboard shell
       {

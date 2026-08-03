@@ -45,14 +45,22 @@ import { RecruiterComparison } from "./RecruiterComparison";
 import { RecruiterArtifact } from "./RecruiterArtifact";
 import { RecruiterCTA } from "./RecruiterCTA";
 import { domainOptions, detailedRooms, showcaseBuilders, workflowSteps, faqs } from "../../constants/landingData";
-
+import { PMHero } from "./PMHero";
+import { PMFeatures } from "./PMFeatures";
+import { FounderHero } from "./FounderHero";
+import { FounderFeatures } from "./FounderFeatures";
+import { DesignerHero } from "./DesignerHero";
+import { DesignerFeatures } from "./DesignerFeatures";
+import { HRHero } from "./HRHero";
+import { HRFeatures } from "./HRFeatures";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, loading } = useAuth();
   const [screen, setScreen] = useState<"landing" | "onboarding" | "dashboard">("landing");
-  const [audience, setAudience] = useState<'builders' | 'observers'>('builders');
+  const [audienceDropdownOpen, setAudienceDropdownOpen] = useState(false);
+  const [audience, setAudience] = useState<'builders' | 'observers' | 'pms' | 'founders' | 'designers' | 'hrs'>('builders');
 
   // Auto-redirect if already logged in
   useEffect(() => {
@@ -238,21 +246,43 @@ export default function LandingPage() {
             <span className="font-black text-[#0f172a] tracking-tight text-xl">patchwork</span>
           </div>
 
-          <div className="hidden md:flex items-center">
-            <div className="flex bg-[#111111] rounded-full p-0.5 border border-[#222222]">
-              <button 
-                onClick={() => setAudience('builders')}
-                className={`text-xs font-bold px-3.5 py-1 rounded-full shadow-sm transition ${audience === 'builders' ? 'text-white bg-black' : 'text-slate-400 hover:text-white bg-transparent'}`}
-              >
-                For builders
-              </button>
-              <button 
-                onClick={() => setAudience('observers')}
-                className={`text-xs font-bold px-3.5 py-1 rounded-full shadow-sm transition ${audience === 'observers' ? 'text-white bg-black' : 'text-slate-400 hover:text-white bg-transparent'}`}
-              >
-                For observers
-              </button>
-            </div>
+          <div className="hidden md:flex items-center relative">
+            <button 
+              onClick={() => setAudienceDropdownOpen(!audienceDropdownOpen)}
+              className="flex items-center gap-2 bg-[#111111] hover:bg-[#222222] text-white px-4 py-1.5 rounded-full border border-[#333333] shadow-sm transition text-xs font-bold"
+            >
+              {audience === 'builders' && "For builders"}
+              {audience === 'designers' && "For designers"}
+              {audience === 'pms' && "For PMs"}
+              {audience === 'founders' && "For founders"}
+              {audience === 'hrs' && "For HRs"}
+              {audience === 'observers' && "For observers"}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${audienceDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {audienceDropdownOpen && (
+              <div className="absolute top-full mt-2 left-0 w-48 bg-[#111111] border border-[#222222] rounded-xl shadow-xl overflow-hidden py-1 z-50">
+                {[
+                  { id: 'builders', label: 'For builders' },
+                  { id: 'designers', label: 'For designers' },
+                  { id: 'pms', label: 'For PMs' },
+                  { id: 'founders', label: 'For founders' },
+                  { id: 'hrs', label: 'For HRs' },
+                  { id: 'observers', label: 'For observers' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setAudience(item.id as any);
+                      setAudienceDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${audience === item.id ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -290,21 +320,25 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-4 right-4 mt-2 bg-white/70 backdrop-blur-3xl border border-white/50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] p-2.5 rounded-[24px] sm:hidden flex flex-col gap-2 z-50 overflow-hidden ring-1 ring-slate-900/5"
+            className="absolute top-full left-4 right-4 mt-2 bg-white/70 backdrop-blur-3xl border border-white/50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] p-2.5 rounded-[24px] sm:hidden flex flex-col z-50 overflow-hidden ring-1 ring-slate-900/5"
           >
-            <div className="flex bg-slate-900/5 p-1 rounded-[16px]">
-              <button 
-                onClick={() => { setAudience('builders'); setMobileMenuOpen(false); }}
-                className={`flex-1 text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-center ${audience === 'builders' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500'}`}
-              >
-                For builders
-              </button>
-              <button 
-                onClick={() => { setAudience('observers'); setMobileMenuOpen(false); }}
-                className={`flex-1 text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-center ${audience === 'observers' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500'}`}
-              >
-                For observers
-              </button>
+            <div className="flex flex-col gap-1 bg-slate-100 p-2 rounded-[16px] mb-2">
+              {[
+                { id: 'builders', label: 'For builders' },
+                { id: 'designers', label: 'For designers' },
+                { id: 'pms', label: 'For PMs' },
+                { id: 'founders', label: 'For founders' },
+                { id: 'hrs', label: 'For HRs' },
+                { id: 'observers', label: 'For observers' },
+              ].map((item) => (
+                <button 
+                  key={item.id}
+                  onClick={() => { setAudience(item.id as any); setMobileMenuOpen(false); }}
+                  className={`text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-left ${audience === item.id ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500 hover:bg-white/50'}`}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
             
             <div className="flex flex-col gap-1 mt-1">
@@ -340,6 +374,66 @@ export default function LandingPage() {
             <LandingTargetAudience />
             <LandingSlider />
             <LandingWorkflowCapstone />
+            <LandingTestimonials />
+            <LandingFAQs />
+            <LandingFooter 
+              newsletterEmail={newsletterEmail}
+              setNewsletterEmail={setNewsletterEmail}
+              newsletterSent={newsletterSent}
+              handleNewsletterSubmit={handleNewsletterSubmit}
+            />
+          </>
+        )}
+
+        {screen === "landing" && audience === 'designers' && (
+          <>
+            <DesignerHero onSignup={showOnboarding} />
+            <DesignerFeatures />
+            <LandingTestimonials />
+            <LandingFAQs />
+            <LandingFooter 
+              newsletterEmail={newsletterEmail}
+              setNewsletterEmail={setNewsletterEmail}
+              newsletterSent={newsletterSent}
+              handleNewsletterSubmit={handleNewsletterSubmit}
+            />
+          </>
+        )}
+
+        {screen === "landing" && audience === 'pms' && (
+          <>
+            <PMHero onSignup={showOnboarding} />
+            <PMFeatures />
+            <LandingTestimonials />
+            <LandingFAQs />
+            <LandingFooter 
+              newsletterEmail={newsletterEmail}
+              setNewsletterEmail={setNewsletterEmail}
+              newsletterSent={newsletterSent}
+              handleNewsletterSubmit={handleNewsletterSubmit}
+            />
+          </>
+        )}
+
+        {screen === "landing" && audience === 'founders' && (
+          <>
+            <FounderHero onSignup={showOnboarding} />
+            <FounderFeatures />
+            <LandingTestimonials />
+            <LandingFAQs />
+            <LandingFooter 
+              newsletterEmail={newsletterEmail}
+              setNewsletterEmail={setNewsletterEmail}
+              newsletterSent={newsletterSent}
+              handleNewsletterSubmit={handleNewsletterSubmit}
+            />
+          </>
+        )}
+
+        {screen === "landing" && audience === 'hrs' && (
+          <>
+            <HRHero onSignup={showOnboarding} />
+            <HRFeatures />
             <LandingTestimonials />
             <LandingFAQs />
             <LandingFooter 

@@ -175,7 +175,7 @@ export function StatsStrip({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.05 }}
           key={s.label}
-          className="bg-[#0a0a0a] border border-white/5 rounded-[20px] p-5 flex min-h-[140px] flex-col justify-between group hover:border-white/10 hover:bg-[#111] hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300 cursor-default min-w-[160px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring relative overflow-hidden"
+          className="bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 rounded-[20px] p-5 flex min-h-[140px] flex-col justify-between group hover:border-slate-300 dark:hover:border-slate-100 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-[#111] hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300 cursor-default min-w-[160px] shrink-0 snap-center sm:min-w-0 flex-1 focus-ring relative overflow-hidden"
           tabIndex={0}
         >
           {/* Subtle background glow on hover */}
@@ -193,7 +193,7 @@ export function StatsStrip({
           ) : (
             <div className="flex flex-col h-full relative z-10">
               <div className="flex justify-between items-start w-full mb-3">
-                <div className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-1 group-hover:text-slate-300 transition-colors">
+                <div className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1 group-hover:text-slate-700 dark:group-hover:text-slate-600 dark:text-slate-300 transition-colors">
                   {s.label}
                 </div>
                 {s.icon && (
@@ -202,7 +202,7 @@ export function StatsStrip({
                   </div>
                 )}
               </div>
-              <div className={`font-black text-[38px] font-display tracking-tight leading-none mb-4 ${s.numColor} drop-shadow-sm`}>
+              <div className={`font-black text-[38px] font-display tracking-tight leading-none mb-4 text-slate-900 dark:text-white drop-shadow-sm`}>
                 {s.value}
               </div>
               <div className="mt-auto">

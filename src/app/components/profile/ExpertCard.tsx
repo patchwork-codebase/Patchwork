@@ -14,7 +14,7 @@ export function ExpertCard({ profile }: ExpertCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="relative mb-8 overflow-hidden rounded-[24px] bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-xl shadow-primary-500/5 transition-all duration-300 hover:shadow-primary-500/10 hover:border-primary-500/30 group"
+      className="relative mb-8 overflow-hidden rounded-[24px] bg-white dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 shadow-xl shadow-primary-500/5 transition-all duration-300 hover:shadow-primary-500/10 hover:border-primary-500/30 group"
     >
       {/* Decorative background glow */}
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary-400/15 dark:bg-primary-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none transition-transform duration-700 group-hover:scale-110" />
@@ -45,7 +45,7 @@ export function ExpertCard({ profile }: ExpertCardProps) {
                 Accepting Requests
               </span>
             ) : (
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-3 py-1.5 rounded-full">
                 Currently Unavailable
               </span>
             )}
@@ -60,7 +60,7 @@ export function ExpertCard({ profile }: ExpertCardProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
                 key={d} 
-                className="px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[12px] font-semibold transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10 dark:hover:text-primary-400 dark:hover:border-primary-500/30 cursor-default"
+                className="px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[12px] font-semibold transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-500/10 dark:hover:text-primary-400 dark:hover:border-primary-500/30 cursor-default shadow-sm dark:shadow-none"
               >
                 {d}
               </motion.span>
@@ -81,7 +81,7 @@ export function ExpertCard({ profile }: ExpertCardProps) {
               whileHover={{ y: -4, scale: 1.03 }} 
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               key={label} 
-              className="relative overflow-hidden bg-white/50 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-4 text-center shadow-sm hover:shadow-md transition-all group/stat"
+              className="relative overflow-hidden bg-white/50 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-100/60 dark:border-slate-700/60 rounded-2xl p-4 text-center shadow-sm hover:shadow-md transition-all group/stat"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 pointer-events-none" />
               <div className={`w-8 h-8 mx-auto mb-3 rounded-full flex items-center justify-center bg-slate-50 dark:bg-slate-800/80 group-hover/stat:scale-110 transition-transform ${color}`}>

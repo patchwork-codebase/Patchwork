@@ -74,7 +74,7 @@ export const INTEGRATION_CONFIG: Record<string, {
     description: 'Repository',
     color: 'text-white',
     bgColor: 'bg-[#24292e]',
-    borderColor: 'border-white/20',
+    borderColor: 'border-slate-300 dark:border-white/20',
     patterns: [/github\.com\/[\w-]+\/[\w.-]+/i],
   },
   figma: {
@@ -90,7 +90,7 @@ export const INTEGRATION_CONFIG: Record<string, {
     description: 'Document',
     color: 'text-white',
     bgColor: 'bg-[#1e1e1e]',
-    borderColor: 'border-white/20',
+    borderColor: 'border-slate-300 dark:border-white/20',
     patterns: [/notion\.so\//i, /notion\.site\//i],
   },
   linear: {

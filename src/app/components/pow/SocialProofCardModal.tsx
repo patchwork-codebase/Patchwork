@@ -28,14 +28,14 @@ export function SocialProofCardModal({ update, isOpen, onClose }: SocialProofCar
             <Sparkles className="w-5 h-5 text-primary-500" />
             <h3 className="font-bold text-slate-900 text-base">Share Proof of Work Card</h3>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 cursor-pointer">
+          <button onClick={onClose} className="rounded-lg p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* The OpenGraph Social Preview Card */}
         <div className="p-6 bg-slate-50 flex justify-center">
-          <div className="w-full rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-xl border border-indigo-500/20 relative overflow-hidden">
+          <div className="w-full rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-slate-900 dark:text-white shadow-xl border border-indigo-500/20 relative overflow-hidden">
             {/* Background Accent Glow */}
             <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-primary-500/20 blur-3xl pointer-events-none" />
 
@@ -46,7 +46,7 @@ export function SocialProofCardModal({ update, isOpen, onClose }: SocialProofCar
                   {update.authorName ? update.authorName.charAt(0) : "B"}
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm leading-tight">{update.authorName || "Builder"}</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm leading-tight">{update.authorName || "Builder"}</h4>
                   <span className="text-[11px] text-indigo-300 font-medium">Patchwork Builder</span>
                 </div>
               </div>
@@ -57,7 +57,7 @@ export function SocialProofCardModal({ update, isOpen, onClose }: SocialProofCar
             </div>
 
             {/* Post Content */}
-            <p className="text-slate-100 text-sm leading-relaxed font-medium mb-4 line-clamp-4">
+            <p className="text-slate-900 dark:text-slate-100 text-sm leading-relaxed font-medium mb-4 line-clamp-4">
               "{update.content}"
             </p>
 
@@ -70,13 +70,13 @@ export function SocialProofCardModal({ update, isOpen, onClose }: SocialProofCar
         </div>
 
         {/* Action Controls */}
-        <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3">
+        <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3 shadow-sm dark:shadow-none">
           <span className="text-xs text-slate-500">Ready to post on Twitter / LinkedIn</span>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyLink}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer shadow-sm dark:shadow-none"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied Link" : "Copy Link"}
@@ -84,7 +84,7 @@ export function SocialProofCardModal({ update, isOpen, onClose }: SocialProofCar
 
             <button
               onClick={onClose}
-              className="px-5 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="px-5 py-2 rounded-xl bg-slate-900 text-slate-900 dark:text-white font-bold text-xs hover:bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Share2 className="w-3.5 h-3.5" /> Done
             </button>

@@ -94,8 +94,8 @@ export default function Layout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="flex items-center gap-2.5 text-slate-400 font-mono text-[13px]">
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex items-center justify-center">
+        <div className="flex items-center gap-2.5 text-slate-500 dark:text-slate-400 font-mono text-[13px]">
           <div className="w-4.5 h-4.5 rounded-full border-2 border-primary-500/20 border-t-primary-500 animate-spin" />
           Loading Patchwork…
         </div>
@@ -118,7 +118,7 @@ export default function Layout() {
   const userDisplayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0a] text-slate-300 pb-[env(safe-area-inset-bottom)] lg:pb-0">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-slate-300 pb-[env(safe-area-inset-bottom)] lg:pb-0 transition-colors duration-300">
       {/* Global Navigation Progress Bar */}
       {navigation.state === 'loading' && (
         <div className="fixed top-0 left-0 w-full h-1 z-[100] bg-primary-400/20 overflow-hidden">
@@ -194,7 +194,7 @@ export default function Layout() {
           handleSignOut={handleSignOut}
         />
 
-        <main className="flex-1 min-w-0 min-h-[calc(100vh-60px)] bg-[#0a0a0a] pb-28">
+        <main className="flex-1 min-w-0 min-h-[calc(100vh-60px)] bg-slate-50 dark:bg-[#0a0a0a] pb-28 transition-colors duration-300">
           <div className="h-full">
 
             <Suspense fallback={
@@ -209,7 +209,7 @@ export default function Layout() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-white border border-slate-100 rounded-[28px] overflow-hidden" style={{ animationDelay: `${i * 60}ms` }}>
+                    <div key={i} className="bg-white border border-slate-100 rounded-[28px] overflow-hidden shadow-sm dark:shadow-none" style={{ animationDelay: `${i * 60}ms` }}>
                       <div className="h-[140px] bg-slate-100 animate-pulse" />
                       <div className="p-6">
                         <div className="h-5 w-3/4 bg-slate-200 animate-pulse rounded-lg mb-3" />
