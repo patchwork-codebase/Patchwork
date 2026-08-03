@@ -38,14 +38,10 @@ const ThemeToggleBtn = () => {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="flex w-full items-center justify-between px-3 py-2.5 rounded-[12px] transition-all group text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/5 font-medium mb-4"
+      className="flex items-center justify-center p-2.5 w-10 h-10 rounded-[12px] transition-all group text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/5 font-medium mb-4 ml-1"
+      title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     >
-      <div className="flex items-center gap-3">
-        <div className="text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:text-white">
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </div>
-        <span className="text-[13px] tracking-wide">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-      </div>
+      {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
     </button>
   );
 };

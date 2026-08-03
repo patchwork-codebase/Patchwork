@@ -188,7 +188,7 @@ export function RoomFeed({
           const isTarget = update.id === updateIdToScroll;
 
           return (
-            <div key={update.id} id={`update-${update.id}`} className={`w-full max-w-full bg-white dark:bg-[#0a0a0a] border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] ${isTarget ? 'border-primary-400/50 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400/50' : 'border-slate-100 dark:border-white/5 shadow-2xl hover:border-slate-200 dark:border-white/10'}`} tabIndex={0}>
+            <div key={update.id} id={`update-${update.id}`} className={`w-full max-w-full bg-white dark:bg-[#0a0a0a] border rounded-[24px] p-6 md:p-8 relative overflow-hidden group focus-ring mb-6 transition-all duration-700 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-md ${isTarget ? 'border-primary-400/50 shadow-[0_0_30px_rgba(139,124,248,0.15)] ring-1 ring-primary-400/50' : 'border-slate-100 dark:border-white/5 shadow-sm hover:border-slate-200 dark:border-white/10'}`} tabIndex={0}>
               {isTarget && (
                 <div className="absolute inset-0 bg-primary-400/5 pointer-events-none animate-pulse" />
               )}

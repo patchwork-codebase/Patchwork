@@ -128,7 +128,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   return (
     <div
       onClick={toggleComments}
-      className="w-full max-w-full bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 shadow-2xl rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:border-slate-300 dark:hover:border-slate-100 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-[#111] transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
+      className="w-full max-w-full bg-white dark:bg-[#0a0a0a] border border-slate-100 dark:border-white/5 shadow-sm rounded-[24px] mb-4 px-4 py-5 sm:p-6 sm:px-8 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-md hover:border-slate-300 dark:hover:border-slate-100 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-[#111] transition-all duration-300 cursor-pointer relative overflow-hidden group focus-ring"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') toggleComments();
