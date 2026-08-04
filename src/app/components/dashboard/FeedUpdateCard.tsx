@@ -283,6 +283,8 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                   onCancel={() => setIsReplying(false)}
                   onSubmit={async (text) => {
                     const newReply = {
+                      id: `${update.roomId}-reply-${update.id}-${user!.id}-${Date.now()}`,
+                      room_id: update.roomId,
                       update_id: update.id,
                       observer_id: user!.id,
                       observer_name: profile?.name || user!.email?.split('@')[0] || 'Observer',

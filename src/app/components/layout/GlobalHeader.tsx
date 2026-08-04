@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { Bell } from "lucide-react";
+import { ThemeToggleBtn } from "../ui/ThemeToggleBtn";
 
 interface GlobalHeaderProps {
   unreadCount: number;
@@ -26,6 +27,7 @@ export function GlobalHeader({ unreadCount }: GlobalHeaderProps) {
           </Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
+          <ThemeToggleBtn className="w-[36px] h-[36px] sm:hidden bg-slate-50 dark:bg-[#111111] hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-100 dark:border-white/10 rounded-full" />
           <Link
             to="/dashboard/notifications"
             className="flex sm:hidden relative items-center justify-center w-[36px] h-[36px] bg-white dark:bg-[#111111] hover:bg-white/5 border border-slate-100 dark:border-white/10 rounded-full text-slate-500 dark:text-slate-400 transition-colors shadow-sm dark:shadow-none"

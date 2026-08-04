@@ -64,14 +64,14 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
 
       <div className="relative pt-6 px-4 pb-8 sm:px-8 sm:pb-10 text-center">
         {/* Wavy Banner Background */}
-        <div className="absolute top-0 left-0 right-0 h-[180px] sm:h-[220px] rounded-t-[24px] sm:rounded-t-[32px] overflow-hidden -z-10 bg-gradient-to-br from-primary-900/40 via-[#111111] to-[#0a0a0a]">
+        <div className="absolute top-0 left-0 right-0 h-[180px] sm:h-[220px] rounded-t-[24px] sm:rounded-t-[32px] overflow-hidden -z-10 bg-slate-100 dark:bg-gradient-to-br dark:from-primary-900/40 dark:via-[#111111] dark:to-[#0a0a0a]">
           <img
             src={profile?.coverUrl ? optimizeCloudinaryUrl(profile.coverUrl, 1200) : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"}
             alt="Cover Background"
             className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-30"
           />
           <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 120" fill="none" preserveAspectRatio="none">
-            <path d="M0,0 C320,100 420,-40 720,20 C1020,80 1120,0 1440,60 L1440,120 L0,120 Z" fill="#0a0a0a"/>
+            <path d="M0,0 C320,100 420,-40 720,20 C1020,80 1120,0 1440,60 L1440,120 L0,120 Z" className="fill-white dark:fill-[#0a0a0a]"/>
           </svg>
         </div>
 
@@ -84,7 +84,7 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
 
         {/* Avatar */}
         <div className="relative mx-auto mt-4 sm:mt-8 group w-fit">
-          <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] rounded-full ring-[4px] sm:ring-[6px] ring-[#0a0a0a] shadow-sm overflow-hidden relative bg-white dark:bg-[#111111]">
+          <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] rounded-full ring-[4px] sm:ring-[6px] ring-white dark:ring-[#0a0a0a] shadow-sm overflow-hidden relative bg-white dark:bg-[#111111]">
             <UserAvatar 
               userId={profile?.id} 
               name={profile?.name} 
@@ -153,7 +153,7 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
         </div>
 
         {/* Proof of Work Showcase Card */}
-        <div className="bg-gradient-to-r from-slate-900 via-primary-950 to-slate-900 border border-primary-500/20 rounded-2xl p-4 max-w-sm sm:max-w-md mx-auto mb-8 shadow-md text-slate-900 dark:text-white text-center relative overflow-hidden">
+        <div className="bg-slate-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-slate-900 dark:via-primary-950 dark:to-slate-900 border border-slate-200 dark:border-primary-500/20 rounded-2xl p-4 max-w-sm sm:max-w-md mx-auto mb-8 shadow-sm dark:shadow-md text-slate-900 dark:text-white text-center relative overflow-hidden">
           <div className="flex items-center justify-center gap-2 mb-1">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 font-mono">
@@ -168,7 +168,7 @@ export function ProfileDetailsView({ profile, isOwn, onProfileUpdate, roomsCount
               navigator.clipboard.writeText(window.location.href);
               toast.success("Proof-of-Work portfolio link copied!");
             }}
-            className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-primary-300 hover:text-slate-900 dark:text-white bg-white/10 hover:bg-white/20 border border-slate-100 dark:border-white/10 px-3 py-1.5 rounded-full transition-all cursor-pointer shadow-sm dark:shadow-none"
+            className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-primary-600 dark:text-primary-300 hover:text-slate-900 dark:hover:text-white bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 border border-slate-300 dark:border-white/10 px-3 py-1.5 rounded-full transition-all cursor-pointer shadow-sm dark:shadow-none"
           >
             <Share2 className="w-3.5 h-3.5" /> Copy Credential Link
           </button>

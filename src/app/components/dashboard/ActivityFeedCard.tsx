@@ -192,15 +192,16 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
                   onSuccess={() => setReplyingToId(null)}
                   onSubmit={async (text) => {
                     const newReply = {
-                      id: `${parent.roomId}-reaction-reply-${user!.id}-${Date.now()}`,
+                      id: `${parent.roomId}-reply-${parent.id}-${user!.id}-${Date.now()}`,
                       room_id: parent.roomId,
-                      author_id: user!.id,
-                      content: text,
-                      type: 'reaction',
+                      update_id: parent.id,
+                      observer_id: user!.id,
+                      observer_name: profile?.name || user!.email?.split('@')[0] || 'Observer',
+                      type: 'reply',
+                      text: text,
                       created_at: new Date().toISOString(),
-                      parent_update_id: parent.id,
                     };
-                    const { error } = await supabase.from('updates').insert([newReply]);
+                    const { error } = await supabase.from('reactions').insert(newReply);
                     if (error) throw error;
                     queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
                   }}
@@ -287,15 +288,16 @@ export const ActivityFeedCard = React.memo(function ActivityFeedCard({
                   onSuccess={() => setReplyingToId(null)}
                   onSubmit={async (text) => {
                     const newReply = {
-                      id: `${activity.roomId}-reaction-reply-${user!.id}-${Date.now()}`,
+                      id: `${activity.roomId}-reply-${activity.id}-${user!.id}-${Date.now()}`,
                       room_id: activity.roomId,
-                      author_id: user!.id,
-                      content: text,
-                      type: 'reaction',
+                      update_id: activity.id,
+                      observer_id: user!.id,
+                      observer_name: profile?.name || user!.email?.split('@')[0] || 'Observer',
+                      type: 'reply',
+                      text: text,
                       created_at: new Date().toISOString(),
-                      parent_update_id: parent.id,
                     };
-                    const { error } = await supabase.from('updates').insert([newReply]);
+                    const { error } = await supabase.from('reactions').insert(newReply);
                     if (error) throw error;
                     queryClient.invalidateQueries({ queryKey: ['feed-updates-v2'] });
                   }}

@@ -469,7 +469,7 @@ export default function AuthPage() {
                   whileTap={{ scale: loading ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-sm dark:shadow-none"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : <>Sign in <ArrowRight className="w-4 h-4" /></>}
                 </motion.button>
@@ -632,7 +632,7 @@ export default function AuthPage() {
                   whileTap={{ scale: (loading || !canSubmitSignup) ? 1 : 0.98 }}
                   type="submit"
                   disabled={loading || !canSubmitSignup}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 text-white text-[14px] font-extrabold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-sm dark:shadow-none"
                 >
                   {loading
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</>

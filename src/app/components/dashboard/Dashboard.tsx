@@ -34,6 +34,7 @@ const IconPlus = () => (
 
 import { timeAgo } from "../../utils/helpers";
 import { UserAvatar } from "../ui/UserAvatar";
+import { ThemeToggleBtn } from "../ui/ThemeToggleBtn";
 
 export default function Dashboard() {
   const { user, profile, withVerification, refreshProfile } = useAuth();
@@ -280,6 +281,7 @@ export default function Dashboard() {
 
         {/* Right: bell + new room — always visible */}
         <div className="flex items-center gap-2 shrink-0">
+          <ThemeToggleBtn className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-slate-100 dark:bg-[#111111] hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-100 dark:border-white/10 rounded-full transition-all shadow-sm focus-ring" />
           <Link
             to="/dashboard/notifications"
             className="relative hidden sm:flex items-center justify-center w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] bg-slate-100 dark:bg-[#111111] hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-100 dark:border-white/10 rounded-full text-slate-500 dark:text-slate-400 transition-all shadow-sm focus-ring"

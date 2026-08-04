@@ -48,7 +48,7 @@ export function NewUserWelcomeBanner({ userName, onDismiss }: NewUserWelcomeBann
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12, height: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="relative mb-6 rounded-[24px] overflow-hidden bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#111111] border border-slate-100 dark:border-white/10 shadow-sm"
+      className="relative mb-6 rounded-[24px] overflow-hidden bg-white dark:bg-gradient-to-br dark:from-[#111111] dark:via-[#1a1a1a] dark:to-[#111111] border border-slate-100 dark:border-white/10 shadow-sm"
     >
       {/* Dismiss */}
       <button

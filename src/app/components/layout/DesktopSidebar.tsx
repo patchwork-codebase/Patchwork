@@ -32,20 +32,6 @@ const NavItem = ({ to, icon, label, active, badge }: any) => (
   </Link>
 );
 
-const ThemeToggleBtn = () => {
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  return (
-    <button
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="flex items-center justify-center p-2.5 w-10 h-10 rounded-[12px] transition-all group text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-white/5 font-medium mb-4 ml-1"
-      title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-    >
-      {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-    </button>
-  );
-};
-
 interface DesktopSidebarProps {
   activeSection: string;
   userDisplayName: string;
@@ -110,9 +96,6 @@ export function DesktopSidebar({
           </div>
         </nav>
 
-        <div className="px-4 mt-auto">
-          <ThemeToggleBtn />
-        </div>
         {/* Profile card at the very bottom */}
         <div className="border-t border-slate-100 dark:border-white/5 p-4 bg-slate-50 dark:bg-[#111111] shadow-sm dark:shadow-none">
           <div className="relative z-50">
@@ -248,9 +231,6 @@ export function DesktopSidebar({
             </div>
           </nav>
 
-          <div className="px-4 mt-auto">
-            <ThemeToggleBtn />
-          </div>
           {/* Profile card at the very bottom */}
           <div className="border-t border-slate-100 dark:border-white/5 p-4 bg-slate-50 dark:bg-[#111111] shadow-sm dark:shadow-none">
             <div className="relative z-50">
