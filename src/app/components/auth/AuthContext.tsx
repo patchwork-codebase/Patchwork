@@ -420,17 +420,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function resetPassword(email: string) {
-    const { data, error } = await supabase.functions.invoke('send-password-reset-email', {
-      body: { email }
-    });
+    try {
+      const { data, error } = await supabase.functions.invoke('send-password-reset-email', {
+        body: { email }
+      });
 
-    if (error) {
-      console.error('Failed to call send-password-reset-email edge function:', error);
-      throw new Error('Failed to dispatch password reset email.');
-    }
-    
-    if (data && data.error) {
-      throw new Error(data.error);
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+    } catch (err) {
+      console.warn('Edge function failed, falling back to Supabase Auth reset:', err);
+      const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (fallbackError) {
+        console.error('Fallback reset failed:', fallbackError);
+        throw new Error(fallbackError.message || 'Failed to dispatch password reset email.');
+      }
     }
   }
 
