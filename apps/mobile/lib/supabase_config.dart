@@ -1,0 +1,5 @@
+class SupabaseConfig {
+  static const String projectId = 'oaielnxqahmywdpisomd';
+  static const String url = 'https://$projectId.supabase.co';
+  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9haWVsbnhxYWhteXdkcGlzb21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDk1OTgsImV4cCI6MjA5NjA4NTU5OH0.jYhn5D7ne4kQJs6InDBTVhcQOopKlbmp-z6ldcS26b8';
+}
