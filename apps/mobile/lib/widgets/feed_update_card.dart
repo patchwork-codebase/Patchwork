@@ -18,17 +18,20 @@ import 'package:flutter/services.dart';
 import '../screens/public_profile_screen.dart';
 import '../screens/update_thread_screen.dart';
 import '../screens/create_update_screen.dart';
+import 'fullscreen_image_viewer.dart';
 
 class FeedUpdateCard extends StatefulWidget {
   final Map<String, dynamic> update;
   final bool isThreadView;
   final VoidCallback? onReplyTap;
+  final VoidCallback? onRefresh;
 
   const FeedUpdateCard({
     super.key, 
     required this.update,
     this.isThreadView = false,
     this.onReplyTap,
+    this.onRefresh,
   });
 
   @override
@@ -98,9 +101,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                 ),
                 title: Text('Repost with thoughts', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                 subtitle: Text('Create a new update and quote this one', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  Navigator.of(context).push(
+                  final result = await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => CreateUpdateScreen(
                         quotedUpdateId: widget.update['id'],
@@ -109,6 +112,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       )
                     )
                   );
+                  if (result == true && widget.onRefresh != null) {
+                    widget.onRefresh!();
+                  }
                 },
               ),
               const SizedBox(height: 12),
@@ -559,17 +565,36 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
           child: const Icon(LucideIcons.bookmark, color: Colors.white, size: 28),
         ),
         secondaryBackground: Container(
-          color: Colors.blueAccent.withOpacity(0.8),
+          color: context.themeColors.surfaceHighlight, // Subtle color for premium feel
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 24),
-          child: const Icon(LucideIcons.messageCircle, color: Colors.white, size: 28),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: context.themeColors.primary500.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(LucideIcons.reply, color: context.themeColors.primary500, size: 20),
+          ),
         ),
         confirmDismiss: (direction) async {
           HapticFeedback.mediumImpact();
           if (direction == DismissDirection.startToEnd) {
             _toggleBookmark();
           } else {
-            _showComments();
+            // Swipe to Reply / Quote
+            final result = await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => CreateUpdateScreen(
+                  quotedUpdateId: widget.update['id'],
+                  quotedUpdateContent: widget.update['content'],
+                  quotedUpdateAuthor: widget.update['users']?['name'],
+                )
+              )
+            );
+            if (result == true && widget.onRefresh != null) {
+              widget.onRefresh!();
+            }
           }
           return false; // Don't actually remove the item
         },
@@ -580,25 +605,30 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
               _recordView();
             }
           },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: _isHovered ? Colors.white.withOpacity(0.02) : Colors.transparent,
-            border: Border(bottom: BorderSide(color: context.themeColors.borderSubtle, width: 1)),
-          ),
-          child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Avatar (Left Column)
-            GestureDetector(
-              onTap: () {
-                final authorId = update['author_id'] ?? users['id'];
-                if (authorId != null) {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => PublicProfileScreen(userId: authorId),
-                  ));
-                }
-              },
+        child: IntrinsicHeight(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: _isHovered ? Colors.white.withOpacity(0.02) : Colors.transparent,
+              border: widget.isThreadView 
+                  ? null 
+                  : Border(bottom: BorderSide(color: context.themeColors.borderSubtle, width: 1)),
+            ),
+            child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Avatar (Left Column)
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      final authorId = update['author_id'] ?? users['id'];
+                      if (authorId != null) {
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => PublicProfileScreen(userId: authorId),
+                        ));
+                      }
+                    },
               child: Builder(
                 builder: (context) {
                   String finalAvatarUrl = users['avatar']?.toString() ?? '';
@@ -632,7 +662,18 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                     ),
                   );
                 },
-              ),
+                  ),
+                ),
+                if (widget.isThreadView) ...[
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      color: context.themeColors.borderSubtle,
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(width: 12),
             
@@ -876,26 +917,55 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
                   // Uploaded Media Image
                   if (update['media_url'] != null && update['media_url'].toString().isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 12),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: context.themeColors.borderSubtle),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: CachedNetworkImage(
-                        imageUrl: update['media_url'],
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          height: 200,
-                          color: context.themeColors.surfaceHighlight,
-                          child: Center(child: CircularProgressIndicator(color: context.themeColors.primary500)),
-                        ),
-                        errorWidget: (context, error, stackTrace) => Container(
-                          height: 200,
-                          color: context.themeColors.surfaceHighlight,
-                          child: Center(child: Icon(LucideIcons.imageOff, color: context.themeColors.textTertiary)),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              opaque: false,
+                              pageBuilder: (context, _, __) => FullScreenImageViewer(
+                                imageUrl: update['media_url'],
+                                heroTag: 'media-${update['id']}',
+                              ),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                return FadeTransition(opacity: animation, child: child);
+                              },
+                            ),
+                          );
+                        },
+                        child: Hero(
+                          tag: 'media-${update['id']}',
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxHeight: 350,
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: context.themeColors.borderSubtle),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: CachedNetworkImage(
+                                imageUrl: update['media_url'],
+                                fit: BoxFit.cover,
+                                alignment: Alignment.topCenter, // Anchors to top (great for tall screenshots)
+                                placeholder: (context, url) => Container(
+                                  height: 200,
+                                  color: context.themeColors.surfaceHighlight,
+                                  child: Center(child: CircularProgressIndicator(color: context.themeColors.primary500)),
+                                ),
+                                errorWidget: (context, error, stackTrace) => Container(
+                                  height: 200,
+                                  color: context.themeColors.surfaceHighlight,
+                                  child: Center(child: Icon(LucideIcons.imageOff, color: context.themeColors.textTertiary)),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -964,7 +1034,11 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(entry.key, style: const TextStyle(fontSize: 13)), // Larger emoji
+                                        Text(entry.key, style: const TextStyle(fontSize: 13))
+                                          .animate(target: isSelected ? 1 : 0)
+                                          .scale(begin: const Offset(1, 1), end: const Offset(1.5, 1.5), duration: 150.ms, curve: Curves.easeOutBack)
+                                          .then()
+                                          .scale(begin: const Offset(1.5, 1.5), end: const Offset(1, 1), duration: 150.ms, curve: Curves.bounceOut), 
                                         const SizedBox(width: 6),
                                         Text(
                                           '${entry.value}',
@@ -1057,6 +1131,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
             ),
           ],
         ),
+      ),
       ),
       ),
       ),

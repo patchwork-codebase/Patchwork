@@ -13,12 +13,16 @@ import '../widgets/dashboard_overview.dart';
 import '../widgets/profile_sheet.dart';
 import '../services/notification_service.dart';
 import 'package:app_links/app_links.dart';
+import '../widgets/toast_notification.dart';
 import 'room_detail_screen.dart';
 import 'update_thread_screen.dart';
 import 'dart:async';
+import '../widgets/welcome_walkthrough_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isFirstTime;
+
+  const HomeScreen({super.key, this.isFirstTime = false});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -48,6 +52,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _setupNotifications();
     _fetchUserProfile();
     _initDeepLinks();
+    
+    if (widget.isFirstTime) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showWelcomeWalkthrough();
+      });
+    }
+  }
+
+  void _showWelcomeWalkthrough() {
+    ToastService.show(context, 'Welcome to Patchwork! 🎉');
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const WelcomeWalkthroughDialog(),
+    );
   }
 
   void _initDeepLinks() {
@@ -216,9 +235,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final userName = _userProfile?['name'] ?? 'B';
+    String userName = _userProfile?['name'] ?? '';
+    if (userName.trim().isEmpty) userName = 'Builder';
     final userAvatar = _userProfile?['avatar'];
-    final initial = userName.isNotEmpty ? userName.substring(0, 1).toUpperCase() : 'B';
+    final initial = userName.substring(0, 1).toUpperCase();
 
     return Scaffold(
       extendBody: true, // IMPORTANT for glassmorphism nav bar

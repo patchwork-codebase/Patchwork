@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../screens/create_update_screen.dart';
@@ -189,9 +190,12 @@ class _DashboardOverviewState extends State<DashboardOverview> {
       );
     }
 
-    final userName = _userProfile?['name'] ?? 'Builder';
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    String userName = _userProfile?['name'] ?? currentUser?.userMetadata?['name'] ?? currentUser?.userMetadata?['full_name'] ?? '';
+    
+    if (userName.trim().isEmpty || userName == 'Anonymous Builder') userName = 'Builder';
     final userAvatar = _userProfile?['avatar'];
-    final initial = userName.isNotEmpty ? userName.substring(0, 1).toUpperCase() : 'B';
+    final initial = userName.substring(0, 1).toUpperCase();
     final firstName = userName.split(' ').first;
 
     return AnimatedScale(
@@ -807,13 +811,19 @@ class _DashboardOverviewState extends State<DashboardOverview> {
   }
 
   Widget _buildStageOverlay(String title, Map<String, dynamic> room) {
-    final type = title == 'Decision Log' ? 'decision' : 'shipped';
-    final future = Supabase.instance.client
-        .from('updates')
-        .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name)')
-        .eq('room_id', room['id'])
-        .eq('update_type', type)
-        .order('created_at', ascending: false);
+    final isDecisionLog = title == 'Decision Log';
+    final future = isDecisionLog
+        ? Supabase.instance.client
+            .from('room_decisions')
+            .select('*')
+            .eq('room_id', room['id'])
+            .order('created_at', ascending: false)
+        : Supabase.instance.client
+            .from('updates')
+            .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name)')
+            .eq('room_id', room['id'])
+            .eq('update_type', 'shipped')
+            .order('created_at', ascending: false);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
@@ -895,6 +905,72 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                       return ListView.builder(
                         itemCount: updates.length,
                         itemBuilder: (context, index) {
+                          if (isDecisionLog) {
+                            final decision = updates[index] as Map<String, dynamic>;
+                            final status = decision['status'] ?? 'logged';
+                            final isShipped = status == 'shipped';
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: context.themeColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: context.themeColors.borderSubtle),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        isShipped ? LucideIcons.checkCircle : LucideIcons.gitCommit,
+                                        size: 16,
+                                        color: isShipped ? Colors.greenAccent : context.themeColors.primary500,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isShipped ? Colors.greenAccent.withOpacity(0.1) : context.themeColors.primary500.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          status.toUpperCase(),
+                                          style: TextStyle(
+                                            color: isShipped ? Colors.greenAccent : context.themeColors.primary400,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    decision['title'] ?? '',
+                                    style: TextStyle(
+                                      color: context.themeColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  if (decision['description'] != null && decision['description'].toString().isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      decision['description'],
+                                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    timeago.format(DateTime.parse(decision['created_at'])),
+                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: FeedUpdateCard(update: updates[index] as Map<String, dynamic>),

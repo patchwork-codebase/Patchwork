@@ -160,7 +160,8 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
         'content': markupContent,
         'needs_feedback': _needsFeedback,
         'media_url': mediaUrl,
-        'quoted_update_id': widget.quotedUpdateId,
+        if (widget.quotedUpdateId != null) 'repost_id': widget.quotedUpdateId,
+        if (widget.quotedUpdateId != null) 'is_repost_only': false,
       });
 
       // Extract mentioned user IDs from markupText: @[display_name](id)
@@ -194,7 +195,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 return Transform.scale(
                   scale: scale,
                   child: Opacity(
-                    opacity: (scale - 0.8) * 5, // Fades in quickly
+                    opacity: ((scale - 0.8) * 5).clamp(0.0, 1.0), // Fades in quickly, clamp prevents error from easeOutBack overshoot
                     child: Material(
                       color: Colors.transparent,
                       child: Container(
@@ -367,8 +368,46 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 
                 const SizedBox(height: 32),
                 
+                // Quoted Update Preview (if any)
+                if (widget.quotedUpdateId != null && widget.quotedUpdateContent != null) ...[
+                  Text('QUOTED UPDATE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: context.themeColors.surfaceHighlight.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: context.themeColors.borderSubtle),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(LucideIcons.quote, size: 16, color: context.themeColors.primary500),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.quotedUpdateAuthor ?? 'Builder',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.quotedUpdateContent!,
+                          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+
                 // Content Input
-                Text('CONTENT (MARKDOWN SUPPORTED)', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                Text('YOUR THOUGHTS (MARKDOWN SUPPORTED)', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(

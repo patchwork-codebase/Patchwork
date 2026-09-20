@@ -36,7 +36,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _roomDataFuture = _fetchRoomData();
   }
   
@@ -102,9 +102,15 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
       final reposRes = await Supabase.instance.client.from('repositories').select('id, github_repo_name, github_owner').eq('linked_room_id', widget.roomId);
       linkedRepos = List<Map<String, dynamic>>.from(reposRes);
     } catch (_) {}
+    List<Map<String, dynamic>> decisions = [];
     try {
-      final decRes = await Supabase.instance.client.from('room_decisions').select('id').eq('room_id', widget.roomId);
-      decisionsCount += (decRes as List).length;
+      final decRes = await Supabase.instance.client
+          .from('room_decisions')
+          .select('*')
+          .eq('room_id', widget.roomId)
+          .order('created_at', ascending: false);
+      decisions = List<Map<String, dynamic>>.from(decRes);
+      decisionsCount = decisions.length;
     } catch (_) {}
 
     int totalViews = 0;
@@ -121,6 +127,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     return {
       'room': roomResponse,
       'updates': List<Map<String, dynamic>>.from(updatesResponse),
+      'decisions': decisions,
       'indicators': {
         'docs': linkedDocs.length,
         'repos': linkedRepos.length,
@@ -199,16 +206,17 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
           final data = snapshot.data!;
           final room = data['room'] as Map<String, dynamic>;
           final updates = data['updates'] as List<Map<String, dynamic>>;
+          final decisions = data['decisions'] as List<Map<String, dynamic>>;
           final indicators = data['indicators'] as Map<String, dynamic>;
           final analytics = data['analytics'] as Map<String, dynamic>;
           
-          return _buildContent(room, updates, indicators, analytics);
+          return _buildContent(room, updates, decisions, indicators, analytics);
         },
       ),
     );
   }
   
-  Widget _buildContent(Map<String, dynamic> room, List<Map<String, dynamic>> updates, Map<String, dynamic> indicators, Map<String, dynamic> analytics) {
+  Widget _buildContent(Map<String, dynamic> room, List<Map<String, dynamic>> updates, List<Map<String, dynamic>> decisions, Map<String, dynamic> indicators, Map<String, dynamic> analytics) {
     final description = room['description'] ?? 'No description provided.';
     final tags = List<String>.from(room['tags'] ?? []);
     final coverImage = room['cover_image'] ?? room['cover_image_url'];
@@ -547,6 +555,84 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                           },
                         );
                   } else if (_tabController.index == 1) {
+                    return decisions.isEmpty 
+                      ? Center(
+                          child: Text(
+                            'No decisions logged yet.',
+                            style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 200),
+                          itemCount: decisions.length,
+                          itemBuilder: (context, index) {
+                            final decision = decisions[index];
+                            final status = decision['status'] ?? 'logged';
+                            final isShipped = status == 'shipped';
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: context.themeColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: context.themeColors.borderSubtle),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        isShipped ? LucideIcons.checkCircle : LucideIcons.gitCommit,
+                                        size: 16,
+                                        color: isShipped ? Colors.greenAccent : context.themeColors.primary500,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isShipped ? Colors.greenAccent.withOpacity(0.1) : context.themeColors.primary500.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          status.toUpperCase(),
+                                          style: TextStyle(
+                                            color: isShipped ? Colors.greenAccent : context.themeColors.primary400,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    decision['title'] ?? '',
+                                    style: TextStyle(
+                                      color: context.themeColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  if (decision['description'] != null && decision['description'].toString().isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      decision['description'],
+                                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    timeago.format(DateTime.parse(decision['created_at'])),
+                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                  } else if (_tabController.index == 2) {
                     return SingleChildScrollView(
                       child: Center(
                         child: Padding(
@@ -752,12 +838,19 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                       const SizedBox(width: 4),
                       _buildFloatingTab(
                         index: 1,
+                        icon: LucideIcons.gitCommit,
+                        label: 'Decisions',
+                        count: decisions.length,
+                      ),
+                      const SizedBox(width: 4),
+                      _buildFloatingTab(
+                        index: 2,
                         icon: LucideIcons.layoutDashboard,
                         label: 'Overview',
                       ),
                       const SizedBox(width: 4),
                       _buildFloatingTab(
-                        index: 2,
+                        index: 3,
                         icon: LucideIcons.layers,
                         label: 'Workspace',
                       ),

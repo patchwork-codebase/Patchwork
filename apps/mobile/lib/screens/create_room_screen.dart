@@ -13,6 +13,9 @@ class CreateRoomScreen extends StatefulWidget {
 class _CreateRoomScreenState extends State<CreateRoomScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _primaryLinkController = TextEditingController();
+  final _coverImageController = TextEditingController();
+  bool _isPrivate = false;
   final List<String> _selectedTags = [];
   bool _isLoading = false;
 
@@ -33,11 +36,35 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) throw Exception('Not authenticated');
 
+      // Fetch the builder's name from the users table
+      final userDoc = await Supabase.instance.client
+          .from('users')
+          .select('name')
+          .eq('id', userId)
+          .maybeSingle();
+      
+      final builderName = (userDoc != null && userDoc['name'] != null && userDoc['name'].toString().isNotEmpty) 
+          ? userDoc['name'] 
+          : 'Anonymous Builder';
+
+      // We use uuid for the id, but since we don't have the uuid package imported, 
+      // let's generate a unique string ID based on timestamp and user id, or let DB handle it.
+      // If the DB doesn't generate an ID automatically, we'll provide a string ID.
+      final String roomId = '${userId.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}';
+
+      final primaryLink = _primaryLinkController.text.trim();
+      final coverImageUrl = _coverImageController.text.trim();
+
       await Supabase.instance.client.from('rooms').insert({
+        'id': roomId,
         'builder_id': userId,
+        'builder_name': builderName,
         'title': title,
         'description': _descriptionController.text.trim(),
         'tags': _selectedTags.isEmpty ? ['product'] : _selectedTags,
+        'primary_link': primaryLink.isNotEmpty ? primaryLink : null,
+        'cover_image_url': coverImageUrl.isNotEmpty ? coverImageUrl : null,
+        'is_private': _isPrivate,
       });
 
       if (mounted) {
@@ -189,6 +216,87 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   ),
                 );
               }).toList(),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Primary Link Input
+            Text('PRIMARY LINK', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.02),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TextField(
+                controller: _primaryLinkController,
+                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16),
+                decoration: InputDecoration(
+                  hintText: "e.g. https://github.com/my-repo",
+                  hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Cover Image URL Input
+            Text('COVER IMAGE URL', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.02),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TextField(
+                controller: _coverImageController,
+                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16),
+                decoration: InputDecoration(
+                  hintText: "e.g. https://example.com/image.png",
+                  hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Privacy Toggle
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.02),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(LucideIcons.lock, color: context.themeColors.textSecondary, size: 20),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Private Room', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text('Only you and invited members can view', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Switch(
+                    value: _isPrivate,
+                    onChanged: (val) => setState(() => _isPrivate = val),
+                    activeColor: context.themeColors.primary500,
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 48),

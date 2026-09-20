@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../theme.dart';
+import '../widgets/toast_notification.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart'; // We will create this next
 import 'forgot_password_screen.dart';
@@ -24,8 +25,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _fNameController = TextEditingController();
   final _lNameController = TextEditingController();
-  
-  String _role = 'builder'; // builder or observer
 
   @override
   void dispose() {
@@ -74,15 +73,33 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final name = '${_fNameController.text.trim()} ${_lNameController.text.trim()}'.trim();
       
-      await Supabase.instance.client.auth.signUp(
+      final authRes = await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         data: {
           'name': name.isEmpty ? 'Anonymous Builder' : name,
-          'role': _role,
+          'role': 'builder', // Default role; will be updated in onboarding
         },
       );
       
+      // Ensure the database trigger has completed creating the public.users record
+      final user = authRes.user;
+      if (user != null) {
+        for (int i = 0; i < 5; i++) {
+          final res = await Supabase.instance.client
+              .from('users')
+              .select('id')
+              .eq('id', user.id)
+              .maybeSingle();
+          if (res != null) break;
+          await Future.delayed(const Duration(milliseconds: 1000));
+        }
+      }
+
+      if (mounted) {
+        ToastService.show(context, 'Account created successfully!');
+      }
+
       // On success, go to onboarding (ignoring email confirmation for MVP ease, similar to web if it's disabled)
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -155,61 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRoleSelector() {
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _role = 'builder'),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _role == 'builder' ? AppTheme.slate50 : Colors.white,
-                border: Border.all(
-                  color: _role == 'builder' ? AppTheme.slate900 : AppTheme.slate100,
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text('🔨', style: TextStyle(fontSize: 20)),
-                  const SizedBox(height: 4),
-                  Text('Builder', style: TextStyle(fontWeight: FontWeight.bold, color: _role == 'builder' ? AppTheme.slate900 : AppTheme.slate600)),
-                  Text('Share your journey', style: TextStyle(fontSize: 11, color: AppTheme.slate500), textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _role = 'observer'),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _role == 'observer' ? const Color(0xFFECFDF5) : Colors.white, // emerald-50
-                border: Border.all(
-                  color: _role == 'observer' ? const Color(0xFF059669) : AppTheme.slate100, // emerald-600
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text('👀', style: TextStyle(fontSize: 20)),
-                  const SizedBox(height: 4),
-                  Text('Observer', style: TextStyle(fontWeight: FontWeight.bold, color: _role == 'observer' ? AppTheme.slate900 : AppTheme.slate600)),
-                  Text('Follow top creators', style: TextStyle(fontSize: 11, color: AppTheme.slate500), textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -218,16 +180,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                  _passwordController.text.length >= 8;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAF9), // Match tailwind background
+      backgroundColor: context.themeColors.background,
       body: Stack(
         children: [
-          // Dot grid background
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _DotGridPainter(),
-            ),
-          ),
-          
+
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -259,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: const Icon(LucideIcons.hammer, color: Colors.white, size: 18),
                         ),
                         const SizedBox(width: 12),
-                        const Text('patch·work', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppTheme.slate900, letterSpacing: -0.5)),
+                        Text('patch·work', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -0.5)),
                       ],
                     ),
                     const SizedBox(height: 40),
@@ -270,12 +226,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       constraints: const BoxConstraints(maxWidth: 400),
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.themeColors.surface,
                         borderRadius: BorderRadius.circular(32),
-                        border: Border.all(color: AppTheme.slate200.withOpacity(0.5)),
+                        border: Border.all(color: context.themeColors.borderSubtle),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.slate900.withOpacity(0.04),
+                            color: Colors.black.withOpacity(0.05),
                             blurRadius: 40,
                             offset: const Offset(0, 20),
                           ),
@@ -318,8 +274,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Form Fields
                           if (!_isLogin) ...[
-                            _buildRoleSelector(),
-                            const SizedBox(height: 20),
                             Row(
                               children: [
                                 Expanded(
@@ -387,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 24),
 
                           ElevatedButton(
-                            onPressed: _isLoading ? null : (_isLogin ? _handleLogin : (canSubmitSignup ? _handleSignup : null)),
+                            onPressed: _isLoading ? () {} : (_isLogin ? _handleLogin : (canSubmitSignup ? _handleSignup : null)),
                             child: _isLoading 
                               ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                               : Row(
@@ -404,12 +358,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Social Auth (Visual placeholder)
                           Row(
                             children: [
-                              const Expanded(child: Divider(color: AppTheme.slate200)),
+                              Expanded(child: Divider(color: context.themeColors.borderSubtle)),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text('OR CONTINUE WITH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.slate400, letterSpacing: 1.2)),
+                                child: Text('OR CONTINUE WITH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.2)),
                               ),
-                              const Expanded(child: Divider(color: AppTheme.slate200)),
+                              Expanded(child: Divider(color: context.themeColors.borderSubtle)),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -419,12 +373,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
                                   icon: const Icon(LucideIcons.chrome, size: 18, color: Color(0xFF4285F4)),
-                                  label: const Text('Google', style: TextStyle(color: AppTheme.slate700, fontWeight: FontWeight.bold)),
+                                  label: Text('Google', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    side: const BorderSide(color: AppTheme.slate200),
-                                    backgroundColor: Colors.white,
+                                    side: BorderSide(color: context.themeColors.borderSubtle),
+                                    backgroundColor: Colors.transparent,
                                   ),
                                 ),
                               ),
@@ -433,12 +387,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
                                   icon: const Icon(LucideIcons.linkedin, size: 18, color: Color(0xFF0A66C2)),
-                                  label: const Text('LinkedIn', style: TextStyle(color: AppTheme.slate700, fontWeight: FontWeight.bold)),
+                                  label: Text('LinkedIn', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    side: const BorderSide(color: AppTheme.slate200),
-                                    backgroundColor: Colors.white,
+                                    side: BorderSide(color: context.themeColors.borderSubtle),
+                                    backgroundColor: Colors.transparent,
                                   ),
                                 ),
                               ),
@@ -451,7 +405,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: AppTheme.slate50,
+                                color: context.themeColors.surfaceHighlight.withOpacity(0.5),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: TextButton(
@@ -467,7 +421,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: _isLogin ? 'No account? ' : 'Already have an account? ',
-                                    style: const TextStyle(color: AppTheme.slate500, fontSize: 13, fontFamily: 'Inter'),
+                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontFamily: 'Inter'),
                                     children: [
                                       TextSpan(
                                         text: _isLogin ? "Create one — it's free" : 'Sign in',
@@ -487,12 +441,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Privacy Policy', style: TextStyle(color: AppTheme.slate500, fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('·', style: TextStyle(color: AppTheme.slate300)),
+                          child: Text('·', style: TextStyle(color: context.themeColors.textTertiary)),
                         ),
-                        Text('Terms of Service', style: TextStyle(color: AppTheme.slate500, fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ],
@@ -504,25 +458,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
-
-class _DotGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppTheme.slate200.withOpacity(0.5)
-      ..style = PaintingStyle.fill;
-
-    const double spacing = 20.0;
-    const double radius = 1.0;
-
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

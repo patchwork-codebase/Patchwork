@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -36,6 +37,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
   String _activeDomainFilter = 'All';
   String _activeViewToggle = 'All';
+  
+  int _newUpdatesCount = 0;
+  RealtimeChannel? _updatesChannel;
 
   @override
   void initState() {
@@ -45,6 +49,30 @@ class _FeedScreenState extends State<FeedScreen> {
     _fetchFollowing();
     _fetchUnreadNotifications();
     _scrollController.addListener(_onScroll);
+    
+    _setupRealtimeUpdates();
+  }
+
+  void _setupRealtimeUpdates() {
+    _updatesChannel = Supabase.instance.client
+        .channel('public:updates')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'updates',
+          callback: (payload) {
+            final userId = Supabase.instance.client.auth.currentUser?.id;
+            // Only show pill for other people's updates
+            if (payload.newRecord['author_id'] != userId) {
+              if (mounted) {
+                setState(() {
+                  _newUpdatesCount++;
+                });
+              }
+            }
+          },
+        )
+        .subscribe();
   }
 
   Future<void> _fetchUnreadNotifications() async {
@@ -103,6 +131,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   void dispose() {
+    _updatesChannel?.unsubscribe();
     _scrollController.dispose();
     super.dispose();
   }
@@ -215,14 +244,46 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
           ),
-          RefreshIndicator(
-            onRefresh: _fetchInitialFeed,
-            color: context.themeColors.primary500,
-            backgroundColor: context.themeColors.surfaceHighlight,
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                SliverAppBar(
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            slivers: [
+              CupertinoSliverRefreshControl(
+                onRefresh: _fetchInitialFeed,
+                builder: (context, refreshState, pulledExtent, refreshTriggerPullDistance, refreshIndicatorExtent) {
+                  const curve = Curves.easeOutCubic;
+                  final percentage = (pulledExtent / refreshTriggerPullDistance).clamp(0.0, 1.0);
+                  
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: context.themeColors.surface,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Transform.rotate(
+                          angle: percentage * 3.14159 * 2, // Full rotation
+                          child: Icon(
+                            LucideIcons.loader,
+                            color: context.themeColors.primary500,
+                            size: 20 + (percentage * 4), // Scales up slightly as you pull
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SliverAppBar(
                   floating: true,
                   snap: true,
                   pinned: false, // Let it scroll away gracefully to avoid RenderFlex infinite height errors
@@ -344,16 +405,86 @@ class _FeedScreenState extends State<FeedScreen> {
                               return _buildInlineSuggestedBuilders();
                             }
                             if (index > suggestedIndex) {
-                              return FeedUpdateCard(update: _updates[index - 1]);
+                              return FeedUpdateCard(
+                                update: _updates[index - 1],
+                                onRefresh: _fetchInitialFeed,
+                              );
                             }
                           }
-                          return FeedUpdateCard(update: _updates[index]);
+                          return FeedUpdateCard(
+                            update: _updates[index],
+                            onRefresh: _fetchInitialFeed,
+                          );
                         },
                         childCount: _updates.length + (_isLoadingMore ? 1 : 0) + (_suggestedBuilders.isNotEmpty && _updates.length >= 3 ? 1 : 0),
                       ),
                     ),
                   ),
               ],
+            ),
+          
+          // Dynamic New Updates Pill
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            left: 0,
+            right: 0,
+            child: AnimatedSlide(
+              offset: _newUpdatesCount > 0 ? Offset.zero : const Offset(0, -2),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutBack,
+              child: AnimatedOpacity(
+                opacity: _newUpdatesCount > 0 ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: Center(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _scrollController.animateTo(
+                          0,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeOutCubic,
+                        );
+                        _fetchInitialFeed();
+                        setState(() {
+                          _newUpdatesCount = 0;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: context.themeColors.primary500,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: context.themeColors.primary500.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.arrowUp, color: Colors.white, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              '$_newUpdatesCount New update${_newUpdatesCount == 1 ? '' : 's'}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -443,7 +574,10 @@ class _FeedScreenState extends State<FeedScreen> {
                 Text('People to follow', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: context.themeColors.textPrimary)),
                 GestureDetector(
                   onTap: () {
-                    // Navigate to Explore tab or screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ExploreScreen()),
+                    );
                   },
                   child: Text('See all', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.themeColors.primary500)),
                 ),
