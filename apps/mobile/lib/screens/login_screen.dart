@@ -96,6 +96,20 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
 
+      if (user != null) {
+        // Fire off Resend verification email asynchronously
+        try {
+          final actualName = name.isEmpty ? 'Builder' : name;
+          Supabase.instance.client.functions.invoke('send-verification-email', body: {
+            'user_id': user.id,
+            'email': _emailController.text.trim(),
+            'name': actualName,
+          }).catchError((e) => print('Error sending verification email: $e'));
+        } catch (e) {
+          print('Error preparing verification email: $e');
+        }
+      }
+
       if (mounted) {
         ToastService.show(context, 'Account created successfully!');
       }

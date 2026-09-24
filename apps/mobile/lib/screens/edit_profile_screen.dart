@@ -198,26 +198,90 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {int maxLines = 1, TextInputType? keyboardType}) {
+  Widget _buildSection(String title, List<Widget> children) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: controller,
-            maxLines: maxLines,
-            keyboardType: keyboardType,
-            style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w600),
-            decoration: InputDecoration(
-              prefixIcon: maxLines == 1 ? Icon(icon, color: context.themeColors.textTertiary, size: 18) : null,
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.02),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: context.themeColors.primary500)),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Text(
+              title,
+              style: TextStyle(
+                color: context.themeColors.textTertiary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: context.themeColors.surfaceHighlight.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: children.asMap().entries.map((entry) {
+                final int index = entry.key;
+                final Widget item = entry.value;
+                return Column(
+                  children: [
+                    item,
+                    if (index < children.length - 1)
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: context.themeColors.borderSubtle.withOpacity(0.3),
+                        indent: 16, // Indent to match iOS style
+                      ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {int maxLines = 1, TextInputType? keyboardType}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines > 1 ? 12 : 4),
+      child: Row(
+        crossAxisAlignment: maxLines > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: context.themeColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              maxLines: maxLines,
+              keyboardType: keyboardType,
+              style: TextStyle(
+                color: context.themeColors.textSecondary,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                hintText: 'Enter $label',
+                hintStyle: TextStyle(color: context.themeColors.textTertiary.withOpacity(0.5)),
+              ),
             ),
           ),
         ],
@@ -226,28 +290,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildDropdownField(String label, String value, List<String> options, ValueChanged<String?> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
         children: [
-          Text(label, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: context.themeColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
+          ),
+          Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: value.isNotEmpty && options.contains(value) ? value : options.first,
                 dropdownColor: context.themeColors.surfaceHighlight,
-                icon: Icon(LucideIcons.chevronDown, color: context.themeColors.textTertiary),
-                style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 15),
+                icon: Icon(LucideIcons.chevronRight, color: context.themeColors.textTertiary, size: 18),
+                style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.w400, fontSize: 16),
                 isExpanded: true,
-                items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
+                alignment: Alignment.centerRight,
+                items: options.map((opt) => DropdownMenuItem(value: opt, child: Align(alignment: Alignment.centerRight, child: Text(opt)))).toList(),
                 onChanged: onChanged,
               ),
             ),
@@ -258,8 +325,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildSwitch(String label, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -267,9 +334,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 16)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 13)),
               ],
             ),
           ),
@@ -288,21 +355,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: context.themeColors.background,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
-        backgroundColor: Colors.transparent,
+        title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+        backgroundColor: context.themeColors.background,
         elevation: 0,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isSaving ? null : () {
-          HapticFeedback.lightImpact();
-          _saveProfile();
-        },
-        backgroundColor: context.themeColors.primary500,
-        foregroundColor: Colors.white,
-        icon: _isSaving 
-          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-          : const Icon(LucideIcons.save),
-        label: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        actions: [
+          if (_isSaving)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+            )
+          else
+            TextButton(
+              onPressed: _saveProfile,
+              child: Text(
+                'Save',
+                style: TextStyle(
+                  color: context.themeColors.primary500,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: context.themeColors.primary500))
@@ -328,105 +403,82 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Avatar
+                      // Minimalist Avatar
                       GestureDetector(
-                    onTap: _isUploadingImage ? null : _pickAndUploadImage,
-                    child: Container(
-                      width: 100, height: 100,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: context.themeColors.primary500.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: context.themeColors.primary500.withOpacity(0.3), width: 2),
-                        // Prefer local file preview; fall back to network URL
-                        image: _selectedImage != null
-                            ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
-                            : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                                ? DecorationImage(image: NetworkImage(_avatarUrl!), fit: BoxFit.cover)
-                                : null,
-                      ),
-                      child: Stack(
-                        children: [
-                          if (_selectedImage == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
-                            Center(child: Text(_nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.w900, fontSize: 40))),
-                          if (_isUploadingImage)
-                            Container(
-                              decoration: const BoxDecoration(color: Colors.black38, shape: BoxShape.circle),
-                              child: Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
-                            ),
-                          Positioned(
-                            right: 0, bottom: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(color: context.themeColors.primary500, shape: BoxShape.circle),
-                              child: const Icon(LucideIcons.camera, color: Colors.white, size: 16),
-                            ),
+                        onTap: _isUploadingImage ? null : _pickAndUploadImage,
+                        child: Container(
+                          width: 80, height: 80,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: context.themeColors.surfaceHighlight,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: context.themeColors.borderSubtle, width: 1),
+                            image: _selectedImage != null
+                                ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
+                                : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                                    ? DecorationImage(image: NetworkImage(_avatarUrl!), fit: BoxFit.cover)
+                                    : null,
                           ),
-                        ],
+                          child: Stack(
+                            children: [
+                              if (_selectedImage == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
+                                Center(child: Text(_nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 32))),
+                              if (_isUploadingImage)
+                                Container(
+                                  decoration: const BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
+                                  child: Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      GestureDetector(
+                        onTap: _isUploadingImage ? null : _pickAndUploadImage,
+                        child: Text('Edit picture', style: TextStyle(color: context.themeColors.primary500, fontSize: 13, fontWeight: FontWeight.w500)),
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      _buildSection('Personal Information', [
+                        _buildTextField('Name', _nameController, LucideIcons.user),
+                        _buildTextField('Bio', _bioController, LucideIcons.fileText, maxLines: 4),
+                        _buildTextField('Location', _cityController, LucideIcons.mapPin),
+                        _buildDropdownField('Role', _role, ['builder', 'observer'], (val) {
+                          if (val != null) setState(() => _role = val);
+                        }),
+                        _buildDropdownField('Domain', _domain, ['', 'product-manager', 'founder', 'design', 'engineering'], (val) {
+                          if (val != null) setState(() => _domain = val);
+                        }),
+                      ]),
+                      
+                      _buildSection('Social Links', [
+                        _buildTextField('Website', _websiteController, LucideIcons.globe),
+                        _buildTextField('Twitter', _twitterController, LucideIcons.twitter),
+                        _buildTextField('GitHub', _githubController, LucideIcons.github),
+                        _buildTextField('LinkedIn', _linkedinController, LucideIcons.linkedin),
+                      ]),
+                      
+                      if (_isVerifiedExpert) 
+                        _buildSection('Expert Availability', [
+                          _buildSwitch('Available for requests', 'Manage your review capacity', _expertAvailable, (val) => setState(() => _expertAvailable = val)),
+                          _buildTextField('Open Slots', _expertSlotsController, LucideIcons.users, keyboardType: TextInputType.number),
+                          _buildTextField('Response Time', _expertResponseController, LucideIcons.clock, keyboardType: TextInputType.number),
+                        ]),
+
+                      _buildSection('Notification Preferences', [
+                        _buildSwitch('Email Notifications', 'Receive important updates via email', _emailNotifications, (val) => setState(() => _emailNotifications = val)),
+                        _buildSwitch('In-App Notifications', 'Receive push notifications on your device', _inAppNotifications, (val) => setState(() => _inAppNotifications = val)),
+                      ]),
+                      
+                      const SizedBox(height: 60),
+                    ],
                   ),
-
-                  Text('Tap to change avatar', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
-                  const SizedBox(height: 32),
-                  
-                  _buildTextField('FULL NAME', _nameController, LucideIcons.user),
-                  _buildTextField('BIO', _bioController, LucideIcons.fileText, maxLines: 4),
-                  _buildTextField('LOCATION (CITY, COUNTRY)', _cityController, LucideIcons.mapPin),
-                  _buildDropdownField('PRIMARY ROLE', _role, ['builder', 'observer'], (val) {
-                    if (val != null) setState(() => _role = val);
-                  }),
-                  _buildDropdownField('DOMAIN', _domain, ['', 'product-manager', 'founder', 'design', 'engineering'], (val) {
-                    if (val != null) setState(() => _domain = val);
-                  }),
-                  
-                  const SizedBox(height: 16),
-                  const Divider(color: Colors.white10),
-                  const SizedBox(height: 24),
-                  
-                  Text('SOCIAL LINKS', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                  const SizedBox(height: 16),
-                  _buildTextField('WEBSITE', _websiteController, LucideIcons.globe),
-                  _buildTextField('TWITTER', _twitterController, LucideIcons.twitter),
-                  _buildTextField('GITHUB', _githubController, LucideIcons.github),
-                  _buildTextField('LINKEDIN', _linkedinController, LucideIcons.linkedin),
-                  
-                  if (_isVerifiedExpert) ...[
-                    const SizedBox(height: 8),
-                    const Divider(color: Colors.white10),
-                    const SizedBox(height: 24),
-                    Text('EXPERT AVAILABILITY', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                    const SizedBox(height: 16),
-                    _buildSwitch('Available for requests', 'Manage your review capacity', _expertAvailable, (val) => setState(() => _expertAvailable = val)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(child: _buildTextField('OPEN SLOTS', _expertSlotsController, LucideIcons.users, keyboardType: TextInputType.number)),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildTextField('AVG RESPONSE (HRS)', _expertResponseController, LucideIcons.clock, keyboardType: TextInputType.number)),
-                      ],
-                    ),
-                  ],
-
-                  const SizedBox(height: 8),
-                  const Divider(color: Colors.white10),
-                  const SizedBox(height: 24),
-                  
-                  Text('NOTIFICATION PREFERENCES', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                  const SizedBox(height: 16),
-                  _buildSwitch('Email Notifications', 'Receive important updates via email', _emailNotifications, (val) => setState(() => _emailNotifications = val)),
-                  _buildSwitch('In-App Notifications', 'Receive push notifications on your device', _inAppNotifications, (val) => setState(() => _inAppNotifications = val)),
-                  
-                  const SizedBox(height: 100),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
     );
   }
 }

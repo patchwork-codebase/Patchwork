@@ -5,7 +5,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Mobile</string>
+		<string>Patchwork</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>mobile</string>
+		<string>patchwork</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -47,5 +47,12 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- Permissions for Image & Media Uploads -->
+		<key>NSCameraUsageDescription</key>
+		<string>Patchwork needs camera access so you can capture and share photos in your project updates.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Patchwork needs photo library access so you can attach mockups and screenshots to your updates.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Patchwork needs microphone access for video recordings in updates.</string>
 	</dict>
 </plist>
