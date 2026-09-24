@@ -53,10 +53,10 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      - name: Install CocoaPods dependencies
+      - name: Resolve CocoaPods and iOS Build Environment
         run: |
-          cd ios
-          pod install --repo-update
+          flutter precache --ios
+          flutter build ios --config-only
         working-directory: apps/mobile
 
       - name: Build iOS Application (Signed IPA or Unsigned App)
