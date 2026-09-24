@@ -55,8 +55,8 @@ jobs:
 
       - name: Resolve CocoaPods and iOS Build Environment
         run: |
+          flutter config --no-enable-swift-package-manager
           flutter precache --ios
-          flutter build ios --config-only
         working-directory: apps/mobile
 
       - name: Build iOS Application (Signed IPA or Unsigned App)
