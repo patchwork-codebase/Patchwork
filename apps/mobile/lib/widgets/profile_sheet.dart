@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../theme.dart';
-import '../screens/login_screen.dart';
+import '../screens/welcome_screen.dart';
 import '../screens/edit_profile_screen.dart';
+import '../screens/profile_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../theme.dart';
-import '../screens/login_screen.dart';
-import '../screens/edit_profile_screen.dart';
+import 'package:flutter/services.dart';
 import '../providers/theme_provider.dart';
 
 class ProfileSheet extends ConsumerStatefulWidget {
@@ -21,9 +20,13 @@ class ProfileSheet extends ConsumerStatefulWidget {
 
 class _ProfileSheetState extends ConsumerState<ProfileSheet> {
   int _roomCount = 0;
-  int _updateCount = 0;
+  int _updateCount = 0; // For Builders
+  int _followedRoomsCount = 0; // For Observers
+  int _reactionsCount = 0; // For Observers
+  int _reputation = 0;
   String _userName = '';
   String? _avatarUrl;
+  String _role = 'builder';
   bool _isLoadingStats = true;
 
   @override
@@ -55,19 +58,28 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
     try {
       final userResponse = await Supabase.instance.client
           .from('users')
-          .select('name, avatar')
+          .select('name, avatar, role, reputation')
           .eq('id', userId)
           .maybeSingle();
 
-      final List<dynamic> roomsResponse = await Supabase.instance.client
-          .from('rooms')
-          .select('id')
-          .eq('builder_id', userId);
+      final role = userResponse?['role'] ?? 'builder';
+      
+      int rCount = 0;
+      int uCount = 0;
+      int fCount = 0;
+      int rxCount = 0;
 
-      final List<dynamic> updatesResponse = await Supabase.instance.client
-          .from('updates')
-          .select('id')
-          .eq('author_id', userId);
+      if (role == 'observer') {
+        final followedRes = await Supabase.instance.client.from('room_observers').select('room_id').eq('observer_id', userId);
+        final rxRes = await Supabase.instance.client.from('reactions').select('id').eq('observer_id', userId);
+        fCount = followedRes.length;
+        rxCount = rxRes.length;
+      } else {
+        final roomsResponse = await Supabase.instance.client.from('rooms').select('id').eq('builder_id', userId);
+        final updatesResponse = await Supabase.instance.client.from('updates').select('id').eq('author_id', userId);
+        rCount = roomsResponse.length;
+        uCount = updatesResponse.length;
+      }
 
       if (mounted) {
         setState(() {
@@ -76,9 +88,13 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
               _userName = userResponse['name'];
             }
             if (userResponse['avatar'] != null) _avatarUrl = userResponse['avatar'];
+            _role = role;
+            _reputation = userResponse['reputation'] ?? 0;
           }
-          _roomCount = roomsResponse.length;
-          _updateCount = updatesResponse.length;
+          _roomCount = rCount;
+          _updateCount = uCount;
+          _followedRoomsCount = fCount;
+          _reactionsCount = rxCount;
           _isLoadingStats = false;
         });
       }
@@ -88,13 +104,13 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
-    Navigator.of(context).pop(); // close bottom sheet
+    HapticFeedback.lightImpact();
+    final navigator = Navigator.of(context, rootNavigator: true);
     await Supabase.instance.client.auth.signOut();
-    if (context.mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+      (route) => false,
+    );
   }
 
   Widget _buildStatBox(String label, String value, Color color, IconData icon) {
@@ -138,10 +154,8 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
             child: Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.5)),
           ),
           Container(
-            decoration: BoxDecoration(
-              color: context.themeColors.surfaceHighlight.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: context.themeColors.borderSubtle.withOpacity(0.5)),
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
             ),
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -172,16 +186,9 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: (color ?? context.themeColors.textSecondary).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 16, color: color ?? context.themeColors.textSecondary),
-              ),
+              Icon(icon, size: 16, color: context.themeColors.textSecondary),
               const SizedBox(width: 16),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary))),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary))),
               if (trailing != null) trailing else Icon(LucideIcons.chevronRight, size: 16, color: context.themeColors.textTertiary),
             ],
           ),
@@ -228,78 +235,46 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                 ),
 
                 // User Info Header
-                Row(
-                  children: [
-                    Container(
-                      width: 64, height: 64,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [context.themeColors.primary500, context.themeColors.primary400],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: context.themeColors.primary500.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(3.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: context.themeColors.surface,
-                            shape: BoxShape.circle,
-                            image: _avatarUrl != null && _avatarUrl!.isNotEmpty
-                                ? DecorationImage(
-                                    image: CachedNetworkImageProvider(_avatarUrl!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                          ),
-                          child: (_avatarUrl == null || _avatarUrl!.isEmpty)
-                              ? Center(child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 24)))
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.themeColors.surfaceHighlight.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48, height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: context.themeColors.surface,
+                          image: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                              ? DecorationImage(
+                                  image: CachedNetworkImageProvider(_avatarUrl!),
+                                  fit: BoxFit.cover,
+                                )
                               : null,
                         ),
+                        child: (_avatarUrl == null || _avatarUrl!.isEmpty)
+                            ? Center(child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 20)))
+                            : null,
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_isLoadingStats && displayName == 'Builder')
-                            Container(width: 120, height: 24, decoration: BoxDecoration(color: context.themeColors.borderSubtle, borderRadius: BorderRadius.circular(4)))
-                          else
-                            Text(displayName, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: context.themeColors.textPrimary, letterSpacing: -0.5)),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: context.themeColors.surfaceHighlight,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(email, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
-                          ),
-                        ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_isLoadingStats && displayName == 'Builder')
+                              Container(width: 120, height: 24, decoration: BoxDecoration(color: context.themeColors.borderSubtle, borderRadius: BorderRadius.circular(4)))
+                            else
+                              Text(displayName, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: context.themeColors.textPrimary)),
+                            const SizedBox(height: 4),
+                            Text(email, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // Stats Row
-                Row(
-                  children: [
-                    _buildStatBox('ROOMS', _isLoadingStats ? '-' : '$_roomCount', Colors.lightBlue, LucideIcons.layoutGrid),
-                    const SizedBox(width: 12),
-                    _buildStatBox('UPDATES', _isLoadingStats ? '-' : '$_updateCount', Colors.amber, LucideIcons.zap),
-                    const SizedBox(width: 12),
-                    _buildStatBox('REP', '342', context.themeColors.primary500, LucideIcons.medal),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
 
@@ -307,8 +282,16 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                 _buildSheetSection('ACCOUNT', [
                   _buildSheetItem(
                     LucideIcons.user, 
-                    'My Profile', 
-                    color: Colors.blueAccent,
+                    'View Profile', 
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ProfileScreen())).then((_) {
+                        _fetchStats();
+                      });
+                    }
+                  ),
+                  _buildSheetItem(
+                    LucideIcons.edit3, 
+                    'Edit Profile', 
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(builder: (context) => const EditProfileScreen())).then((shouldRefresh) {
                         if (shouldRefresh == true) {
@@ -320,7 +303,6 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                   _buildSheetItem(
                     themeMode == ThemeMode.light ? LucideIcons.moon : LucideIcons.sun,
                     'Appearance',
-                    color: Colors.deepPurpleAccent,
                     trailing: DropdownButtonHideUnderline(
                       child: DropdownButton<ThemeMode>(
                         value: themeMode,
@@ -340,39 +322,55 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                       ),
                     ),
                   ),
-                  _buildSheetItem(LucideIcons.award, 'Achievements', color: Colors.orangeAccent, trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: context.themeColors.primary500, borderRadius: BorderRadius.circular(12)),
-                    child: const Text('2 NEW', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                  )),
+                  _buildSheetItem(LucideIcons.award, 'Achievements'),
                 ]),
+                
                 _buildSheetSection('PRODUCT OPS', [
-                  _buildSheetItem(LucideIcons.map, 'Roadmap View', color: Colors.indigoAccent),
-                  _buildSheetItem(LucideIcons.fileText, 'Build Logs', color: Colors.teal),
+                  _buildSheetItem(LucideIcons.map, 'Roadmap View'),
+                  _buildSheetItem(LucideIcons.fileText, 'Build Logs'),
+                ]),
+
+                _buildSheetSection('EXPLORE', [
+                  _buildSheetItem(LucideIcons.lightbulb, 'Discovery Mode'),
+                  _buildSheetItem(LucideIcons.badge, 'Expert Directory'),
+                  _buildSheetItem(LucideIcons.compass, 'Replay Tour'),
                 ]),
 
                 const SizedBox(height: 16),
                 
                 // Footer
-                InkWell(
-                  onTap: () => _handleSignOut(context),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
-                    ),
-                    child: const Center(
-                      child: Text('Sign out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w800, fontSize: 15)),
-                    ),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text('-', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
                 ),
                 const SizedBox(height: 16),
-                Center(
-                  child: Text('Patchwork App v1.0.0', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
+                Material(
+                  color: const Color(0xFFFFF0F2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: InkWell(
+                    onTap: () => _handleSignOut(context),
+                    borderRadius: BorderRadius.circular(12),
+                    splashColor: Colors.redAccent.withOpacity(0.3),
+                    highlightColor: Colors.redAccent.withOpacity(0.2),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(LucideIcons.logOut, color: Color(0xFFFF2B5E), size: 18),
+                          SizedBox(width: 8),
+                          Text('Sign out', style: TextStyle(color: Color(0xFFFF2B5E), fontWeight: FontWeight.w900, fontSize: 15)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
               ],
