@@ -71,31 +71,9 @@ jobs:
             echo "build_type=ipa" >> $GITHUB_ENV
           else
             echo "No signing certificate configured. Building unsigned iOS release..."
-            # Generate Flutter app assets and framework without device code-signing checks
-            flutter build ios --release --no-codesign --config-only || true
-            cd ios
-            # Build archive or runner directly using xcodebuild with code signing disabled
-            xcodebuild -workspace Runner.xcworkspace \
-              -scheme Runner \
-              -configuration Release \
-              -destination 'generic/platform=iOS' \
-              -derivedDataPath build/DerivedData \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGN_IDENTITY="" \
-              EXPANDED_CODE_SIGN_IDENTITY="" \
-              clean build
-            cd ..
-            
-            # Locate Runner.app in DerivedData or standard output locations
-            APP_DIR=$(find ios/build/DerivedData -name "Runner.app" -type d | head -n 1)
-            if [ -z "$APP_DIR" ]; then
-              APP_DIR=$(find build/ios -name "Runner.app" -type d | head -n 1)
-            fi
-            
-            echo "Found Runner.app at: $APP_DIR"
+            flutter build ios --release --no-codesign
             mkdir -p build/ios/ipa/Payload
-            cp -r "$APP_DIR" build/ios/ipa/Payload/
+            cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
             cd build/ios/ipa
             zip -r patchwork-unsigned.ipa Payload
             rm -rf Payload
