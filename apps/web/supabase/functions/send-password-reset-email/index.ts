@@ -30,7 +30,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { email } = body;
+    const { email, redirectTo: customRedirect } = body;
 
     if (!email) {
       return new Response(JSON.stringify({ error: "Missing email field" }), {
@@ -39,14 +39,15 @@ serve(async (req) => {
       });
     }
 
-    const origin = req.headers.get("origin") || "http://localhost:5174";
+    const origin = req.headers.get("origin");
+    const baseUrl = customRedirect || (origin ? `${origin}/reset-password` : "https://joinpatchwork.xyz/reset-password");
 
     // Use Supabase Admin to generate a secure recovery link
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
-        redirectTo: `${origin}/reset-password`,
+        redirectTo: baseUrl,
       }
     });
 

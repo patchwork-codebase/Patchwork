@@ -39,19 +39,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(
-        email,
+      final res = await Supabase.instance.client.functions.invoke(
+        'send-password-reset-email',
+        body: {
+          'email': email,
+          'redirectTo': 'https://joinpatchwork.xyz/reset-password',
+        },
       );
+
+      if (res.status != 200) {
+        final errorMsg = (res.data is Map && res.data['error'] != null)
+            ? res.data['error'].toString()
+            : 'Failed to send reset email';
+        throw Exception(errorMsg);
+      }
       
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => VerifyEmailScreen(email: email, isReset: true)),
         );
       }
-    } on AuthException catch (e) {
-      _showError(e.message);
+    } on FunctionException catch (e) {
+      _showError(e.reasonPhrase ?? e.details?.toString() ?? 'Failed to send password reset email');
     } catch (e) {
-      _showError('An unexpected error occurred.');
+      _showError(e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
