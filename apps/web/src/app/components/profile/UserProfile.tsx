@@ -43,6 +43,7 @@ import { ExpertCard } from "./ExpertCard";
 import { OrganizationSettingsCard } from "./OrganizationSettingsCard";
 import { SocialLinksCard } from "./SocialLinksCard";
 import { SkillsCard } from "./SkillsCard";
+import { FeedUpdateCard } from "../dashboard/FeedUpdateCard";
 import { SEO } from "../seo/SEO";
 
 
@@ -110,6 +111,67 @@ export default function UserProfile() {
       });
     }
   }, [profile]);
+
+  const [profileTab, setProfileTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'rooms'>('posts');
+  const [userUpdates, setUserUpdates] = useState<any[]>([]);
+  const [updatesLoading, setUpdatesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    async function fetchTabUpdates() {
+      setUpdatesLoading(true);
+      try {
+        let query = supabase
+          .from('updates')
+          .select('*, rooms(title, tags), users!author_id(name, avatar, is_verified_expert, organization_name, organization_logo_url), polls(*, poll_options(*))')
+          .eq('author_id', id)
+          .order('created_at', { ascending: false });
+
+        if (profileTab === 'posts') {
+          query = query.is('parent_update_id', null);
+        } else if (profileTab === 'replies') {
+          query = query.not('parent_update_id', 'is', null);
+        } else if (profileTab === 'reposts') {
+          query = query.not('repost_id', 'is', null);
+        } else if (profileTab === 'media') {
+          query = query.or('media_url.not.is.null,media_urls.not.is.null');
+        }
+
+        const { data, error } = await query;
+        if (!error && data) {
+          // Normalize rows for FeedUpdateCard compatibility
+          const normalized = data.map((u: any) => ({
+            id: u.id,
+            roomId: u.room_id,
+            authorId: u.author_id,
+            authorName: u.users?.name || u.author_name || 'Builder',
+            authorAvatar: u.users?.avatar,
+            authorIsVerifiedExpert: !!u.users?.is_verified_expert,
+            authorOrgName: u.users?.organization_name,
+            authorOrgLogo: u.users?.organization_logo_url,
+            content: u.content || '',
+            updateType: u.update_type,
+            mediaUrl: u.media_url,
+            mediaUrls: u.media_urls,
+            codeSnippet: u.code_snippet,
+            polls: u.polls,
+            createdAt: u.created_at,
+            rooms: u.rooms,
+            reactions: []
+          }));
+          setUserUpdates(normalized);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user tab updates', err);
+      } finally {
+        setUpdatesLoading(false);
+      }
+    }
+
+    if (profileTab !== 'rooms') {
+      fetchTabUpdates();
+    }
+  }, [id, profileTab]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -374,71 +436,115 @@ export default function UserProfile() {
             <Integrations userId={id!} />
           )}
 
-          {/* Rooms */}
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-[20px] font-extrabold text-slate-900 dark:text-white font-display">
-                {isOwn ? 'My Rooms' : `${profile.name}'s Rooms`}
-              </h2>
-              {rooms.length > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-slate-100 dark:border-white/10 text-[12px] font-bold text-slate-600 dark:text-slate-300 shadow-sm dark:shadow-none">{rooms.length}</span>
-              )}
+          {/* Segmented Profile Tabs: Posts, Replies, Reposts, Media, Rooms */}
+          <div className="mt-8">
+            <div className="flex border-b border-slate-200 dark:border-white/10 mb-6 gap-2 sm:gap-6 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { key: 'posts', label: 'Posts' },
+                { key: 'replies', label: 'Replies' },
+                { key: 'reposts', label: 'Reposts' },
+                { key: 'media', label: 'Media' },
+                { key: 'rooms', label: `Rooms (${rooms.length})` },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setProfileTab(tab.key as any)}
+                  className={`pb-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+                    profileTab === tab.key
+                      ? 'border-primary-500 text-primary-500'
+                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
-            {rooms.length === 0 ? (
-              <div className="text-center py-16 bg-white dark:bg-[#111111] border-2 border-dashed border-slate-100 dark:border-white/10 rounded-[24px] shadow-sm dark:shadow-none">
-                <Hammer className="w-12 h-12 mx-auto mb-4 text-slate-500" />
-                <p className="text-[15px] font-bold text-slate-500 dark:text-slate-400 mb-2">No rooms yet</p>
-                {isOwn && profile.role === 'builder' && (
-                  <Link to="/dashboard/create" className="text-primary-400 hover:text-slate-900 dark:text-white font-bold text-[13px] transition-colors inline-flex items-center gap-1">
-                    Create your first room <ArrowLeft className="w-3 h-3 rotate-180" />
-                  </Link>
+
+            {/* Updates Tabs (Posts, Replies, Reposts, Media) */}
+            {profileTab !== 'rooms' && (
+              <div>
+                {updatesLoading ? (
+                  <div className="space-y-4 py-8">
+                    {[1, 2].map(n => (
+                      <div key={n} className="h-32 bg-slate-100 dark:bg-white/5 animate-pulse rounded-2xl" />
+                    ))}
+                  </div>
+                ) : userUpdates.length === 0 ? (
+                  <div className="text-center py-16 bg-white dark:bg-[#111111] border-2 border-dashed border-slate-100 dark:border-white/10 rounded-[24px]">
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm capitalize">
+                      No {profileTab} yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {userUpdates.map((update: any) => (
+                      <FeedUpdateCard key={update.id} update={update} />
+                    ))}
+                  </div>
                 )}
               </div>
-            ) : (
-              <div className="grid gap-4">
-                {rooms.map(room => (
-                  <Link
-                    key={room.id} to={`/dashboard/room/${room.id}`}
-                    className="flex flex-col gap-3 bg-white dark:bg-[#111111]/80 border border-slate-100 dark:border-white/10 rounded-[20px] p-4 sm:p-5 hover:border-l-4 hover:border-l-primary-400 hover:border-slate-300 dark:border-white/20 hover:bg-white/5 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-2xl min-w-0 overflow-hidden"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-extrabold text-[15px] sm:text-[16px] text-slate-900 dark:text-white group-hover:text-primary-400 transition-colors font-display mb-2 line-clamp-2 break-words">{room.title}</h3>
-                      <div className="flex flex-wrap items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-widest font-mono ${room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-white/5 text-slate-400 ring-1 ring-white/10'}`}>
-                          {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-                          {room.status}
-                        </span>
-                        <span className="text-slate-500">·</span>
-                        <span>{room.updateCount} updates</span>
-                        <span className="text-slate-500">·</span>
-                        <ObserverAvatarStack room={room} />
-                        <span className="text-slate-500">·</span>
-                        <span>{timeAgo(room.updatedAt)}</span>
-                      </div>
-                    </div>
-                    {room.status !== 'active' && (
-                      <button
-                        onClick={e => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          navigate(`/dashboard/build-logs/${room.id}`);
-                        }}
-                        className="self-start text-[12px] font-bold px-4 py-2 bg-white/5 border border-slate-100 dark:border-white/10 rounded-full text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white/10 transition-all whitespace-nowrap shadow-sm dark:shadow-none"
-                      >
-                        View in Logs
-                      </button>
+            )}
+
+            {/* Rooms Tab */}
+            {profileTab === 'rooms' && (
+              <div>
+                {rooms.length === 0 ? (
+                  <div className="text-center py-16 bg-white dark:bg-[#111111] border-2 border-dashed border-slate-100 dark:border-white/10 rounded-[24px] shadow-sm dark:shadow-none">
+                    <Hammer className="w-12 h-12 mx-auto mb-4 text-slate-500" />
+                    <p className="text-[15px] font-bold text-slate-500 dark:text-slate-400 mb-2">No rooms yet</p>
+                    {isOwn && profile.role === 'builder' && (
+                      <Link to="/dashboard/create" className="text-primary-400 hover:text-slate-900 dark:text-white font-bold text-[13px] transition-colors inline-flex items-center gap-1">
+                        Create your first room <ArrowLeft className="w-3 h-3 rotate-180" />
+                      </Link>
                     )}
-                  </Link>
-                ))}
-                {hasNextRooms && (
-                  <div className="flex justify-center mt-6">
-                    <button
-                      onClick={() => fetchNextRooms()}
-                      disabled={isFetchingNextRooms}
-                      className="px-6 py-2.5 bg-white/5 border border-slate-100 dark:border-white/10 hover:border-slate-300 dark:border-white/20 hover:bg-white/10 rounded-full text-[13px] font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm dark:shadow-none"
-                    >
-                      {isFetchingNextRooms ? "Loading..." : "Load More Rooms"}
-                    </button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {rooms.map(room => (
+                      <Link
+                        key={room.id} to={`/dashboard/room/${room.id}`}
+                        className="flex flex-col gap-3 bg-white dark:bg-[#111111]/80 border border-slate-100 dark:border-white/10 rounded-[20px] p-4 sm:p-5 hover:border-l-4 hover:border-l-primary-400 hover:border-slate-300 dark:border-white/20 hover:bg-white/5 transition-all group backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-2xl min-w-0 overflow-hidden"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-extrabold text-[15px] sm:text-[16px] text-slate-900 dark:text-white group-hover:text-primary-400 transition-colors font-display mb-2 line-clamp-2 break-words">{room.title}</h3>
+                          <div className="flex flex-wrap items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-widest font-mono ${room.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20' : 'bg-white/5 text-slate-400 ring-1 ring-white/10'}`}>
+                              {room.status === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                              {room.status}
+                            </span>
+                            <span className="text-slate-500">·</span>
+                            <span>{room.updateCount} updates</span>
+                            <span className="text-slate-500">·</span>
+                            <ObserverAvatarStack room={room} />
+                            <span className="text-slate-500">·</span>
+                            <span>{timeAgo(room.updatedAt)}</span>
+                          </div>
+                        </div>
+                        {room.status !== 'active' && (
+                          <button
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              navigate(`/dashboard/build-logs/${room.id}`);
+                            }}
+                            className="self-start text-[12px] font-bold px-4 py-2 bg-white/5 border border-slate-100 dark:border-white/10 rounded-full text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-white/10 transition-all whitespace-nowrap shadow-sm dark:shadow-none"
+                          >
+                            View in Logs
+                          </button>
+                        )}
+                      </Link>
+                    ))}
+                    {hasNextRooms && (
+                      <div className="flex justify-center mt-6">
+                        <button
+                          onClick={() => fetchNextRooms()}
+                          disabled={isFetchingNextRooms}
+                          className="px-6 py-2.5 bg-white/5 border border-slate-100 dark:border-white/10 hover:border-slate-300 dark:border-white/20 hover:bg-white/10 rounded-full text-[13px] font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm dark:shadow-none"
+                        >
+                          {isFetchingNextRooms ? "Loading..." : "Load More Rooms"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

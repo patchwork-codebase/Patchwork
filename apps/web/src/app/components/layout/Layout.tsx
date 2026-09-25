@@ -17,6 +17,7 @@ import { HammerIcon, DashboardIcon, SearchIcon, ActivityIcon, EyeIcon, CompassIc
 import VerificationRequiredModal from '../ui/VerificationRequiredModal';
 import VerificationSuccessModal from '../dashboard/VerificationSuccessModal';
 import { WelcomeTour } from '../dashboard/WelcomeTour';
+import { WelcomeWalkthroughModal } from '../ui/WelcomeWalkthroughModal';
 import { FeedbackWidget } from '../ui/FeedbackWidget';
 
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -239,6 +240,7 @@ export default function Layout() {
           </div>
         </main>
       </div>
+      <WelcomeWalkthroughModal />
       <FeedbackWidget />
       <PwaInstallPrompt />
       <ScrollRestoration getKey={(location) => location.pathname} />

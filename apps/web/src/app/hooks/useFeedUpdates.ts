@@ -14,11 +14,15 @@ export interface FeedUpdate {
   authorOrgLogo?: string | null;
   content: string;
   mediaUrl?: string;
+  mediaUrls?: string[];
   codeSnippet?: string;
   updateType?: string;
   decisionMatrix?: any;
   diffData?: any;
   metricWin?: any;
+  polls?: any[];
+  repostId?: string | null;
+  originalUpdate?: any;
   createdAt: string;
   rooms?: {
     title: string;
@@ -52,10 +56,9 @@ export function useFeedUpdates(sortOrder: 'desc' | 'asc' = 'desc') {
       const from = (pageParam as number) * pageSize;
       const to = from + pageSize - 1;
 
-      // Original query — unchanged to keep feed working
       const { data, error } = await supabase
         .from('updates')
-        .select('*, rooms(title, tags), users!author_id(is_verified_expert, organization_name, organization_logo_url, avatar)')
+        .select('*, rooms(title, tags), users!author_id(is_verified_expert, organization_name, organization_logo_url, avatar), polls(*, poll_options(*))')
         .order('created_at', { ascending: sortOrder === 'asc' })
         .range(from, to);
 

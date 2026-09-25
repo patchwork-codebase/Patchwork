@@ -14,6 +14,7 @@ import { CodeSnippetBlock } from "../ui/CodeSnippetBlock";
 import { ReplyComposer } from "./ReplyComposer";
 import { ReactionGroup } from "./ReactionGroup";
 import { ThreadedReply } from "./ThreadedReply";
+import { PollWidget } from "./PollWidget";
 import { DecisionMatrixBlock } from "../pow/DecisionMatrixBlock";
 import { CodeDiffViewer } from "../pow/CodeDiffViewer";
 import { MetricImpactBadge } from "../pow/MetricImpactBadge";
@@ -121,6 +122,7 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
   const emojiReactions = allReactions.filter((r: any) => r.type !== 'reply');
 
   const [showAllReplies, setShowAllReplies] = React.useState(false);
+  const [selectedPreviewImage, setSelectedPreviewImage] = React.useState<string | null>(null);
   const visibleReplies = showAllReplies ? replies : replies.slice(-1);
 
   const isLaunch = fullRoom?.updateCount === 1;
@@ -167,6 +169,13 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
                 isVerified={!!update.authorIsVerifiedExpert} 
               />
             )}
+            {/* Update Type Badge */}
+            {update.updateType && UPDATE_TYPE_UI[update.updateType.toLowerCase()] && (
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${UPDATE_TYPE_UI[update.updateType.toLowerCase()].color}`}>
+                <span>{UPDATE_TYPE_UI[update.updateType.toLowerCase()].icon}</span>
+                <span>{UPDATE_TYPE_UI[update.updateType.toLowerCase()].label}</span>
+              </span>
+            )}
             <span className="text-slate-600 text-[14px]">·</span>
             <span 
               className="text-[13px] sm:text-[14px] text-slate-500 dark:text-slate-400 hover:underline cursor-pointer font-medium truncate max-w-[180px] sm:max-w-none"
@@ -196,11 +205,66 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
               )
             )}
 
-            {update.mediaUrl && (
-              <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-[#1a1a1a] relative group shadow-sm dark:shadow-none">
-                <SmartImage src={update.mediaUrl} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
-              </div>
+            {update.polls && update.polls.length > 0 && (
+              <PollWidget poll={update.polls[0]} />
             )}
+
+            {/* Multi-Image Gallery or Single Image */}
+            {(() => {
+              const images: string[] = (update.mediaUrls && update.mediaUrls.length > 0)
+                ? update.mediaUrls
+                : (update.mediaUrl ? [update.mediaUrl] : []);
+              
+              if (images.length === 0) return null;
+
+              if (images.length === 1) {
+                return (
+                  <div className="mt-3 rounded-[20px] w-full max-w-full overflow-hidden border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-[#1a1a1a] relative group shadow-sm dark:shadow-none cursor-pointer" onClick={() => setSelectedPreviewImage(images[0])}>
+                    <SmartImage src={images[0]} aspectRatio="video" objectFit="cover" alt="Update media" className="hover:scale-[1.02] transition-transform duration-500" />
+                  </div>
+                );
+              }
+
+              if (images.length === 2) {
+                return (
+                  <div className="mt-3 grid grid-cols-2 gap-2 rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/10">
+                    {images.map((img, i) => (
+                      <div key={i} className="aspect-video relative overflow-hidden cursor-pointer group bg-slate-100 dark:bg-white/5" onClick={() => setSelectedPreviewImage(img)}>
+                        <img src={img} alt={`Media ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
+
+              if (images.length === 3) {
+                return (
+                  <div className="mt-3 grid grid-cols-3 gap-2 rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/10 aspect-video">
+                    <div className="col-span-2 h-full relative overflow-hidden cursor-pointer group bg-slate-100 dark:bg-white/5" onClick={() => setSelectedPreviewImage(images[0])}>
+                      <img src={images[0]} alt="Media 1" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    </div>
+                    <div className="grid grid-rows-2 gap-2 h-full">
+                      {images.slice(1).map((img, i) => (
+                        <div key={i} className="relative overflow-hidden cursor-pointer group bg-slate-100 dark:bg-white/5" onClick={() => setSelectedPreviewImage(img)}>
+                          <img src={img} alt={`Media ${i + 2}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              // 4 or more images -> 2x2 grid
+              return (
+                <div className="mt-3 grid grid-cols-2 gap-2 rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/10 aspect-video">
+                  {images.slice(0, 4).map((img, i) => (
+                    <div key={i} className="relative overflow-hidden cursor-pointer group bg-slate-100 dark:bg-white/5" onClick={() => setSelectedPreviewImage(img)}>
+                      <img src={img} alt={`Media ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {update.decisionMatrix && (
               <DecisionMatrixBlock data={update.decisionMatrix} />
@@ -330,6 +394,40 @@ export const FeedUpdateCard = React.memo(function FeedUpdateCard({
           )}
         </div>
       </div>
+
+      {/* Fullscreen Lightbox Modal */}
+      <AnimatePresence>
+        {selectedPreviewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedPreviewImage(null);
+            }}
+          >
+            <div className="relative max-w-4xl max-h-[90vh]">
+              <img
+                src={selectedPreviewImage}
+                alt="Enlarged media"
+                className="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPreviewImage(null);
+                }}
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/90 transition-colors shadow-lg"
+              >
+                ✕
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }, (prevProps, nextProps) => {

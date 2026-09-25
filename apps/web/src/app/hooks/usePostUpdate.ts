@@ -8,6 +8,13 @@ interface PostUpdatePayload {
   updateContent: string;
   codeSnippet: string;
   mediaPreview: string | null;
+  mediaPreviews?: string[];
+  updateType?: string;
+  pollData?: {
+    question: string;
+    options: string[];
+    durationDays: number;
+  } | null;
   userId: string;
   authorName: string;
 }
@@ -21,10 +28,14 @@ export function usePostUpdate() {
       updateContent,
       codeSnippet,
       mediaPreview,
+      mediaPreviews = [],
+      updateType = 'insight',
+      pollData = null,
       userId,
       authorName
     }: PostUpdatePayload) => {
-      if ((!updateContent.trim() && !codeSnippet.trim() && !mediaPreview) || !selectedRoomId || !userId) {
+      const allPreviews = [...(mediaPreviews.length > 0 ? mediaPreviews : (mediaPreview ? [mediaPreview] : []))];
+      if ((!updateContent.trim() && !codeSnippet.trim() && allPreviews.length === 0 && !pollData) || !selectedRoomId || !userId) {
         throw new Error("Missing required fields for update.");
       }
 
@@ -40,11 +51,19 @@ export function usePostUpdate() {
 
       const updateId = window.crypto?.randomUUID?.() || `upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      let uploadedMediaUrl = null;
-      if (mediaPreview && mediaPreview.startsWith('data:')) {
-        toast.loading("Uploading image...", { id: "upload" });
+      const uploadedMediaUrls: string[] = [];
+      if (allPreviews.length > 0) {
+        toast.loading(`Uploading media (1/${allPreviews.length})...`, { id: "upload" });
         try {
-          uploadedMediaUrl = await uploadImage(mediaPreview);
+          for (let i = 0; i < allPreviews.length; i++) {
+            const preview = allPreviews[i];
+            if (preview.startsWith('data:')) {
+              const url = await uploadImage(preview);
+              uploadedMediaUrls.push(url);
+            } else if (preview.startsWith('http')) {
+              uploadedMediaUrls.push(preview);
+            }
+          }
           toast.dismiss("upload");
         } catch (error) {
           toast.dismiss("upload");
@@ -52,13 +71,17 @@ export function usePostUpdate() {
         }
       }
 
-      const payload = {
+      const primaryMediaUrl = uploadedMediaUrls.length > 0 ? uploadedMediaUrls[0] : null;
+
+      const payload: Record<string, any> = {
         id: updateId,
         room_id: selectedRoomId,
         author_id: userId,
         author_name: authorName,
         content: updateContent.trim(),
-        media_url: uploadedMediaUrl,
+        update_type: updateType,
+        media_url: primaryMediaUrl,
+        media_urls: uploadedMediaUrls.length > 0 ? uploadedMediaUrls : null,
         code_snippet: codeSnippet.trim() || null,
         created_at: new Date().toISOString(),
       };
@@ -68,6 +91,39 @@ export function usePostUpdate() {
         .insert(payload);
 
       if (insertError) throw insertError;
+
+      if (pollData && pollData.question.trim() && pollData.options.length >= 2) {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + (pollData.durationDays || 3));
+
+        const { data: pollRow, error: pollError } = await supabase
+          .from('polls')
+          .insert({
+            update_id: updateId,
+            question: pollData.question.trim(),
+            expires_at: expiresAt.toISOString(),
+          })
+          .select('id')
+          .single();
+
+        if (pollError) throw pollError;
+
+        if (pollRow?.id) {
+          const optionsPayload = pollData.options
+            .map(opt => opt.trim())
+            .filter(opt => opt.length > 0)
+            .map(opt => ({
+              poll_id: pollRow.id,
+              option_text: opt,
+            }));
+
+          const { error: optionsError } = await supabase
+            .from('poll_options')
+            .insert(optionsPayload);
+
+          if (optionsError) throw optionsError;
+        }
+      }
 
       await supabase
         .from('rooms')
