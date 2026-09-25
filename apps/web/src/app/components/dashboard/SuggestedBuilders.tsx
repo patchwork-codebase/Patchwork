@@ -23,6 +23,29 @@ export function SuggestedBuilders({ currentUserId }: { currentUserId?: string })
       setLoading(false);
     }
     load();
+
+    const channelName = 'public:users';
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) {
+      supabase.removeChannel(existing);
+    }
+
+    const channel = supabase
+      .channel(channelName)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
+        const newUser = payload.new as Profile;
+        if (newUser.role === 'builder' && newUser.id !== currentUserId) {
+          setBuilders((prev) => {
+            const updated = [newUser, ...prev];
+            return updated.slice(0, 8);
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [currentUserId]);
 
   const handleDismiss = (builderId: string) => {

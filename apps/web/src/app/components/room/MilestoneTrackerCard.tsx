@@ -102,8 +102,17 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
   useEffect(() => {
     if (!roomId) return;
 
+    const ch1Name = `linear-issues-${roomId}`;
+    const ch2Name = `clickup-issues-${roomId}`;
+    const ch3Name = `jira-issues-${roomId}`;
+
+    [ch1Name, ch2Name, ch3Name].forEach(name => {
+      const existing = supabase.getChannels().find(c => c.topic === `realtime:${name}`);
+      if (existing) supabase.removeChannel(existing);
+    });
+
     const channel = supabase
-      .channel(`linear-issues-${roomId}`)
+      .channel(ch1Name)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'linear_issues', filter: `room_id=eq.${roomId}` },
@@ -114,13 +123,13 @@ export function MilestoneTrackerCard({ roomId, user, reactions = [], queryClient
       .subscribe();
 
     const channel2 = supabase
-      .channel(`clickup-issues-${roomId}`)
+      .channel(ch2Name)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clickup_issues', filter: `room_id=eq.${roomId}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['clickup-issues', roomId] });
       }).subscribe();
 
     const channel3 = supabase
-      .channel(`jira-issues-${roomId}`)
+      .channel(ch3Name)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'jira_issues', filter: `room_id=eq.${roomId}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['jira-issues', roomId] });
       }).subscribe();

@@ -276,6 +276,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Global Realtime Sync for Avatars
     // This ensures that when any user updates their avatar, it instantly propagates
     // to all other active clients currently viewing them (e.g. in rooms, feed, etc.)
+    const existingAvatarChannel = supabase.getChannels().find(c => c.topic === 'realtime:global-users-avatar');
+    if (existingAvatarChannel) supabase.removeChannel(existingAvatarChannel);
+
     const globalUsersChannel = supabase
       .channel('global-users-avatar')
       .on(

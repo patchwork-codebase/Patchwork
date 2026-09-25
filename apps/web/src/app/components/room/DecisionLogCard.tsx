@@ -95,8 +95,14 @@ export function DecisionLogCard({ roomId, user, reactions = [], queryClient, isN
   useEffect(() => {
     if (!roomId) return;
 
+    const channelName = `room-decisions-${roomId}`;
+    const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+    if (existing) {
+      supabase.removeChannel(existing);
+    }
+
     const channel = supabase
-      .channel(`room-decisions-${roomId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_decisions', filter: `room_id=eq.${roomId}` },
