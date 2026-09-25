@@ -4,8 +4,9 @@ import {
   ArrowLeft, Calendar, Clock, Users, TrendingUp, MessageCircle,
   Share2, BookOpen, Zap, CheckCircle2, PauseCircle, Archive,
   ChevronDown, ChevronUp, RotateCcw, Hammer, FileText, Target,
-  CheckCircle, AlertCircle, ArrowRight, LayoutList
+  CheckCircle, AlertCircle, ArrowRight, LayoutList, Film
 } from "lucide-react";
+import { JourneyTimelapseModal } from "../room/JourneyTimelapseModal";
 import { SmartArtifactCard } from '../../components/room/SmartArtifactCard';
 import { extractKeywords } from '../../utils/keywordExtractor';
 import { useRoomDetails } from "../../hooks/useRooms";
@@ -70,6 +71,7 @@ export default function RoomLogPage() {
   const [retroSaving, setRetroSaving] = useState(false);
   const [sortHighestSignal, setSortHighestSignal] = useState(false);
   const [retroEditing, setRetroEditing] = useState(false);
+  const [journeyModalOpen, setJourneyModalOpen] = useState(false);
 
   // Fetch decisions
   const { data: decisions = [] } = useQuery({
@@ -232,9 +234,18 @@ export default function RoomLogPage() {
               )}
             </div>
           </div>
-          <button onClick={copyLink} title="Copy link" className="shrink-0 flex items-center gap-2 px-4 py-2 border border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-full text-[12px] font-bold text-slate-600 transition-all shadow-sm dark:shadow-none">
-            <Share2 className="w-3.5 h-3.5" /> Share
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setJourneyModalOpen(true)}
+              title="Watch Build Journey Timelapse"
+              className="flex items-center gap-2 px-4 py-2 border border-purple-500/20 bg-purple-50 hover:bg-purple-100 rounded-full text-[12px] font-bold text-purple-700 transition-all shadow-sm active:scale-95"
+            >
+              <Film className="w-3.5 h-3.5 text-purple-600" /> Timelapse
+            </button>
+            <button onClick={copyLink} title="Copy link" className="flex items-center gap-2 px-4 py-2 border border-slate-100 bg-slate-50 hover:bg-slate-100 rounded-full text-[12px] font-bold text-slate-600 transition-all shadow-sm dark:shadow-none">
+              <Share2 className="w-3.5 h-3.5" /> Share
+            </button>
+          </div>
         </div>
       </div>
 
@@ -670,6 +681,23 @@ export default function RoomLogPage() {
           <ArrowLeft className="w-4 h-4" /> All build logs
         </Link>
       </div>
+
+      <JourneyTimelapseModal
+        isOpen={journeyModalOpen}
+        onClose={() => setJourneyModalOpen(false)}
+        roomTitle={room?.title || 'Build Journey'}
+        items={
+          [...(updates || [])]
+            .sort((a, b) => new Date(a.createdAt || a.created_at).getTime() - new Date(b.createdAt || b.created_at).getTime())
+            .map((u: any) => ({
+              id: u.id,
+              content: u.content,
+              created_at: u.createdAt || u.created_at,
+              update_type: u.updateType || u.update_type,
+              media_urls: u.mediaUrls || u.media_urls || (u.media ? (Array.isArray(u.media) ? u.media : [u.media]) : []),
+            }))
+        }
+      />
     </div>
   );
 }

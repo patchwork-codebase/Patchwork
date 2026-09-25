@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Lock, Layers, Compass, Zap } from "lucide-react";
+import { Hammer, Users, Clock, ExternalLink, Share2, BookOpen, Linkedin, CheckCircle, Edit2, ShieldCheck, Lock, Layers, Compass, Zap, Film } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { VerifiedTick } from "../ui/VerifiedTick";
 import { ObserverAvatarStack } from "../ui/ObserverAvatarStack";
@@ -23,6 +23,7 @@ import { InviteTeamModal } from "./InviteTeamModal";
 import { IntegrationsModal } from "./IntegrationsModal";
 import { LivePresencePill } from "./LivePresencePill";
 import { BuilderTourModal } from "./BuilderTourModal";
+import { JourneyTimelapseModal } from "./JourneyTimelapseModal";
 import { useState } from "react";
 import type { Room } from "../../types";
 
@@ -54,6 +55,7 @@ export function RoomHeader({
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [integrationsModalOpen, setIntegrationsModalOpen] = useState(false);
   const [tourModalOpen, setTourModalOpen] = useState(false);
+  const [journeyModalOpen, setJourneyModalOpen] = useState(false);
 
   const vis = room.visibility ?? (room.isPrivate ? 'private' : 'public');
   const VISIBILITY_BADGES: Record<string, { icon: string; label: string; className: string }> = {
@@ -133,6 +135,16 @@ export function RoomHeader({
                 className="flex items-center justify-center w-9 h-9 border border-slate-100 dark:border-white/10 bg-white/5 hover:bg-[#1DA1F2]/10 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/30 rounded-xl text-slate-500 dark:text-slate-400 transition-all shadow-sm active:scale-95"
               >
                 <Share2 className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => setJourneyModalOpen(true)}
+                title="Watch Build Journey Timelapse"
+                aria-label="Watch Build Journey Timelapse"
+                className="flex items-center justify-center gap-1.5 px-3 h-9 border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 rounded-xl text-purple-400 font-bold transition-all shadow-sm active:scale-95 text-xs cursor-pointer"
+              >
+                <Film className="w-4 h-4 text-purple-400" />
+                <span className="hidden sm:inline">Timelapse</span>
               </button>
 
               {isBuilder && (room.status === 'active' || room.status === 'draft') && (
@@ -350,6 +362,22 @@ export function RoomHeader({
         isOpen={tourModalOpen}
         onClose={() => setTourModalOpen(false)}
         roomId={room.id}
+      />
+      <JourneyTimelapseModal
+        isOpen={journeyModalOpen}
+        onClose={() => setJourneyModalOpen(false)}
+        roomTitle={room.title}
+        items={
+          [...(room.updates || [])]
+            .sort((a, b) => new Date(a.createdAt || (a as any).created_at).getTime() - new Date(b.createdAt || (b as any).created_at).getTime())
+            .map((u: any) => ({
+              id: u.id,
+              content: u.content,
+              created_at: u.createdAt || u.created_at,
+              update_type: u.updateType || u.update_type,
+              media_urls: u.mediaUrls || u.media_urls || (u.media ? (Array.isArray(u.media) ? u.media : [u.media]) : []),
+            }))
+        }
       />
     </div>
   );
