@@ -13,6 +13,7 @@ class CreateUpdateScreen extends StatefulWidget {
   final String? quotedUpdateId;
   final String? quotedUpdateContent;
   final String? quotedUpdateAuthor;
+  final String? parentUpdateId;
 
   const CreateUpdateScreen({
     super.key,
@@ -21,6 +22,7 @@ class CreateUpdateScreen extends StatefulWidget {
     this.quotedUpdateId,
     this.quotedUpdateContent,
     this.quotedUpdateAuthor,
+    this.parentUpdateId,
   });
 
   @override
@@ -34,9 +36,18 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
   bool _isLoading = false;
   bool _needsFeedback = false;
   
-  XFile? _selectedMedia;
-  Uint8List? _mediaBytes;
+  final List<XFile> _selectedMediaList = [];
+  final List<Uint8List> _mediaBytesList = [];
   bool _isUploadingMedia = false;
+
+  // Poll state
+  bool _hasPoll = false;
+  final TextEditingController _pollQuestionController = TextEditingController();
+  final List<TextEditingController> _pollOptionControllers = [
+    TextEditingController(),
+    TextEditingController(),
+  ];
+  int _pollDurationDays = 3;
 
   late Future<List<Map<String, dynamic>>> _roomsFuture;
   List<Map<String, dynamic>> _allUsers = [];
@@ -55,6 +66,15 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
     _selectedRoomId = widget.preselectedRoomId;
     _roomsFuture = _fetchMyRooms();
     _fetchUsers();
+  }
+
+  @override
+  void dispose() {
+    _pollQuestionController.dispose();
+    for (final controller in _pollOptionControllers) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _fetchUsers() async {
@@ -77,16 +97,69 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
 
   Future<void> _pickMedia() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024);
+    final remainingSlots = 4 - _selectedMediaList.length;
+    if (remainingSlots <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Maximum 4 images allowed per update')),
+      );
+      return;
+    }
+
+    try {
+      final pickedFiles = await picker.pickMultiImage(
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+
+      if (pickedFiles.isEmpty) return;
+
+      final filesToAdd = pickedFiles.take(remainingSlots).toList();
+      for (final file in filesToAdd) {
+        final bytes = await file.readAsBytes();
+        setState(() {
+          _selectedMediaList.add(file);
+          _mediaBytesList.add(bytes);
+        });
+      }
+    } catch (_) {
+      // Fallback to single pick if pickMultiImage has device issues
+      final singlePicked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (singlePicked != null) {
+        final bytes = await singlePicked.readAsBytes();
+        setState(() {
+          _selectedMediaList.add(singlePicked);
+          _mediaBytesList.add(bytes);
+        });
+      }
+    }
+  }
+
+  void _insertMarkdown(String prefix, [String suffix = '']) {
+    final controller = _mentionsKey.currentState?.controller;
+    if (controller == null) return;
     
-    if (pickedFile == null) return;
+    final text = controller.text;
+    final selection = controller.selection;
     
-    final bytes = await pickedFile.readAsBytes();
-    
-    setState(() {
-      _selectedMedia = pickedFile;
-      _mediaBytes = bytes;
-    });
+    if (!selection.isValid || selection.isCollapsed) {
+      final cursor = selection.isValid ? selection.start : text.length;
+      final newText = text.substring(0, cursor) + prefix + suffix + text.substring(cursor);
+      controller.text = newText;
+      final newCursor = cursor + prefix.length;
+      controller.selection = TextSelection.collapsed(offset: newCursor);
+    } else {
+      final selected = text.substring(selection.start, selection.end);
+      final newText = text.substring(0, selection.start) + prefix + selected + suffix + text.substring(selection.end);
+      controller.text = newText;
+      final newCursor = selection.start + prefix.length + selected.length + suffix.length;
+      controller.selection = TextSelection.collapsed(offset: newCursor);
+    }
   }
 
   Future<List<Map<String, dynamic>>> _fetchMyRooms() async {
@@ -114,25 +187,53 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
       return;
     }
 
+    if (_hasPoll) {
+      final question = _pollQuestionController.text.trim();
+      if (question.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a poll question')));
+        return;
+      }
+      final validOptions = _pollOptionControllers
+          .map((c) => c.text.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
+      if (validOptions.length < 2) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Poll must have at least 2 options')));
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) throw Exception('Not authenticated');
 
-      String? mediaUrl;
-      if (_selectedMedia != null && _mediaBytes != null) {
+      List<String> uploadedUrls = [];
+      if (_selectedMediaList.isNotEmpty) {
         setState(() => _isUploadingMedia = true);
-        final fileExt = _selectedMedia!.name.split('.').last;
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId.$fileExt';
-        final filePath = 'updates/$fileName';
-        
-        await Supabase.instance.client.storage
-            .from('updates_media')
-            .uploadBinary(filePath, _mediaBytes!);
-            
-        mediaUrl = Supabase.instance.client.storage.from('updates_media').getPublicUrl(filePath);
+
+        final uploadFutures = _selectedMediaList.asMap().entries.map((entry) async {
+          final idx = entry.key;
+          final file = entry.value;
+          final bytes = _mediaBytesList[idx];
+          final fileExt = file.name.split('.').last;
+          final fileName = '${DateTime.now().millisecondsSinceEpoch}_${idx}_$userId.$fileExt';
+          final filePath = 'updates/$fileName';
+
+          await Supabase.instance.client.storage
+              .from('updates_media')
+              .uploadBinary(filePath, bytes);
+
+          return Supabase.instance.client.storage
+              .from('updates_media')
+              .getPublicUrl(filePath);
+        }).toList();
+
+        uploadedUrls = await Future.wait(uploadFutures);
       }
+
+      final primaryMediaUrl = uploadedUrls.isNotEmpty ? uploadedUrls.first : null;
 
       final userProfile = await Supabase.instance.client
           .from('users')
@@ -151,18 +252,47 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                '${hex()}${hex()}${hex()}${hex()}${hex()}${hex()}';
       }
 
+      final updateId = generateUuid();
+
       await Supabase.instance.client.from('updates').insert({
-        'id': generateUuid(),
+        'id': updateId,
         'room_id': _selectedRoomId,
         'author_id': userId,
         'author_name': authorName,
         'update_type': _selectedUpdateType,
         'content': markupContent,
         'needs_feedback': _needsFeedback,
-        'media_url': mediaUrl,
+        'media_url': primaryMediaUrl,
+        'media_urls': uploadedUrls,
         if (widget.quotedUpdateId != null) 'repost_id': widget.quotedUpdateId,
         if (widget.quotedUpdateId != null) 'is_repost_only': false,
+        if (widget.parentUpdateId != null) 'parent_update_id': widget.parentUpdateId,
       });
+
+      // Insert Poll and Poll Options if created
+      if (_hasPoll) {
+        final question = _pollQuestionController.text.trim();
+        final validOptions = _pollOptionControllers
+            .map((c) => c.text.trim())
+            .where((t) => t.isNotEmpty)
+            .toList();
+
+        final pollExpiresAt = DateTime.now().add(Duration(days: _pollDurationDays)).toIso8601String();
+        final pollRes = await Supabase.instance.client.from('polls').insert({
+          'update_id': updateId,
+          'question': question,
+          'expires_at': pollExpiresAt,
+        }).select('id').single();
+
+        final pollId = pollRes['id'];
+
+        final optionsToInsert = validOptions.map((opt) => {
+          'poll_id': pollId,
+          'option_text': opt,
+        }).toList();
+
+        await Supabase.instance.client.from('poll_options').insert(optionsToInsert);
+      }
 
       // Extract mentioned user IDs from markupText: @[display_name](id)
       final mentionRegExp = RegExp(r'@\[.*?\]\((.*?)\)');
@@ -171,12 +301,11 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
 
       for (var mentionedId in mentionedUserIds) {
         if (mentionedId != null && mentionedId.isNotEmpty) {
-          await Supabase.instance.client.from('notifications').insert({
-            'user_id': mentionedId,
-            'title': 'You were mentioned!',
-            'message': '$authorName mentioned you in an update.',
-            'type': 'mention',
-            'link_id': widget.preselectedRoomId, // Can also link to update ID
+          await Supabase.instance.client.from('mentions').insert({
+            'source_type': 'update',
+            'source_id': updateId,
+            'mentioned_user_id': mentionedId,
+            'author_id': userId,
           });
         }
       }
@@ -252,11 +381,6 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -415,54 +539,110 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                     border: Border.all(color: context.themeColors.borderSubtle),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: FlutterMentions(
-                    key: _mentionsKey,
-                    suggestionPosition: SuggestionPosition.Bottom,
-                    maxLines: 12,
-                    minLines: 4,
-                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, height: 1.5),
-                    decoration: InputDecoration(
-                      hintText: "What's the latest? Support for markdown, code snippets, and embeds coming soon...",
-                      hintStyle: TextStyle(color: context.themeColors.textTertiary),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(20),
-                    ),
-                    mentions: [
-                      Mention(
-                        trigger: '@',
-                        style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold),
-                        data: _allUsers,
-                        suggestionBuilder: (data) {
-                          return Container(
-                            padding: const EdgeInsets.all(12),
-                            color: context.themeColors.surfaceHighlight,
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: NetworkImage(data['photo']),
-                                  radius: 16,
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Markdown Formatting Ribbon
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: context.themeColors.surfaceHighlight.withOpacity(0.5),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          border: Border(bottom: BorderSide(color: context.themeColors.borderSubtle)),
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildFormatButton(
+                                icon: LucideIcons.bold,
+                                tooltip: 'Bold',
+                                onTap: () => _insertMarkdown('**', '**'),
+                              ),
+                              _buildFormatButton(
+                                icon: LucideIcons.italic,
+                                tooltip: 'Italic',
+                                onTap: () => _insertMarkdown('*', '*'),
+                              ),
+                              _buildFormatButton(
+                                icon: LucideIcons.code,
+                                tooltip: 'Inline Code',
+                                onTap: () => _insertMarkdown('`', '`'),
+                              ),
+                              _buildFormatButton(
+                                icon: LucideIcons.fileCode,
+                                tooltip: 'Code Block',
+                                onTap: () => _insertMarkdown('```\n', '\n```'),
+                              ),
+                              _buildFormatButton(
+                                icon: LucideIcons.list,
+                                tooltip: 'Bullet List',
+                                onTap: () => _insertMarkdown('- '),
+                              ),
+                              _buildFormatButton(
+                                icon: LucideIcons.link,
+                                tooltip: 'Link',
+                                onTap: () => _insertMarkdown('[', '](https://)'),
+                              ),
+                              _buildFormatButton(
+                                icon: LucideIcons.quote,
+                                tooltip: 'Quote',
+                                onTap: () => _insertMarkdown('> '),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      FlutterMentions(
+                        key: _mentionsKey,
+                        suggestionPosition: SuggestionPosition.Bottom,
+                        maxLines: 12,
+                        minLines: 4,
+                        style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, height: 1.5),
+                        decoration: InputDecoration(
+                          hintText: "What's the latest? Share progress, decisions, or code...",
+                          hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        mentions: [
+                          Mention(
+                            trigger: '@',
+                            style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold),
+                            data: _allUsers,
+                            suggestionBuilder: (data) {
+                              return Container(
+                                padding: const EdgeInsets.all(12),
+                                color: context.themeColors.surfaceHighlight,
+                                child: Row(
                                   children: [
-                                    Text(data['full_name'], style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
-                                    Text('@${data['display']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
+                                    CircleAvatar(
+                                      backgroundImage: NetworkImage(data['photo']),
+                                      radius: 16,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(data['full_name'], style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
+                                        Text('@${data['display']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
+                                      ],
+                                    )
                                   ],
-                                )
-                              ],
-                            ),
-                          );
-                        }
-                      )
+                                ),
+                              );
+                            }
+                          )
+                        ],
+                      ),
                     ],
                   ),
                 ),
                 
                 const SizedBox(height: 24),
                 
-                // Media Picker
-                if (_selectedMedia == null)
+                // Media Picker & Thumbnails
+                if (_selectedMediaList.isEmpty)
                   GestureDetector(
                     onTap: _pickMedia,
                     child: Container(
@@ -484,68 +664,407 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                             child: Icon(LucideIcons.imagePlus, color: context.themeColors.textSecondary),
                           ),
                           const SizedBox(height: 12),
-                          Text('Attach an image', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
+                          Text('Attach images (up to 4)', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text('JPG, PNG up to 5MB', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                          Text('JPG, PNG up to 5MB each', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
                         ],
                       ),
                     ),
                   )
                 else
-                  Stack(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: context.themeColors.borderSubtle),
-                          image: _mediaBytes != null ? DecorationImage(
-                            image: MemoryImage(_mediaBytes!),
-                            fit: BoxFit.cover,
-                          ) : null,
-                        ),
-                      ),
-                      if (_isUploadingMedia)
-                        Container(
-                          width: double.infinity,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(child: CircularProgressIndicator(color: context.themeColors.primary500)),
-                        ),
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (!_isUploadingMedia) {
-                              setState(() {
-                                _selectedMedia = null;
-                                _mediaBytes = null;
-                              });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.black87,
-                              shape: BoxShape.circle,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'ATTACHMENTS (${_selectedMediaList.length}/4)',
+                            style: TextStyle(
+                              color: context.themeColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
                             ),
-                            child: const Icon(LucideIcons.x, color: Colors.white, size: 16),
                           ),
+                          if (_selectedMediaList.length < 4 && !_isUploadingMedia)
+                            GestureDetector(
+                              onTap: _pickMedia,
+                              child: Text(
+                                '+ Add more',
+                                style: TextStyle(
+                                  color: context.themeColors.primary500,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 140,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _selectedMediaList.length + (_selectedMediaList.length < 4 ? 1 : 0),
+                          separatorBuilder: (_, __) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            if (index == _selectedMediaList.length) {
+                              // Add button slot
+                              return GestureDetector(
+                                onTap: _pickMedia,
+                                child: Container(
+                                  width: 140,
+                                  decoration: BoxDecoration(
+                                    color: context.themeColors.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: context.themeColors.borderSubtle,
+                                      style: BorderStyle.solid,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(LucideIcons.plus, color: context.themeColors.textSecondary, size: 28),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Add',
+                                        style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final bytes = _mediaBytesList[index];
+                            return Stack(
+                              children: [
+                                Container(
+                                  width: 140,
+                                  height: 140,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: context.themeColors.borderSubtle),
+                                    image: DecorationImage(
+                                      image: MemoryImage(bytes),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                if (_isUploadingMedia)
+                                  Container(
+                                    width: 140,
+                                    height: 140,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(color: context.themeColors.primary500, strokeWidth: 2.5),
+                                    ),
+                                  ),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (!_isUploadingMedia) {
+                                        setState(() {
+                                          _selectedMediaList.removeAt(index);
+                                          _mediaBytesList.removeAt(index);
+                                        });
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black87,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(LucideIcons.x, color: Colors.white, size: 14),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
                   
+                const SizedBox(height: 24),
+
+                // Interactive Poll Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.themeColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _hasPoll 
+                          ? context.themeColors.primary500.withOpacity(0.5) 
+                          : context.themeColors.borderSubtle,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: _hasPoll 
+                                      ? context.themeColors.primary500.withOpacity(0.15) 
+                                      : context.themeColors.surfaceHighlight,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  LucideIcons.barChart2, 
+                                  size: 18, 
+                                  color: _hasPoll 
+                                      ? context.themeColors.primary500 
+                                      : context.themeColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Community Poll',
+                                    style: TextStyle(
+                                      color: context.themeColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Ask observers to vote on decisions',
+                                    style: TextStyle(
+                                      color: context.themeColors.textTertiary,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: _hasPoll,
+                            activeColor: context.themeColors.primary500,
+                            onChanged: (val) {
+                              setState(() => _hasPoll = val);
+                            },
+                          ),
+                        ],
+                      ),
+
+                      if (_hasPoll) ...[
+                        const SizedBox(height: 16),
+                        Divider(height: 1, color: context.themeColors.borderSubtle),
+                        const SizedBox(height: 16),
+
+                        // Poll Question Input
+                        Text(
+                          'POLL QUESTION',
+                          style: TextStyle(
+                            color: context.themeColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _pollQuestionController,
+                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: 'e.g., Which pricing tier works best?',
+                            hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                            filled: true,
+                            fillColor: context.themeColors.surfaceHighlight,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.themeColors.borderSubtle),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.themeColors.borderSubtle),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Poll Options
+                        Text(
+                          'OPTIONS (2–4)',
+                          style: TextStyle(
+                            color: context.themeColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        ...List.generate(_pollOptionControllers.length, (idx) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _pollOptionControllers[idx],
+                                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13),
+                                    decoration: InputDecoration(
+                                      hintText: 'Option ${idx + 1}',
+                                      hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                                      filled: true,
+                                      fillColor: context.themeColors.surfaceHighlight,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(color: context.themeColors.borderSubtle),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(color: context.themeColors.borderSubtle),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (_pollOptionControllers.length > 2) ...[
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _pollOptionControllers[idx].dispose();
+                                        _pollOptionControllers.removeAt(idx);
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.redAccent.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(LucideIcons.trash2, color: Colors.redAccent, size: 16),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        }),
+
+                        if (_pollOptionControllers.length < 4) ...[
+                          const SizedBox(height: 4),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _pollOptionControllers.add(TextEditingController());
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: context.themeColors.surfaceHighlight,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: context.themeColors.borderSubtle),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.plus, size: 14, color: context.themeColors.primary500),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Add Option',
+                                    style: TextStyle(
+                                      color: context.themeColors.primary500,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+                        // Duration Selector
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Poll Duration',
+                              style: TextStyle(
+                                color: context.themeColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            DropdownButton<int>(
+                              value: _pollDurationDays,
+                              dropdownColor: context.themeColors.surface,
+                              underline: const SizedBox.shrink(),
+                              style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                              items: const [
+                                DropdownMenuItem(value: 1, child: Text('1 Day')),
+                                DropdownMenuItem(value: 3, child: Text('3 Days')),
+                                DropdownMenuItem(value: 7, child: Text('7 Days')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setState(() => _pollDurationDays = val);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 100),
               ],
             ),
           );
     },
+      ),
+    );
+  }
+
+  Widget _buildFormatButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Tooltip(
+        message: tooltip,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: context.themeColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.themeColors.borderSubtle),
+            ),
+            child: Icon(icon, size: 15, color: context.themeColors.textSecondary),
+          ),
+        ),
       ),
     );
   }

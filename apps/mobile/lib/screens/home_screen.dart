@@ -1,12 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../theme.dart';
 import 'feed_screen.dart';
 import 'rooms_screen.dart';
-import 'login_screen.dart';
 import 'explore_screen.dart';
 import 'observer_dashboard_screen.dart';
 import '../widgets/dashboard_overview.dart';
@@ -35,16 +35,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Map<String, dynamic>? _userProfile;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
+  bool _isNavBarVisible = true;
 
-  List<Widget> get _screens => [
-    if (_userProfile?['role'] == 'observer')
-      ObserverDashboardScreen(userProfile: _userProfile)
-    else
-      const DashboardOverview(),
-    const FeedScreen(),
-    const RoomsScreen(),
-    const ExploreScreen(),
-  ];
+  bool get _isObserver => _userProfile?['role'] == 'observer';
+
+  List<Widget> get _screens {
+    if (_isObserver) {
+      return [
+        ObserverDashboardScreen(userProfile: _userProfile),
+        const FeedScreen(),
+        const ExploreScreen(),
+      ];
+    } else {
+      return [
+        const DashboardOverview(),
+        const FeedScreen(),
+        const RoomsScreen(),
+        const ExploreScreen(),
+      ];
+    }
+  }
 
   @override
   void initState() {
@@ -130,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       table: 'updates',
       callback: (payload) {
         final newRecord = payload.newRecord;
-        if (newRecord != null) {
+        if (newRecord.isNotEmpty) {
           // Verify we aren't the author
           final currentUserId = Supabase.instance.client.auth.currentUser?.id;
           if (newRecord['author_id'] != currentUserId) {
@@ -242,11 +252,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     return Scaffold(
       extendBody: true, // IMPORTANT for glassmorphism nav bar
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          if (notification.direction == ScrollDirection.forward) {
+            if (!_isNavBarVisible) setState(() => _isNavBarVisible = true);
+          } else if (notification.direction == ScrollDirection.reverse) {
+            if (_isNavBarVisible) setState(() => _isNavBarVisible = false);
+          }
+          return false;
+        },
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _screens,
+        ),
       ),
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: AnimatedSlide(
+        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 1.5),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
           child: ClipRRect(
@@ -267,10 +291,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: Row(
               children: [
                 _buildNavItem(0, LucideIcons.home, 'Home'),
-                _buildNavItem(1, LucideIcons.activity, 'Feed'),
-                _buildNavItem(2, LucideIcons.hammer, 'Rooms'),
-                _buildNavItem(3, LucideIcons.compass, 'Explore'),
-                
+                if (_isObserver) ...[
+                  _buildNavItem(1, LucideIcons.activity, 'Feed'),
+                  _buildNavItem(2, LucideIcons.compass, 'Explore'),
+                ] else ...[
+                  _buildNavItem(1, LucideIcons.activity, 'Feed'),
+                  _buildNavItem(2, LucideIcons.hammer, 'Rooms'),
+                  _buildNavItem(3, LucideIcons.compass, 'Explore'),
+                ],
                 // Profile Avatar Button
                 Expanded(
                   child: GestureDetector(
@@ -351,6 +379,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
         ),
         ),
+      ),
       ),
     );
   }

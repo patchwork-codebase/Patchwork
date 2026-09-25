@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/services.dart';
 import '../theme.dart';
+import '../widgets/toast_notification.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -20,6 +20,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isUploadingImage = false;
 
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _cityController = TextEditingController();
   final _bioController = TextEditingController();
   
@@ -50,6 +51,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _cityController.dispose();
     _bioController.dispose();
     _websiteController.dispose();
@@ -75,6 +77,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         setState(() {
           _nameController.text = response['name'] ?? '';
+          _usernameController.text = response['username'] ?? (response['twitter'] ?? '');
           _cityController.text = response['city'] ?? '';
           _bioController.text = response['bio'] ?? '';
           _role = response['role'] ?? 'builder';
@@ -98,7 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+        ToastService.show(context, 'Failed to load profile: $e', isError: true);
         setState(() => _isLoading = false);
       }
     }
@@ -116,14 +119,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) throw Exception('Not logged in');
 
-      // Read bytes directly from XFile — works on all platforms (avoids dart:io _Namespace error)
       final bytes = await pickedFile.readAsBytes();
       final fileExt = pickedFile.path.split('.').last.toLowerCase();
       final mimeType = fileExt == 'png' ? 'image/png' : 'image/jpeg';
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId.$fileExt';
       final filePath = 'avatars/$fileName';
 
-      // Upload bytes to Supabase Storage
       await Supabase.instance.client.storage
           .from('avatars')
           .uploadBinary(
@@ -139,20 +140,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         setState(() {
           _avatarUrl = publicUrl;
-          // Show preview from local bytes while the network URL propagates
           _selectedImage = kIsWeb ? null : File(pickedFile.path);
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Upload failed: $e'),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+        ToastService.show(context, 'Upload failed: $e', isError: true);
         setState(() => _selectedImage = null);
       }
     } finally {
@@ -161,19 +154,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ToastService.show(context, 'Name cannot be empty', isError: true);
+      return;
+    }
+
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
 
+    final rawUsername = _usernameController.text.trim().replaceAll('@', '').toLowerCase();
+
     setState(() => _isSaving = true);
     try {
-      await Supabase.instance.client.from('users').update({
-        'name': _nameController.text.trim(),
+      final updateData = <String, dynamic>{
+        'name': name,
         'city': _cityController.text.trim(),
         'bio': _bioController.text.trim(),
         'role': _role,
         'domain': _domain,
         'website': _websiteController.text.trim(),
-        'twitter': _twitterController.text.trim(),
+        'twitter': rawUsername.isNotEmpty ? '@$rawUsername' : _twitterController.text.trim(),
         'github_url': _githubController.text.trim(),
         'linkedin_url': _linkedinController.text.trim(),
         'email_notifications_enabled': _emailNotifications,
@@ -184,103 +185,140 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'expert_avg_response_hours': int.tryParse(_expertResponseController.text.trim()) ?? 48,
         },
         if (_avatarUrl != null) 'avatar': _avatarUrl,
-      }).eq('id', userId);
+      };
+
+      if (rawUsername.isNotEmpty) {
+        updateData['username'] = rawUsername;
+      }
+
+      await Supabase.instance.client.from('users').update(updateData).eq('id', userId);
 
       if (mounted) {
-        Navigator.of(context).pop(true); // Return true to signal refresh
+        ToastService.show(context, 'Profile updated successfully! 🎉');
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving profile: $e')));
+        String errorMsg = e.toString();
+        if (errorMsg.contains('chk_users_name')) {
+           errorMsg = 'Name cannot be empty.';
+        }
+        ToastService.show(context, 'Error saving profile: $errorMsg', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 8),
-            child: Text(
-              title,
-              style: TextStyle(
-                color: context.themeColors.textTertiary,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-            ),
+  Future<void> _confirmDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: context.themeColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete Account', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
+        content: Text(
+          'Are you sure you want to permanently delete your Patchwork account? This will remove your rooms, updates, and profile. This action cannot be undone.',
+          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: TextStyle(color: context.themeColors.textTertiary)),
           ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: context.themeColors.surfaceHighlight.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(12),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: children.asMap().entries.map((entry) {
-                final int index = entry.key;
-                final Widget item = entry.value;
-                return Column(
-                  children: [
-                    item,
-                    if (index < children.length - 1)
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: context.themeColors.borderSubtle.withOpacity(0.3),
-                        indent: 16, // Indent to match iOS style
-                      ),
-                  ],
-                );
-              }).toList(),
-            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete Permanently'),
           ),
         ],
       ),
     );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        // Call RPC or remove user record
+        try {
+          await Supabase.instance.client.rpc('delete_user_account');
+        } catch (_) {
+          // If RPC doesn't exist, remove from users table
+          await Supabase.instance.client.from('users').delete().eq('id', userId);
+        }
+      }
+      await Supabase.instance.client.auth.signOut();
+      if (mounted) {
+        ToastService.show(context, 'Your account has been deleted.');
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastService.show(context, 'Failed to delete account: $e', isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {int maxLines = 1, TextInputType? keyboardType}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines > 1 ? 12 : 4),
-      child: Row(
-        crossAxisAlignment: maxLines > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+  Widget _buildFieldLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5,
+          color: context.themeColors.textTertiary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType? keyboardType, String? hintText}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: context.themeColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+          _buildFieldLabel(label),
+          TextField(
+            controller: controller,
+            minLines: maxLines > 1 ? 3 : 1,
+            maxLines: maxLines > 1 ? 6 : 1,
+            keyboardType: keyboardType,
+            style: TextStyle(
+              color: context.themeColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
             ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              maxLines: maxLines,
-              keyboardType: keyboardType,
-              style: TextStyle(
-                color: context.themeColors.textSecondary,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+            decoration: InputDecoration(
+              hintText: hintText ?? 'Enter your ${label.toLowerCase()}',
+              hintStyle: TextStyle(color: context.themeColors.textTertiary.withOpacity(0.5)),
+              filled: true,
+              fillColor: context.themeColors.surfaceHighlight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
-              decoration: InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                hintText: 'Enter $label',
-                hintStyle: TextStyle(color: context.themeColors.textTertiary.withOpacity(0.5)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.themeColors.borderSubtle, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.themeColors.primary500, width: 2),
               ),
             ),
           ),
@@ -290,34 +328,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildDropdownField(String label, String value, List<String> options, ValueChanged<String?> onChanged) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: context.themeColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+          _buildFieldLabel(label),
+          DropdownButtonFormField<String>(
+            value: value.isNotEmpty && options.contains(value) ? value : options.first,
+            dropdownColor: context.themeColors.surfaceHighlight,
+            icon: Icon(LucideIcons.chevronDown, color: context.themeColors.textTertiary, size: 20),
+            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: context.themeColors.surfaceHighlight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.themeColors.borderSubtle, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.themeColors.primary500, width: 2),
               ),
             ),
-          ),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: value.isNotEmpty && options.contains(value) ? value : options.first,
-                dropdownColor: context.themeColors.surfaceHighlight,
-                icon: Icon(LucideIcons.chevronRight, color: context.themeColors.textTertiary, size: 18),
-                style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.w400, fontSize: 16),
-                isExpanded: true,
-                alignment: Alignment.centerRight,
-                items: options.map((opt) => DropdownMenuItem(value: opt, child: Align(alignment: Alignment.centerRight, child: Text(opt)))).toList(),
-                onChanged: onChanged,
-              ),
-            ),
+            items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
+            onChanged: onChanged,
           ),
         ],
       ),
@@ -325,8 +365,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildSwitch(String label, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -334,8 +374,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 16)),
-                const SizedBox(height: 2),
+                Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
                 Text(subtitle, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 13)),
               ],
             ),
@@ -355,129 +395,187 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: context.themeColors.background,
       appBar: AppBar(
-        title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+        title: Text('Edit profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: context.themeColors.textPrimary)),
         backgroundColor: context.themeColors.background,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: context.themeColors.textPrimary),
         actions: [
           if (_isSaving)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: context.themeColors.primary500))),
             )
           else
-            TextButton(
-              onPressed: _saveProfile,
-              child: Text(
-                'Save',
-                style: TextStyle(
-                  color: context.themeColors.primary500,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 17,
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0, top: 10, bottom: 10),
+              child: ElevatedButton(
+                onPressed: _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.themeColors.primary500,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  elevation: 0,
                 ),
+                child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
         ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: context.themeColors.primary500))
-          : Stack(
-              children: [
-                // Studio Lighting Gradient
-                Positioned(
-                  top: -100,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 400,
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        colors: [
-                          context.themeColors.primary500.withOpacity(0.12),
-                          Colors.purple.withOpacity(0.05),
-                          Colors.transparent,
-                        ],
-                        radius: 0.8,
-                      ),
-                    ),
-                  ),
-                ),
-                SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Minimalist Avatar
-                      GestureDetector(
-                        onTap: _isUploadingImage ? null : _pickAndUploadImage,
-                        child: Container(
-                          width: 80, height: 80,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: context.themeColors.surfaceHighlight,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: context.themeColors.borderSubtle, width: 1),
-                            image: _selectedImage != null
-                                ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
-                                : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                                    ? DecorationImage(image: NetworkImage(_avatarUrl!), fit: BoxFit.cover)
-                                    : null,
-                          ),
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar Section
+                  Center(
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: _isUploadingImage ? null : _pickAndUploadImage,
                           child: Stack(
                             children: [
-                              if (_selectedImage == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
-                                Center(child: Text(_nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 32))),
-                              if (_isUploadingImage)
-                                Container(
-                                  decoration: const BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
-                                  child: Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: context.themeColors.surfaceHighlight,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: context.themeColors.borderSubtle, width: 2),
+                                  image: _selectedImage != null
+                                      ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
+                                      : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                                          ? DecorationImage(image: NetworkImage(_avatarUrl!), fit: BoxFit.cover)
+                                          : null,
                                 ),
+                                child: (_selectedImage == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
+                                    ? Center(child: Text(_nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 36)))
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: context.themeColors.primary500,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: context.themeColors.background, width: 3),
+                                  ),
+                                  child: _isUploadingImage
+                                      ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                      : const Icon(LucideIcons.camera, color: Colors.white, size: 14),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: _isUploadingImage ? null : _pickAndUploadImage,
-                        child: Text('Edit picture', style: TextStyle(color: context.themeColors.primary500, fontSize: 13, fontWeight: FontWeight.w500)),
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      _buildSection('Personal Information', [
-                        _buildTextField('Name', _nameController, LucideIcons.user),
-                        _buildTextField('Bio', _bioController, LucideIcons.fileText, maxLines: 4),
-                        _buildTextField('Location', _cityController, LucideIcons.mapPin),
-                        _buildDropdownField('Role', _role, ['builder', 'observer'], (val) {
-                          if (val != null) setState(() => _role = val);
-                        }),
-                        _buildDropdownField('Domain', _domain, ['', 'product-manager', 'founder', 'design', 'engineering'], (val) {
-                          if (val != null) setState(() => _domain = val);
-                        }),
-                      ]),
-                      
-                      _buildSection('Social Links', [
-                        _buildTextField('Website', _websiteController, LucideIcons.globe),
-                        _buildTextField('Twitter', _twitterController, LucideIcons.twitter),
-                        _buildTextField('GitHub', _githubController, LucideIcons.github),
-                        _buildTextField('LinkedIn', _linkedinController, LucideIcons.linkedin),
-                      ]),
-                      
-                      if (_isVerifiedExpert) 
-                        _buildSection('Expert Availability', [
-                          _buildSwitch('Available for requests', 'Manage your review capacity', _expertAvailable, (val) => setState(() => _expertAvailable = val)),
-                          _buildTextField('Open Slots', _expertSlotsController, LucideIcons.users, keyboardType: TextInputType.number),
-                          _buildTextField('Response Time', _expertResponseController, LucideIcons.clock, keyboardType: TextInputType.number),
-                        ]),
-
-                      _buildSection('Notification Preferences', [
-                        _buildSwitch('Email Notifications', 'Receive important updates via email', _emailNotifications, (val) => setState(() => _emailNotifications = val)),
-                        _buildSwitch('In-App Notifications', 'Receive push notifications on your device', _inAppNotifications, (val) => setState(() => _inAppNotifications = val)),
-                      ]),
-                      
-                      const SizedBox(height: 60),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 40),
+                  
+                  // Main Info
+                  _buildTextField('Name', _nameController, hintText: 'Your name'),
+                  _buildTextField('Username', _usernameController, hintText: '@username'),
+                  _buildTextField('Bio', _bioController, maxLines: 4, hintText: 'Tell observers about yourself...'),
+                  _buildTextField('Location', _cityController, hintText: 'City, Country'),
+                  _buildTextField('Website', _websiteController, keyboardType: TextInputType.url),
+                  
+                  const SizedBox(height: 8),
+                  Divider(color: context.themeColors.borderSubtle),
+                  const SizedBox(height: 32),
+                  
+                  _buildDropdownField('Role', _role, ['builder', 'observer'], (val) {
+                    if (val != null) setState(() => _role = val);
+                  }),
+                  _buildDropdownField('Domain', _domain, ['', 'product-manager', 'founder', 'design', 'engineering'], (val) {
+                    if (val != null) setState(() => _domain = val);
+                  }),
+                  
+                  const SizedBox(height: 8),
+                  Divider(color: context.themeColors.borderSubtle),
+                  const SizedBox(height: 32),
+
+                  _buildTextField('Twitter', _twitterController, hintText: '@username'),
+                  _buildTextField('GitHub', _githubController, hintText: 'github.com/username'),
+                  _buildTextField('LinkedIn', _linkedinController, hintText: 'linkedin.com/in/username'),
+                  
+                  if (_isVerifiedExpert) ...[
+                    const SizedBox(height: 8),
+                    Divider(color: context.themeColors.borderSubtle),
+                    const SizedBox(height: 24),
+                    
+                    Text('EXPERT SETTINGS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+                    const SizedBox(height: 16),
+                    
+                    _buildSwitch('Available for requests', 'Manage your review capacity', _expertAvailable, (val) => setState(() => _expertAvailable = val)),
+                    const SizedBox(height: 16),
+                    
+                    Row(
+                      children: [
+                        Expanded(child: _buildTextField('Open Slots', _expertSlotsController, keyboardType: TextInputType.number)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildTextField('Response Time (Hr)', _expertResponseController, keyboardType: TextInputType.number)),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 8),
+                  Divider(color: context.themeColors.borderSubtle),
+                  const SizedBox(height: 24),
+                  
+                  Text('NOTIFICATIONS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+                  const SizedBox(height: 16),
+                  
+                  _buildSwitch('Email Notifications', 'Receive important updates via email', _emailNotifications, (val) => setState(() => _emailNotifications = val)),
+                  _buildSwitch('In-App Notifications', 'Receive push notifications on your device', _inAppNotifications, (val) => setState(() => _inAppNotifications = val)),
+                  
+                  const SizedBox(height: 24),
+                  Divider(color: context.themeColors.borderSubtle),
+                  const SizedBox(height: 24),
+
+                  // Danger Zone (App Store Compliance)
+                  Text('DANGER ZONE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: Colors.redAccent.withOpacity(0.8))),
+                  const SizedBox(height: 12),
+                  
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Delete Account', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Permanently delete your profile, rooms, and updates. This action is irreversible.',
+                          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, height: 1.4),
+                        ),
+                        const SizedBox(height: 14),
+                        OutlinedButton.icon(
+                          onPressed: _confirmDeleteAccount,
+                          icon: const Icon(LucideIcons.trash2, size: 14, color: Colors.redAccent),
+                          label: const Text('Delete My Account', style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.redAccent.withOpacity(0.4)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 60),
+                ],
+              ),
             ),
     );
   }

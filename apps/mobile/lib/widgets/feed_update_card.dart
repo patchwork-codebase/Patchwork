@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as dart_math;
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'toast_notification.dart';
@@ -10,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
+import 'poll_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/github.dart';
@@ -358,8 +358,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
   void _showEmojiPicker() {
     final updateId = widget.update['id'];
-    final roomId = widget.update['room_id'];
-    if (updateId == null || roomId == null) return;
+    if (updateId == null) return;
 
     final emojis = ['👍', '❤️', '🚀', '👀', '🎉', '🔥'];
 
@@ -408,7 +407,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
   Future<void> _submitReaction(String emoji) async {
     final updateId = widget.update['id'];
-    final roomId = widget.update['room_id'];
+    final roomId = widget.update['room_id'] ?? widget.update['rooms']?['id'];
     final userId = Supabase.instance.client.auth.currentUser?.id;
     final userName = Supabase.instance.client.auth.currentUser?.userMetadata?['name'] ?? 'Unknown';
     if (updateId == null || userId == null) return;
@@ -463,8 +462,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
   void _showComments() {
     final updateId = widget.update['id'];
-    final roomId = widget.update['room_id'];
-    if (updateId == null || roomId == null) return;
+    if (updateId == null) return;
     
     if (widget.isThreadView && widget.onReplyTap != null) {
       widget.onReplyTap!();
@@ -605,8 +603,19 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
               _recordView();
             }
           },
-        child: IntrinsicHeight(
-          child: Container(
+                child: Stack(
+          children: [
+            if (widget.isThreadView)
+              Positioned(
+                top: 56, // avatar height + padding
+                bottom: 0,
+                left: 31, // 16px padding + 15px to center of 32px avatar
+                child: Container(
+                  width: 2,
+                  color: context.themeColors.borderSubtle,
+                ),
+              ),
+            Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: _isHovered ? Colors.white.withOpacity(0.02) : Colors.transparent,
@@ -615,7 +624,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   : Border(bottom: BorderSide(color: context.themeColors.borderSubtle, width: 1)),
             ),
             child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Avatar (Left Column)
               Column(
@@ -664,16 +673,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                 },
                   ),
                 ),
-                if (widget.isThreadView) ...[
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      color: context.themeColors.borderSubtle,
-                    ),
-                  ),
-                ],
-              ],
+                              ],
             ),
             const SizedBox(width: 12),
             
@@ -709,7 +709,11 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          '@${authorName.toLowerCase().replaceAll(' ', '')}',
+                          (users['username'] != null && users['username'].toString().trim().isNotEmpty)
+                              ? '@${users['username'].toString().trim().replaceAll('@', '')}'
+                              : (users['twitter'] != null && users['twitter'].toString().trim().isNotEmpty)
+                                  ? (users['twitter'].toString().trim().startsWith('@') ? users['twitter'].toString().trim() : '@${users['twitter'].toString().trim()}')
+                                  : '@${authorName.toLowerCase().replaceAll(' ', '')}',
                           style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -796,6 +800,10 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       ),
                     ),
 
+                  // Poll Widget
+                  if (update['polls'] != null && (update['polls'] as List).isNotEmpty)
+                    PollWidget(poll: (update['polls'] as List).first),
+
                   // Quoted / Reposted Content
                   if (update['original_update'] != null)
                     Builder(
@@ -803,7 +811,11 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         final origUpdate = update['original_update'];
                         final origUser = origUpdate['users'] ?? {};
                         final origName = origUser['name'] ?? 'Unknown Author';
-                        final origUsername = '@${origName.toLowerCase().replaceAll(' ', '')}';
+                        final origUsername = (origUser['username'] != null && origUser['username'].toString().trim().isNotEmpty)
+                            ? '@${origUser['username'].toString().trim().replaceAll('@', '')}'
+                            : (origUser['twitter'] != null && origUser['twitter'].toString().trim().isNotEmpty)
+                                ? (origUser['twitter'].toString().trim().startsWith('@') ? origUser['twitter'].toString().trim() : '@${origUser['twitter'].toString().trim()}')
+                                : '@${origName.toLowerCase().replaceAll(' ', '')}';
                         final origAvatar = origUser['avatar'] ?? 'https://api.dicebear.com/9.x/micah/png?seed=${Uri.encodeComponent(origName)}&backgroundColor=transparent';
                         final origContent = origUpdate['content']?.toString() ?? '';
 
@@ -915,60 +927,8 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       ),
                     ),
 
-                  // Uploaded Media Image
-                  if (update['media_url'] != null && update['media_url'].toString().isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              opaque: false,
-                              pageBuilder: (context, _, __) => FullScreenImageViewer(
-                                imageUrl: update['media_url'],
-                                heroTag: 'media-${update['id']}',
-                              ),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                return FadeTransition(opacity: animation, child: child);
-                              },
-                            ),
-                          );
-                        },
-                        child: Hero(
-                          tag: 'media-${update['id']}',
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxHeight: 350,
-                            ),
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: context.themeColors.borderSubtle),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: CachedNetworkImage(
-                                imageUrl: update['media_url'],
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter, // Anchors to top (great for tall screenshots)
-                                placeholder: (context, url) => Container(
-                                  height: 200,
-                                  color: context.themeColors.surfaceHighlight,
-                                  child: Center(child: CircularProgressIndicator(color: context.themeColors.primary500)),
-                                ),
-                                errorWidget: (context, error, stackTrace) => Container(
-                                  height: 200,
-                                  color: context.themeColors.surfaceHighlight,
-                                  child: Center(child: Icon(LucideIcons.imageOff, color: context.themeColors.textTertiary)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                  // Uploaded Media (Single or Multiple Images)
+                  _buildMediaGallery(update),
 
                   const SizedBox(height: 12),
                   
@@ -1005,7 +965,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (_emojiCounts.isNotEmpty)
-                            ..._emojiCounts.entries.map((entry) {
+                            ..._emojiCounts.entries.where((entry) => 
+                                ['sharp', 'pushback', 'tellmemore'].contains(entry.key.toLowerCase()) || entry.key.length <= 4
+                            ).map((entry) {
                               final isSelected = _userReactionEmoji == entry.key;
                               return Material(
                                 color: Colors.transparent,
@@ -1015,11 +977,13 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                      _submitReaction(entry.key);
                                   },
                                   borderRadius: BorderRadius.circular(16),
-                                  child: AnimatedContainer(
+                                  child: AnimatedScale(
+                                    scale: isSelected ? 1.08 : 1.0,
                                     duration: const Duration(milliseconds: 200),
-                                    curve: Curves.easeOutCubic,
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
+                                    curve: Curves.elasticOut,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
                                       color: isSelected 
                                           ? context.themeColors.primary500.withOpacity(0.15) 
                                           : context.themeColors.surfaceHighlight.withOpacity(0.3),
@@ -1034,11 +998,14 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(entry.key, style: const TextStyle(fontSize: 13))
-                                          .animate(target: isSelected ? 1 : 0)
-                                          .scale(begin: const Offset(1, 1), end: const Offset(1.5, 1.5), duration: 150.ms, curve: Curves.easeOutBack)
-                                          .then()
-                                          .scale(begin: const Offset(1.5, 1.5), end: const Offset(1, 1), duration: 150.ms, curve: Curves.bounceOut), 
+                                        Text(
+                                          entry.key == 'sharp' ? '🎯 Sharp' 
+                                            : entry.key == 'pushback' ? '🤔 Pushback' 
+                                            : entry.key == 'tellmemore' ? '💡 Tell me more' 
+                                            : entry.key, 
+                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)
+                                        ),
+
                                         const SizedBox(width: 6),
                                         Text(
                                           '${entry.value}',
@@ -1054,7 +1021,8 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                     ),
                                   ),
                                 ),
-                              );
+                              ),
+                            );
                             }),
                             
                           // Add Reaction Button
@@ -1131,11 +1099,12 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
             ),
           ],
         ),
-      ),
-      ),
-      ),
-      ),
-    );
+      ), // Container
+        ], // Stack children
+      ), // Stack
+      ), // VisibilityDetector
+      ), // Dismissible
+    ); // GestureDetector
   }
 
   Widget _buildReactionGhostButton(IconData icon, String? count, {bool isActive = false, bool noRightPadding = false}) {
@@ -1151,6 +1120,177 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
             Text(count, style: TextStyle(fontSize: 11, color: color)),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildMediaGallery(Map<String, dynamic> update) {
+    List<String> images = [];
+
+    if (update['media_urls'] != null) {
+      if (update['media_urls'] is List) {
+        images = (update['media_urls'] as List)
+            .map((e) => e.toString().trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+      }
+    }
+
+    // Fallback to legacy single media_url if media_urls is absent or empty
+    if (images.isEmpty && update['media_url'] != null && update['media_url'].toString().trim().isNotEmpty) {
+      images = [update['media_url'].toString().trim()];
+    }
+
+    if (images.isEmpty) return const SizedBox.shrink();
+
+    final updateId = update['id']?.toString() ?? 'unknown';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: context.themeColors.borderSubtle),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: _buildGalleryLayout(images, updateId),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGalleryLayout(List<String> images, String updateId) {
+    if (images.length == 1) {
+      return GestureDetector(
+        onTap: () => _openGalleryViewer(images, 0, updateId),
+        child: Hero(
+          tag: 'media-$updateId-0',
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 360),
+            child: _buildSingleImageTile(images[0]),
+          ),
+        ),
+      );
+    }
+
+    if (images.length == 2) {
+      return AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Row(
+          children: [
+            Expanded(child: _buildInteractiveTile(images, 0, updateId)),
+            const SizedBox(width: 3),
+            Expanded(child: _buildInteractiveTile(images, 1, updateId)),
+          ],
+        ),
+      );
+    }
+
+    if (images.length == 3) {
+      return AspectRatio(
+        aspectRatio: 16 / 10,
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: _buildInteractiveTile(images, 0, updateId),
+            ),
+            const SizedBox(width: 3),
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  Expanded(child: _buildInteractiveTile(images, 1, updateId)),
+                  const SizedBox(height: 3),
+                  Expanded(child: _buildInteractiveTile(images, 2, updateId)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 4 or more images -> 2x2 grid
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(child: _buildInteractiveTile(images, 0, updateId)),
+                const SizedBox(width: 3),
+                Expanded(child: _buildInteractiveTile(images, 1, updateId)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 3),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(child: _buildInteractiveTile(images, 2, updateId)),
+                const SizedBox(width: 3),
+                Expanded(child: _buildInteractiveTile(images, 3, updateId)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInteractiveTile(List<String> images, int index, String updateId) {
+    return GestureDetector(
+      onTap: () => _openGalleryViewer(images, index, updateId),
+      child: Hero(
+        tag: 'media-$updateId-$index',
+        child: _buildSingleImageTile(images[index]),
+      ),
+    );
+  }
+
+  Widget _buildSingleImageTile(String url) {
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
+      placeholder: (context, url) => Container(
+        color: context.themeColors.surfaceHighlight,
+        child: Center(
+          child: CircularProgressIndicator(
+            color: context.themeColors.primary500,
+            strokeWidth: 2,
+          ),
+        ),
+      ),
+      errorWidget: (context, error, stackTrace) => Container(
+        color: context.themeColors.surfaceHighlight,
+        child: Center(
+          child: Icon(LucideIcons.imageOff, color: context.themeColors.textTertiary),
+        ),
+      ),
+    );
+  }
+
+  void _openGalleryViewer(List<String> images, int initialIndex, String updateId) {
+    HapticFeedback.lightImpact();
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (context, _, __) => FullScreenImageViewer.gallery(
+          imageUrls: images,
+          initialIndex: initialIndex,
+          heroTag: 'media-$updateId',
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
       ),
     );
   }
@@ -1266,3 +1406,5 @@ class _FigmaEmbedWidgetState extends State<FigmaEmbedWidget> {
     );
   }
 }
+
+

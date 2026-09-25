@@ -104,9 +104,9 @@ class _LoginScreenState extends State<LoginScreen> {
             'user_id': user.id,
             'email': _emailController.text.trim(),
             'name': actualName,
-          }).catchError((e) => print('Error sending verification email: $e'));
+          });
         } catch (e) {
-          print('Error preparing verification email: $e');
+          debugPrint('Error sending verification email: $e');
         }
       }
 
