@@ -41,29 +41,43 @@ ALTER TABLE public.room_join_requests ENABLE ROW LEVEL SECURITY;
 -- 4. RLS Policies
 
 -- Room Invitations RLS
+DROP POLICY IF EXISTS "Builders can view invites for their rooms" ON public.room_invitations;
+DROP POLICY IF EXISTS "Builders can view invites for their rooms" ON public.room_invitations;
 CREATE POLICY "Builders can view invites for their rooms" ON public.room_invitations
 FOR SELECT USING (auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text));
 
+DROP POLICY IF EXISTS "Builders can insert invites for their private rooms" ON public.room_invitations;
+DROP POLICY IF EXISTS "Builders can insert invites for their private rooms" ON public.room_invitations;
 CREATE POLICY "Builders can insert invites for their private rooms" ON public.room_invitations
 FOR INSERT WITH CHECK (
     auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text AND is_private = true)
 );
 
+DROP POLICY IF EXISTS "Builders can update invites for their rooms" ON public.room_invitations;
+DROP POLICY IF EXISTS "Builders can update invites for their rooms" ON public.room_invitations;
 CREATE POLICY "Builders can update invites for their rooms" ON public.room_invitations
 FOR UPDATE USING (auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text));
 
+DROP POLICY IF EXISTS "Users can view their own invites" ON public.room_invitations;
+DROP POLICY IF EXISTS "Users can view their own invites" ON public.room_invitations;
 CREATE POLICY "Users can view their own invites" ON public.room_invitations
 FOR SELECT USING (
     auth.uid() IN (SELECT id FROM public.users WHERE email = public.room_invitations.email)
 );
 
 -- Room Join Requests RLS
+DROP POLICY IF EXISTS "Builders can view join requests for their rooms" ON public.room_join_requests;
+DROP POLICY IF EXISTS "Builders can view join requests for their rooms" ON public.room_join_requests;
 CREATE POLICY "Builders can view join requests for their rooms" ON public.room_join_requests
 FOR SELECT USING (auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text));
 
+DROP POLICY IF EXISTS "Users can view their own join requests" ON public.room_join_requests;
+DROP POLICY IF EXISTS "Users can view their own join requests" ON public.room_join_requests;
 CREATE POLICY "Users can view their own join requests" ON public.room_join_requests
 FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert join requests" ON public.room_join_requests;
+DROP POLICY IF EXISTS "Users can insert join requests" ON public.room_join_requests;
 CREATE POLICY "Users can insert join requests" ON public.room_join_requests
 FOR INSERT WITH CHECK (
     auth.uid() = user_id 
@@ -71,6 +85,8 @@ FOR INSERT WITH CHECK (
     AND NOT EXISTS (SELECT 1 FROM public.room_observers WHERE room_id::text = public.room_join_requests.room_id::text AND observer_id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Builders can update join requests" ON public.room_join_requests;
+DROP POLICY IF EXISTS "Builders can update join requests" ON public.room_join_requests;
 CREATE POLICY "Builders can update join requests" ON public.room_join_requests
 FOR UPDATE USING (auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text));
 
@@ -223,3 +239,6 @@ BEGIN
     RETURN TRUE;
 END;
 $$;
+
+
+

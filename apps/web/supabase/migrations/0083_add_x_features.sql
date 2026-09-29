@@ -31,14 +31,18 @@ CREATE TABLE IF NOT EXISTS public.update_bookmarks (
 -- RLS for Update Bookmarks
 ALTER TABLE public.update_bookmarks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own update bookmarks" ON public.update_bookmarks;
 CREATE POLICY "Users can view their own update bookmarks"
     ON public.update_bookmarks FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create their own update bookmarks" ON public.update_bookmarks;
 CREATE POLICY "Users can create their own update bookmarks"
     ON public.update_bookmarks FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own update bookmarks" ON public.update_bookmarks;
 CREATE POLICY "Users can delete their own update bookmarks"
     ON public.update_bookmarks FOR DELETE
     USING (auth.uid() = user_id);
+

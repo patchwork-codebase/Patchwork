@@ -20,21 +20,26 @@ ALTER TABLE crossroad_votes ENABLE ROW LEVEL SECURITY;
 
 -- 4. RLS Policies for crossroad_votes
 -- Anyone can view votes
+DROP POLICY IF EXISTS "Crossroad votes are viewable by everyone" ON crossroad_votes;
 CREATE POLICY "Crossroad votes are viewable by everyone" ON crossroad_votes
     FOR SELECT USING (true);
 
 -- Authenticated users can insert their own votes
+DROP POLICY IF EXISTS "Users can insert their own crossroad votes" ON crossroad_votes;
 CREATE POLICY "Users can insert their own crossroad votes" ON crossroad_votes
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Authenticated users can update their own votes
+DROP POLICY IF EXISTS "Users can update their own crossroad votes" ON crossroad_votes;
 CREATE POLICY "Users can update their own crossroad votes" ON crossroad_votes
     FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- Authenticated users can delete their own votes
+DROP POLICY IF EXISTS "Users can delete their own crossroad votes" ON crossroad_votes;
 CREATE POLICY "Users can delete their own crossroad votes" ON crossroad_votes
     FOR DELETE USING (auth.uid() = user_id);
 
 -- 5. Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_crossroad_votes_update_id ON crossroad_votes(update_id);
 CREATE INDEX IF NOT EXISTS idx_crossroad_votes_user_id ON crossroad_votes(user_id);
+

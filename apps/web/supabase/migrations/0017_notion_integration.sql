@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.notion_accounts (
 ALTER TABLE public.notion_accounts ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can manage their own notion accounts" ON public.notion_accounts;
+DROP POLICY IF EXISTS "Users can manage their own notion accounts" ON public.notion_accounts;
 CREATE POLICY "Users can manage their own notion accounts"
 ON public.notion_accounts
 FOR ALL TO authenticated
@@ -37,11 +38,13 @@ CREATE TABLE IF NOT EXISTS public.room_notion_docs (
 ALTER TABLE public.room_notion_docs ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Room notion docs are viewable by everyone" ON public.room_notion_docs;
+DROP POLICY IF EXISTS "Room notion docs are viewable by everyone" ON public.room_notion_docs;
 CREATE POLICY "Room notion docs are viewable by everyone"
 ON public.room_notion_docs
 FOR SELECT TO authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "Builders can manage notion docs for their rooms" ON public.room_notion_docs;
 DROP POLICY IF EXISTS "Builders can manage notion docs for their rooms" ON public.room_notion_docs;
 CREATE POLICY "Builders can manage notion docs for their rooms"
 ON public.room_notion_docs
@@ -60,3 +63,4 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.room_notion_docs;
   END IF;
 END $$;
+

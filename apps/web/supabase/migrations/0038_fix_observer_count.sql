@@ -29,6 +29,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 3. Attach the trigger to room_observers
 DROP TRIGGER IF EXISTS on_observer_change ON public.room_observers;
+DROP TRIGGER IF EXISTS on_observer_change ON room_observers;
 CREATE TRIGGER on_observer_change
 AFTER INSERT OR DELETE ON public.room_observers
 FOR EACH ROW EXECUTE FUNCTION public.sync_observer_count();
+

@@ -2,17 +2,21 @@
 
 -- 1. Fix the RLS policies on updates
 DROP POLICY IF EXISTS "Users can insert their own updates" ON public.updates;
+DROP POLICY IF EXISTS "Users can insert their own updates" ON public.updates;
 CREATE POLICY "Users can insert their own updates" ON public.updates
 FOR INSERT WITH CHECK (auth.uid()::uuid = author_id::uuid);
 
+DROP POLICY IF EXISTS "Users can update their own updates" ON public.updates;
 DROP POLICY IF EXISTS "Users can update their own updates" ON public.updates;
 CREATE POLICY "Users can update their own updates" ON public.updates
 FOR UPDATE USING (auth.uid()::uuid = author_id::uuid);
 
 DROP POLICY IF EXISTS "Users can delete their own updates" ON public.updates;
+DROP POLICY IF EXISTS "Users can delete their own updates" ON public.updates;
 CREATE POLICY "Users can delete their own updates" ON public.updates
 FOR DELETE USING (auth.uid()::uuid = author_id::uuid);
 
+DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
 DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
 CREATE POLICY "Public updates are viewable by everyone" ON public.updates
 FOR SELECT USING (
@@ -87,5 +91,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
 
 

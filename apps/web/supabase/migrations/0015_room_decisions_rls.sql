@@ -5,12 +5,14 @@ ALTER TABLE public.room_decisions ENABLE ROW LEVEL SECURITY;
 
 -- Allow anyone to view decisions
 DROP POLICY IF EXISTS "Decisions are viewable by everyone" ON public.room_decisions;
+DROP POLICY IF EXISTS "Decisions are viewable by everyone" ON public.room_decisions;
 CREATE POLICY "Decisions are viewable by everyone"
 ON public.room_decisions
 FOR SELECT TO authenticated
 USING (true);
 
 -- Allow builders to insert/update decisions for their own rooms
+DROP POLICY IF EXISTS "Builders can manage decisions for their rooms" ON public.room_decisions;
 DROP POLICY IF EXISTS "Builders can manage decisions for their rooms" ON public.room_decisions;
 CREATE POLICY "Builders can manage decisions for their rooms"
 ON public.room_decisions
@@ -21,3 +23,4 @@ USING (
 WITH CHECK (
   room_id IN (SELECT id FROM public.rooms WHERE builder_id = auth.uid())
 );
+

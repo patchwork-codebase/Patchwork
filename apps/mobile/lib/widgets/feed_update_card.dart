@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'dart:math' as dart_math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -10,6 +11,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
 import 'poll_widget.dart';
+import 'aura_avatar.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/github.dart';
@@ -58,6 +61,21 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
   int _viewCount = 0;
   bool _hasRecordedView = false;
   bool _hasBookmarked = false;
+
+  String _buildFigmaEmbedUrl(String? explicitUrl, String content) {
+    String? rawUrl = explicitUrl;
+    if (rawUrl == null || rawUrl.isEmpty) {
+      if (content.contains('figma.com')) {
+        final regex = RegExp(r'(https?://(?:www\.)?figma\.com/[^\s]+)');
+        final match = regex.firstMatch(content);
+        if (match != null) {
+          rawUrl = match.group(0);
+        }
+      }
+    }
+    if (rawUrl == null || rawUrl.isEmpty) return '';
+    return 'https://www.figma.com/embed?embed_host=patchwork&url=${Uri.encodeComponent(rawUrl)}';
+  }
 
   @override
   void initState() {
@@ -225,6 +243,114 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
     }
   }
 
+  void _showBountyPitchSheet() {
+    final TextEditingController pitchController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+          return Container(
+            margin: EdgeInsets.only(bottom: bottomPadding),
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            decoration: BoxDecoration(
+              color: context.themeColors.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.cyanAccent.withOpacity(0.2), shape: BoxShape.circle),
+                        child: const Icon(LucideIcons.target, color: Colors.cyanAccent, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Text('Apply to Build This', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Pitch yourself! Why are you the right builder for this idea? Keep it short and sharp.',
+                    style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: pitchController,
+                    maxLines: 4,
+                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: "E.g. I've built 3 Web3 wallets, I can ship the MVP in 2 weeks...",
+                      hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                      filled: true,
+                      fillColor: context.themeColors.surfaceHighlight,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: isSubmitting ? null : () async {
+                        final pitch = pitchController.text.trim();
+                        if (pitch.isEmpty) return;
+
+                        setSheetState(() => isSubmitting = true);
+                        try {
+                          final userId = Supabase.instance.client.auth.currentUser?.id;
+                          if (userId == null) throw Exception('Not authenticated');
+
+                          final observerId = widget.update['author_id'];
+                          
+                          await Supabase.instance.client.from('bounty_applications').insert({
+                            'update_id': widget.update['id'],
+                            'builder_id': userId,
+                            'observer_id': observerId,
+                            'pitch_text': pitch,
+                          });
+
+                          if (mounted) {
+                            Navigator.pop(sheetContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pitch submitted successfully! 🚀')),
+                            );
+                          }
+                        } catch (e) {
+                          setSheetState(() => isSubmitting = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to submit pitch: $e')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.cyan,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: isSubmitting 
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('Submit Pitch', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _checkBookmarkStatus() async {
     final updateId = widget.update['id'];
     final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -287,7 +413,17 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
       if (mounted) {
         setState(() => _viewCount += 1);
       }
-      // Direct SQL RPC call to increment view_count could be better, but for now we update it
+      
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      
+      // 1. Insert into new page_views table for funnel tracking
+      await Supabase.instance.client.from('page_views').insert({
+        'viewer_id': userId,
+        'target_type': 'update',
+        'target_id': updateId,
+      });
+
+      // 2. Legacy view_count increment
       // Since we don't have an RPC, we will fetch, increment and save.
       final res = await Supabase.instance.client
           .from('updates')
@@ -360,7 +496,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
     final updateId = widget.update['id'];
     if (updateId == null) return;
 
-    final emojis = ['👍', '❤️', '🚀', '👀', '🎉', '🔥'];
+    final emojis = ['🔥', '🇳🇬', '🚀', '🙌🏾', '🥁', '💯'];
 
     showModalBottomSheet(
       context: context,
@@ -395,7 +531,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                     ),
                     child: Text(emoji, style: const TextStyle(fontSize: 24)),
                   ),
-                )).toList(),
+                ).animate()
+                 .scale(delay: (emojis.indexOf(emoji) * 50).ms, duration: 600.ms, curve: Curves.elasticOut)
+                 .rotate(begin: -0.1, end: 0, duration: 600.ms, curve: Curves.elasticOut)).toList().cast<Widget>(),
               ),
               const SizedBox(height: 12),
             ],
@@ -411,6 +549,12 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     final userName = Supabase.instance.client.auth.currentUser?.userMetadata?['name'] ?? 'Unknown';
     if (updateId == null || userId == null) return;
+
+    // Backup state for rollback
+    final previousHasReacted = _hasReacted;
+    final previousReactionId = _userReactionId;
+    final previousReactionEmoji = _userReactionEmoji;
+    final previousEmojiCounts = Map<String, int>.from(_emojiCounts);
 
     try {
       // If already reacted with the exact same emoji, toggle it off
@@ -456,7 +600,17 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
       await Supabase.instance.client.from('reactions').insert(newReaction);
       _fetchReactions(); // Refresh state for actual DB IDs
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      // Rollback on failure
+      if (mounted) {
+        setState(() {
+          _hasReacted = previousHasReacted;
+          _userReactionId = previousReactionId;
+          _userReactionEmoji = previousReactionEmoji;
+          _emojiCounts.clear();
+          _emojiCounts.addAll(previousEmojiCounts);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to react. Check your connection.')));
+      }
     }
   }
 
@@ -486,6 +640,8 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
     'open_question': {'label': 'Open question', 'color': Colors.lightBlue, 'bg': Colors.blue, 'icon': '❓'},
     'shipped': {'label': 'Shipped', 'color': Colors.greenAccent, 'bg': Colors.green, 'icon': '🚀'},
     'crossroad': {'label': 'Crossroad', 'color': AppTheme.primary400, 'bg': AppTheme.primary500, 'icon': '🔀'},
+    'spotlight': {'label': 'Observer Spotlight', 'color': Colors.purpleAccent, 'bg': Colors.purple, 'icon': '🌟'},
+    'rfb': {'label': 'Request For Builder', 'color': Colors.cyanAccent, 'bg': Colors.cyan, 'icon': '🎯'},
   };
 
   String _extractUrl(String text, String domain) {
@@ -517,7 +673,16 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
     if (confirm != true) return;
 
     try {
-      await Supabase.instance.client.from('updates').delete().eq('id', widget.update['id']);
+      // Use the secure Edge Function to handle both database and storage deletion atomically
+      final response = await Supabase.instance.client.functions.invoke(
+        'delete-update',
+        body: {'update_id': widget.update['id']},
+      );
+
+      if (response.status != 200) {
+        throw Exception('Failed to delete update');
+      }
+
       if (mounted) {
         setState(() => _isDeleted = true);
       }
@@ -623,13 +788,15 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   ? null 
                   : Border(bottom: BorderSide(color: context.themeColors.borderSubtle, width: 1)),
             ),
-            child: Row(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar (Left Column)
-              Column(
+              // Header Row: Avatar, Name, Handle, Time, Trash
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       final authorId = update['author_id'] ?? users['id'];
                       if (authorId != null) {
@@ -638,139 +805,127 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         ));
                       }
                     },
-              child: Builder(
-                builder: (context) {
-                  String finalAvatarUrl = users['avatar']?.toString() ?? '';
-                  if (finalAvatarUrl.isEmpty || !finalAvatarUrl.startsWith('http')) {
-                    final seed = users['id']?.toString() ?? authorName;
-                    finalAvatarUrl = 'https://api.dicebear.com/9.x/micah/png?seed=${Uri.encodeComponent(seed)}&backgroundColor=transparent';
-                  }
+                    child: Builder(
+                      builder: (context) {
+                        String finalAvatarUrl = users['avatar']?.toString() ?? '';
+                        if (finalAvatarUrl.isEmpty || !finalAvatarUrl.startsWith('http')) {
+                          final seed = users['id']?.toString() ?? authorName;
+                          finalAvatarUrl = 'https://api.dicebear.com/9.x/micah/png?seed=${Uri.encodeComponent(seed)}&backgroundColor=transparent';
+                        }
 
-                  return Hero(
-                    tag: 'avatar-${update['id']}-${update['author_id'] ?? users['id']}',
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: context.themeColors.surfaceHighlight,
-                      ),
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: finalAvatarUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (c, url) => Container(color: context.themeColors.surfaceHighlight),
-                          errorWidget: (c, e, s) => Center(
-                            child: Text(
-                              authorName.substring(0, 1).toUpperCase(),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary),
-                            ),
+                        return Hero(
+                          tag: 'avatar-${update['id']}-${update['author_id'] ?? users['id']}',
+                          child: AuraAvatar(
+                            avatarUrl: finalAvatarUrl,
+                            initials: authorName,
+                            role: users['role']?.toString(),
+                            size: 40.0,
                           ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Name, Handle, and Badges
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  final authorId = update['author_id'] ?? users['id'];
+                                  if (authorId != null) {
+                                    Navigator.push(context, MaterialPageRoute(
+                                      builder: (context) => PublicProfileScreen(userId: authorId),
+                                    ));
+                                  }
+                                },
+                                child: Text(
+                                  authorName,
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.themeColors.textPrimary),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            if (users['is_verified_expert'] == true) ...[
+                              const SizedBox(width: 4),
+                              Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 12),
+                            ],
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                (users['username'] != null && users['username'].toString().trim().isNotEmpty)
+                                    ? '@${users['username'].toString().trim().replaceAll('@', '')}'
+                                    : (users['twitter'] != null && users['twitter'].toString().trim().isNotEmpty)
+                                        ? (users['twitter'].toString().trim().startsWith('@') ? users['twitter'].toString().trim() : '@${users['twitter'].toString().trim()}')
+                                        : '@${authorName.toLowerCase().replaceAll(' ', '')}',
+                                style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text('·', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                            const SizedBox(width: 4),
+                            Text(
+                              timeago.format(createdAt, locale: 'en_short'),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                            ),
+                          ],
                         ),
+                        // Badges Row
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            if (typeUI != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: typeUI['color'].withOpacity(0.4)),
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: typeUI['color'].withOpacity(0.05),
+                                ),
+                                child: Text(
+                                  typeUI['label'],
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: typeUI['color']),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            if (isLaunch) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(color: context.themeColors.primary500.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
+                                child: Text('LAUNCH', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(color: context.themeColors.textPrimary, borderRadius: BorderRadius.circular(4)),
+                                child: Text('In $roomTitle', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.surface)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isAuthor)
+                    InkWell(
+                      onTap: _deleteUpdate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(LucideIcons.trash2, size: 16, color: context.themeColors.textTertiary.withOpacity(0.5)),
                       ),
                     ),
-                  );
-                },
-                  ),
-                ),
-                              ],
-            ),
-            const SizedBox(width: 12),
-            
-            // Content (Right Column)
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Row: Name, Handle, Time
-                  Row(
-                    children: [
-                      Flexible(
-                        child: GestureDetector(
-                          onTap: () {
-                            final authorId = update['author_id'] ?? users['id'];
-                            if (authorId != null) {
-                              Navigator.push(context, MaterialPageRoute(
-                                builder: (context) => PublicProfileScreen(userId: authorId),
-                              ));
-                            }
-                          },
-                          child: Text(
-                            authorName,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.themeColors.textPrimary),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                      if (users['is_verified_expert'] == true) ...[
-                        const SizedBox(width: 4),
-                        Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 12),
-                      ],
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          (users['username'] != null && users['username'].toString().trim().isNotEmpty)
-                              ? '@${users['username'].toString().trim().replaceAll('@', '')}'
-                              : (users['twitter'] != null && users['twitter'].toString().trim().isNotEmpty)
-                                  ? (users['twitter'].toString().trim().startsWith('@') ? users['twitter'].toString().trim() : '@${users['twitter'].toString().trim()}')
-                                  : '@${authorName.toLowerCase().replaceAll(' ', '')}',
-                          style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text('·', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
-                      const SizedBox(width: 4),
-                      Text(
-                        timeago.format(createdAt, locale: 'en_short'),
-                        style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
-                      ),
-                      if (isAuthor) ...[
-                        const Spacer(),
-                        InkWell(
-                          onTap: _deleteUpdate,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Icon(LucideIcons.trash2, size: 14, color: context.themeColors.textTertiary.withOpacity(0.5)),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  
-                  // Context / Tag (e.g. Launched, specific room)
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      if (typeUI != null) ...[
-                        Text(typeUI['icon'], style: const TextStyle(fontSize: 11)),
-                        const SizedBox(width: 4),
-                        Text(
-                          typeUI['label'],
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: typeUI['color']),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      if (isLaunch) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(color: context.themeColors.primary500.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
-                          child: Text('LAUNCHED', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: context.themeColors.primary500, letterSpacing: 0.5)),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(
-                        child: Text(
-                          'in $roomTitle',
-                          style: TextStyle(color: context.themeColors.primary500, fontSize: 12, fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 6),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
                   
                   // Text Content
                   if (content.isNotEmpty && !content.contains('figma.com'))
@@ -904,9 +1059,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       }
                     ),
                   
-                  // Figma Embed Simulation
-                  if (content.contains('figma.com'))
-                    FigmaEmbedWidget(url: _extractUrl(content, 'figma.com')),
+                  // Figma Embed
+                  if (update['figma_url'] != null || content.contains('figma.com'))
+                    FigmaEmbedWidget(url: _buildFigmaEmbedUrl(update['figma_url']?.toString(), content)),
 
                   // Code Snippet block
                   if (update['code_snippet'] != null)
@@ -932,12 +1087,28 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
                   const SizedBox(height: 12),
                   
-                  // X-Style Icon Action Bar
+                  // Action Bar (Original Logic & Icons with Improved Layout)
                   Wrap(
                     spacing: 0,
                     runSpacing: 8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
+                      if (updateType == 'rfb')
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: InkWell(
+                            onTap: () {
+                               HapticFeedback.mediumImpact();
+                               _showBountyPitchSheet();
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                               decoration: BoxDecoration(color: Colors.cyanAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.cyanAccent.withOpacity(0.3))),
+                               child: const Text('🎯 Build This', style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                            )
+                          ),
+                        ),
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: InkWell(
@@ -958,7 +1129,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                             child: _buildAvatarPill(),
                           ),
                         ),
-                      // Reaction Chips (Wrap layout to prevent horizontal scroll)
+                      // Reaction Chips
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -1005,7 +1176,6 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                             : entry.key, 
                                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)
                                         ),
-
                                         const SizedBox(width: 6),
                                         Text(
                                           '${entry.value}',
@@ -1096,12 +1266,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ), // Container
-        ], // Stack children
-      ), // Stack
+            ), // Container
+          ], // Stack children
+        ), // Stack
       ), // VisibilityDetector
       ), // Dismissible
     ); // GestureDetector
@@ -1243,16 +1410,55 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
   }
 
   Widget _buildInteractiveTile(List<String> images, int index, String updateId) {
+    final url = images[index];
+    final lowerUrl = url.toLowerCase();
+    final isVideo = lowerUrl.contains('.mp4') || lowerUrl.contains('.mov');
+    final isDoc = lowerUrl.contains('.pdf') || lowerUrl.contains('.doc') || lowerUrl.contains('.txt');
+
     return GestureDetector(
-      onTap: () => _openGalleryViewer(images, index, updateId),
+      onTap: () {
+        if (isDoc) {
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        } else if (isVideo) {
+          // Video handles its own taps for play/pause
+        } else {
+          _openGalleryViewer(images, index, updateId);
+        }
+      },
       child: Hero(
         tag: 'media-$updateId-$index',
-        child: _buildSingleImageTile(images[index]),
+        child: _buildSingleImageTile(url),
       ),
     );
   }
 
   Widget _buildSingleImageTile(String url) {
+    final lowerUrl = url.toLowerCase();
+    final isVideo = lowerUrl.contains('.mp4') || lowerUrl.contains('.mov');
+    final isDoc = lowerUrl.contains('.pdf') || lowerUrl.contains('.doc') || lowerUrl.contains('.docx') || lowerUrl.contains('.txt');
+
+    if (isVideo) {
+      return _VideoFeedWidget(url: url);
+    }
+
+    if (isDoc) {
+      return Container(
+        color: context.themeColors.surfaceHighlight,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(LucideIcons.fileText, size: 48, color: context.themeColors.primary500),
+              const SizedBox(height: 8),
+              Text('Document Attachment', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text('Tap to open', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return CachedNetworkImage(
       imageUrl: url,
       width: double.infinity,
@@ -1353,6 +1559,98 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
   }
 }
 
+class _VideoFeedWidget extends StatefulWidget {
+  final String url;
+  const _VideoFeedWidget({required this.url});
+
+  @override
+  _VideoFeedWidgetState createState() => _VideoFeedWidgetState();
+}
+
+class _VideoFeedWidgetState extends State<_VideoFeedWidget> {
+  late VideoPlayerController _controller;
+  bool _initialized = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() { _initialized = true; });
+          _controller.setVolume(0); // Muted by default in feed
+          _controller.setLooping(true);
+        }
+      }).catchError((error) {
+        if (mounted) {
+          setState(() { _hasError = true; });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return Container(
+        color: Colors.black12,
+        child: const Center(child: Icon(LucideIcons.videoOff, color: Colors.grey)),
+      );
+    }
+    if (!_initialized) {
+      return Container(
+        color: Colors.black12,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox.expand(
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: _controller.value.size.width,
+              height: _controller.value.size.height,
+              child: VideoPlayer(_controller),
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _controller.value.isPlaying ? _controller.pause() : _controller.play();
+            });
+          },
+          child: Container(
+            color: Colors.transparent,
+            constraints: const BoxConstraints.expand(),
+            child: Center(
+              child: AnimatedOpacity(
+                opacity: _controller.value.isPlaying ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(LucideIcons.play, size: 32, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 class FigmaEmbedWidget extends StatefulWidget {
   final String url;
   const FigmaEmbedWidget({super.key, required this.url});

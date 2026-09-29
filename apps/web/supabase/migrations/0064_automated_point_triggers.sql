@@ -11,6 +11,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_room_created_points ON public.rooms;
+DROP TRIGGER IF EXISTS on_room_created_points ON rooms;
 CREATE TRIGGER on_room_created_points
     AFTER INSERT ON public.rooms
     FOR EACH ROW
@@ -30,6 +31,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_update_posted_points ON public.updates;
+DROP TRIGGER IF EXISTS on_update_posted_points ON updates;
 CREATE TRIGGER on_update_posted_points
     AFTER INSERT ON public.updates
     FOR EACH ROW
@@ -49,7 +51,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_decision_documented_points ON public.room_decisions;
+DROP TRIGGER IF EXISTS on_decision_documented_points ON room_decisions;
 CREATE TRIGGER on_decision_documented_points
     AFTER INSERT ON public.room_decisions
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_decision_documented_points();
+

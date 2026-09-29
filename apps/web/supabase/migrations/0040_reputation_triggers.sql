@@ -14,6 +14,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trigger_reputation_on_update ON updates;
+DROP TRIGGER IF EXISTS trigger_reputation_on_update ON updates;
 CREATE TRIGGER trigger_reputation_on_update
 AFTER INSERT ON updates
 FOR EACH ROW EXECUTE FUNCTION increment_reputation_on_update();
@@ -40,6 +41,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trigger_reputation_on_reaction ON reactions;
+DROP TRIGGER IF EXISTS trigger_reputation_on_reaction ON reactions;
 CREATE TRIGGER trigger_reputation_on_reaction
 AFTER INSERT ON reactions
 FOR EACH ROW EXECUTE FUNCTION increment_reputation_on_reaction();
@@ -60,6 +62,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trigger_reputation_on_observer ON room_observers;
+DROP TRIGGER IF EXISTS trigger_reputation_on_observer ON room_observers;
 CREATE TRIGGER trigger_reputation_on_observer
 AFTER INSERT ON room_observers
 FOR EACH ROW EXECUTE FUNCTION increment_reputation_on_observer();
+

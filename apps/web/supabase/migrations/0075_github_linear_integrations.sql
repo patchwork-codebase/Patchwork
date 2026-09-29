@@ -137,3 +137,4 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.process_integration_webhook(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, anon;
+

@@ -38,25 +38,36 @@ ALTER TABLE public.roadmap_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.roadmap_dependencies ENABLE ROW LEVEL SECURITY;
 
 -- Sprints policies
+DROP POLICY IF EXISTS "Allow public read access to sprints" ON public.sprints;
 CREATE POLICY "Allow public read access to sprints" ON public.sprints FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow builders to insert sprints" ON public.sprints;
 CREATE POLICY "Allow builders to insert sprints" ON public.sprints FOR INSERT WITH CHECK (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Allow builders to update own sprints" ON public.sprints;
 CREATE POLICY "Allow builders to update own sprints" ON public.sprints FOR UPDATE USING (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Allow builders to delete own sprints" ON public.sprints;
 CREATE POLICY "Allow builders to delete own sprints" ON public.sprints FOR DELETE USING (auth.uid() = builder_id);
 
 -- Roadmap Items policies
+DROP POLICY IF EXISTS "Allow public read access to roadmap_items" ON public.roadmap_items;
 CREATE POLICY "Allow public read access to roadmap_items" ON public.roadmap_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow builders to insert roadmap_items" ON public.roadmap_items;
 CREATE POLICY "Allow builders to insert roadmap_items" ON public.roadmap_items FOR INSERT WITH CHECK (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Allow builders to update own roadmap_items" ON public.roadmap_items;
 CREATE POLICY "Allow builders to update own roadmap_items" ON public.roadmap_items FOR UPDATE USING (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Allow builders to delete own roadmap_items" ON public.roadmap_items;
 CREATE POLICY "Allow builders to delete own roadmap_items" ON public.roadmap_items FOR DELETE USING (auth.uid() = builder_id);
 
 -- Roadmap Dependencies policies (indirect auth check via item_id's builder_id)
+DROP POLICY IF EXISTS "Allow public read access to roadmap_dependencies" ON public.roadmap_dependencies;
 CREATE POLICY "Allow public read access to roadmap_dependencies" ON public.roadmap_dependencies FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow builders to insert dependencies for own items" ON public.roadmap_dependencies;
 CREATE POLICY "Allow builders to insert dependencies for own items" ON public.roadmap_dependencies
   FOR INSERT WITH CHECK (
     EXISTS (SELECT 1 FROM public.roadmap_items WHERE id = item_id AND builder_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "Allow builders to delete dependencies for own items" ON public.roadmap_dependencies;
 CREATE POLICY "Allow builders to delete dependencies for own items" ON public.roadmap_dependencies
   FOR DELETE USING (
     EXISTS (SELECT 1 FROM public.roadmap_items WHERE id = item_id AND builder_id = auth.uid())
@@ -71,11 +82,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_timestamp_sprints ON sprints;
 CREATE TRIGGER set_timestamp_sprints
 BEFORE UPDATE ON public.sprints
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
+DROP TRIGGER IF EXISTS set_timestamp_roadmap_items ON roadmap_items;
 CREATE TRIGGER set_timestamp_roadmap_items
 BEFORE UPDATE ON public.roadmap_items
 FOR EACH ROW
@@ -113,3 +126,5 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.roadmap_dependencies;
   END IF;
 END $$;
+
+

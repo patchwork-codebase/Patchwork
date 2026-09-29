@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CornerDownRight, Quote } from "lucide-react";
+import { Link } from "react-router";
 
 interface ReadMoreTextProps {
   content?: string;
@@ -10,10 +11,21 @@ interface ReadMoreTextProps {
 
 function formatInlineText(textStr: string) {
   if (!textStr) return null;
-  // Regex to split by @mentions or URLs
-  const parts = textStr.split(/(@[a-zA-Z0-9_-]+|https?:\/\/[^\s]+)/g);
+  // Regex to split by @[name](id) or URLs or standard @username
+  const parts = textStr.split(/(@\[.*?\]\(.*?\)|@[a-zA-Z0-9_-]+|https?:\/\/[^\s]+)/g);
 
   return parts.map((part, i) => {
+    if (part.startsWith('@[') && part.includes('](')) {
+      const match = part.match(/@\[(.*?)\]\((.*?)\)/);
+      if (match) {
+        const [, name, id] = match;
+        return (
+          <Link key={i} to={`/dashboard/profile/${id}`} className="font-bold text-primary-600 hover:text-primary-700 hover:underline cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            @{name}
+          </Link>
+        );
+      }
+    }
     if (part.startsWith('@')) {
       return (
         <span key={i} className="font-bold text-primary-600 hover:text-primary-700 hover:underline cursor-pointer">

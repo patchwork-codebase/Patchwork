@@ -5,6 +5,7 @@ import '../theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:ui';
 import 'room_detail_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   final List<String> _categories = ['All', 'Product', 'Engineering', 'Design', 'Growth', 'Research'];
   String _selectedCategory = 'All';
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   late Future<List<Map<String, dynamic>>> _roomsFuture;
   late Future<List<Map<String, dynamic>>> _buildersFuture;
   late Future<List<Map<String, dynamic>>> _leaderboardFuture;
@@ -30,6 +32,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _buildersFuture = _fetchBuilders();
     _leaderboardFuture = _fetchLeaderboard();
     _trendingTopicsFuture = _fetchTrendingTopics();
+    _searchController.addListener(() {
+      final val = _searchController.text;
+      if (val != _searchQuery) {
+        _searchQuery = val;
+        _onFilterChanged();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<List<String>> _fetchTrendingTopics() async {
@@ -93,7 +108,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .eq('visibility', 'public');
 
     if (_searchQuery.isNotEmpty) {
-      query = query.ilike('title', '%$_searchQuery%');
+      // Search both title and description
+      query = query.or('title.ilike.%$_searchQuery%,description.ilike.%$_searchQuery%');
     }
 
     if (_selectedCategory != 'All') {
@@ -160,15 +176,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             textAlign: TextAlign.center,
                             text: TextSpan(
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: 40,
                                 fontWeight: FontWeight.w900,
                                 color: context.themeColors.textPrimary,
                                 height: 1.1,
-                                letterSpacing: -1,
+                                letterSpacing: -1.5,
                               ),
                               children: [
-                                TextSpan(text: 'Explore '),
-                                TextSpan(text: 'Builders', style: TextStyle(color: context.themeColors.primary500)),
+                                TextSpan(text: 'Discover\n'),
+                                TextSpan(
+                                  text: 'The Frontier',
+                                  style: TextStyle(
+                                    color: context.themeColors.primary500,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -187,29 +208,40 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           // Search Bar
                           Container(
                             decoration: BoxDecoration(
-                              color: context.themeColors.surface,
-                              borderRadius: BorderRadius.circular(20),
+                              color: context.themeColors.surface.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(24),
                               border: Border.all(color: context.themeColors.borderSubtle),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            child: TextField(
-                              onSubmitted: (val) {
-                                _searchQuery = val;
-                                _onFilterChanged();
-                              },
-                              style: TextStyle(color: context.themeColors.textPrimary),
-                              decoration: InputDecoration(
-                                hintText: 'Search rooms, domains, or builders...',
-                                hintStyle: TextStyle(color: context.themeColors.textTertiary, fontSize: 15),
-                                prefixIcon: Icon(LucideIcons.search, color: context.themeColors.textTertiary, size: 18),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: TextField(
+                                  controller: _searchController,
+                                  style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search products, tags, or builders...',
+                                    hintStyle: TextStyle(color: context.themeColors.textTertiary, fontSize: 15, fontWeight: FontWeight.normal),
+                                    prefixIcon: Icon(LucideIcons.search, color: context.themeColors.primary500, size: 20),
+                                    suffixIcon: _searchQuery.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(LucideIcons.x, size: 16, color: context.themeColors.textTertiary),
+                                            onPressed: () {
+                                              _searchController.clear();
+                                            },
+                                          )
+                                        : null,
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -218,7 +250,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           // Trending Topics
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Trending Topics', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+                            child: Text('Trending', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
                           ),
                           const SizedBox(height: 12),
                           SingleChildScrollView(
@@ -228,24 +260,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               builder: (context, snapshot) {
                                 final topics = snapshot.data ?? ['Product', 'Engineering', 'Design'];
                                 return Row(
-                                  children: topics.map((topic) => 
-                                    Container(
-                                      margin: const EdgeInsets.only(right: 8),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: context.themeColors.primary500.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(color: context.themeColors.primary500.withOpacity(0.2)),
+                                  children: topics.map((topic) {
+                                    final isSelected = _searchQuery.toLowerCase() == topic.toLowerCase();
+                                    return GestureDetector(
+                                      onTap: () {
+                                        if (isSelected) {
+                                          _searchController.clear();
+                                        } else {
+                                          _searchController.text = topic;
+                                          _searchController.selection = TextSelection.fromPosition(
+                                            TextPosition(offset: topic.length),
+                                          );
+                                        }
+                                      },
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        margin: const EdgeInsets.only(right: 8),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? context.themeColors.primary500
+                                              : context.themeColors.primary500.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: context.themeColors.primary500.withOpacity(isSelected ? 1 : 0.2),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(LucideIcons.trendingUp, size: 12,
+                                                color: isSelected ? Colors.white : context.themeColors.primary500),
+                                            const SizedBox(width: 4),
+                                            Text(topic,
+                                                style: TextStyle(
+                                                    color: isSelected ? Colors.white : context.themeColors.primary500,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12)),
+                                          ],
+                                        ),
                                       ),
-                                      child: Row(
-                                        children: [
-                                          Icon(LucideIcons.trendingUp, size: 12, color: context.themeColors.primary500),
-                                          const SizedBox(width: 4),
-                                          Text(topic, style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 12)),
-                                        ],
-                                      ),
-                                    ),
-                                  ).toList(),
+                                    );
+                                  }).toList(),
                                 );
                               }
                             ),
@@ -255,7 +310,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           // Suggested Builders
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Suggested Builders', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+                            child: Text('Discover Builders', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
                           ),
                           const SizedBox(height: 12),
                           SizedBox(
@@ -275,15 +330,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                     final builder = builders[index];
                                     final avatar = builder['avatar']?.toString();
                                     return Container(
-                                      width: 80,
+                                      width: 72,
                                       margin: const EdgeInsets.only(right: 12),
                                       child: Column(
                                         children: [
-                                          _buildAvatar(avatar, builder['name'] ?? 'U', builder['id']?.toString() ?? '', 56),
+                                          _buildAvatar(avatar, builder['name'] ?? 'U', builder['id']?.toString() ?? '', 48),
                                           const SizedBox(height: 8),
                                           Text(
-                                            builder['name'],
-                                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                                            builder['name']?.toString() ?? 'Builder',
+                                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             textAlign: TextAlign.center,
@@ -304,9 +359,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             alignment: Alignment.centerLeft,
                             child: Row(
                               children: [
-                                Text('Top Builders (This Week)', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+                                Text('Leaderboard', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
                                 const SizedBox(width: 8),
-                                Icon(LucideIcons.flame, color: Colors.orange, size: 18),
+                                Icon(LucideIcons.flame, color: Colors.orange, size: 16),
                               ],
                             ),
                           ),
@@ -496,12 +551,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               },
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 24),
-                              decoration: BoxDecoration(
-                                color: context.themeColors.surface,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: context.themeColors.borderSubtle),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
-                              ),
+                                decoration: BoxDecoration(
+                                  color: context.themeColors.surface,
+                                  borderRadius: BorderRadius.circular(32),
+                                  border: Border.all(color: context.themeColors.borderSubtle.withOpacity(0.5)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
+                                    )
+                                  ],
+                                ),
                               clipBehavior: Clip.antiAlias,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,14 +712,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
           width: 24,
           child: Text(
             rank,
-            style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ),
         const SizedBox(width: 12),
-        Icon(LucideIcons.medal, color: medalColor, size: 20),
+        Icon(LucideIcons.medal, color: medalColor, size: 18),
         const SizedBox(width: 12),
-        _buildAvatar(avatarUrl, name, userId, 32),
+        _buildAvatar(avatarUrl, name, userId, 28),
         const SizedBox(width: 12),
         Expanded(
           child: Row(
@@ -666,7 +727,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               Flexible(
                 child: Text(
                   name,
-                  style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -687,7 +748,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
         Text(
           points,
-          style: TextStyle(color: context.themeColors.primary400, fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(color: context.themeColors.primary400, fontWeight: FontWeight.bold, fontSize: 12),
         ),
       ],
     );

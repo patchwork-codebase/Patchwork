@@ -29,7 +29,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_room_shipped_achievement ON public.rooms;
+DROP TRIGGER IF EXISTS on_room_shipped_achievement ON rooms;
 CREATE TRIGGER on_room_shipped_achievement
     AFTER UPDATE OF status ON public.rooms
     FOR EACH ROW
     EXECUTE FUNCTION public.check_room_shipped_achievement();
+

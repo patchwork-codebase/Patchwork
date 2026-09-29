@@ -31,3 +31,4 @@ BEGIN
         WITH CHECK ( bucket_id = 'updates_media' );
     END IF;
 END $$;
+

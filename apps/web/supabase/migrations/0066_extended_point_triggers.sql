@@ -14,6 +14,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_discovery_completed_points ON public.discovery_projects;
+DROP TRIGGER IF EXISTS on_discovery_completed_points ON discovery_projects;
 CREATE TRIGGER on_discovery_completed_points
     AFTER UPDATE OF status ON public.discovery_projects
     FOR EACH ROW
@@ -41,6 +42,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_expert_review_points ON public.expert_reviews;
+DROP TRIGGER IF EXISTS on_expert_review_points ON expert_reviews;
 CREATE TRIGGER on_expert_review_points
     AFTER INSERT ON public.expert_reviews
     FOR EACH ROW
@@ -66,6 +68,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_reaction_support_points ON public.reactions;
+DROP TRIGGER IF EXISTS on_reaction_support_points ON reactions;
 CREATE TRIGGER on_reaction_support_points
     AFTER INSERT ON public.reactions
     FOR EACH ROW
@@ -86,7 +89,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_room_shipped_points ON public.rooms;
+DROP TRIGGER IF EXISTS on_room_shipped_points ON rooms;
 CREATE TRIGGER on_room_shipped_points
     AFTER UPDATE OF status ON public.rooms
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_room_shipped_points();
+

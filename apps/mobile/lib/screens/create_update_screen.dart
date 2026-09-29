@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:typed_data';
 import 'dart:math';
 import '../theme.dart';
@@ -35,8 +38,9 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
   String _selectedUpdateType = 'insight';
   bool _isLoading = false;
   bool _needsFeedback = false;
+  bool _isPreviewMode = false;
   
-  final List<XFile> _selectedMediaList = [];
+  final List<PlatformFile> _selectedMediaList = [];
   final List<Uint8List> _mediaBytesList = [];
   bool _isUploadingMedia = false;
 
@@ -49,6 +53,10 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
   ];
   int _pollDurationDays = 3;
 
+  // Figma state
+  bool _hasFigma = false;
+  final TextEditingController _figmaUrlController = TextEditingController();
+
   late Future<List<Map<String, dynamic>>> _roomsFuture;
   List<Map<String, dynamic>> _allUsers = [];
 
@@ -58,6 +66,8 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
     'blocker': {'label': 'Blocker', 'icon': LucideIcons.alertTriangle, 'color': Colors.redAccent},
     'shipped': {'label': 'Shipped', 'icon': LucideIcons.rocket, 'color': Colors.greenAccent},
     'open_question': {'label': 'Question', 'icon': LucideIcons.helpCircle, 'color': Colors.lightBlue},
+    'spotlight': {'label': 'Spotlight (Observer)', 'icon': LucideIcons.star, 'color': Colors.purpleAccent},
+    'rfb': {'label': 'Request for Builder', 'icon': LucideIcons.target, 'color': Colors.cyanAccent},
   };
 
   @override
@@ -66,6 +76,19 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
     _selectedRoomId = widget.preselectedRoomId;
     _roomsFuture = _fetchMyRooms();
     _fetchUsers();
+    _loadDraft();
+  }
+
+  Future<void> _loadDraft() async {
+    if (widget.quotedUpdateId != null || widget.parentUpdateId != null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final draft = prefs.getString('update_draft');
+    if (draft != null && draft.isNotEmpty && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mentionsKey.currentState?.controller?.text = draft;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Draft loaded')));
+    }
   }
 
   @override
@@ -74,6 +97,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
     for (final controller in _pollOptionControllers) {
       controller.dispose();
     }
+    _figmaUrlController.dispose();
     super.dispose();
   }
 
@@ -96,47 +120,37 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
   }
 
   Future<void> _pickMedia() async {
-    final picker = ImagePicker();
     final remainingSlots = 4 - _selectedMediaList.length;
     if (remainingSlots <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 4 images allowed per update')),
+        const SnackBar(content: Text('Maximum 4 files allowed per update')),
       );
       return;
     }
 
     try {
-      final pickedFiles = await picker.pickMultiImage(
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 85,
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'pdf', 'doc', 'docx', 'txt'],
+        withData: true,
       );
 
-      if (pickedFiles.isEmpty) return;
+      if (result == null || result.files.isEmpty) return;
 
-      final filesToAdd = pickedFiles.take(remainingSlots).toList();
+      final filesToAdd = result.files.take(remainingSlots).toList();
       for (final file in filesToAdd) {
-        final bytes = await file.readAsBytes();
-        setState(() {
-          _selectedMediaList.add(file);
-          _mediaBytesList.add(bytes);
-        });
+        if (file.bytes != null) {
+          setState(() {
+            _selectedMediaList.add(file);
+            _mediaBytesList.add(file.bytes!);
+          });
+        }
       }
-    } catch (_) {
-      // Fallback to single pick if pickMultiImage has device issues
-      final singlePicked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 85,
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking files: $e')),
       );
-      if (singlePicked != null) {
-        final bytes = await singlePicked.readAsBytes();
-        setState(() {
-          _selectedMediaList.add(singlePicked);
-          _mediaBytesList.add(bytes);
-        });
-      }
     }
   }
 
@@ -175,7 +189,8 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
   }
 
   Future<void> _submitUpdate() async {
-    if (_selectedRoomId == null) {
+    final isObserverType = _selectedUpdateType == 'spotlight' || _selectedUpdateType == 'rfb';
+    if (_selectedRoomId == null && !isObserverType) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a room')));
       return;
     }
@@ -216,8 +231,25 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
         final uploadFutures = _selectedMediaList.asMap().entries.map((entry) async {
           final idx = entry.key;
           final file = entry.value;
-          final bytes = _mediaBytesList[idx];
-          final fileExt = file.name.split('.').last;
+          Uint8List bytes = _mediaBytesList[idx];
+          final fileExt = (file.extension ?? file.name.split('.').last).toLowerCase();
+          
+          // Compress images before upload to save bandwidth
+          if (fileExt == 'jpg' || fileExt == 'jpeg' || fileExt == 'png') {
+            try {
+              final compressedBytes = await FlutterImageCompress.compressWithList(
+                bytes,
+                minWidth: 1080,
+                minHeight: 1080,
+                quality: 75,
+                format: fileExt == 'png' ? CompressFormat.png : CompressFormat.jpeg,
+              );
+              bytes = compressedBytes;
+            } catch (e) {
+              debugPrint('Image compression failed, using original bytes: $e');
+            }
+          }
+          
           final fileName = '${DateTime.now().millisecondsSinceEpoch}_${idx}_$userId.$fileExt';
           final filePath = 'updates/$fileName';
 
@@ -267,6 +299,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
         if (widget.quotedUpdateId != null) 'repost_id': widget.quotedUpdateId,
         if (widget.quotedUpdateId != null) 'is_repost_only': false,
         if (widget.parentUpdateId != null) 'parent_update_id': widget.parentUpdateId,
+        if (_hasFigma && _figmaUrlController.text.isNotEmpty) 'figma_url': _figmaUrlController.text.trim(),
       });
 
       // Insert Poll and Poll Options if created
@@ -308,6 +341,10 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
             'author_id': userId,
           });
         }
+      }
+      if (widget.quotedUpdateId == null && widget.parentUpdateId == null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('update_draft');
       }
 
       if (mounted) {
@@ -370,6 +407,9 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
 
         await Future.delayed(const Duration(milliseconds: 1200));
         if (mounted) {
+          if (widget.quotedUpdateId == null && widget.parentUpdateId == null) {
+            SharedPreferences.getInstance().then((prefs) => prefs.remove('update_draft'));
+          }
           Navigator.of(context).pop(); // dismiss dialog
           Navigator.of(context).pop(true); // dismiss screen
         }
@@ -542,59 +582,98 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Markdown Formatting Ribbon
+                      // Write / Preview Tabs
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: context.themeColors.surfaceHighlight.withOpacity(0.5),
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           border: Border(bottom: BorderSide(color: context.themeColors.borderSubtle)),
                         ),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              _buildFormatButton(
-                                icon: LucideIcons.bold,
-                                tooltip: 'Bold',
-                                onTap: () => _insertMarkdown('**', '**'),
-                              ),
-                              _buildFormatButton(
-                                icon: LucideIcons.italic,
-                                tooltip: 'Italic',
-                                onTap: () => _insertMarkdown('*', '*'),
-                              ),
-                              _buildFormatButton(
-                                icon: LucideIcons.code,
-                                tooltip: 'Inline Code',
-                                onTap: () => _insertMarkdown('`', '`'),
-                              ),
-                              _buildFormatButton(
-                                icon: LucideIcons.fileCode,
-                                tooltip: 'Code Block',
-                                onTap: () => _insertMarkdown('```\n', '\n```'),
-                              ),
-                              _buildFormatButton(
-                                icon: LucideIcons.list,
-                                tooltip: 'Bullet List',
-                                onTap: () => _insertMarkdown('- '),
-                              ),
-                              _buildFormatButton(
-                                icon: LucideIcons.link,
-                                tooltip: 'Link',
-                                onTap: () => _insertMarkdown('[', '](https://)'),
-                              ),
-                              _buildFormatButton(
-                                icon: LucideIcons.quote,
-                                tooltip: 'Quote',
-                                onTap: () => _insertMarkdown('> '),
-                              ),
-                            ],
-                          ),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () => setState(() => _isPreviewMode = false),
+                              child: Text('Write', style: TextStyle(fontSize: 14, fontWeight: _isPreviewMode ? FontWeight.normal : FontWeight.bold, color: _isPreviewMode ? context.themeColors.textTertiary : context.themeColors.textPrimary)),
+                            ),
+                            const SizedBox(width: 24),
+                            GestureDetector(
+                              onTap: () => setState(() => _isPreviewMode = true),
+                              child: Text('Preview', style: TextStyle(fontSize: 14, fontWeight: _isPreviewMode ? FontWeight.bold : FontWeight.normal, color: _isPreviewMode ? context.themeColors.textPrimary : context.themeColors.textTertiary)),
+                            ),
+                          ],
                         ),
                       ),
-                      FlutterMentions(
-                        key: _mentionsKey,
+                      // Markdown Formatting Ribbon (only in Write mode)
+                      if (!_isPreviewMode)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: context.themeColors.surface,
+                            border: Border(bottom: BorderSide(color: context.themeColors.borderSubtle)),
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                _buildFormatButton(
+                                  icon: LucideIcons.bold,
+                                  tooltip: 'Bold',
+                                  onTap: () => _insertMarkdown('**', '**'),
+                                ),
+                                _buildFormatButton(
+                                  icon: LucideIcons.italic,
+                                  tooltip: 'Italic',
+                                  onTap: () => _insertMarkdown('*', '*'),
+                                ),
+                                _buildFormatButton(
+                                  icon: LucideIcons.code,
+                                  tooltip: 'Inline Code',
+                                  onTap: () => _insertMarkdown('`', '`'),
+                                ),
+                                _buildFormatButton(
+                                  icon: LucideIcons.fileCode,
+                                  tooltip: 'Code Block',
+                                  onTap: () => _insertMarkdown('```\n', '\n```'),
+                                ),
+                                _buildFormatButton(
+                                  icon: LucideIcons.list,
+                                  tooltip: 'Bullet List',
+                                  onTap: () => _insertMarkdown('- '),
+                                ),
+                                _buildFormatButton(
+                                  icon: LucideIcons.link,
+                                  tooltip: 'Link',
+                                  onTap: () => _insertMarkdown('[', '](https://)'),
+                                ),
+                                _buildFormatButton(
+                                  icon: LucideIcons.quote,
+                                  tooltip: 'Quote',
+                                  onTap: () => _insertMarkdown('> '),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (_isPreviewMode)
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          constraints: const BoxConstraints(minHeight: 120),
+                          child: MarkdownBody(
+                            data: _mentionsKey.currentState?.controller?.text ?? '',
+                            styleSheet: MarkdownStyleSheet(
+                              p: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, height: 1.5),
+                            ),
+                          ),
+                        )
+                      else
+                        FlutterMentions(
+                          key: _mentionsKey,
+                          onChanged: (text) {
+                            if (widget.quotedUpdateId == null && widget.parentUpdateId == null) {
+                              SharedPreferences.getInstance().then((prefs) => prefs.setString('update_draft', text));
+                            }
+                          },
                         suggestionPosition: SuggestionPosition.Bottom,
                         maxLines: 12,
                         minLines: 4,
@@ -739,20 +818,34 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                             }
 
                             final bytes = _mediaBytesList[index];
-                            return Stack(
-                              children: [
-                                Container(
-                                  width: 140,
-                                  height: 140,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: context.themeColors.borderSubtle),
-                                    image: DecorationImage(
-                                      image: MemoryImage(bytes),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
+                                  final fileName = _selectedMediaList[index].name.toLowerCase();
+                                  final isVideo = fileName.endsWith('.mp4') || fileName.endsWith('.mov');
+                                  final isDoc = fileName.endsWith('.pdf') || fileName.endsWith('.doc') || fileName.endsWith('.docx') || fileName.endsWith('.txt');
+                                  
+                                  Widget mediaPreview;
+                                  if (isVideo) {
+                                    mediaPreview = Center(child: Icon(LucideIcons.video, size: 48, color: context.themeColors.textSecondary));
+                                  } else if (isDoc) {
+                                    mediaPreview = Center(child: Icon(LucideIcons.fileText, size: 48, color: context.themeColors.textSecondary));
+                                  } else {
+                                    mediaPreview = Image.memory(bytes, fit: BoxFit.cover);
+                                  }
+
+                                  return Stack(
+                                    children: [
+                                      Container(
+                                        width: 140,
+                                        height: 140,
+                                        decoration: BoxDecoration(
+                                          color: context.themeColors.surfaceHighlight,
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: context.themeColors.borderSubtle),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: mediaPreview,
+                                        ),
+                                      ),
                                 if (_isUploadingMedia)
                                   Container(
                                     width: 140,
@@ -1028,6 +1121,114 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               },
                             ),
                           ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+
+                // Figma Integration Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.themeColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _hasFigma 
+                          ? const Color(0xFFF24E1E).withOpacity(0.5) 
+                          : context.themeColors.borderSubtle,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: _hasFigma 
+                                      ? const Color(0xFFF24E1E).withOpacity(0.15) 
+                                      : context.themeColors.surfaceHighlight,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  LucideIcons.figma, 
+                                  size: 18, 
+                                  color: _hasFigma 
+                                      ? const Color(0xFFF24E1E) 
+                                      : context.themeColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Figma Sync',
+                                    style: TextStyle(
+                                      color: context.themeColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Link your design file',
+                                    style: TextStyle(
+                                      color: context.themeColors.textTertiary,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: _hasFigma,
+                            activeColor: const Color(0xFFF24E1E),
+                            onChanged: (val) {
+                              setState(() => _hasFigma = val);
+                            },
+                          ),
+                        ],
+                      ),
+                      if (_hasFigma) ...[
+                        const SizedBox(height: 16),
+                        Divider(height: 1, color: context.themeColors.borderSubtle),
+                        const SizedBox(height: 16),
+                        Text(
+                          'FIGMA URL',
+                          style: TextStyle(
+                            color: context.themeColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _figmaUrlController,
+                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: 'https://www.figma.com/file/...',
+                            hintStyle: TextStyle(color: context.themeColors.textTertiary),
+                            filled: true,
+                            fillColor: context.themeColors.surfaceHighlight,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.themeColors.borderSubtle),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: context.themeColors.borderSubtle),
+                            ),
+                          ),
                         ),
                       ],
                     ],

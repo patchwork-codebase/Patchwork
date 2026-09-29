@@ -26,8 +26,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger to run the function whenever user reputation is updated
 DROP TRIGGER IF EXISTS on_user_reputation_increase ON public.users;
+DROP TRIGGER IF EXISTS on_user_reputation_increase ON ON;
 CREATE TRIGGER on_user_reputation_increase
     AFTER UPDATE OF reputation ON public.users
     FOR EACH ROW
     WHEN (NEW.reputation > COALESCE(OLD.reputation, 0))
     EXECUTE FUNCTION public.check_and_grant_level_badges();
+

@@ -55,6 +55,7 @@ ALTER TABLE public.github_drafts ENABLE ROW LEVEL SECURITY;
 -- Policies for github_accounts
 DROP POLICY IF EXISTS "Users can manage their own github accounts" ON public.github_accounts;
 DROP POLICY IF EXISTS "Users can manage their own github accounts" ON public.github_accounts;
+DROP POLICY IF EXISTS "Users can manage their own github accounts" ON public.github_accounts;
 CREATE POLICY "Users can manage their own github accounts"
 ON public.github_accounts
 FOR ALL TO authenticated
@@ -64,6 +65,7 @@ WITH CHECK (auth.uid() = user_id);
 -- Policies for repositories
 DROP POLICY IF EXISTS "Users can manage their own repositories" ON public.repositories;
 DROP POLICY IF EXISTS "Users can manage their own repositories" ON public.repositories;
+DROP POLICY IF EXISTS "Users can manage their own repositories" ON public.repositories;
 CREATE POLICY "Users can manage their own repositories"
 ON public.repositories
 FOR ALL TO authenticated
@@ -71,6 +73,7 @@ USING (auth.uid() = linked_user_id)
 WITH CHECK (auth.uid() = linked_user_id);
 
 -- Policies for github_webhook_events (internal use mostly, but builder can read their own)
+DROP POLICY IF EXISTS "Users can read webhook events for their repos" ON public.github_webhook_events;
 DROP POLICY IF EXISTS "Users can read webhook events for their repos" ON public.github_webhook_events;
 DROP POLICY IF EXISTS "Users can read webhook events for their repos" ON public.github_webhook_events;
 CREATE POLICY "Users can read webhook events for their repos"
@@ -83,6 +86,7 @@ USING (
 -- Policies for github_drafts
 DROP POLICY IF EXISTS "Users can manage their own github drafts" ON public.github_drafts;
 DROP POLICY IF EXISTS "Users can manage their own github drafts" ON public.github_drafts;
+DROP POLICY IF EXISTS "Users can manage their own github drafts" ON public.github_drafts;
 CREATE POLICY "Users can manage their own github drafts"
 ON public.github_drafts
 FOR ALL TO authenticated
@@ -92,3 +96,4 @@ USING (
 WITH CHECK (
   room_id IN (SELECT id FROM public.rooms WHERE builder_id = auth.uid())
 );
+

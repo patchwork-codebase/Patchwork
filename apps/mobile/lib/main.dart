@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'supabase_config.dart';
@@ -7,6 +8,9 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/update_thread_screen.dart';
+import 'screens/room_detail_screen.dart';
 import 'theme.dart';
 import 'providers/theme_provider.dart';
 import 'services/notification_service.dart';
@@ -14,7 +18,10 @@ import 'package:flutter_portal/flutter_portal.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Register the background FCM handler FIRST — before any Firebase init.
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   try {
     await NotificationService().init();
 
@@ -61,7 +68,32 @@ class PatchworkApp extends ConsumerWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: themeMode,
+        // Global key used by NotificationService to navigate on push tap.
+        navigatorKey: pushNavigatorKey,
         home: const InitialAuthCheck(),
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case '/notifications':
+              return MaterialPageRoute(
+                builder: (_) => const NotificationsScreen(),
+              );
+            case '/update-thread':
+              final update = settings.arguments as Map<String, dynamic>;
+              return MaterialPageRoute(
+                builder: (_) => UpdateThreadScreen(update: update),
+              );
+            case '/room-detail':
+              final args = settings.arguments as Map<String, dynamic>;
+              return MaterialPageRoute(
+                builder: (_) => RoomDetailScreen(
+                  roomId: args['roomId'] as String,
+                  title: args['title'] as String,
+                ),
+              );
+            default:
+              return null;
+          }
+        },
       ),
     );
   }

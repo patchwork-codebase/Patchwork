@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
 -- RLS for newsletter_subscribers (Public can insert, only admins can view)
 ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anyone can subscribe to newsletter" ON public.newsletter_subscribers;
+DROP POLICY IF EXISTS "Anyone can subscribe to newsletter" ON public.newsletter_subscribers;
 CREATE POLICY "Anyone can subscribe to newsletter" ON public.newsletter_subscribers FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Users can view their own subscription" ON public.newsletter_subscribers;
 DROP POLICY IF EXISTS "Users can view their own subscription" ON public.newsletter_subscribers;
 CREATE POLICY "Users can view their own subscription" ON public.newsletter_subscribers FOR SELECT USING (auth.jwt() ->> 'email' = email);
 
@@ -28,6 +30,7 @@ CREATE TABLE IF NOT EXISTS public.bookmarks (
 -- RLS for bookmarks
 ALTER TABLE public.bookmarks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage their own bookmarks" ON public.bookmarks;
+DROP POLICY IF EXISTS "Users can manage their own bookmarks" ON public.bookmarks;
 CREATE POLICY "Users can manage their own bookmarks" ON public.bookmarks FOR ALL USING (auth.uid() = user_id);
 
 -- 3. Learning Hub Features (Curation)
@@ -41,6 +44,7 @@ CREATE TABLE IF NOT EXISTS public.learning_hub_features (
 
 -- RLS for learning_hub_features (Public read, admin write)
 ALTER TABLE public.learning_hub_features ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can view learning hub features" ON public.learning_hub_features;
 DROP POLICY IF EXISTS "Anyone can view learning hub features" ON public.learning_hub_features;
 CREATE POLICY "Anyone can view learning hub features" ON public.learning_hub_features FOR SELECT USING (true);
 -- Note: Assuming you manage inserts via Supabase dashboard or an admin portal.
@@ -58,3 +62,4 @@ BEGIN
         ) ON CONFLICT DO NOTHING;
     END LOOP;
 END $$;
+

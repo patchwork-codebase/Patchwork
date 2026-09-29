@@ -112,20 +112,30 @@ ALTER TABLE pm_scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pm_activity ENABLE ROW LEVEL SECURITY;
 
 -- Allow users to read all profiles but only update their own
+DROP POLICY IF EXISTS "Users can read all PM profiles" ON pm_profile;
 CREATE POLICY "Users can read all PM profiles" ON pm_profile FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can update own PM profile" ON pm_profile;
 CREATE POLICY "Users can update own PM profile" ON pm_profile FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can read all PM skills" ON pm_skills;
 CREATE POLICY "Users can read all PM skills" ON pm_skills FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can update own PM skills" ON pm_skills;
 CREATE POLICY "Users can update own PM skills" ON pm_skills FOR UPDATE USING (auth.uid() = user_id);
 
 -- Case studies and scenarios are public read
+DROP POLICY IF EXISTS "Case studies are public" ON pm_case_studies;
 CREATE POLICY "Case studies are public" ON pm_case_studies FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Decision scenarios are public" ON pm_decision_scenarios;
 CREATE POLICY "Decision scenarios are public" ON pm_decision_scenarios FOR SELECT USING (true);
 
 -- Attempts and scores are private to the user
+DROP POLICY IF EXISTS "Users can manage own case attempts" ON pm_case_attempts;
 CREATE POLICY "Users can manage own case attempts" ON pm_case_attempts FOR ALL USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage own decision attempts" ON pm_decision_attempts;
 CREATE POLICY "Users can manage own decision attempts" ON pm_decision_attempts FOR ALL USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage own scores" ON pm_scores;
 CREATE POLICY "Users can manage own scores" ON pm_scores FOR ALL USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage own activity" ON pm_activity;
 CREATE POLICY "Users can manage own activity" ON pm_activity FOR ALL USING (auth.uid() = user_id);
 
 -- Seeding MVP Decision Scenarios
@@ -139,3 +149,4 @@ INSERT INTO pm_decision_scenarios (title, context, difficulty, category) VALUES
 -- Seeding MVP Case Study
 INSERT INTO pm_case_studies (title, description, difficulty, estimated_time_minutes, initial_context, category) VALUES
 ('Spotify Retention Drop', 'You''ve just joined Spotify as a Product Manager. Your retention has dropped by 18%. Analyze the situation and turn it around.', 'Intermediate', 30, '{"analytics": "Retention down 18% MoM in US market.", "feedback": "Users complaining about podcast UI taking over music.", "constraints": "Engineering is locked in Q3 for backend migration."}', 'Product Discovery');
+

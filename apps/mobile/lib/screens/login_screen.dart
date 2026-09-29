@@ -5,6 +5,7 @@ import '../theme.dart';
 import '../widgets/toast_notification.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart'; // We will create this next
+import 'welcome_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {

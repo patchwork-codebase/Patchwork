@@ -13,6 +13,7 @@ import 'create_update_screen.dart';
 import 'notifications_screen.dart';
 import 'public_profile_screen.dart';
 import 'explore_screen.dart';
+import '../services/notification_service.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -26,6 +27,7 @@ class _FeedScreenState extends State<FeedScreen> {
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMore = true;
+  String? _errorMessage;
   int _unreadNotifications = 0;
   
   List<Map<String, dynamic>> _suggestedBuilders = [];
@@ -37,13 +39,15 @@ class _FeedScreenState extends State<FeedScreen> {
 
   String _activeDomainFilter = 'All';
   String _activeViewToggle = 'All';
+  List<String> _domains = ['All', 'Product', 'Engineering', 'Design'];
   
-  int _newUpdatesCount = 0;
+  final ValueNotifier<int> _newUpdatesCount = ValueNotifier<int>(0);
   RealtimeChannel? _updatesChannel;
 
   @override
   void initState() {
     super.initState();
+    _fetchDomains();
     _fetchInitialFeed();
     _fetchSuggestedBuilders();
     _fetchFollowing();
@@ -51,6 +55,22 @@ class _FeedScreenState extends State<FeedScreen> {
     _scrollController.addListener(_onScroll);
     
     _setupRealtimeUpdates();
+  }
+
+  Future<void> _fetchDomains() async {
+    try {
+      final res = await Supabase.instance.client.rpc('get_popular_tags', params: {'limit_val': 5});
+      if (mounted && res != null && (res as List).isNotEmpty) {
+        setState(() {
+          _domains = ['All', ...res.map((r) {
+            String tag = r['tag'].toString();
+            return tag.isEmpty ? '' : tag[0].toUpperCase() + tag.substring(1).toLowerCase();
+          })];
+        });
+      }
+    } catch (_) {
+      // Fallback to defaults if RPC fails (e.g. migration not applied yet)
+    }
   }
 
   void _setupRealtimeUpdates() {
@@ -65,9 +85,7 @@ class _FeedScreenState extends State<FeedScreen> {
             // Only show pill for other people's updates
             if (payload.newRecord['author_id'] != userId) {
               if (mounted) {
-                setState(() {
-                  _newUpdatesCount++;
-                });
+                _newUpdatesCount.value++;
               }
             }
           },
@@ -111,7 +129,7 @@ class _FeedScreenState extends State<FeedScreen> {
     try {
       var query = Supabase.instance.client
           .from('users')
-          .select('id, name, avatar, is_verified_expert');
+          .select('id, name, avatar, is_verified_expert, bio');
           
       if (userId != null) {
         query = query.neq('id', userId);
@@ -147,10 +165,11 @@ class _FeedScreenState extends State<FeedScreen> {
   SupabaseQueryBuilder get _updatesQuery => Supabase.instance.client.from('updates');
 
   PostgrestTransformBuilder<List<Map<String, dynamic>>> _buildBaseQuery() {
-    // If we need to filter by a room tag, we MUST use an inner join.
-    final selectString = _activeDomainFilter != 'All'
-        ? '*, rooms!inner(title, tags), users(name, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, avatar, is_verified_expert))'
-        : '*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, avatar, is_verified_expert))';
+    // If we need to filter by a room tag or update_count, we MUST use an inner join.
+    final needsInnerJoin = _activeDomainFilter != 'All' || _activeViewToggle == 'Launches';
+    final selectString = needsInnerJoin
+        ? '*, rooms!inner(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))'
+        : '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))';
 
     var filterBuilder = Supabase.instance.client.from('updates').select(selectString);
 
@@ -162,17 +181,17 @@ class _FeedScreenState extends State<FeedScreen> {
     if (_activeViewToggle == 'Media') {
       filterBuilder = filterBuilder.not('media_url', 'is', null);
     } else if (_activeViewToggle == 'Launches') {
-      // For launches, we'd ideally check rooms.update_count == 1, but we can't easily filter by joined counts without a view.
-      // We'll fall back to ignoring for now.
+      filterBuilder = filterBuilder.eq('rooms.update_count', 1);
     }
 
     return filterBuilder.order('created_at', ascending: false);
   }
 
-  Future<void> _fetchInitialFeed() async {
+  Future<void> _fetchInitialFeed() async { HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
       _hasMore = true;
+      _errorMessage = null;
       _updates.clear();
     });
 
@@ -182,31 +201,42 @@ class _FeedScreenState extends State<FeedScreen> {
       if (mounted) {
         setState(() {
           _updates.addAll(List<Map<String, dynamic>>.from(response));
-          if (response.length < _pageSize) _hasMore = false;
+          _hasMore = _updates.length == _pageSize;
           _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = "Failed to connect. Please check your internet connection.";
+        });
+      }
     }
   }
 
   Future<void> _fetchMoreFeed() async {
+    if (_isLoadingMore || !_hasMore) return;
     setState(() => _isLoadingMore = true);
 
     try {
-      final startIndex = _updates.length;
-      final response = await _buildBaseQuery().range(startIndex, startIndex + _pageSize - 1);
+      final response = await _buildBaseQuery().range(_updates.length, _updates.length + _pageSize - 1);
 
       if (mounted) {
         setState(() {
-          _updates.addAll(List<Map<String, dynamic>>.from(response));
-          if (response.length < _pageSize) _hasMore = false;
+          final newUpdates = List<Map<String, dynamic>>.from(response);
+          _updates.addAll(newUpdates);
+          if (newUpdates.length < _pageSize) _hasMore = false;
           _isLoadingMore = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoadingMore = false);
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load more updates. Check your connection.')),
+        );
+      }
     }
   }
 
@@ -333,16 +363,13 @@ class _FeedScreenState extends State<FeedScreen> {
                         border: Border(bottom: BorderSide(color: context.themeColors.borderSubtle)),
                       ),
                       child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildDomainTab('All', _activeDomainFilter == 'All'),
-                            _buildDomainTab('Product', _activeDomainFilter == 'Product'),
-                            _buildDomainTab('Engineering', _activeDomainFilter == 'Engineering'),
-                            _buildDomainTab('Design', _activeDomainFilter == 'Design'),
-                          ],
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: _domains.map((domain) => 
+                              _buildDomainTab(domain, _activeDomainFilter == domain)
+                            ).toList(),
+                          ),
                         ),
-                      ),
                     ),
                   ),
                 ),
@@ -368,6 +395,38 @@ class _FeedScreenState extends State<FeedScreen> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => const FeedCardSkeleton(),
                       childCount: 5,
+                    ),
+                  )
+                else if (_errorMessage != null)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(LucideIcons.wifiOff, size: 48, color: context.themeColors.textTertiary),
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage!, 
+                              textAlign: TextAlign.center, 
+                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 16)
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _fetchInitialFeed,
+                              icon: const Icon(LucideIcons.refreshCw, size: 16),
+                              label: const Text('Retry'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.themeColors.primary500.withOpacity(0.1),
+                                foregroundColor: context.themeColors.primary400,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   )
                 else if (_updates.isEmpty)
@@ -405,15 +464,41 @@ class _FeedScreenState extends State<FeedScreen> {
                               return _buildInlineSuggestedBuilders();
                             }
                             if (index > suggestedIndex) {
+                              final update = _updates[index - 1];
                               return FeedUpdateCard(
-                                update: _updates[index - 1],
+                                update: update,
                                 onRefresh: _fetchInitialFeed,
+                                onReplyTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreateUpdateScreen(
+                                        preselectedRoomId: update['room_id'],
+                                        preselectedRoomTitle: update['rooms']?['title'],
+                                        parentUpdateId: update['id'],
+                                      ),
+                                    ),
+                                  ).then((_) => _fetchInitialFeed());
+                                },
                               );
                             }
                           }
+                          final update = _updates[index];
                           return FeedUpdateCard(
-                            update: _updates[index],
+                            update: update,
                             onRefresh: _fetchInitialFeed,
+                            onReplyTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateUpdateScreen(
+                                    preselectedRoomId: update['room_id'],
+                                    preselectedRoomTitle: update['rooms']?['title'],
+                                    parentUpdateId: update['id'],
+                                  ),
+                                ),
+                              ).then((_) => _fetchInitialFeed());
+                            },
                           );
                         },
                         childCount: _updates.length + (_isLoadingMore ? 1 : 0) + (_suggestedBuilders.isNotEmpty && _updates.length >= 3 ? 1 : 0),
@@ -428,69 +513,72 @@ class _FeedScreenState extends State<FeedScreen> {
             top: MediaQuery.of(context).padding.top + 16,
             left: 0,
             right: 0,
-            child: AnimatedSlide(
-              offset: _newUpdatesCount > 0 ? Offset.zero : const Offset(0, -2),
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOutBack,
-              child: AnimatedOpacity(
-                opacity: _newUpdatesCount > 0 ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
-                child: Center(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _scrollController.animateTo(
-                          0,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeOutCubic,
-                        );
-                        _fetchInitialFeed();
-                        setState(() {
-                          _newUpdatesCount = 0;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(30),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: context.themeColors.primary500,
+            child: ValueListenableBuilder<int>(
+              valueListenable: _newUpdatesCount,
+              builder: (context, count, child) {
+                return AnimatedSlide(
+                  offset: count > 0 ? Offset.zero : const Offset(0, -2),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutBack,
+                  child: AnimatedOpacity(
+                    opacity: count > 0 ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Center(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _scrollController.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeOutCubic,
+                            );
+                            _fetchInitialFeed();
+                            _newUpdatesCount.value = 0;
+                          },
                           borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: context.themeColors.primary500.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: context.themeColors.primary500,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: context.themeColors.primary500.withOpacity(0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(LucideIcons.arrowUp, color: Colors.white, size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              '$_newUpdatesCount New update${_newUpdatesCount == 1 ? '' : 's'}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.arrowUp, color: Colors.white, size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '$count New update${count == 1 ? '' : 's'}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ],
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 72.0),
+        padding: const EdgeInsets.only(bottom: 96.0),
         child: FloatingActionButton(
           onPressed: () {
             Navigator.of(context).push(
@@ -538,16 +626,16 @@ class _FeedScreenState extends State<FeedScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? context.themeColors.textPrimary.withOpacity(0.08) : Colors.transparent,
+          color: isActive ? context.themeColors.textPrimary : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isActive ? context.themeColors.textPrimary.withOpacity(0.2) : context.themeColors.borderSubtle),
+          border: Border.all(color: isActive ? context.themeColors.textPrimary : context.themeColors.borderSubtle),
         ),
         child: Text(
           label.toUpperCase(),
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: isActive ? context.themeColors.textPrimary : context.themeColors.textSecondary,
+            color: isActive ? context.themeColors.surface : context.themeColors.textSecondary,
             letterSpacing: 1.0,
           ),
         ),
@@ -660,7 +748,7 @@ class _FeedScreenState extends State<FeedScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Builder on Patchwork',
+                              builder['bio'] != null && builder['bio'].toString().isNotEmpty ? builder['bio'].toString() : 'Builder on Patchwork',
                               style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

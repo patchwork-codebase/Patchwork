@@ -79,9 +79,11 @@ $$;
 -- ROOMS
 DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
 DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
+DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
 CREATE POLICY "Public rooms are viewable by everyone" ON public.rooms
 FOR SELECT USING (is_private = false);
 
+DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 CREATE POLICY "Private rooms viewable by observers" ON public.rooms
@@ -96,11 +98,13 @@ FOR SELECT USING (
 -- UPDATES
 DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
 DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
+DROP POLICY IF EXISTS "Public updates are viewable by everyone" ON public.updates;
 CREATE POLICY "Public updates are viewable by everyone" ON public.updates
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private updates viewable by observers" ON public.updates;
 DROP POLICY IF EXISTS "Private updates viewable by observers" ON public.updates;
 DROP POLICY IF EXISTS "Private updates viewable by observers" ON public.updates;
 CREATE POLICY "Private updates viewable by observers" ON public.updates
@@ -115,11 +119,13 @@ FOR SELECT USING (
 -- REACTIONS
 DROP POLICY IF EXISTS "Public reactions are viewable by everyone" ON public.reactions;
 DROP POLICY IF EXISTS "Public reactions are viewable by everyone" ON public.reactions;
+DROP POLICY IF EXISTS "Public reactions are viewable by everyone" ON public.reactions;
 CREATE POLICY "Public reactions are viewable by everyone" ON public.reactions
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private reactions viewable by observers" ON public.reactions;
 DROP POLICY IF EXISTS "Private reactions viewable by observers" ON public.reactions;
 DROP POLICY IF EXISTS "Private reactions viewable by observers" ON public.reactions;
 CREATE POLICY "Private reactions viewable by observers" ON public.reactions
@@ -134,11 +140,13 @@ FOR SELECT USING (
 -- DECISIONS
 DROP POLICY IF EXISTS "Public decisions are viewable by everyone" ON public.room_decisions;
 DROP POLICY IF EXISTS "Public decisions are viewable by everyone" ON public.room_decisions;
+DROP POLICY IF EXISTS "Public decisions are viewable by everyone" ON public.room_decisions;
 CREATE POLICY "Public decisions are viewable by everyone" ON public.room_decisions
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private decisions viewable by observers" ON public.room_decisions;
 DROP POLICY IF EXISTS "Private decisions viewable by observers" ON public.room_decisions;
 DROP POLICY IF EXISTS "Private decisions viewable by observers" ON public.room_decisions;
 CREATE POLICY "Private decisions viewable by observers" ON public.room_decisions
@@ -153,11 +161,13 @@ FOR SELECT USING (
 -- NOTION DOCS
 DROP POLICY IF EXISTS "Public docs are viewable by everyone" ON public.room_notion_docs;
 DROP POLICY IF EXISTS "Public docs are viewable by everyone" ON public.room_notion_docs;
+DROP POLICY IF EXISTS "Public docs are viewable by everyone" ON public.room_notion_docs;
 CREATE POLICY "Public docs are viewable by everyone" ON public.room_notion_docs
 FOR SELECT USING (
     room_id IN (SELECT id FROM public.rooms WHERE is_private = false)
 );
 
+DROP POLICY IF EXISTS "Private docs viewable by observers" ON public.room_notion_docs;
 DROP POLICY IF EXISTS "Private docs viewable by observers" ON public.room_notion_docs;
 DROP POLICY IF EXISTS "Private docs viewable by observers" ON public.room_notion_docs;
 CREATE POLICY "Private docs viewable by observers" ON public.room_notion_docs
@@ -168,3 +178,4 @@ FOR SELECT USING (
         OR auth.uid()::uuid IN (SELECT observer_id::uuid FROM public.room_observers WHERE room_id::text = public.room_notion_docs.room_id::text)
     )
 );
+

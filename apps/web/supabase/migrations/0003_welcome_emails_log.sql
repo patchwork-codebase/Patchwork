@@ -19,6 +19,7 @@ ALTER TABLE public.welcome_emails_log ENABLE ROW LEVEL SECURITY;
 -- but just in case we query from client, allow users to see their own logs
 DROP POLICY IF EXISTS "Allow users to read their own email logs" ON public.welcome_emails_log;
 DROP POLICY IF EXISTS "Allow users to read their own email logs" ON public.welcome_emails_log;
+DROP POLICY IF EXISTS "Allow users to read their own email logs" ON public.welcome_emails_log;
 CREATE POLICY "Allow users to read their own email logs" 
   ON public.welcome_emails_log
   FOR SELECT 
@@ -27,7 +28,9 @@ CREATE POLICY "Allow users to read their own email logs"
 -- Optional: Allow users to insert their own 'pending' record (if called from client, though edge function is safer)
 DROP POLICY IF EXISTS "Allow users to insert their own email logs" ON public.welcome_emails_log;
 DROP POLICY IF EXISTS "Allow users to insert their own email logs" ON public.welcome_emails_log;
+DROP POLICY IF EXISTS "Allow users to insert their own email logs" ON public.welcome_emails_log;
 CREATE POLICY "Allow users to insert their own email logs" 
   ON public.welcome_emails_log
   FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
+

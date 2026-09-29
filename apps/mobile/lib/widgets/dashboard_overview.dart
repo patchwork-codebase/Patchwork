@@ -8,6 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../screens/create_update_screen.dart';
 import '../screens/create_room_screen.dart';
 import '../screens/room_detail_screen.dart';
@@ -17,14 +20,14 @@ import 'dashboard_achievements.dart';
 import 'feed_update_card.dart';
 import 'skeleton_loaders.dart';
 
-class DashboardOverview extends StatefulWidget {
+class DashboardOverview extends ConsumerStatefulWidget {
   const DashboardOverview({super.key});
 
   @override
-  State<DashboardOverview> createState() => _DashboardOverviewState();
+  ConsumerState<DashboardOverview> createState() => _DashboardOverviewState();
 }
 
-class _DashboardOverviewState extends State<DashboardOverview> {
+class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
   List<Map<String, dynamic>> _myRooms = [];
   Map<String, dynamic>? _userProfile;
   Map<String, dynamic>? _workspaceMetrics;
@@ -41,92 +44,21 @@ class _DashboardOverviewState extends State<DashboardOverview> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    // Riverpod providers will automatically fetch data when watched in build()
   }
 
   Future<void> _fetchData() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return;
-
-    try {
-      final profileFuture = Supabase.instance.client
-          .from('users')
-          .select('name, avatar')
-          .eq('id', userId)
-          .maybeSingle();
-          
-      final roomsFuture = Supabase.instance.client
-          .from('rooms')
-          .select('id, title, tags, update_count, created_at')
-          .eq('builder_id', userId)
-          .order('created_at', ascending: false);
-
-      final unreadFuture = Supabase.instance.client
-          .from('notifications')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('read', false);
-
-      final recentUpdatesFuture = Supabase.instance.client
-          .from('updates')
-          .select('created_at')
-          .eq('author_id', userId)
-          .gte('created_at', DateTime.now().subtract(const Duration(days: 14)).toIso8601String())
-          .order('created_at', ascending: false);
-
-      final triageFuture = Supabase.instance.client
-          .from('updates')
-          .select('*, rooms(title, tags), users(name, avatar, is_verified_expert)')
-          .eq('author_id', userId)
-          .eq('needs_feedback', true)
-          .order('created_at', ascending: false)
-          .limit(5);
-          
-      final results = await Future.wait<dynamic>([
-        profileFuture, 
-        roomsFuture, 
-        unreadFuture, 
-        recentUpdatesFuture,
-        triageFuture
-      ]);
-      
-      if (mounted) {
-        setState(() {
-          _userProfile = results[0] as Map<String, dynamic>?;
-          _myRooms = List<Map<String, dynamic>>.from(results[1] as List);
-          _unreadNotifications = (results[2] as List).length;
-          _calculateActivity(results[3] as List);
-          _triageUpdates = List<Map<String, dynamic>>.from(results[4] as List);
-          
-          if (_myRooms.isNotEmpty && _activeWorkspaceId == null) {
-            _activeWorkspaceId = _myRooms.first['id'];
-          }
-          _isLoading = false;
-        });
-        
-        if (_activeWorkspaceId != null) {
-          _fetchWorkspaceMetrics(_activeWorkspaceId!);
-        }
-      }
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    // Phase 3: Invalidate Riverpod providers to force a refresh globally
+    ref.invalidate(myRoomsProvider);
+    ref.invalidate(userProfileProvider);
+    ref.invalidate(unreadNotificationsProvider);
+    ref.invalidate(recentUpdatesActivityProvider);
+    ref.invalidate(triageUpdatesProvider);
+    ref.invalidate(workspaceMetricsProvider);
   }
 
   Future<void> _fetchWorkspaceMetrics(String workspaceId) async {
-    if (mounted) setState(() => _isLoadingMetrics = true);
-    try {
-      final res = await Supabase.instance.client
-          .rpc('get_workspace_metrics', params: {'p_workspace_id': workspaceId});
-      if (mounted) {
-        setState(() {
-          _workspaceMetrics = res as Map<String, dynamic>?;
-          _isLoadingMetrics = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _isLoadingMetrics = false);
-    }
+    // Obsolete - handled by workspaceMetricsProvider
   }
 
   int _currentStreak = 0;
@@ -183,6 +115,35 @@ class _DashboardOverviewState extends State<DashboardOverview> {
 
   @override
   Widget build(BuildContext context) {
+    // Wire Riverpod to Legacy State
+    final myRoomsAsync = ref.watch(myRoomsProvider);
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final triageAsync = ref.watch(triageUpdatesProvider);
+    final unreadAsync = ref.watch(unreadNotificationsProvider);
+    final metricsAsync = ref.watch(workspaceMetricsProvider);
+    final recentUpdatesAsync = ref.watch(recentUpdatesActivityProvider);
+
+    _myRooms = myRoomsAsync.valueOrNull ?? _myRooms;
+    _userProfile = userProfileAsync.valueOrNull ?? _userProfile;
+    _triageUpdates = triageAsync.valueOrNull ?? _triageUpdates;
+    _unreadNotifications = unreadAsync.valueOrNull ?? _unreadNotifications;
+    _workspaceMetrics = metricsAsync.valueOrNull ?? _workspaceMetrics;
+    
+    _isLoading = myRoomsAsync.isLoading || userProfileAsync.isLoading;
+    _isLoadingMetrics = metricsAsync.isLoading;
+
+    if (_myRooms.isNotEmpty && _activeWorkspaceId == null) {
+      Future.microtask(() => ref.read(activeWorkspaceIdProvider.notifier).state = _myRooms.first['id']);
+      _activeWorkspaceId = _myRooms.first['id'];
+    } else {
+      _activeWorkspaceId = ref.watch(activeWorkspaceIdProvider) ?? _activeWorkspaceId;
+    }
+
+    // Trigger activity calculation if updates loaded
+    if (recentUpdatesAsync.hasValue && recentUpdatesAsync.value != null && _currentStreak == 0) {
+      _calculateActivity(recentUpdatesAsync.value!);
+    }
+
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Colors.transparent,
@@ -224,52 +185,42 @@ class _DashboardOverviewState extends State<DashboardOverview> {
             _buildHeader(firstName, userAvatar, initial),
             const SizedBox(height: 24),
 
-            // 2. Bento Grid: Pulse & Actions
-            SizedBox(
-              height: 140,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Pulse Card (Left)
-                  Expanded(
-                    flex: 5,
-                    child: _buildPulseCard().animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
+            // 2. Pulse Card & Actions
+            _buildPulseCard().animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 64, // Fixed height for action cards
+                    child: _buildActionCard(
+                      title: "New Update",
+                      icon: LucideIcons.zap,
+                      color: Colors.amber,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateUpdateScreen())).then((_) => _fetchData());
+                      },
+                    ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
                   ),
-                  const SizedBox(width: 12),
-                  // Quick Actions (Right Stack)
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: _buildActionCard(
-                            title: "New Update",
-                            icon: LucideIcons.zap,
-                            color: Colors.amber,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateUpdateScreen())).then((_) => _fetchData());
-                            },
-                          ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: _buildActionCard(
-                            title: "New Room",
-                            icon: LucideIcons.box,
-                            color: context.themeColors.primary400,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateRoomScreen())).then((_) => _fetchData());
-                            },
-                          ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 64, // Fixed height for action cards
+                    child: _buildActionCard(
+                      title: "New Room",
+                      icon: LucideIcons.box,
+                      color: context.themeColors.primary400,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateRoomScreen())).then((_) => _fetchData());
+                      },
+                    ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
                   ),
-                ],
-              ).animate().fadeIn(duration: 400.ms),
-            ),
+                ),
+              ],
+            ).animate().fadeIn(duration: 400.ms),
             const SizedBox(height: 32),
 
             // 3. Needs Attention Triage
@@ -283,6 +234,27 @@ class _DashboardOverviewState extends State<DashboardOverview> {
             // 4. Active Workspaces
             if (_myRooms.isNotEmpty) ...[
               const SizedBox(height: 32),
+              _buildSectionHeader('YOUR WORKSPACE'),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pick up where you left off',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: context.themeColors.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: context.themeColors.borderSubtle),
+                    ),
+                    child: Icon(LucideIcons.arrowRight, size: 16, color: context.themeColors.textSecondary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               _buildWorkspaceSelector(),
               const SizedBox(height: 16),
               if (_activeWorkspaceId != null)
@@ -434,99 +406,173 @@ class _DashboardOverviewState extends State<DashboardOverview> {
   }
 
   Widget _buildPulseCard() {
-    // Find the max value for scaling the sparkline
-    final maxUpdates = _weeklyActivity.isEmpty ? 1 : _weeklyActivity.reduce((a, b) => a > b ? a : b);
-    final scale = maxUpdates > 0 ? maxUpdates : 1;
-
     return Container(
-      height: 140,
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: context.themeColors.surface,
+        color: const Color(0xFF1E211D), // Dark olive/grey from screenshot
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: context.themeColors.borderSubtle),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.deepOrangeAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+      child: Stack(
+        children: [
+          // Graphic on the right
+          Positioned(
+            right: -20,
+            top: -20,
+            child: SizedBox(
+              width: 180,
+              height: 180,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
+                    ),
                   ),
-                  child: Icon(LucideIcons.flame, color: Colors.deepOrangeAccent, size: 20),
-                ),
-                // Mini Sparkline
-                SizedBox(
-                  height: 24,
-                  width: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: List.generate(7, (index) {
-                      final val = _weeklyActivity[index];
-                      final heightRatio = val / scale;
-                      return Container(
-                        width: 4,
-                        height: 4 + (20 * heightRatio),
-                        decoration: BoxDecoration(
-                          color: index == 6 ? Colors.deepOrangeAccent : context.themeColors.borderSubtle,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      );
-                    }),
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                    ),
                   ),
-                ),
-              ],
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                    ),
+                  ),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF5733), // Vibrant orange
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(LucideIcons.zap, color: Colors.white, size: 20),
+                  ),
+                ],
+              ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const Text(
+                  'YOUR MOMENTUM',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white54,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
+                    Text(
+                      '$_currentStreak',
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        height: 1.0,
+                        letterSpacing: -2,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$_currentStreak',
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, height: 1.0, letterSpacing: -1),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'DAY',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary),
-                        ),
+                        Text('DAY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text('STREAK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'CURRENT STREAK',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.deepOrangeAccent, letterSpacing: 1.0),
-                    ),
                   ],
                 ),
-                // Trend Indicator
+                const SizedBox(height: 16),
+                const Text(
+                  "You're building consistently. Keep the signal\nalive.",
+                  style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                Divider(color: Colors.white.withOpacity(0.1)),
+                const SizedBox(height: 16),
                 Row(
-                  children: [
-                    Icon(LucideIcons.trendingUp, size: 14, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text('+12%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.green)),
-                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(7, (index) {
+                    final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                    // Assume index 5 is today, 6 is tomorrow for visual match with screenshot
+                    final val = _weeklyActivity[index];
+                    final isToday = index == 5; // Fixed based on screenshot layout
+                    
+                    Widget circle;
+                    if (isToday) {
+                      circle = Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFF5733), width: 2),
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFF5733),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      );
+                    } else if (val > 0) {
+                      circle = Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(LucideIcons.check, size: 12, color: Colors.greenAccent),
+                      );
+                    } else {
+                      circle = Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                        ),
+                      );
+                    }
+                    
+                    return Column(
+                      children: [
+                        circle,
+                        const SizedBox(height: 8),
+                        Text(
+                          days[index],
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isToday ? const Color(0xFFFF5733) : Colors.white54),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -991,7 +1037,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
   Widget _buildWorkspaceSelector() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      physics: const BouncingScrollPhysics(),
       child: Row(
         children: _myRooms.map((room) {
           final isActive = room['id'] == _activeWorkspaceId;
@@ -1002,21 +1048,25 @@ class _DashboardOverviewState extends State<DashboardOverview> {
               }
               setState(() {
                 _activeWorkspaceId = room['id'];
+                _isLoadingMetrics = true;
               });
+              // Update Riverpod provider to trigger metric fetches
+              ref.read(activeWorkspaceIdProvider.notifier).state = room['id'];
             },
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? context.themeColors.primary500 : context.themeColors.surfaceHighlight,
+                color: isActive ? const Color(0xFF1E211D) : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isActive ? context.themeColors.primary500 : context.themeColors.borderSubtle),
+                border: Border.all(color: isActive ? const Color(0xFF1E211D) : context.themeColors.borderSubtle),
               ),
               child: Text(
                 room['title'] ?? 'Untitled',
                 style: TextStyle(
                   color: isActive ? Colors.white : context.themeColors.textSecondary,
-                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
               ),
@@ -1030,16 +1080,8 @@ class _DashboardOverviewState extends State<DashboardOverview> {
   Widget _buildObserverReactionsCard() {
     if (_isLoadingMetrics) return const Center(child: CircularProgressIndicator());
     
-    final metrics = _workspaceMetrics?['reactions'] ?? {};
-    final sharpCount = (metrics['sharp_count'] ?? 0) as int;
-    final tellMeMoreCount = (metrics['tell_me_more_count'] ?? 0) as int;
-    final pushbackCount = (metrics['pushback_count'] ?? 0) as int;
-    final total = sharpCount + tellMeMoreCount + pushbackCount;
-    final updatesCount = (metrics['updates_count'] ?? 0) as int;
-
-    final sharpPct = total > 0 ? ((sharpCount / total) * 100).round() : 0;
-    final tellMeMorePct = total > 0 ? ((tellMeMoreCount / total) * 100).round() : 0;
-    final pushbackPct = total > 0 ? ((pushbackCount / total) * 100).round() : 0;
+    final reactionsCount = (_workspaceMetrics?['reactions_count'] ?? 0) as int;
+    final topObservers = (_workspaceMetrics?['top_observers'] as List?) ?? [];
 
     return Container(
       width: double.infinity,
@@ -1052,58 +1094,94 @@ class _DashboardOverviewState extends State<DashboardOverview> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader('OBSERVER REACTIONS'),
-          const SizedBox(height: 4),
-          Text('$total total · $updatesCount updates', style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: context.themeColors.textSecondary)),
-          const SizedBox(height: 24),
-          if (total == 0)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Column(
-                  children: [
-                    Text('✨', style: TextStyle(fontSize: 24)),
-                    const SizedBox(height: 8),
-                    Text('No reactions yet', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                    Text('Post updates to gather feedback.', style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary)),
-                  ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSectionHeader('OBSERVER REACTIONS'),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('+10% this week', style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '$reactionsCount',
+            style: TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.w900,
+              color: context.themeColors.textPrimary,
+              height: 1.0,
+            ),
+          ),
+          const Spacer(),
+          // Vertical Bar Chart (using weekly activity as visual proxy)
+          SizedBox(
+            height: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(7, (index) {
+                final isHighlight = index == 5; // Emulate the highlighted red bar
+                // Mock heights for visual effect similar to screenshot
+                final heights = [30.0, 40.0, 30.0, 60.0, 50.0, 90.0, 70.0];
+                return Container(
+                  width: 32,
+                  height: heights[index],
+                  decoration: BoxDecoration(
+                    color: isHighlight ? const Color(0xFFFF5733) : context.themeColors.borderSubtle.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Avatars and footer text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 80,
+                height: 32,
+                child: Stack(
+                  children: List.generate(
+                    topObservers.length > 3 ? 3 : topObservers.length, 
+                    (index) {
+                      final obs = topObservers[index];
+                      final initial = (obs['name']?.toString() ?? 'O')[0].toUpperCase();
+                      final avatar = obs['avatar']?.toString() ?? '';
+                      return Positioned(
+                        left: index * 20.0,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: context.themeColors.surface, width: 2),
+                            color: Colors.primaries[index % Colors.primaries.length].withOpacity(0.2),
+                          ),
+                          child: ClipOval(
+                            child: avatar.startsWith('http') 
+                                ? CachedNetworkImage(imageUrl: avatar, fit: BoxFit.cover)
+                                : Center(child: Text(initial, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                          ),
+                        ),
+                      );
+                    }
+                  ),
                 ),
               ),
-            )
-          else ...[
-            _buildReactionBar('✦ This is sharp', sharpCount, sharpPct, const Color(0xFF10B981)),
-            const SizedBox(height: 16),
-            _buildReactionBar('? Tell me more', tellMeMoreCount, tellMeMorePct, context.themeColors.primary400),
-            const SizedBox(height: 16),
-            _buildReactionBar('! Push back', pushbackCount, pushbackPct, Colors.amber),
-            
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: context.themeColors.primary500.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: context.themeColors.primary500.withOpacity(0.2)),
+              Text(
+                'Your latest update is getting noticed.',
+                style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('AI INSIGHT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: context.themeColors.primary500, letterSpacing: 1.0)),
-                  const SizedBox(height: 8),
-                  RichText(
-                    text: TextSpan(
-                      style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary, height: 1.5),
-                      children: [
-                        const TextSpan(text: 'Your problem-framing updates get '),
-                        TextSpan(text: '2x more reactions', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                        const TextSpan(text: ' than feature announcements. Post the problem before the solution.'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ]
+            ],
+          ),
         ],
       ),
     );

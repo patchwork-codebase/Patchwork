@@ -18,6 +18,7 @@ ALTER TABLE public.platform_feedback ENABLE ROW LEVEL SECURITY;
 -- Policies for platform_feedback
 -- Users can insert their own feedback
 DROP POLICY IF EXISTS "Users can insert their own feedback" ON public.platform_feedback;
+DROP POLICY IF EXISTS "Users can insert their own feedback" ON public.platform_feedback;
 CREATE POLICY "Users can insert their own feedback"
 ON public.platform_feedback
 FOR INSERT
@@ -26,8 +27,10 @@ WITH CHECK (auth.uid() = user_id);
 
 -- Users can view their own feedback
 DROP POLICY IF EXISTS "Users can view their own feedback" ON public.platform_feedback;
+DROP POLICY IF EXISTS "Users can view their own feedback" ON public.platform_feedback;
 CREATE POLICY "Users can view their own feedback"
 ON public.platform_feedback
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
+

@@ -36,7 +36,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_decision_update ON public.updates;
+DROP TRIGGER IF EXISTS on_decision_update ON updates;
 CREATE TRIGGER on_decision_update
     AFTER INSERT ON public.updates
     FOR EACH ROW
     EXECUTE FUNCTION handle_new_decision_update();
+

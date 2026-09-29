@@ -124,6 +124,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS update_discovery_confidence_trigger ON discovery_signals;
 CREATE TRIGGER update_discovery_confidence_trigger
 AFTER INSERT OR UPDATE OR DELETE ON public.discovery_signals
 FOR EACH ROW EXECUTE FUNCTION public.update_discovery_confidence();
@@ -139,9 +140,13 @@ ALTER TABLE public.discovery_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.discovery_decisions ENABLE ROW LEVEL SECURITY;
 
 -- Project Policies
+DROP POLICY IF EXISTS "Public read discovery projects" ON public.discovery_projects;
 CREATE POLICY "Public read discovery projects" ON public.discovery_projects FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Builders insert discovery projects" ON public.discovery_projects;
 CREATE POLICY "Builders insert discovery projects" ON public.discovery_projects FOR INSERT WITH CHECK (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Builders update own discovery projects" ON public.discovery_projects;
 CREATE POLICY "Builders update own discovery projects" ON public.discovery_projects FOR UPDATE USING (auth.uid() = builder_id);
+DROP POLICY IF EXISTS "Builders delete own discovery projects" ON public.discovery_projects;
 CREATE POLICY "Builders delete own discovery projects" ON public.discovery_projects FOR DELETE USING (auth.uid() = builder_id);
 
 -- Child table policies (Hypotheses, Assumptions, Interviews, Signals, Decisions)
@@ -149,37 +154,53 @@ CREATE POLICY "Builders delete own discovery projects" ON public.discovery_proje
 -- Write: Only if you are the builder of the parent project.
 
 -- For discovery_hypotheses
+DROP POLICY IF EXISTS "Public read discovery_hypotheses" ON public.discovery_hypotheses;
 CREATE POLICY "Public read discovery_hypotheses" ON public.discovery_hypotheses FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Builders manage discovery_hypotheses" ON public.discovery_hypotheses;
 CREATE POLICY "Builders manage discovery_hypotheses" ON public.discovery_hypotheses FOR ALL USING (
     EXISTS (SELECT 1 FROM public.discovery_projects WHERE id = project_id AND builder_id = auth.uid())
 );
 
 -- For discovery_assumptions
+DROP POLICY IF EXISTS "Public read discovery_assumptions" ON public.discovery_assumptions;
 CREATE POLICY "Public read discovery_assumptions" ON public.discovery_assumptions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Builders manage discovery_assumptions" ON public.discovery_assumptions;
 CREATE POLICY "Builders manage discovery_assumptions" ON public.discovery_assumptions FOR ALL USING (
     EXISTS (SELECT 1 FROM public.discovery_projects WHERE id = project_id AND builder_id = auth.uid())
 );
 
 -- For discovery_interviews
+DROP POLICY IF EXISTS "Public read discovery_interviews" ON public.discovery_interviews;
 CREATE POLICY "Public read discovery_interviews" ON public.discovery_interviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Builders manage discovery_interviews" ON public.discovery_interviews;
 CREATE POLICY "Builders manage discovery_interviews" ON public.discovery_interviews FOR ALL USING (
     EXISTS (SELECT 1 FROM public.discovery_projects WHERE id = project_id AND builder_id = auth.uid())
 );
 
 -- For discovery_signals
+DROP POLICY IF EXISTS "Public read discovery_signals" ON public.discovery_signals;
 CREATE POLICY "Public read discovery_signals" ON public.discovery_signals FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Builders manage discovery_signals" ON public.discovery_signals;
 CREATE POLICY "Builders manage discovery_signals" ON public.discovery_signals FOR ALL USING (
     EXISTS (SELECT 1 FROM public.discovery_projects WHERE id = project_id AND builder_id = auth.uid())
 );
 
 -- For discovery_decisions
+DROP POLICY IF EXISTS "Public read discovery_decisions" ON public.discovery_decisions;
 CREATE POLICY "Public read discovery_decisions" ON public.discovery_decisions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Builders manage discovery_decisions" ON public.discovery_decisions;
 CREATE POLICY "Builders manage discovery_decisions" ON public.discovery_decisions FOR ALL USING (
     EXISTS (SELECT 1 FROM public.discovery_projects WHERE id = project_id AND builder_id = auth.uid())
 );
 
 -- For discovery_reviews (Experts leave reviews)
+DROP POLICY IF EXISTS "Public read discovery_reviews" ON public.discovery_reviews;
 CREATE POLICY "Public read discovery_reviews" ON public.discovery_reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users insert discovery_reviews" ON public.discovery_reviews;
 CREATE POLICY "Users insert discovery_reviews" ON public.discovery_reviews FOR INSERT WITH CHECK (auth.uid() = reviewer_id);
+DROP POLICY IF EXISTS "Users update own discovery_reviews" ON public.discovery_reviews;
 CREATE POLICY "Users update own discovery_reviews" ON public.discovery_reviews FOR UPDATE USING (auth.uid() = reviewer_id);
+DROP POLICY IF EXISTS "Users delete own discovery_reviews" ON public.discovery_reviews;
 CREATE POLICY "Users delete own discovery_reviews" ON public.discovery_reviews FOR DELETE USING (auth.uid() = reviewer_id);
+
+

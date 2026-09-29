@@ -22,8 +22,13 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
   final TextEditingController _replyController = TextEditingController();
   final FocusNode _replyFocusNode = FocusNode();
   List<Map<String, dynamic>> _replies = [];
+  List<Map<String, dynamic>> _commentLikes = [];
+  String? _replyingToId;
   bool _isLoading = true;
+  bool _isLoadingMore = false;
   bool _isSubmitting = false;
+  int _reactionLimit = 50;
+  bool _hasMoreReactions = false;
 
   @override
   void initState() {
@@ -40,17 +45,50 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
           .from('reactions')
           .select('*, users!observer_id(avatar)')
           .eq('update_id', updateId)
-          .eq('type', 'reply')
-          .order('created_at', ascending: true);
+          .order('created_at', ascending: true)
+          .range(0, _reactionLimit - 1);
 
       if (mounted) {
         setState(() {
-          _replies = List<Map<String, dynamic>>.from(res);
+          final allReactions = List<Map<String, dynamic>>.from(res);
+          _replies = allReactions.where((r) => r['type'] == 'reply').toList();
+          _commentLikes = allReactions.where((r) => r['type'] == 'heart' && r['parent_id'] != null).toList();
+          _hasMoreReactions = allReactions.length == _reactionLimit;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _fetchMoreReplies() async {
+    if (_isLoadingMore || !_hasMoreReactions) return;
+    final updateId = widget.update['id'];
+    if (updateId == null) return;
+
+    setState(() => _isLoadingMore = true);
+    final currentLength = _replies.length + _commentLikes.length; // Approximate offset
+
+    try {
+      final res = await Supabase.instance.client
+          .from('reactions')
+          .select('*, users!observer_id(avatar)')
+          .eq('update_id', updateId)
+          .order('created_at', ascending: true)
+          .range(currentLength, currentLength + _reactionLimit - 1);
+
+      if (mounted) {
+        setState(() {
+          final moreReactions = List<Map<String, dynamic>>.from(res);
+          _replies.addAll(moreReactions.where((r) => r['type'] == 'reply'));
+          _commentLikes.addAll(moreReactions.where((r) => r['type'] == 'heart' && r['parent_id'] != null));
+          _hasMoreReactions = moreReactions.length == _reactionLimit;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingMore = false);
     }
   }
 
@@ -69,6 +107,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
         'id': DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID
         'room_id': widget.update['room_id'],
         'update_id': widget.update['id'],
+        'parent_id': _replyingToId,
         'observer_id': userId,
         'observer_name': userName,
         'type': 'reply',
@@ -78,6 +117,9 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
       await Supabase.instance.client.from('reactions').insert(newReply);
       _replyController.clear();
       _replyFocusNode.unfocus();
+      setState(() {
+        _replyingToId = null;
+      });
       
       if (mounted) {
         showDialog(
@@ -93,7 +135,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                 return Transform.scale(
                   scale: scale,
                   child: Opacity(
-                    opacity: (scale - 0.8) * 5, // Fades in quickly
+                    opacity: ((scale - 0.8) * 5).clamp(0.0, 1.0), // Fades in quickly and stays within bounds
                     child: Material(
                       color: Colors.transparent,
                       child: Container(
@@ -151,6 +193,45 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _toggleLikeComment(String commentId) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userName = Supabase.instance.client.auth.currentUser?.userMetadata?['name'] ?? 'Unknown';
+    if (userId == null) return;
+
+    final existingLike = _commentLikes.where((l) => l['parent_id'] == commentId && l['observer_id'] == userId).firstOrNull;
+
+    try {
+      if (existingLike != null) {
+        // Unlike
+        setState(() {
+          _commentLikes.remove(existingLike);
+        });
+        await Supabase.instance.client.from('reactions').delete().eq('id', existingLike['id']);
+      } else {
+        // Like
+        final newLike = {
+          'id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'room_id': widget.update['room_id'],
+          'update_id': widget.update['id'],
+          'parent_id': commentId,
+          'observer_id': userId,
+          'observer_name': userName,
+          'type': 'heart',
+          'text': '❤️',
+        };
+        setState(() {
+          _commentLikes.add(newLike);
+        });
+        await Supabase.instance.client.from('reactions').insert(newLike);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        _fetchReplies(); // Revert optimistic UI on error
+      }
     }
   }
 
@@ -231,6 +312,20 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
+                          if (index == _replies.length) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24.0),
+                              child: Center(
+                                child: _isLoadingMore
+                                    ? const CircularProgressIndicator()
+                                    : TextButton(
+                                        onPressed: _fetchMoreReplies,
+                                        child: Text('Load more replies', style: TextStyle(color: context.themeColors.primary400)),
+                                      ),
+                              ),
+                            );
+                          }
+
                           final reply = _replies[index];
                           final createdAt = DateTime.tryParse(reply['created_at'] ?? '') ?? DateTime.now();
                           final users = reply['users'] ?? {};
@@ -294,27 +389,39 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            Text(
-                                              reply['observer_name'], 
-                                              style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 14),
-                                            ),
-                                            if (isAuthor) ...[
-                                              const SizedBox(width: 6),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: context.themeColors.primary500.withOpacity(0.15),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: Text('AUTHOR', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      reply['observer_name'], 
+                                                      style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 14),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (isAuthor) ...[
+                                                    const SizedBox(width: 6),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: context.themeColors.primary500.withOpacity(0.15),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                      ),
+                                                      child: Text('AUTHOR', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                                                    ),
+                                                  ],
+                                                  const SizedBox(width: 6),
+                                                  Flexible(
+                                                    child: Text(
+                                                      '@${reply['observer_name'].toString().toLowerCase().replaceAll(' ', '')}',
+                                                      style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              '@${reply['observer_name'].toString().toLowerCase().replaceAll(' ', '')}',
-                                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
                                             ),
-                                            const Spacer(),
+                                            const SizedBox(width: 8),
                                             Text(timeago.format(createdAt, locale: 'en_short'), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
                                           ],
                                         ),
@@ -325,9 +432,46 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                         // Mini reply/like row for comments
                                         Row(
                                           children: [
-                                            Icon(LucideIcons.messageCircle, size: 14, color: context.themeColors.textTertiary),
+                                            GestureDetector(
+                                              onTap: () {
+                                                final handle = '@${reply['observer_name'].toString().toLowerCase().replaceAll(' ', '')}';
+                                                _replyController.text = '$handle ';
+                                                setState(() {
+                                                  _replyingToId = reply['id'];
+                                                });
+                                                _replyFocusNode.requestFocus();
+                                              },
+                                              child: Icon(LucideIcons.messageCircle, size: 14, color: context.themeColors.textTertiary),
+                                            ),
                                             const SizedBox(width: 16),
-                                            Icon(LucideIcons.heart, size: 14, color: context.themeColors.textTertiary),
+                                            GestureDetector(
+                                              onTap: () => _toggleLikeComment(reply['id']),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
+                                                        ? LucideIcons.heart // Should be filled heart, but keeping LucideIcons.heart and changing color
+                                                        : LucideIcons.heart,
+                                                    size: 14,
+                                                    color: _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
+                                                        ? Colors.redAccent
+                                                        : context.themeColors.textTertiary,
+                                                  ),
+                                                  if (_commentLikes.where((l) => l['parent_id'] == reply['id']).isNotEmpty) ...[
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      '${_commentLikes.where((l) => l['parent_id'] == reply['id']).length}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
+                                                          ? Colors.redAccent
+                                                          : context.themeColors.textTertiary,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -338,7 +482,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                             ),
                           );
                         },
-                        childCount: _replies.length,
+                        childCount: _replies.length + (_hasMoreReactions ? 1 : 0),
                       ),
                     ),
                 ],

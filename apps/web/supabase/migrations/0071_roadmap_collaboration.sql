@@ -32,9 +32,11 @@ ALTER TABLE public.roadmap_comments ENABLE ROW LEVEL SECURITY;
 -- 5. RLS Policies
 -- roadmap_assignees
 -- Anyone can view assignees
+DROP POLICY IF EXISTS "Allow public read access to roadmap_assignees" ON public.roadmap_assignees;
 CREATE POLICY "Allow public read access to roadmap_assignees" ON public.roadmap_assignees FOR SELECT USING (true);
 
 -- Only builder or collaborators can insert/delete assignees
+DROP POLICY IF EXISTS "Allow builders and collaborators to manage assignees" ON public.roadmap_assignees;
 CREATE POLICY "Allow builders and collaborators to manage assignees" ON public.roadmap_assignees
 FOR ALL USING (
     EXISTS (
@@ -46,8 +48,10 @@ FOR ALL USING (
 );
 
 -- roadmap_comments
+DROP POLICY IF EXISTS "Allow public read access to roadmap_comments" ON public.roadmap_comments;
 CREATE POLICY "Allow public read access to roadmap_comments" ON public.roadmap_comments FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow room members to create comments" ON public.roadmap_comments;
 CREATE POLICY "Allow room members to create comments" ON public.roadmap_comments
 FOR INSERT WITH CHECK (
     EXISTS (
@@ -58,7 +62,9 @@ FOR INSERT WITH CHECK (
     )
 );
 
+DROP POLICY IF EXISTS "Allow users to update own comments" ON public.roadmap_comments;
 CREATE POLICY "Allow users to update own comments" ON public.roadmap_comments FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users to delete own comments" ON public.roadmap_comments;
 CREATE POLICY "Allow users to delete own comments" ON public.roadmap_comments FOR DELETE USING (auth.uid() = user_id);
 
 -- 6. Notifications for Assignments
@@ -100,6 +106,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_roadmap_assignment ON roadmap_assignees;
 CREATE TRIGGER on_roadmap_assignment
     AFTER INSERT ON public.roadmap_assignees
     FOR EACH ROW
@@ -122,3 +129,5 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.roadmap_comments;
   END IF;
 END $$;
+
+

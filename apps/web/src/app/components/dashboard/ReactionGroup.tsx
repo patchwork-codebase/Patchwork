@@ -109,7 +109,7 @@ export function ReactionGroup({
           >
             <div className={`w-6.5 h-6.5 rounded-full flex items-center justify-center transition-colors shrink-0 ${
               isActive ? `${config.activeBg} ${config.activeColor}` : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-500 group-hover:bg-slate-300 dark:group-hover:bg-white/10 group-hover:text-slate-900 dark:group-hover:text-white'
-            }`}>
+            } ${localOptimisticToggles[type] === true ? 'animate-pop' : ''}`}>
                <span className="text-[12px] font-bold leading-none mb-[0.5px]">{config.icon}</span>
             </div>
             {count > 0 && <span className={`ml-1.5 text-[12px] font-bold ${isActive ? 'text-primary-400' : 'text-slate-400'}`}>{count}</span>}

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -128,17 +129,52 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
   int _observersCount = 0;
   
   late TabController _tabController;
+  
+  List<Map<String, dynamic>> _updatesList = [];
+  bool _isLoadingMoreUpdates = false;
+  bool _hasMoreUpdates = true;
+  final int _pageSize = 20;
+  final ScrollController _updatesScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _updatesScrollController.addListener(() {
+      if (_updatesScrollController.position.pixels >= _updatesScrollController.position.maxScrollExtent - 200) {
+        _fetchMoreUpdates();
+      }
+    });
     _roomDataFuture = _fetchRoomData();
+  }
+  
+  Future<void> _fetchMoreUpdates() async {
+    if (_isLoadingMoreUpdates || !_hasMoreUpdates) return;
+    setState(() => _isLoadingMoreUpdates = true);
+    try {
+      final updatesResponse = await Supabase.instance.client
+          .from('updates')
+          .select('*, rooms(title, tags), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+          .eq('room_id', widget.roomId)
+          .order('created_at', ascending: false)
+          .range(_updatesList.length, _updatesList.length + _pageSize - 1);
+      final newUpdates = List<Map<String, dynamic>>.from(updatesResponse);
+      if (mounted) {
+        setState(() {
+          _updatesList.addAll(newUpdates);
+          if (newUpdates.length < _pageSize) _hasMoreUpdates = false;
+          _isLoadingMoreUpdates = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingMoreUpdates = false);
+    }
   }
   
   @override
   void dispose() {
     _tabController.dispose();
+    _updatesScrollController.dispose();
     super.dispose();
   }
 
@@ -166,7 +202,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
         .from('updates')
         .select('*, rooms(title, tags), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
         .eq('room_id', widget.roomId)
-        .order('created_at', ascending: false);
+        .order('created_at', ascending: false)
+        .range(0, _pageSize - 1);
+        
+    _updatesList = List<Map<String, dynamic>>.from(updatesResponse);
+    _hasMoreUpdates = _updatesList.length == _pageSize;
 
     // Check if observing
     if (userId != null) {
@@ -230,9 +270,12 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     } catch (_) {}
 
     int totalViews = 0;
-    for (var u in updatesResponse) {
-      totalViews += (u['view_count'] as int?) ?? 0;
-    }
+    try {
+      final viewsRes = await Supabase.instance.client.from('updates').select('view_count').eq('room_id', widget.roomId);
+      for (var u in (viewsRes as List)) {
+        totalViews += (u['view_count'] as int?) ?? 0;
+      }
+    } catch(_) {}
 
     int totalEngagements = 0;
     try {
@@ -392,45 +435,62 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
         CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: coverImage != null ? 240.0 : 120.0,
+              expandedHeight: coverImage != null ? 300.0 : 120.0, // Taller immersive cover
               floating: false,
               pinned: true,
-              backgroundColor: context.themeColors.background,
+              backgroundColor: Colors.transparent, // Let glassmorphism show through
               elevation: 0,
               iconTheme: IconThemeData(color: context.themeColors.textPrimary),
-              title: Text(
-                widget.title, 
-                style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)
-              ),
-              flexibleSpace: coverImage != null ? FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      coverImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: context.themeColors.primary500.withOpacity(0.1),
-                        child: Icon(LucideIcons.image, color: context.themeColors.primary500, size: 40),
-                      ),
+              flexibleSpace: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                  child: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
+                    title: Text(
+                      widget.title, 
+                      style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5, shadows: [Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)])
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.4),
-                            Colors.transparent,
-                            context.themeColors.background,
-                          ],
-                          stops: const [0.0, 0.5, 1.0],
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (coverImage != null)
+                          Image.network(
+                            coverImage,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: context.themeColors.primary500.withOpacity(0.1),
+                              child: Icon(LucideIcons.image, color: context.themeColors.primary500, size: 40),
+                            ),
+                          )
+                        else
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [context.themeColors.primary500.withOpacity(0.2), context.themeColors.background],
+                              )
+                            ),
+                          ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.3),
+                                Colors.transparent,
+                                context.themeColors.background,
+                              ],
+                              stops: const [0.0, 0.5, 1.0],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ) : null,
+              ),
             ),
             
             SliverToBoxAdapter(
@@ -719,104 +779,112 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
             // Tab Content
             SliverFillRemaining(
               hasScrollBody: true,
-              child: AnimatedBuilder(
-                animation: _tabController,
-                builder: (context, _) {
-                  if (_tabController.index == 0) {
-                    return updates.isEmpty 
-                      ? Center(
-                          child: Text(
-                            'No updates in this room yet.',
-                            style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 200),
-                          itemCount: updates.length,
-                          itemBuilder: (context, index) {
-                            return FeedUpdateCard(update: updates[index]);
-                          },
-                        );
-                  } else if (_tabController.index == 1) {
-                    return decisions.isEmpty 
-                      ? Center(
-                          child: Text(
-                            'No decisions logged yet.',
-                            style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 200),
-                          itemCount: decisions.length,
-                          itemBuilder: (context, index) {
-                            final decision = decisions[index];
-                            final status = decision['status'] ?? 'logged';
-                            final isShipped = status == 'shipped';
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: context.themeColors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: context.themeColors.borderSubtle),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        isShipped ? LucideIcons.checkCircle : LucideIcons.gitCommit,
-                                        size: 16,
-                                        color: isShipped ? Colors.greenAccent : context.themeColors.primary500,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isShipped ? Colors.greenAccent.withOpacity(0.1) : context.themeColors.primary500.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          status.toUpperCase(),
-                                          style: TextStyle(
-                                            color: isShipped ? Colors.greenAccent : context.themeColors.primary400,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    decision['title'] ?? '',
-                                    style: TextStyle(
-                                      color: context.themeColors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  if (decision['description'] != null && decision['description'].toString().isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      decision['description'],
-                                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    timeago.format(DateTime.parse(decision['created_at'])),
-                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _updatesList.isEmpty 
+                    ? Center(
+                        child: Text(
+                          'No updates in this room yet.',
+                          style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _updatesScrollController,
+                        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 200),
+                        itemCount: _updatesList.length + (_isLoadingMoreUpdates ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _updatesList.length) {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: CircularProgressIndicator(color: context.themeColors.primary500),
                               ),
                             );
-                          },
-                        );
-                  } else if (_tabController.index == 2) {
-                    return SingleChildScrollView(
+                          }
+                          return FeedUpdateCard(update: _updatesList[index]);
+                        },
+                      )
+                  ,
+                  decisions.isEmpty 
+                    ? Center(
+                        child: Text(
+                          'No decisions logged yet.',
+                          style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 200),
+                        itemCount: decisions.length,
+                        itemBuilder: (context, index) {
+                          final decision = decisions[index];
+                          final status = decision['status'] ?? 'logged';
+                          final isShipped = status == 'shipped';
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: context.themeColors.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: context.themeColors.borderSubtle),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      isShipped ? LucideIcons.checkCircle : LucideIcons.gitCommit,
+                                      size: 16,
+                                      color: isShipped ? Colors.greenAccent : context.themeColors.primary500,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: isShipped ? Colors.greenAccent.withOpacity(0.1) : context.themeColors.primary500.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        status.toUpperCase(),
+                                        style: TextStyle(
+                                          color: isShipped ? Colors.greenAccent : context.themeColors.primary400,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  decision['title'] ?? '',
+                                  style: TextStyle(
+                                    color: context.themeColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                if (decision['description'] != null && decision['description'].toString().isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    decision['description'],
+                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                                Text(
+                                  timeago.format(DateTime.parse(decision['created_at'])),
+                                  style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      )
+                  ,
+                  SingleChildScrollView(
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
@@ -867,8 +935,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                           ),
                         ),
                       ),
-                    );
-                  } else {
+                    )
+                  ,
+                  (() {
                     final plannedItems = roadmapItems.where((i) => i['status'] == 'planned').toList();
                     final inProgressItems = roadmapItems.where((i) => i['status'] == 'in_progress').toList();
                     final shippedItems = roadmapItems.where((i) => i['status'] == 'completed' || i['status'] == 'shipped').toList();
@@ -1100,8 +1169,8 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                         ],
                       ),
                     );
-                  }
-                }
+                  })(),
+                ],
               ),
             )
           ],

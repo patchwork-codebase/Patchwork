@@ -61,9 +61,11 @@ ALTER TABLE public.expert_applications ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can view their own application" ON public.expert_applications;
 DROP POLICY IF EXISTS "Users can view their own application" ON public.expert_applications;
+DROP POLICY IF EXISTS "Users can view their own application" ON public.expert_applications;
 CREATE POLICY "Users can view their own application" ON public.expert_applications
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own application" ON public.expert_applications;
 DROP POLICY IF EXISTS "Users can insert their own application" ON public.expert_applications;
 DROP POLICY IF EXISTS "Users can insert their own application" ON public.expert_applications;
 CREATE POLICY "Users can insert their own application" ON public.expert_applications
@@ -71,9 +73,11 @@ CREATE POLICY "Users can insert their own application" ON public.expert_applicat
 
 DROP POLICY IF EXISTS "Users can update their own draft application" ON public.expert_applications;
 DROP POLICY IF EXISTS "Users can update their own draft application" ON public.expert_applications;
+DROP POLICY IF EXISTS "Users can update their own draft application" ON public.expert_applications;
 CREATE POLICY "Users can update their own draft application" ON public.expert_applications
   FOR UPDATE USING (auth.uid() = user_id AND status IN ('draft', 'pending'));
 
+DROP POLICY IF EXISTS "Admins can view all applications" ON public.expert_applications;
 DROP POLICY IF EXISTS "Admins can view all applications" ON public.expert_applications;
 DROP POLICY IF EXISTS "Admins can view all applications" ON public.expert_applications;
 CREATE POLICY "Admins can view all applications" ON public.expert_applications
@@ -84,6 +88,7 @@ CREATE POLICY "Admins can view all applications" ON public.expert_applications
     )
   );
 
+DROP POLICY IF EXISTS "Admins can update all applications" ON public.expert_applications;
 DROP POLICY IF EXISTS "Admins can update all applications" ON public.expert_applications;
 DROP POLICY IF EXISTS "Admins can update all applications" ON public.expert_applications;
 CREATE POLICY "Admins can update all applications" ON public.expert_applications
@@ -102,3 +107,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS expert_applications_user_active_idx
 -- 5. Index for admin queue (pending, ordered by submitted_at)
 CREATE INDEX IF NOT EXISTS expert_applications_status_idx
   ON public.expert_applications (status, submitted_at DESC);
+

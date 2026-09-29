@@ -55,3 +55,4 @@ BEGIN
         USING ( bucket_id = 'avatars' );
     END IF;
 END $$;
+

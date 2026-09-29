@@ -1,12 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import 'room_detail_screen.dart';
-import 'create_room_screen.dart';
 import 'create_room_screen.dart';
 
 class RoomsScreen extends StatefulWidget {
@@ -17,10 +16,11 @@ class RoomsScreen extends StatefulWidget {
 }
 
 class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStateMixin {
-  late final Future<List<Map<String, dynamic>>> _myRoomsFuture;
-  late final Future<List<Map<String, dynamic>>> _observedRoomsFuture;
+  late Future<List<Map<String, dynamic>>> _myRoomsFuture;
+  late Future<List<Map<String, dynamic>>> _observedRoomsFuture;
   late TabController _tabController;
   Map<String, dynamic>? _currentUserProfile;
+  String _selectedActivityFilter = 'ALL';
 
   final Map<String, Map<String, Color>> _tagPalette = {
     'product': {'bg': const Color(0xFFE5F1FF), 'color': const Color(0xFF0066FF)},
@@ -61,7 +61,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
     
     final response = await Supabase.instance.client
         .from('rooms')
-        .select('id, title, description, created_at, tags, update_count, room_observers(users(avatar, name))')
+        .select('id, title, description, created_at, last_update_at, tags, update_count, room_observers(users(avatar, name))')
         .eq('builder_id', userId)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
@@ -73,7 +73,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
     
     final response = await Supabase.instance.client
         .from('room_observers')
-        .select('rooms(id, title, description, created_at, tags, update_count, room_observers(users(avatar, name)))')
+        .select('rooms(id, title, description, created_at, last_update_at, tags, update_count, room_observers(users(avatar, name)))')
         .eq('observer_id', userId);
         
     final mapped = (response as List).map((row) {
@@ -194,6 +194,26 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
   }
 
   Widget _buildRoomList(List<Map<String, dynamic>> rooms) {
+    final filteredRooms = rooms.where((r) {
+      if (_selectedActivityFilter == 'ALL') return true;
+
+      final createdAt = DateTime.tryParse(r['created_at'] ?? '') ?? DateTime.now();
+      final lastUpdateAt = r['last_update_at'] != null 
+          ? DateTime.tryParse(r['last_update_at']) 
+          : null;
+      final effectiveDate = lastUpdateAt ?? createdAt;
+      final daysInactive = DateTime.now().difference(effectiveDate).inDays;
+
+      if (_selectedActivityFilter == 'ACTIVE') {
+        return daysInactive <= 7;
+      } else if (_selectedActivityFilter == 'PACED') {
+        return daysInactive > 7 && daysInactive <= 21;
+      } else if (_selectedActivityFilter == 'PAUSED') {
+        return daysInactive > 21;
+      }
+      return true;
+    }).toList();
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
@@ -229,12 +249,37 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
             ),
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
 
-        if (rooms.isEmpty)
-          Center(child: Text('No rooms available.', style: TextStyle(color: context.themeColors.textTertiary))),
+        // Activity Status Filter Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildFilterChip('ALL', 'All Rooms', null),
+              const SizedBox(width: 8),
+              _buildFilterChip('ACTIVE', 'Active (≤7d)', const Color(0xFF10B981)),
+              const SizedBox(width: 8),
+              _buildFilterChip('PACED', 'Paced (8-21d)', const Color(0xFF38BDF8)),
+              const SizedBox(width: 8),
+              _buildFilterChip('PAUSED', 'Paused (>21d)', context.themeColors.textTertiary),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
 
-        ...rooms.asMap().entries.map((entry) {
+        if (filteredRooms.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Text(
+                'No ${_selectedActivityFilter == 'ALL' ? '' : _selectedActivityFilter.toLowerCase() + ' '}rooms found.',
+                style: TextStyle(color: context.themeColors.textTertiary),
+              ),
+            ),
+          ),
+
+        ...filteredRooms.asMap().entries.map((entry) {
           final index = entry.key;
           final room = entry.value;
           
@@ -244,6 +289,9 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
           final tag = tags.isNotEmpty ? tags.first : 'product';
 
           final createdAt = DateTime.tryParse(room['created_at'] ?? '') ?? DateTime.now();
+          final lastUpdateAt = room['last_update_at'] != null 
+              ? DateTime.tryParse(room['last_update_at']) 
+              : null;
           final daysActive = DateTime.now().difference(createdAt).inDays;
           final updateCount = room['update_count'] ?? 0;
           
@@ -284,7 +332,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                     children: [
                       _buildPill(tag.toUpperCase(), context.themeColors.primary500, context.themeColors.primary500.withOpacity(0.15)),
                       const SizedBox(width: 8),
-                      _buildPill('Live', context.themeColors.textPrimary, Colors.white.withOpacity(0.05)),
+                      _buildActivityPill(lastUpdateAt, createdAt),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -393,6 +441,128 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
         border: Border.all(color: textColor.withOpacity(0.3)),
       ),
       child: Text(text, style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+    );
+  }
+
+  Widget _buildActivityPill(DateTime? lastUpdateAt, DateTime createdAt) {
+    final effectiveDate = lastUpdateAt ?? createdAt;
+    final daysInactive = DateTime.now().difference(effectiveDate).inDays;
+
+    String label;
+    Color textColor;
+    Color bgColor;
+    bool showDot = false;
+
+    if (daysInactive <= 7) {
+      label = 'ACTIVE';
+      textColor = const Color(0xFF10B981); // Emerald
+      bgColor = const Color(0xFF10B981).withOpacity(0.12);
+      showDot = true;
+    } else if (daysInactive <= 21) {
+      label = 'PACED';
+      textColor = const Color(0xFF38BDF8); // Sky blue
+      bgColor = const Color(0xFF38BDF8).withOpacity(0.12);
+    } else {
+      label = 'PAUSED';
+      textColor = context.themeColors.textTertiary;
+      bgColor = Colors.white.withOpacity(0.04);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: textColor.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showDot) ...[
+            Container(
+              width: 5,
+              height: 5,
+              margin: const EdgeInsets.only(right: 5),
+              decoration: BoxDecoration(
+                color: textColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: textColor.withOpacity(0.6),
+                    blurRadius: 3,
+                    spreadRadius: 0.5,
+                  ),
+                ],
+              ),
+            ),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.w900,
+              fontSize: 9.5,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String filterKey, String label, Color? dotColor) {
+    final isSelected = _selectedActivityFilter == filterKey;
+    final primaryColor = context.themeColors.primary500;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _selectedActivityFilter = filterKey;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? primaryColor.withOpacity(0.15) 
+              : context.themeColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected 
+                ? primaryColor.withOpacity(0.5) 
+                : context.themeColors.borderSubtle,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dotColor != null) ...[
+              Container(
+                width: 6,
+                height: 6,
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected 
+                    ? (context.themeColors.textPrimary) 
+                    : context.themeColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

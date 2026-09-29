@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Verify we aren't the author
           final currentUserId = Supabase.instance.client.auth.currentUser?.id;
           if (newRecord['author_id'] != currentUserId) {
-            NotificationService().showNotification(
+            NotificationService().showLocalNotification(
               title: 'New Update in Patchwork',
               body: 'Someone posted a new update. Check it out!',
             );
@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon, color: isActive ? context.themeColors.primary500 : context.themeColors.textTertiary, size: 20),
+                    Icon(icon, color: isActive ? context.themeColors.primary500 : context.themeColors.textTertiary, size: 24),
                     const SizedBox(height: 2),
                     Text(
                       label,
@@ -276,16 +276,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
               child: Container(
                 height: 64,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: context.themeColors.background.withOpacity(0.75), // Deep glassmorphism
-                  border: Border.all(color: context.themeColors.borderSubtle.withOpacity(0.5)),
+                  color: context.themeColors.surface.withOpacity(0.45), // True transparent glassmorphism
+                  border: Border.all(color: context.themeColors.borderSubtle.withOpacity(0.3), width: 1.0),
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 30, offset: const Offset(0, 10)),
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
                   ],
                 ),
             child: Row(

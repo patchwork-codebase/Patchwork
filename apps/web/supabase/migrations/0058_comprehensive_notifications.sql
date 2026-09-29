@@ -100,6 +100,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_general_update ON public.updates;
+DROP TRIGGER IF EXISTS on_general_update ON updates;
 CREATE TRIGGER on_general_update
     AFTER INSERT ON public.updates
     FOR EACH ROW
@@ -140,7 +141,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_decision_edited ON public.updates;
+DROP TRIGGER IF EXISTS on_decision_edited ON updates;
 CREATE TRIGGER on_decision_edited
     AFTER UPDATE ON public.updates
     FOR EACH ROW
     EXECUTE FUNCTION handle_decision_edited();
+

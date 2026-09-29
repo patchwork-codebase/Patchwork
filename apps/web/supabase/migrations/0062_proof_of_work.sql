@@ -73,6 +73,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger to run the function whenever a reputation event occurs
 DROP TRIGGER IF EXISTS on_reputation_event ON public.reputation_events;
+DROP TRIGGER IF EXISTS on_reputation_event ON reputation_events;
 CREATE TRIGGER on_reputation_event
     AFTER INSERT ON public.reputation_events
     FOR EACH ROW EXECUTE FUNCTION public.handle_reputation_event();
@@ -83,13 +84,18 @@ ALTER TABLE public.badges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_badges ENABLE ROW LEVEL SECURITY;
 
 -- Badges are visible to everyone
+DROP POLICY IF EXISTS "Badges are viewable by everyone" ON public.badges;
 CREATE POLICY "Badges are viewable by everyone" ON public.badges
     FOR SELECT USING (true);
 
 -- User badges are visible to everyone
+DROP POLICY IF EXISTS "User badges are viewable by everyone" ON public.user_badges;
 CREATE POLICY "User badges are viewable by everyone" ON public.user_badges
     FOR SELECT USING (true);
 
 -- Reputation events are viewable by everyone (for timeline)
+DROP POLICY IF EXISTS "Reputation events are viewable by everyone" ON public.reputation_events;
 CREATE POLICY "Reputation events are viewable by everyone" ON public.reputation_events
     FOR SELECT USING (true);
+
+

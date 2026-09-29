@@ -17,10 +17,12 @@ ALTER TABLE public.room_templates ENABLE ROW LEVEL SECURITY;
 
 -- Everyone can view system templates and their own custom templates
 DROP POLICY IF EXISTS "Allow public read access to system templates" ON public.room_templates;
+DROP POLICY IF EXISTS "Allow public read access to system templates" ON public.room_templates;
 CREATE POLICY "Allow public read access to system templates" ON public.room_templates
   FOR SELECT USING (is_system = true OR auth.uid() = author_id);
 
 -- Only authenticated users can insert custom templates
+DROP POLICY IF EXISTS "Allow users to insert custom templates" ON public.room_templates;
 DROP POLICY IF EXISTS "Allow users to insert custom templates" ON public.room_templates;
 CREATE POLICY "Allow users to insert custom templates" ON public.room_templates
   FOR INSERT WITH CHECK (auth.uid() = author_id);
@@ -77,3 +79,4 @@ INSERT INTO public.room_templates (name, description, icon, recommended_tags, te
   '**Context:**\nAnalyzing competitors in the [Market Segment] space.\n\n**Recommended Updates to Post:**\n- [ ] List of competitors identified\n- [ ] Feature matrix comparison\n- [ ] Pricing model breakdown\n- [ ] Strategic positioning takeaway',
   true
 );
+

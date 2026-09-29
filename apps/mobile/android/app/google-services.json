@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "177372310250",
+    "project_id": "patchwork-9e85d",
+    "storage_bucket": "patchwork-9e85d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:177372310250:android:62c00b5c4a8d60cdfe0593",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUo71u8tvyUDa4mBKVXQvgfmAgESEQyxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

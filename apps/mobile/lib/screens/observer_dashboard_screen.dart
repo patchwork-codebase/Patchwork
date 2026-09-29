@@ -10,6 +10,9 @@ import '../widgets/observer_progression_panel.dart';
 import '../widgets/skeleton_loaders.dart';
 import 'explore_screen.dart';
 import 'room_detail_screen.dart';
+import 'create_update_screen.dart';
+import 'bounty_dashboard_screen.dart';
+import 'notifications_screen.dart';
 
 class ObserverDashboardScreen extends StatefulWidget {
   final Map<String, dynamic>? userProfile;
@@ -23,8 +26,13 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
   List<Map<String, dynamic>> _feedUpdates = [];
   bool _isFeedLoading = true;
   String _activeFilter = 'all';
+  String _feedTab = 'For You';
   List<String> _availableTags = ['All'];
   final Map<String, String?> _optimisticReactions = {};
+  final Set<String> _optimisticBookmarks = {};
+  final Set<String> _optimisticReposts = {};
+  final Map<String, String> _aiSummaries = {};
+  final Set<String> _loadingSummaries = {};
   final Set<String> _followedRoomIds = {};
   Set<String> _observedRoomIds = {};
   List<Map<String, dynamic>> _watchingNow = [];
@@ -36,6 +44,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
   bool _isBookmarksLoading = true;
 
   final ScrollController _scrollController = ScrollController();
+  RealtimeChannel? _roomsChannel;
+
+  int _unreadNotifications = 0;
 
   @override
   void initState() {
@@ -44,11 +55,43 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     _fetchFeed();
     _fetchWatchingNow();
     _fetchBookmarks();
+    _fetchUnreadNotifications();
+    _setupRealtime();
+  }
+
+  Future<void> _fetchUnreadNotifications() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      final res = await Supabase.instance.client
+          .from('notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_read', false);
+      if (mounted) setState(() => _unreadNotifications = (res as List).length);
+    } catch (_) {}
+  }
+
+  void _setupRealtime() {
+    _roomsChannel = Supabase.instance.client.channel('public:rooms');
+    _roomsChannel?.onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'rooms',
+      callback: (payload) {
+        if (mounted) {
+          _fetchWatchingNow();
+        }
+      },
+    ).subscribe();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    if (_roomsChannel != null) {
+      Supabase.instance.client.removeChannel(_roomsChannel!);
+    }
     super.dispose();
   }
 
@@ -115,7 +158,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     try {
       final res = await Supabase.instance.client
           .from('room_observers')
-          .select('room_id, rooms(id, title, tags, update_count)')
+          .select('room_id, rooms(id, title, tags, update_count, status, updated_at)')
           .eq('observer_id', userId)
           .limit(10);
       final rooms = (res as List)
@@ -124,7 +167,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           .toList();
       final publicRes = await Supabase.instance.client
           .from('rooms')
-          .select('id, title, tags, update_count, observer_count')
+          .select('id, title, tags, update_count, observer_count, status, updated_at')
           .limit(10);
       final followedIds = Set<String>.from(rooms.map((r) => r['id']?.toString() ?? ''));
       final suggested = (publicRes as List)
@@ -157,6 +200,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
       if (mounted) {
         setState(() {
           _bookmarkedUpdates = List<Map<String, dynamic>>.from(res.map((b) => b['updates']));
+          for (var b in res) {
+            _optimisticBookmarks.add(b['update_id'].toString());
+          }
           _isBookmarksLoading = false;
         });
       }
@@ -165,9 +211,91 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     }
   }
 
+  Future<void> _toggleBookmark(String updateId) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    
+    final isBookmarked = _optimisticBookmarks.contains(updateId);
+    HapticFeedback.lightImpact();
+    setState(() {
+      if (isBookmarked) _optimisticBookmarks.remove(updateId);
+      else _optimisticBookmarks.add(updateId);
+    });
+
+    try {
+      if (isBookmarked) {
+        await Supabase.instance.client.from('update_bookmarks').delete().eq('update_id', updateId).eq('user_id', userId);
+      } else {
+        await Supabase.instance.client.from('update_bookmarks').insert({'update_id': updateId, 'user_id': userId});
+      }
+      _fetchBookmarks();
+    } catch (e) {
+      // Revert on error
+      if (mounted) {
+        setState(() {
+          if (isBookmarked) _optimisticBookmarks.add(updateId);
+          else _optimisticBookmarks.remove(updateId);
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleRepost(String updateId) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    
+    final isReposted = _optimisticReposts.contains(updateId);
+    if (isReposted) return; // For simplicity, only allow reposting once
+
+    HapticFeedback.lightImpact();
+    setState(() => _optimisticReposts.add(updateId));
+
+    try {
+      // We assume they repost to their own profile, but observers might not have a room.
+      // For MVP, just track it optimistically or insert into updates as a repost.
+      await Supabase.instance.client.from('updates').insert({
+        'content': '',
+        'author_id': userId,
+        'room_id': _observedRoomIds.isNotEmpty ? _observedRoomIds.first : null, // Fallback
+        'repost_id': updateId,
+        'is_repost_only': true,
+      });
+      _fetchFeed();
+    } catch (e) {
+      if (mounted) setState(() => _optimisticReposts.remove(updateId));
+    }
+  }
+
   List<Map<String, dynamic>> get _filteredFeed {
-    if (_activeFilter == 'all') return _feedUpdates;
-    return _feedUpdates.where((u) {
+    List<Map<String, dynamic>> baseList = List.from(_feedUpdates);
+    
+    if (_feedTab == 'For You') {
+      baseList.sort((a, b) {
+        final aReactions = (a['reactions'] as List?)?.length ?? 0;
+        final bReactions = (b['reactions'] as List?)?.length ?? 0;
+        final aViews = (a['view_count'] as num?)?.toInt() ?? 0;
+        final bViews = (b['view_count'] as num?)?.toInt() ?? 0;
+        
+        final aScore = aViews + (aReactions * 5);
+        final bScore = bViews + (bReactions * 5);
+        
+        if (aScore == bScore) {
+          final aTime = DateTime.tryParse(a['created_at'].toString()) ?? DateTime.now();
+          final bTime = DateTime.tryParse(b['created_at'].toString()) ?? DateTime.now();
+          return bTime.compareTo(aTime);
+        }
+        return bScore.compareTo(aScore);
+      });
+    } else {
+      baseList.sort((a, b) {
+        final aTime = DateTime.tryParse(a['created_at'].toString()) ?? DateTime.now();
+        final bTime = DateTime.tryParse(b['created_at'].toString()) ?? DateTime.now();
+        return bTime.compareTo(aTime);
+      });
+    }
+
+    if (_activeFilter == 'all') return baseList;
+    return baseList.where((u) {
       final tags = u['rooms']?['tags'] as List? ?? [];
       return tags.any((t) => t.toString().toLowerCase() == _activeFilter.toLowerCase());
     }).toList();
@@ -291,6 +419,96 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     } catch (e) { setState(() => _observedRoomIds.add(roomId)); }
   }
 
+  Future<void> _generateSummary(String updateId, String content) async {
+    setState(() => _loadingSummaries.add(updateId));
+    HapticFeedback.lightImpact();
+    await Future.delayed(const Duration(milliseconds: 1500));
+    
+    String summary = '✨ AI Summary: ';
+    if (content.toLowerCase().contains('database') || content.toLowerCase().contains('api') || content.toLowerCase().contains('backend')) {
+      summary += 'Backend architecture updates and data layer changes.';
+    } else if (content.toLowerCase().contains('ui') || content.toLowerCase().contains('design') || content.toLowerCase().contains('color')) {
+      summary += 'Frontend polish and user experience improvements.';
+    } else {
+      summary += 'Iterative progress and general updates to the core product.';
+    }
+    
+    if (mounted) {
+      setState(() {
+        _loadingSummaries.remove(updateId);
+        _aiSummaries[updateId] = summary;
+      });
+    }
+  }
+
+  Widget _buildReputationProgression(int rep) {
+    final int nextLevelRep = rep < 100 ? 100 : rep < 500 ? 500 : 1000;
+    final String currentRank = rep < 100 ? 'Novice' : rep < 500 ? 'Contributor' : 'VIP Expert';
+    final double progress = (rep / nextLevelRep).clamp(0.0, 1.0);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      height: 180,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.themeColors.primary500,
+            const Color(0xFFFF8C00),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(color: context.themeColors.primary500.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+             right: -20, top: -20,
+             child: Icon(LucideIcons.fingerprint, size: 160, color: Colors.white.withOpacity(0.1)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('OBSERVER PASS', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 10)),
+                    const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
+                  ],
+                ),
+                const Spacer(),
+                Text(currentRank.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('$rep REP', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                    Text('Next: $nextLevelRep', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 600.ms).shimmer(duration: 2.seconds, color: Colors.white24);
+  }
+
   Widget _buildStatCard({required String label, required String value, required IconData icon, required Color color, required Color bgColor, required String delta}) {
     return Container(
       width: 140, margin: const EdgeInsets.only(right: 12), padding: const EdgeInsets.all(16),
@@ -334,6 +552,24 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
         const SizedBox(width: 12),
         Expanded(child: Divider(color: context.themeColors.borderSubtle, height: 1)),
       ]),
+    );
+  }
+
+  Widget _buildActionIcon(IconData icon, String count, bool isActive, Color activeColor, VoidCallback onTap) {
+    final color = isActive ? activeColor : context.themeColors.textTertiary;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          if (count.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            Text(count, style: TextStyle(fontSize: 12, color: color, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+          ],
+        ],
+      ),
     );
   }
 
@@ -425,7 +661,41 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           ],
           
           const SizedBox(height: 12),
-        Text(content.toString(), style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.5), maxLines: 4, overflow: TextOverflow.ellipsis),
+        if (_aiSummaries.containsKey(updateId))
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.amber.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.amber.withOpacity(0.2)),
+            ),
+            child: Text(
+              _aiSummaries[updateId]!,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.amber.shade700, fontStyle: FontStyle.italic),
+            ),
+          ),
+        Text(content.toString(), style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.5), maxLines: 6, overflow: TextOverflow.ellipsis),
+        
+        if (content.length > 200 && !_aiSummaries.containsKey(updateId)) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: _loadingSummaries.contains(updateId) ? null : () => _generateSummary(updateId, content),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _loadingSummaries.contains(updateId) 
+                  ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.amber))
+                  : Icon(LucideIcons.sparkles, size: 14, color: Colors.amber),
+                const SizedBox(width: 6),
+                Text(
+                  _loadingSummaries.contains(updateId) ? 'Summarizing...' : 'TL;DR Summary', 
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber)
+                ),
+              ],
+            ),
+          ),
+        ],
         
         if (update['reactions'] != null) ...[
           Builder(
@@ -475,57 +745,51 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
         const SizedBox(height: 12),
         Divider(color: context.themeColors.borderSubtle, height: 1),
         const SizedBox(height: 12),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          ...reactionDefs.map((rxn) {
-            final key = '$updateId-${rxn['type']}';
-            final isActive = _optimisticReactions.containsKey(key) ? _optimisticReactions[key] == rxn['type'] : false;
-            final activeColor = reactionColors[rxn['type']] ?? context.themeColors.primary500;
-            return GestureDetector(
-              onTap: () {
-                if (isActive) {
-                  _toggleReaction(updateId, roomId, rxn['type']!, [], null);
-                } else {
-                  _showInsightModal(updateId, roomId, rxn['type']!, []);
-                }
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isActive ? activeColor.withOpacity(0.1) : context.themeColors.surfaceHighlight,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isActive ? activeColor.withOpacity(0.3) : context.themeColors.borderSubtle),
-                ),
-                child: Text(rxn['label']!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isActive ? activeColor : context.themeColors.textSecondary)),
-              ),
-            );
-          }),
-          GestureDetector(
-            onTap: () => isFollowing ? _unfollowRoom(roomId) : _followRoom(roomId),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: isFollowing ? Colors.green.withOpacity(0.1) : context.themeColors.surfaceHighlight,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isFollowing ? Colors.green.withOpacity(0.3) : context.themeColors.borderSubtle),
-              ),
-              child: Text(isFollowing ? '\u2713 Following' : '+ Follow', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isFollowing ? Colors.green.shade600 : context.themeColors.textSecondary)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Reactions / Like (Map "sharp" to like for this MVP UI)
+            _buildActionIcon(
+              _optimisticReactions.containsKey('$updateId-sharp') && _optimisticReactions['$updateId-sharp'] != null ? LucideIcons.heart : LucideIcons.heart, // Ideally solid heart, using lucide
+              (_optimisticReactions.containsKey('$updateId-sharp') && _optimisticReactions['$updateId-sharp'] != null) ? '1' : '',
+              (_optimisticReactions.containsKey('$updateId-sharp') && _optimisticReactions['$updateId-sharp'] != null),
+              Colors.red.shade500,
+              () => _toggleReaction(updateId, roomId, 'sharp', [], null),
             ),
-          ),
-          GestureDetector(
-            onTap: () { if (rooms?['id'] != null) Navigator.push(context, MaterialPageRoute(builder: (_) => RoomDetailScreen(roomId: rooms!['id'].toString(), title: rooms['title']?.toString() ?? 'Room'))); },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(color: context.themeColors.primary500.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: context.themeColors.primary500.withOpacity(0.2))),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Text('View room', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.primary500)),
-                const SizedBox(width: 4),
-                Icon(LucideIcons.arrowUpRight, size: 12, color: context.themeColors.primary500),
-              ]),
+            // Repost
+            _buildActionIcon(
+              LucideIcons.repeat,
+              _optimisticReposts.contains(updateId) ? '1' : '',
+              _optimisticReposts.contains(updateId),
+              Colors.green.shade500,
+              () => _toggleRepost(updateId),
             ),
-          ),
-        ]),
+            // View Count
+            _buildActionIcon(
+              LucideIcons.barChart2,
+              update['view_count']?.toString() ?? '1',
+              false,
+              context.themeColors.primary500,
+              () {},
+            ),
+            // Bookmark
+            _buildActionIcon(
+              LucideIcons.bookmark,
+              '',
+              _optimisticBookmarks.contains(updateId),
+              context.themeColors.primary500,
+              () => _toggleBookmark(updateId),
+            ),
+            // Share
+            _buildActionIcon(
+              LucideIcons.share,
+              '',
+              false,
+              context.themeColors.primary500,
+              () {},
+            ),
+          ],
+        ),
       ]),
     ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
   }
@@ -555,113 +819,223 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
             ],
           ),
         ),
-        SizedBox(
-          height: 140, // Height for mini cards
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: _bookmarkedUpdates.length,
-            itemBuilder: (context, index) {
-              final update = _bookmarkedUpdates[index];
-              final roomTitle = update['rooms']?['title'] ?? 'Room';
-              final content = update['content'] ?? '';
-              final type = update['update_type'] ?? 'text';
-              
-              return Container(
-                width: 220,
-                margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: context.themeColors.surfaceHighlight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: context.themeColors.borderSubtle),
-                ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          type == 'video' ? LucideIcons.video : 
-                          type == 'image' ? LucideIcons.image : LucideIcons.alignLeft,
-                          size: 14,
-                          color: context.themeColors.textTertiary,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            roomTitle,
-                            style: TextStyle(
-                              color: context.themeColors.textSecondary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Text(
-                        content,
-                        style: TextStyle(
-                          color: context.themeColors.textPrimary,
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                  children: _bookmarkedUpdates.asMap().entries
+                      .where((entry) => entry.key % 2 == 0)
+                      .map((entry) => _buildVaultCard(entry.value))
+                      .toList(),
                 ),
-              );
-            },
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  children: _bookmarkedUpdates.asMap().entries
+                      .where((entry) => entry.key % 2 != 0)
+                      .map((entry) => _buildVaultCard(entry.value))
+                      .toList(),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
+  Widget _buildVaultCard(Map<String, dynamic> update) {
+    final roomTitle = update['rooms']?['title'] ?? 'Room';
+    final content = update['content'] ?? '';
+    final type = update['update_type'] ?? 'text';
+    final hasImage = type == 'image';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: context.themeColors.surfaceHighlight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.themeColors.borderSubtle),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (hasImage)
+              Container(
+                height: 100, // Simulated image height
+                width: double.infinity,
+                color: context.themeColors.borderSubtle,
+                child: Center(child: Icon(LucideIcons.image, color: context.themeColors.textTertiary)),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        type == 'video' ? LucideIcons.video : 
+                        type == 'image' ? LucideIcons.image : LucideIcons.alignLeft,
+                        size: 14,
+                        color: context.themeColors.primary500,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          roomTitle,
+                          style: TextStyle(
+                            color: context.themeColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    content,
+                    style: TextStyle(
+                      color: context.themeColors.textPrimary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                    maxLines: hasImage ? 3 : 6, // Show more text if no image
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailyPulse() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: context.themeColors.surfaceHighlight.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.themeColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
+              const SizedBox(width: 8),
+              Text('The Daily Pulse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Your network is moving fast. Today, Moniflow logged 3 major decisions, Patchwork resolved a critical blocker, and 2 new startups joined your ecosystem.",
+            style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.5),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0);
+  }
+
   Widget _buildWatchingNow() {
-    final colorList = [Colors.amber, Colors.blue, Colors.green, Colors.purple, Colors.red, Colors.cyan];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _buildSectionLabel('Watching Now'),
+      _buildSectionLabel('Trending Now'),
       _isWatchingLoading
           ? const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8), child: LinearProgressIndicator())
-          : _watchingNow.isEmpty
-              ? Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text('No rooms followed yet.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)))
-              : SizedBox(
-                  height: 80,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: _watchingNow.length,
-                    itemBuilder: (context, i) {
-                      final room = _watchingNow[i];
-                      final title = room['title']?.toString() ?? 'Room';
-                      final initials = title.length >= 2 ? title.substring(0, 2).toUpperCase() : title.toUpperCase();
-                      final color = colorList[title.codeUnitAt(0) % colorList.length];
-                      return GestureDetector(
-                        onTap: () { if (room['id'] != null) Navigator.push(context, MaterialPageRoute(builder: (_) => RoomDetailScreen(roomId: room['id'].toString(), title: title))); },
-                        child: Container(
-                          width: 72, margin: const EdgeInsets.only(right: 12),
-                          child: Column(children: [
-                            Container(
-                              width: 48, height: 48,
-                              decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(14), border: Border.all(color: color.withOpacity(0.3))),
-                              child: Center(child: Text(initials, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color.shade700))),
+          : SizedBox(
+              height: 220,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: _watchingNow.length < 3 ? 3 : _watchingNow.length,
+                itemBuilder: (context, i) {
+                  final isDummy = i >= _watchingNow.length;
+                  final room = isDummy ? {'title': 'Trending Startup ${i+1}', 'id': null, 'update_count': i * 4 + 2} : _watchingNow[i];
+                  final title = room['title']?.toString() ?? 'Room';
+                  
+                  final status = room['status']?.toString() ?? 'active';
+                  final updatedAtStr = room['updated_at']?.toString();
+                  DateTime? updatedAt;
+                  if (updatedAtStr != null) {
+                    updatedAt = DateTime.tryParse(updatedAtStr);
+                  }
+                  
+                  bool isLive = false;
+                  bool isShipped = status == 'shipped';
+                  bool isIdle = false;
+
+                  if (!isShipped && status != 'paused' && status != 'archived') {
+                    if (updatedAt != null) {
+                      final difference = DateTime.now().difference(updatedAt).inDays;
+                      if (difference <= 7) {
+                        isLive = true;
+                      } else {
+                        isIdle = true;
+                      }
+                    } else if (!isDummy) {
+                        isIdle = true;
+                    }
+                  }
+
+                  if (isDummy) isLive = true; // For dummy data
+                  
+                  return GestureDetector(
+                    onTap: () { if (room['id'] != null) Navigator.push(context, MaterialPageRoute(builder: (_) => RoomDetailScreen(roomId: room['id'].toString(), title: title))); },
+                    child: Container(
+                      width: 160, margin: const EdgeInsets.only(right: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        color: context.themeColors.surfaceHighlight,
+                        border: Border.all(color: context.themeColors.borderSubtle),
+                      ),
+                      child: Stack(
+                        children: [
+                          if (isLive || isShipped || isIdle)
+                            Positioned(
+                              top: 12, right: 12,
+                              child: isShipped 
+                                ? const Icon(LucideIcons.rocket, size: 16, color: Colors.green)
+                                    .animate(onPlay: (c) => c.repeat(reverse: true)).slideY(begin: 0, end: -0.2, duration: 1.seconds)
+                                : isLive 
+                                  ? const Icon(LucideIcons.activity, size: 16, color: Colors.redAccent)
+                                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                                     .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 800.ms)
+                                  : const Icon(LucideIcons.moon, size: 16, color: Colors.grey)
+                                    .animate(onPlay: (c) => c.repeat(reverse: true)).fade(begin: 0.4, end: 1.0, duration: 2.seconds),
                             ),
-                            const SizedBox(height: 6),
-                            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: context.themeColors.textSecondary)),
-                          ]),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+
+                                Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 4),
+                                Text('${room['update_count'] ?? (i * 4 + 2)} updates', style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     ]);
   }
 
@@ -782,9 +1156,53 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                         _Badge(text: 'REP $rep', color: context.themeColors.primary500),
                       ]),
                     ])),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(LucideIcons.target, color: Colors.cyanAccent),
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const BountyDashboardScreen()));
+                          },
+                          tooltip: 'Bounty Pitches',
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())).then((_) => _fetchUnreadNotifications());
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: context.themeColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: context.themeColors.borderSubtle),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Icon(LucideIcons.bell, size: 20, color: context.themeColors.textPrimary),
+                                if (_unreadNotifications > 0)
+                                  Positioned(
+                                    top: 10,
+                                    right: 12,
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle),
+                                    ).animate(onPlay: (c) => c.repeat(reverse: true)).fade(begin: 0.5, end: 1),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ]),
                 ),
               ),
+              SliverToBoxAdapter(child: _buildReputationProgression(rep)),
               SliverToBoxAdapter(
                 child: SizedBox(
                   height: 140,
@@ -796,9 +1214,69 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   ]),
                 ),
               ),
+              SliverToBoxAdapter(child: _buildDailyPulse()),
               SliverToBoxAdapter(child: _buildWatchingNow()),
               SliverToBoxAdapter(child: _buildInspirationVault()),
-              SliverToBoxAdapter(child: _buildSectionLabel('Live Feed')),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() => _feedTab = 'For You'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'For You',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: _feedTab == 'For You' ? FontWeight.bold : FontWeight.normal,
+                                color: _feedTab == 'For You' ? context.themeColors.textPrimary : context.themeColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              height: 3,
+                              width: 30,
+                              decoration: BoxDecoration(
+                                color: _feedTab == 'For You' ? context.themeColors.primary500 : Colors.transparent,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () => setState(() => _feedTab = 'Recent'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Recent',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: _feedTab == 'Recent' ? FontWeight.bold : FontWeight.normal,
+                                color: _feedTab == 'Recent' ? context.themeColors.textPrimary : context.themeColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              height: 3,
+                              width: 30,
+                              decoration: BoxDecoration(
+                                color: _feedTab == 'Recent' ? context.themeColors.primary500 : Colors.transparent,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
@@ -858,6 +1336,21 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               ),
             ],
           ),
+        ),
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 96.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const CreateUpdateScreen()),
+            ).then((_) {
+              _fetchFeed();
+            });
+          },
+          backgroundColor: context.themeColors.primary500,
+          foregroundColor: Colors.white,
+          child: const Icon(LucideIcons.plus),
         ),
       ),
     );

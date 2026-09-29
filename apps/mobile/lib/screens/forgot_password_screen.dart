@@ -13,12 +13,23 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
+  final _emailFocusNode = FocusNode();
   bool _isLoading = false;
   String _error = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Auto-focus the email field when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _emailFocusNode.requestFocus();
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
+    _emailFocusNode.dispose();
     super.dispose();
   }
 
@@ -33,36 +44,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
+    // Validate email format before hitting the API
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegex.hasMatch(email)) {
+      _showError('Please enter a valid email address');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = '';
     });
 
     try {
-      final res = await Supabase.instance.client.functions.invoke(
-        'send-password-reset-email',
-        body: {
-          'email': email,
-          'redirectTo': 'https://joinpatchwork.xyz/reset-password',
-        },
-      );
+      await Supabase.instance.client.auth.resetPasswordForEmail(email);
 
-      if (res.status != 200) {
-        final errorMsg = (res.data is Map && res.data['error'] != null)
-            ? res.data['error'].toString()
-            : 'Failed to send reset email';
-        throw Exception(errorMsg);
-      }
-      
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => VerifyEmailScreen(email: email, isReset: true)),
+          MaterialPageRoute(
+            builder: (context) => VerifyEmailScreen(email: email, isReset: true),
+          ),
         );
       }
-    } on FunctionException catch (e) {
-      _showError(e.reasonPhrase ?? e.details?.toString() ?? 'Failed to send password reset email');
+    } on AuthException catch (e) {
+      _showError(e.message);
     } catch (e) {
-      _showError(e.toString().replaceAll('Exception: ', ''));
+      _showError('An unexpected error occurred.');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -73,12 +80,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAF9),
+      // Fix #4 — respect dark mode
+      backgroundColor: context.themeColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.slate900),
+          icon: Icon(LucideIcons.arrowLeft, color: context.themeColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -94,12 +102,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   constraints: const BoxConstraints(maxWidth: 400),
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.themeColors.surface,
                     borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: AppTheme.slate200.withOpacity(0.5)),
+                    border: Border.all(color: context.themeColors.borderSubtle),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.slate900.withOpacity(0.04),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 40,
                         offset: const Offset(0, 20),
                       ),
@@ -108,7 +116,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(LucideIcons.keyRound, size: 48, color: AppTheme.slate900),
+                      Icon(LucideIcons.keyRound, size: 48, color: context.themeColors.primary500),
                       const SizedBox(height: 24),
                       Text(
                         'Reset Password',
@@ -117,7 +125,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Enter your email address and we\'ll send you a link to reset your password.',
+                        'Enter your email address and we\'ll send you a recovery code to reset your password.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
                         textAlign: TextAlign.center,
                       ),
@@ -144,16 +152,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                       TextField(
                         controller: _emailController,
+                        focusNode: _emailFocusNode,      // Fix #5 — auto-focus
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(hintText: 'Email address', prefixIcon: Icon(LucideIcons.mail, size: 18, color: AppTheme.slate400)),
+                        textInputAction: TextInputAction.done, // Fix #6 — keyboard submit
+                        onSubmitted: (_) => _handleReset(),    // Fix #6 — submits form
+                        style: TextStyle(color: context.themeColors.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: 'Email address',
+                          prefixIcon: Icon(LucideIcons.mail, size: 18, color: context.themeColors.textTertiary),
+                        ),
                       ),
                       const SizedBox(height: 24),
 
                       ElevatedButton(
                         onPressed: _isLoading ? null : _handleReset,
-                        child: _isLoading 
-                          ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Send Reset Link'),
+                        child: _isLoading
+                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Text('Send Reset Link'),
                       ),
                     ],
                   ),

@@ -29,6 +29,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_first_room_achievement ON public.rooms;
+DROP TRIGGER IF EXISTS on_first_room_achievement ON rooms;
 CREATE TRIGGER on_first_room_achievement
     AFTER INSERT ON public.rooms
     FOR EACH ROW
@@ -63,7 +64,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_decision_architect_achievement ON public.room_decisions;
+DROP TRIGGER IF EXISTS on_decision_architect_achievement ON room_decisions;
 CREATE TRIGGER on_decision_architect_achievement
     AFTER INSERT ON public.room_decisions
     FOR EACH ROW
     EXECUTE FUNCTION public.check_decision_architect_achievement();
+

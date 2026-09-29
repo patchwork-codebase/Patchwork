@@ -37,6 +37,7 @@ ALTER TABLE public.rooms
 UPDATE public.rooms SET visibility = 'private' WHERE is_private = TRUE AND visibility = 'public';
 
 -- Sync trigger: keep is_private in sync with visibility for backward compat
+DROP FUNCTION IF EXISTS sync_is_private_from_visibility CASCADE;
 CREATE OR REPLACE FUNCTION sync_is_private_from_visibility()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
@@ -46,6 +47,7 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_sync_is_private ON public.rooms;
+DROP TRIGGER IF EXISTS trg_sync_is_private ON rooms;
 CREATE TRIGGER trg_sync_is_private
     BEFORE INSERT OR UPDATE OF visibility ON public.rooms
     FOR EACH ROW EXECUTE FUNCTION sync_is_private_from_visibility();
@@ -111,9 +113,11 @@ ALTER TABLE public.nda_templates ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can manage templates; anyone can read the active template
 DROP POLICY IF EXISTS "Anyone can read active NDA templates" ON public.nda_templates;
+DROP POLICY IF EXISTS "Anyone can read active NDA templates" ON public.nda_templates;
 CREATE POLICY "Anyone can read active NDA templates" ON public.nda_templates
     FOR SELECT USING (is_active = TRUE);
 
+DROP POLICY IF EXISTS "Admins can manage NDA templates" ON public.nda_templates;
 DROP POLICY IF EXISTS "Admins can manage NDA templates" ON public.nda_templates;
 CREATE POLICY "Admins can manage NDA templates" ON public.nda_templates
     FOR ALL USING (
@@ -141,9 +145,11 @@ CREATE INDEX IF NOT EXISTS idx_nda_acceptances_user ON public.room_nda_acceptanc
 ALTER TABLE public.room_nda_acceptances ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can view their own NDA acceptances" ON public.room_nda_acceptances;
+DROP POLICY IF EXISTS "Users can view their own NDA acceptances" ON public.room_nda_acceptances;
 CREATE POLICY "Users can view their own NDA acceptances" ON public.room_nda_acceptances
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Builders can view NDA acceptances for their rooms" ON public.room_nda_acceptances;
 DROP POLICY IF EXISTS "Builders can view NDA acceptances for their rooms" ON public.room_nda_acceptances;
 CREATE POLICY "Builders can view NDA acceptances for their rooms" ON public.room_nda_acceptances
     FOR SELECT USING (
@@ -151,6 +157,7 @@ CREATE POLICY "Builders can view NDA acceptances for their rooms" ON public.room
     );
 
 -- Users insert their own acceptance via RPC (SECURITY DEFINER), not directly
+DROP POLICY IF EXISTS "System inserts NDA acceptances" ON public.room_nda_acceptances;
 DROP POLICY IF EXISTS "System inserts NDA acceptances" ON public.room_nda_acceptances;
 CREATE POLICY "System inserts NDA acceptances" ON public.room_nda_acceptances
     FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -192,12 +199,14 @@ CREATE INDEX IF NOT EXISTS idx_access_log_user ON public.room_access_log(user_id
 ALTER TABLE public.room_access_log ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Builders can view access logs for their rooms" ON public.room_access_log;
+DROP POLICY IF EXISTS "Builders can view access logs for their rooms" ON public.room_access_log;
 CREATE POLICY "Builders can view access logs for their rooms" ON public.room_access_log
     FOR SELECT USING (
         auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text)
     );
 
 -- No direct inserts from clients — use log_room_access() RPC
+DROP POLICY IF EXISTS "System can insert access log entries" ON public.room_access_log;
 DROP POLICY IF EXISTS "System can insert access log entries" ON public.room_access_log;
 CREATE POLICY "System can insert access log entries" ON public.room_access_log
     FOR INSERT WITH CHECK (TRUE);
@@ -241,11 +250,13 @@ ALTER TABLE public.build_timeline_events ENABLE ROW LEVEL SECURITY;
 
 -- Builders and room members can view the timeline
 DROP POLICY IF EXISTS "Builders can view their room timeline" ON public.build_timeline_events;
+DROP POLICY IF EXISTS "Builders can view their room timeline" ON public.build_timeline_events;
 CREATE POLICY "Builders can view their room timeline" ON public.build_timeline_events
     FOR SELECT USING (
         auth.uid() IN (SELECT builder_id FROM public.rooms WHERE id::text = room_id::text)
     );
 
+DROP POLICY IF EXISTS "Room members can view timeline" ON public.build_timeline_events;
 DROP POLICY IF EXISTS "Room members can view timeline" ON public.build_timeline_events;
 CREATE POLICY "Room members can view timeline" ON public.build_timeline_events
     FOR SELECT USING (
@@ -254,12 +265,14 @@ CREATE POLICY "Room members can view timeline" ON public.build_timeline_events
 
 -- Public rooms: timeline visible to all
 DROP POLICY IF EXISTS "Public room timeline is visible to all" ON public.build_timeline_events;
+DROP POLICY IF EXISTS "Public room timeline is visible to all" ON public.build_timeline_events;
 CREATE POLICY "Public room timeline is visible to all" ON public.build_timeline_events
     FOR SELECT USING (
         room_id IN (SELECT id FROM public.rooms WHERE visibility = 'public')
     );
 
 -- No direct inserts — use append_timeline_event() RPC
+DROP POLICY IF EXISTS "System can insert timeline events" ON public.build_timeline_events;
 DROP POLICY IF EXISTS "System can insert timeline events" ON public.build_timeline_events;
 CREATE POLICY "System can insert timeline events" ON public.build_timeline_events
     FOR INSERT WITH CHECK (TRUE);
@@ -288,10 +301,12 @@ COMMENT ON COLUMN public.users.trust_level_override IS 'Admin-set trust level ov
 
 -- Public rooms: visible to everyone (public OR unlisted — unlisted is accessible via direct link)
 DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
+DROP POLICY IF EXISTS "Public rooms are viewable by everyone" ON public.rooms;
 CREATE POLICY "Public rooms are viewable by everyone" ON public.rooms
     FOR SELECT USING (visibility IN ('public', 'unlisted'));
 
 -- Private/protected rooms: builders and approved observers only
+DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 DROP POLICY IF EXISTS "Private rooms viewable by observers" ON public.rooms;
 CREATE POLICY "Private rooms viewable by observers" ON public.rooms
     FOR SELECT USING (
@@ -337,6 +352,7 @@ $$;
 -- 10. RPC: accept_room_nda
 -- ============================================================
 
+DROP FUNCTION IF EXISTS accept_room_nda CASCADE;
 CREATE OR REPLACE FUNCTION accept_room_nda(p_room_id TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -378,6 +394,7 @@ $$;
 -- 11. RPC: check_nda_accepted
 -- ============================================================
 
+DROP FUNCTION IF EXISTS check_nda_accepted CASCADE;
 CREATE OR REPLACE FUNCTION check_nda_accepted(p_room_id TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -399,6 +416,8 @@ $$;
 -- 12. RPC: get_room_access_log (builder only)
 -- ============================================================
 
+DROP FUNCTION IF EXISTS get_room_access_log(TEXT, INT);
+DROP FUNCTION IF EXISTS get_room_access_log CASCADE;
 CREATE OR REPLACE FUNCTION get_room_access_log(p_room_id TEXT, p_limit INT DEFAULT 100)
 RETURNS TABLE (
     id UUID,
@@ -435,6 +454,7 @@ $$;
 -- 13. RPC: get_build_timeline
 -- ============================================================
 
+DROP FUNCTION IF EXISTS get_build_timeline CASCADE;
 CREATE OR REPLACE FUNCTION get_build_timeline(p_room_id TEXT)
 RETURNS TABLE (
     id UUID,
@@ -526,6 +546,7 @@ $$;
 -- ============================================================
 
 -- Auto-log room creation to timeline
+DROP FUNCTION IF EXISTS auto_log_room_created CASCADE;
 CREATE OR REPLACE FUNCTION auto_log_room_created()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -554,11 +575,13 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_auto_log_room_created ON public.rooms;
+DROP TRIGGER IF EXISTS trg_auto_log_room_created ON rooms;
 CREATE TRIGGER trg_auto_log_room_created
     AFTER INSERT ON public.rooms
     FOR EACH ROW EXECUTE FUNCTION auto_log_room_created();
 
 -- Auto-log room visibility changes
+DROP FUNCTION IF EXISTS auto_log_visibility_changed CASCADE;
 CREATE OR REPLACE FUNCTION auto_log_visibility_changed()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -583,11 +606,13 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_auto_log_visibility_changed ON public.rooms;
+DROP TRIGGER IF EXISTS trg_auto_log_visibility_changed ON rooms;
 CREATE TRIGGER trg_auto_log_visibility_changed
     AFTER UPDATE OF visibility ON public.rooms
     FOR EACH ROW EXECUTE FUNCTION auto_log_visibility_changed();
 
 -- Auto-log when a member joins
+DROP FUNCTION IF EXISTS auto_log_member_joined CASCADE;
 CREATE OR REPLACE FUNCTION auto_log_member_joined()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -610,11 +635,13 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_auto_log_member_joined ON public.room_observers;
+DROP TRIGGER IF EXISTS trg_auto_log_member_joined ON room_observers;
 CREATE TRIGGER trg_auto_log_member_joined
     AFTER INSERT ON public.room_observers
     FOR EACH ROW EXECUTE FUNCTION auto_log_member_joined();
 
 -- Auto-log updates posted
+DROP FUNCTION IF EXISTS auto_log_update_posted CASCADE;
 CREATE OR REPLACE FUNCTION auto_log_update_posted()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
@@ -640,11 +667,13 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_auto_log_update_posted ON public.updates;
+DROP TRIGGER IF EXISTS trg_auto_log_update_posted ON updates;
 CREATE TRIGGER trg_auto_log_update_posted
     AFTER INSERT ON public.updates
     FOR EACH ROW EXECUTE FUNCTION auto_log_update_posted();
 
 -- Auto-log decisions logged
+DROP FUNCTION IF EXISTS auto_log_decision_logged CASCADE;
 CREATE OR REPLACE FUNCTION auto_log_decision_logged()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
@@ -671,6 +700,7 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_auto_log_decision_logged ON public.room_decisions;
+DROP TRIGGER IF EXISTS trg_auto_log_decision_logged ON room_decisions;
 CREATE TRIGGER trg_auto_log_decision_logged
     AFTER INSERT ON public.room_decisions
     FOR EACH ROW EXECUTE FUNCTION auto_log_decision_logged();
@@ -680,6 +710,7 @@ CREATE TRIGGER trg_auto_log_decision_logged
 -- 16. RPC: get_active_nda_template
 -- ============================================================
 
+DROP FUNCTION IF EXISTS get_active_nda_template CASCADE;
 CREATE OR REPLACE FUNCTION get_active_nda_template()
 RETURNS TABLE (version TEXT, title TEXT, body TEXT)
 LANGUAGE plpgsql
@@ -703,3 +734,8 @@ $$;
 
 CREATE INDEX IF NOT EXISTS idx_rooms_visibility ON public.rooms(visibility);
 CREATE INDEX IF NOT EXISTS idx_timeline_room_type ON public.build_timeline_events(room_id, event_type, created_at DESC);
+
+
+
+
+
