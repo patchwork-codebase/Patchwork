@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 
 export function LandingTargetAudience() {
   const audiences = [
@@ -29,36 +30,61 @@ export function LandingTargetAudience() {
   ];
 
   return (
-    <section className="bg-[#0f0f0f] py-16 sm:py-24 border-t border-white/5">
-      <div className="mx-auto max-w-7xl px-6">
+    <section className="bg-[#0a0a0a] py-28 sm:py-36 border-t border-white/5">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
         
-        <div className="mb-16 max-w-2xl">
-          <p className="text-[11px] font-bold text-primary-500 tracking-wider mb-4 uppercase">
-            Who it's for
-          </p>
-          <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight leading-[1.2]">
-            Whether you're <span className="text-primary-500 italic">building, leading, designing, or learning</span>, this is your workspace.
-          </h2>
+        <div className="mb-24 max-w-4xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="text-primary-500 font-bold text-sm tracking-widest mb-6 uppercase font-mono"
+          >
+            05 / Who it's for
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+            className="text-4xl sm:text-5xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]"
+          >
+            Whether you're <span className="text-primary-500 italic">building, leading,</span> designing, or learning.
+          </motion.h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-x-10 gap-y-12">
+        <div className="grid md:grid-cols-2 gap-x-16 gap-y-16 lg:gap-y-24">
           {audiences.map((aud, idx) => (
-            <div key={idx} className="relative">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">{aud.id}</span>
-                <span className="text-slate-600">·</span>
-                <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">{aud.tag}</span>
+            <motion.div 
+              key={idx} 
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: idx * 0.1 }}
+              className="relative"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-xs font-bold text-primary-500 uppercase tracking-widest font-mono">{aud.id}</span>
+                <span className="text-slate-700 font-bold">—</span>
+                <span className="text-xs font-bold text-white uppercase tracking-widest">{aud.tag}</span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
+              <h3 className="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight">
                 {aud.title}
               </h3>
-              <p className="text-[13px] text-slate-400 leading-relaxed font-medium">
+              <p className="text-lg text-slate-400 leading-relaxed font-medium">
                 {aud.desc}
               </p>
               
-              {/* Subtle top border like the screenshot */}
-              <div className="absolute -top-6 left-0 right-0 h-px bg-white/5"></div>
-            </div>
+              {/* Animated top border */}
+              <motion.div 
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: idx * 0.1 }}
+                className="absolute -top-8 left-0 right-0 h-px bg-white/15 origin-left"
+              />
+            </motion.div>
           ))}
         </div>
 

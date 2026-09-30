@@ -223,31 +223,31 @@ export default function LandingPage() {
   const currentRoom = detailedRooms.find(r => r.id === activeRoomId) || detailedRooms[0];
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans bg-gradient-to-br from-white via-sage-50 to-emerald-50 antialiased selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen text-slate-900 font-sans bg-[#0a0a0a] antialiased selection:bg-primary-500/30 selection:text-white overflow-x-hidden">
       <AuthRedirectGuard />
-      {/* ─── Premium Glassmorphic Header ─────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+      {/* ─── QuickFleet-style minimal sticky header ─── */}
+      <header className="fixed inset-x-0 top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/8">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-6 sm:py-4">
           <div
             onClick={() => {
               showLanding();
               setMobileMenuOpen(false);
             }}
-            className="flex items-center gap-3 text-lg font-bold tracking-tight text-slate-900 cursor-pointer group"
+            className="flex items-center gap-3 text-lg font-bold tracking-tight text-white cursor-pointer group"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF8] text-white">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m15 12-8.373 8.373a1 1 0 1 1-1.414-1.414L13.586 10.586"/>
-                <path d="m18 13.4-9-9"/>
-                <path d="M12 4.4 14.6 2l3.4 3.4L15.6 8z"/>
-                <path d="M18.4 10.6 21 8l-3.4-3.4L15 7.2"/>
+                <path d="m15 12-8.373 8.373a1 1 0 1 1-1.414-1.414L13.586 10.586" />
+                <path d="m18 13.4-9-9" />
+                <path d="M12 4.4 14.6 2l3.4 3.4L15.6 8z" />
+                <path d="M18.4 10.6 21 8l-3.4-3.4L15 7.2" />
               </svg>
             </div>
-            <span className="font-black text-[#0f172a] tracking-tight text-xl">patchwork</span>
+            <span className="font-black text-white tracking-tight text-xl">patchwork</span>
           </div>
 
           <div className="hidden md:flex items-center relative">
-            <button 
+            <button
               onClick={() => setAudienceDropdownOpen(!audienceDropdownOpen)}
               className="flex items-center gap-2 bg-[#111111] hover:bg-[#222222] text-white px-4 py-1.5 rounded-full border border-[#333333] shadow-sm transition text-xs font-bold"
             >
@@ -291,7 +291,7 @@ export default function LandingPage() {
                 navigate("/login");
                 setMobileMenuOpen(false);
               }}
-              className="hidden sm:inline-flex text-sm font-bold text-slate-600 hover:text-slate-900 transition"
+              className="hidden sm:inline-flex text-sm font-bold text-slate-400 hover:text-white transition"
             >
               Sign In
             </button>
@@ -307,7 +307,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(open => !open)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition sm:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition sm:hidden"
             >
               {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
             </button>
@@ -316,13 +316,13 @@ export default function LandingPage() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-4 right-4 mt-2 bg-white/70 backdrop-blur-3xl border border-white/50 shadow-[0_20px_40px_rgba(0,0,0,0.1)] p-2.5 rounded-[24px] sm:hidden flex flex-col z-50 overflow-hidden ring-1 ring-slate-900/5"
+            className="absolute top-full left-4 right-4 mt-2 bg-[#111]/95 backdrop-blur-3xl border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] p-2.5 rounded-[24px] sm:hidden flex flex-col z-50 overflow-hidden"
           >
-            <div className="flex flex-col gap-1 bg-slate-100 p-2 rounded-[16px] mb-2">
+            <div className="flex flex-col gap-1 bg-white/5 p-2 rounded-[16px] mb-2">
               {[
                 { id: 'builders', label: 'For builders' },
                 { id: 'designers', label: 'For designers' },
@@ -331,23 +331,23 @@ export default function LandingPage() {
                 { id: 'hrs', label: 'For HRs' },
                 { id: 'observers', label: 'For observers' },
               ].map((item) => (
-                <button 
+                <button
                   key={item.id}
                   onClick={() => { setAudience(item.id as any); setMobileMenuOpen(false); }}
-                  className={`text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-left ${audience === item.id ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-500 hover:bg-white/50'}`}
+                  className={`text-[13px] font-bold px-4 py-3 rounded-[12px] transition-all text-left ${audience === item.id ? 'bg-white/15 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/8'}`}
                 >
                   {item.label}
                 </button>
               ))}
             </div>
-            
+
             <div className="flex flex-col gap-1 mt-1">
               <button
                 onClick={() => {
                   showOnboarding();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 rounded-[16px] bg-slate-900 px-5 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
+                className="w-full flex items-center justify-center gap-2 rounded-[16px] bg-primary-500 px-5 py-3.5 text-[14px] font-bold text-white shadow-lg shadow-primary-500/25 transition hover:bg-primary-600"
               >
                 Start Building
               </button>
@@ -356,7 +356,7 @@ export default function LandingPage() {
                   navigate("/login");
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-center text-[14px] font-bold text-slate-600 hover:text-slate-900 py-3.5 rounded-[16px] bg-transparent transition-colors"
+                className="w-full text-center text-[14px] font-bold text-slate-400 hover:text-white py-3.5 rounded-[16px] bg-transparent transition-colors"
               >
                 Sign in to your account
               </button>
@@ -370,13 +370,14 @@ export default function LandingPage() {
         {screen === "landing" && audience === "builders" && (
           <>
             <LandingHeroCapstone onSignup={showOnboarding} />
+            <LandingFeaturesCapstone />
             <LandingLiveFeedMockup />
             <LandingTargetAudience />
             <LandingSlider />
             <LandingWorkflowCapstone />
             <LandingTestimonials />
             <LandingFAQs />
-            <LandingFooter 
+            <LandingFooter
               newsletterEmail={newsletterEmail}
               setNewsletterEmail={setNewsletterEmail}
               newsletterSent={newsletterSent}
@@ -391,7 +392,7 @@ export default function LandingPage() {
             <DesignerFeatures />
             <LandingTestimonials />
             <LandingFAQs />
-            <LandingFooter 
+            <LandingFooter
               newsletterEmail={newsletterEmail}
               setNewsletterEmail={setNewsletterEmail}
               newsletterSent={newsletterSent}
@@ -406,7 +407,7 @@ export default function LandingPage() {
             <PMFeatures />
             <LandingTestimonials />
             <LandingFAQs />
-            <LandingFooter 
+            <LandingFooter
               newsletterEmail={newsletterEmail}
               setNewsletterEmail={setNewsletterEmail}
               newsletterSent={newsletterSent}
@@ -421,7 +422,7 @@ export default function LandingPage() {
             <FounderFeatures />
             <LandingTestimonials />
             <LandingFAQs />
-            <LandingFooter 
+            <LandingFooter
               newsletterEmail={newsletterEmail}
               setNewsletterEmail={setNewsletterEmail}
               newsletterSent={newsletterSent}
@@ -436,7 +437,7 @@ export default function LandingPage() {
             <HRFeatures />
             <LandingTestimonials />
             <LandingFAQs />
-            <LandingFooter 
+            <LandingFooter
               newsletterEmail={newsletterEmail}
               setNewsletterEmail={setNewsletterEmail}
               newsletterSent={newsletterSent}
