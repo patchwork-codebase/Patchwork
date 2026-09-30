@@ -2,6 +2,7 @@ import React from "react";
 import { ArrowRight, Mail, Send, Check, Twitter } from "lucide-react";
 import { useNavigate } from "react-router";
 import { motion } from 'motion/react';
+import { AppleStoreButton, GooglePlayButton } from './StoreButtons';
 
 interface LandingFooterProps {
   newsletterEmail: string;
@@ -39,13 +40,10 @@ export function LandingFooter({
           <p className="text-lg sm:text-xl text-slate-400 font-medium max-w-xl mx-auto mb-10">
             Stop hiding your work. Open a room, log your decisions, and prove your skills to the world.
           </p>
-          <button
-            onClick={() => navigate('/login')}
-            className="group inline-flex items-center justify-center gap-3 bg-white text-[#0a0a0a] px-8 py-5 rounded-full text-lg font-bold shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] transition-all duration-300 hover:scale-105"
-          >
-            Start your first room
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <AppleStoreButton />
+            <GooglePlayButton />
+          </div>
         </motion.div>
       </section>
 

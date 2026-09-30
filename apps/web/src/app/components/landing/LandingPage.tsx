@@ -40,19 +40,7 @@ import { LandingWorkflowCapstone } from "./LandingWorkflowCapstone";
 import { LandingTestimonials } from "./LandingTestimonials";
 import { LandingFAQs } from "./LandingFAQs";
 import { LandingFooter } from "./LandingFooter";
-import { RecruiterHero } from "./RecruiterHero";
-import { RecruiterComparison } from "./RecruiterComparison";
-import { RecruiterArtifact } from "./RecruiterArtifact";
-import { RecruiterCTA } from "./RecruiterCTA";
 import { domainOptions, detailedRooms, showcaseBuilders, workflowSteps, faqs } from "../../constants/landingData";
-import { PMHero } from "./PMHero";
-import { PMFeatures } from "./PMFeatures";
-import { FounderHero } from "./FounderHero";
-import { FounderFeatures } from "./FounderFeatures";
-import { DesignerHero } from "./DesignerHero";
-import { DesignerFeatures } from "./DesignerFeatures";
-import { HRHero } from "./HRHero";
-import { HRFeatures } from "./HRFeatures";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -367,10 +355,10 @@ export default function LandingPage() {
 
       {/* ─── MAIN CONTENT AREA ─────────────────────────────────────────── */}
       <main className="min-h-screen">
-        {screen === "landing" && audience === "builders" && (
+        {screen === "landing" && (
           <>
-            <LandingHeroCapstone onSignup={showOnboarding} />
-            <LandingFeaturesCapstone />
+            <LandingHeroCapstone onSignup={showOnboarding} audience={audience} />
+            <LandingFeaturesCapstone audience={audience} />
             <LandingLiveFeedMockup />
             <LandingTargetAudience />
             <LandingSlider />
@@ -383,75 +371,6 @@ export default function LandingPage() {
               newsletterSent={newsletterSent}
               handleNewsletterSubmit={handleNewsletterSubmit}
             />
-          </>
-        )}
-
-        {screen === "landing" && audience === 'designers' && (
-          <>
-            <DesignerHero onSignup={showOnboarding} />
-            <DesignerFeatures />
-            <LandingTestimonials />
-            <LandingFAQs />
-            <LandingFooter
-              newsletterEmail={newsletterEmail}
-              setNewsletterEmail={setNewsletterEmail}
-              newsletterSent={newsletterSent}
-              handleNewsletterSubmit={handleNewsletterSubmit}
-            />
-          </>
-        )}
-
-        {screen === "landing" && audience === 'pms' && (
-          <>
-            <PMHero onSignup={showOnboarding} />
-            <PMFeatures />
-            <LandingTestimonials />
-            <LandingFAQs />
-            <LandingFooter
-              newsletterEmail={newsletterEmail}
-              setNewsletterEmail={setNewsletterEmail}
-              newsletterSent={newsletterSent}
-              handleNewsletterSubmit={handleNewsletterSubmit}
-            />
-          </>
-        )}
-
-        {screen === "landing" && audience === 'founders' && (
-          <>
-            <FounderHero onSignup={showOnboarding} />
-            <FounderFeatures />
-            <LandingTestimonials />
-            <LandingFAQs />
-            <LandingFooter
-              newsletterEmail={newsletterEmail}
-              setNewsletterEmail={setNewsletterEmail}
-              newsletterSent={newsletterSent}
-              handleNewsletterSubmit={handleNewsletterSubmit}
-            />
-          </>
-        )}
-
-        {screen === "landing" && audience === 'hrs' && (
-          <>
-            <HRHero onSignup={showOnboarding} />
-            <HRFeatures />
-            <LandingTestimonials />
-            <LandingFAQs />
-            <LandingFooter
-              newsletterEmail={newsletterEmail}
-              setNewsletterEmail={setNewsletterEmail}
-              newsletterSent={newsletterSent}
-              handleNewsletterSubmit={handleNewsletterSubmit}
-            />
-          </>
-        )}
-
-        {screen === "landing" && audience === "observers" && (
-          <>
-            <RecruiterHero />
-            <RecruiterComparison />
-            <RecruiterArtifact />
-            <RecruiterCTA />
           </>
         )}
 

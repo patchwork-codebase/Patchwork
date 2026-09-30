@@ -159,7 +159,7 @@ function ThreeColTakeaways() {
   );
 }
 
-export function LandingFeaturesCapstone() {
+export function LandingFeaturesCapstone({ audience = 'builders' }: { audience?: string }) {
   // Feature 01: Live Build Rooms
   const roomsVisual = (
     <div className="bg-[#0a0a0a] rounded-[28px] p-6 sm:p-8 border border-white/5 shadow-2xl font-mono text-sm">
@@ -226,13 +226,56 @@ export function LandingFeaturesCapstone() {
     </div>
   );
 
+  const getContent = () => {
+    switch (audience) {
+      case 'designers': return {
+        title1: <>From sketch<br />to shipped.</>,
+        desc1: "Anyone can post a dribbble shot. What makes a portfolio useful is everything around it: rooms that document the UX trade-offs, observers who verify it, and a platform that puts every design decision on record.",
+        title2: <>Every room<br />has its critics.</>,
+        desc2: "Before a single decision is logged, a room is open. Each one has a wall of verified senior observers — Lead Designers, PMs, engineers — who give real-time, structured feedback on your mocks."
+      };
+      case 'pms': return {
+        title1: <>From vision<br />to proof.</>,
+        desc1: "Anyone can claim they have product sense. What makes a portfolio useful is the execution: rooms that document the PRDs, observers who verify it, and a platform that puts every prioritization call on record.",
+        title2: <>Every room<br />has its operators.</>,
+        desc2: "Before a single PRD is logged, a room is open. Each one has a wall of verified senior observers — Heads of Product, Founders, Eng Leads — who give real-time, structured feedback on your strategy."
+      };
+      case 'founders': return {
+        title1: <>From idea<br />to traction.</>,
+        desc1: "Anyone can buy a domain. What makes a startup useful is everything around it: rooms that document the pivot, observers who verify it, and a platform that puts every growth experiment on record.",
+        title2: <>Every room<br />has its angels.</>,
+        desc2: "Before a single line of code is logged, a room is open. Each one has a wall of verified senior observers — VCs, serial founders, early adopters — who give real-time, structured feedback on your positioning."
+      };
+      case 'hrs': return {
+        title1: <>From buzzwords<br />to evidence.</>,
+        desc1: "Anyone can stuff a resume with keywords. What makes a candidate useful is everything around it: rooms that document the actual work, observers who verify it, and a platform that puts their real abilities on record.",
+        title2: <>Every room<br />has its signals.</>,
+        desc2: "Before a single interview is booked, a room is open. Each one has a wall of verified senior observers who give real-time, structured feedback, filtering out the noise for you."
+      };
+      case 'observers': return {
+        title1: <>From isolated<br />to impactful.</>,
+        desc1: "Anyone can give generic advice. What makes mentorship useful is everything around it: rooms that document the junior's struggle, your exact feedback, and a platform that puts your coaching impact on record.",
+        title2: <>Every room<br />needs your eyes.</>,
+        desc2: "Before a single decision is finalized, a room is open. Each one is a chance for you to give real-time, structured feedback, course-correcting builders before they make fatal architecture flaws."
+      };
+      default: return {
+        title1: <>From booking<br />to proof.</>,
+        desc1: "Anyone can claim they built a feature. What makes a portfolio useful is everything around it: rooms that document the work, observers who verify it, and a platform that puts every contribution on record.",
+        title2: <>Every room<br />has its experts.</>,
+        desc2: "Before a single decision is logged, a room is open. Each one has a wall of verified senior observers — PMs, engineers, founders — who give real-time, structured feedback."
+      };
+    }
+  };
+
+  const copy = getContent();
+
   return (
     <>
       <FeatureChapter
         num="01"
         label="Build Rooms"
-        heading={<>From booking<br />to proof.</>}
-        description="Anyone can claim they built a feature. What makes a portfolio useful is everything around it: rooms that document the work, observers who verify it, and a platform that puts every contribution on record."
+        heading={copy.title1}
+        description={copy.desc1}
         bullets={[
           'Built for delivery, with a timeline that updates live.',
           'A predictable, transparent proof of work.',
@@ -244,8 +287,8 @@ export function LandingFeaturesCapstone() {
       <FeatureChapter
         num="02"
         label="Observer Network"
-        heading={<>Every room<br />has its experts.</>}
-        description="Before a single decision is logged, a room is open. Each one has a wall of verified senior observers — PMs, engineers, founders — who give real-time, structured feedback."
+        heading={copy.title2}
+        description={copy.desc2}
         bullets={[
           'Feedback arrives in minutes, not weeks.',
           "From observers who've shipped at scale.",

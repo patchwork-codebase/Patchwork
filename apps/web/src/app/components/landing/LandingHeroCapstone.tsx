@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ArrowRight, MessageSquare } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { UserAvatar } from '../ui/UserAvatar';
+import { AppleStoreButton, GooglePlayButton } from './StoreButtons';
 
 interface Props {
   onSignup: () => void;
@@ -111,19 +112,8 @@ export function LandingHeroCapstone({ onSignup, audience = "builders" }: Props) 
             transition={{ delay: 1.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0"
           >
-            <button
-              onClick={onSignup}
-              className="group flex items-center gap-2.5 text-base sm:text-lg font-bold text-white hover:text-primary-400 transition-colors duration-200"
-            >
-              Start building now
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-            </button>
-            <button
-              onClick={onSignup}
-              className="px-6 py-3 rounded-full bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm transition-all duration-200 shadow-[0_8px_30px_rgba(255,91,34,0.3)] hover:shadow-[0_8px_40px_rgba(255,91,34,0.45)] hover:-translate-y-0.5"
-            >
-              Join for free
-            </button>
+            <AppleStoreButton />
+            <GooglePlayButton />
           </motion.div>
         </motion.div>
       </div>
