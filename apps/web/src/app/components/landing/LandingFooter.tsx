@@ -160,6 +160,19 @@ export function LandingFooter({
           </div>
         </div>
       </div>
+
+      {/* Massive Static Hollow Text (QuickFleet Style) */}
+      <div className="relative w-full overflow-hidden bg-[#070707] flex justify-center items-center pt-10 pb-4 border-t border-white/5">
+        <div
+          className="text-[15vw] sm:text-[18vw] leading-[0.8] font-black tracking-tighter select-none px-4"
+          style={{
+            WebkitTextFillColor: "transparent",
+            WebkitTextStroke: "2px rgba(255, 255, 255, 0.15)",
+          }}
+        >
+          patchwork
+        </div>
+      </div>
     </footer>
   );
 }

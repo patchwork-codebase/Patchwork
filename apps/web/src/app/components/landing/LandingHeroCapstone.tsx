@@ -128,84 +128,32 @@ export function LandingHeroCapstone({ onSignup, audience = "builders" }: Props) 
         {/* Glow */}
         <div className="absolute -inset-4 bg-primary-500/10 rounded-[40px] blur-2xl pointer-events-none" />
 
-        <div className="relative bg-[#0d0d0d] border border-white/8 rounded-2xl shadow-2xl overflow-hidden">
-          {/* Bar */}
-          <div className="h-10 border-b border-white/8 bg-[#111] flex items-center px-4 gap-2 shrink-0">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-white/15" />
-              <div className="w-2.5 h-2.5 rounded-full bg-white/15" />
-              <div className="w-2.5 h-2.5 rounded-full bg-white/15" />
-            </div>
-            <div className="flex-1 text-center text-[10px] font-bold text-slate-500 font-mono">patchwork / moniflow-dashboard</div>
+        <div className="relative bg-black rounded-[40px] shadow-2xl overflow-hidden border-[6px] border-[#1a1a1a] aspect-[9/19.5] w-64 sm:w-72 lg:w-80 ml-auto rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+          {/* Dynamic Notch */}
+          <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
+            <div className="w-24 h-6 bg-[#1a1a1a] rounded-b-[16px]" />
           </div>
 
-          <div className="p-4 space-y-3">
-            {/* Mockup card */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-              className="bg-[#111] border border-white/5 rounded-xl p-4"
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-[#1a1a1a] ring-1 ring-white/10 flex items-center justify-center font-bold text-white shrink-0 overflow-hidden">
-                  <UserAvatar userId={user?.id || ''} name={builderName} avatarUrl={avatarUrl} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-bold text-white">{builderName}</div>
-                  <div className="text-[10px] text-slate-400 font-medium">MoniFlow Dashboard</div>
-                </div>
-              </div>
-              <p className="text-[12px] text-slate-300 leading-relaxed font-medium">
-                Scrapped v1 onboarding — drop-off on KYC was too high. Moving verification post-first listing.
-              </p>
-              <div className="mt-3 flex items-center gap-3 text-slate-500 text-[10px] font-bold">
-                <span>🔥 5</span>
-                <span>👀 2</span>
-                <span>💬 1</span>
-                <span className="ml-auto text-[9px] font-bold border border-primary-500/25 text-primary-400 bg-primary-500/8 px-2 py-0.5 rounded-full">⚡ Decision</span>
-              </div>
-            </motion.div>
-
-            {/* Observer reply */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: 10 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ delay: 1.4, type: 'spring', stiffness: 200 }}
-              className="bg-[#0f1a0f] border border-emerald-500/15 rounded-xl p-3 flex items-start gap-2"
-            >
-              <div className="w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 ring-1 ring-emerald-500/25">S</div>
-              <div>
-                <div className="text-[10px] font-bold text-emerald-400 mb-0.5">Sarah (Observer)</div>
-                <p className="text-[10px] text-slate-400 leading-relaxed">Great call. Matches what Stripe saw. Consider a soft listing limit until KYC passes?</p>
-              </div>
-            </motion.div>
-
-            {/* Notification badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 2.0 }}
-              className="bg-[#1C1A24] border border-white/8 rounded-xl p-3 flex items-start gap-2.5"
-            >
-              <div className="w-7 h-7 rounded-full bg-primary-500/15 flex items-center justify-center shrink-0 text-primary-400 border border-primary-500/25">
-                <MessageSquare className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold text-white">Insight Validated</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Your KYC decision earned +5 reputation.</p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Fake input */}
-          <div className="p-3 bg-[#0a0a0a] border-t border-white/5">
-            <div className="h-8 bg-[#1a1a1a] rounded-lg flex items-center px-3 justify-between border border-white/5">
-              <span className="text-[11px] text-slate-500">Log a new decision...</span>
-              <div className="w-5 h-5 rounded-md bg-primary-500 text-white flex items-center justify-center">
-                <ArrowRight className="w-2.5 h-2.5" />
-              </div>
-            </div>
+          {/* Animated Screenshots (Crossfade) */}
+          <div className="w-full h-full relative bg-[#0a0a0a]">
+            <motion.img 
+              src="/assets/app-screen-1.jpg" 
+              className="absolute inset-0 w-full h-full object-cover"
+              animate={{ opacity: [1, 1, 0, 0, 0, 1] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.img 
+              src="/assets/app-screen-2.jpg" 
+              className="absolute inset-0 w-full h-full object-cover"
+              animate={{ opacity: [0, 1, 1, 0, 0, 0] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.img 
+              src="/assets/app-screen-3.jpg" 
+              className="absolute inset-0 w-full h-full object-cover"
+              animate={{ opacity: [0, 0, 0, 1, 1, 0] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            />
           </div>
         </div>
       </motion.div>
