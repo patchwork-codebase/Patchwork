@@ -450,14 +450,22 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
 
           final rooms = snapshot.data ?? [];
           
+          // Ensure valid default type for observers
+          if (rooms.isEmpty && widget.preselectedRoomId == null && _selectedUpdateType != 'spotlight' && _selectedUpdateType != 'rfb') {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _selectedUpdateType = 'spotlight');
+            });
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Room Selector
-                Text('ROOM', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                const SizedBox(height: 8),
+                // Room Selector (Hidden for pure observers or if preselected)
+                if (rooms.isNotEmpty && widget.preselectedRoomId == null) ...[
+                  Text('ROOM', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -485,8 +493,8 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                     ),
                   ),
                 ),
-                
-                const SizedBox(height: 32),
+                ],
+                if (rooms.isNotEmpty && widget.preselectedRoomId == null) const SizedBox(height: 32),
                 
                 // Update Type Selector
                 Text('TYPE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
@@ -494,7 +502,12 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: _updateTypes.entries.map((entry) {
+                    children: _updateTypes.entries.where((entry) {
+                      if (rooms.isEmpty && widget.preselectedRoomId == null) {
+                        return entry.key == 'spotlight' || entry.key == 'rfb';
+                      }
+                      return true;
+                    }).map((entry) {
                       final type = entry.key;
                       final data = entry.value;
                       final isSelected = _selectedUpdateType == type;

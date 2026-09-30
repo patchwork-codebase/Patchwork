@@ -566,7 +566,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       itemCount: posts.length,
                       separatorBuilder: (context, index) => Divider(height: 1, color: context.themeColors.borderSubtle),
                       itemBuilder: (context, index) {
-                        return FeedUpdateCard(
+                        return FeedUpdateCard(heroTagPrefix: "prof_", 
                           update: posts[index],
                           onRefresh: () {
                             setState(() {
@@ -612,7 +612,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       itemCount: replies.length,
                       separatorBuilder: (context, index) => Divider(height: 1, color: context.themeColors.borderSubtle),
                       itemBuilder: (context, index) {
-                        return FeedUpdateCard(
+                        return FeedUpdateCard(heroTagPrefix: "prof_", 
                           update: replies[index],
                           onRefresh: () {
                             setState(() {
@@ -658,7 +658,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       itemCount: reposts.length,
                       separatorBuilder: (context, index) => Divider(height: 1, color: context.themeColors.borderSubtle),
                       itemBuilder: (context, index) {
-                        return FeedUpdateCard(
+                        return FeedUpdateCard(heroTagPrefix: "prof_", 
                           update: reposts[index],
                           onRefresh: () {
                             setState(() {
@@ -704,7 +704,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       itemCount: mediaPosts.length,
                       separatorBuilder: (context, index) => Divider(height: 1, color: context.themeColors.borderSubtle),
                       itemBuilder: (context, index) {
-                        return FeedUpdateCard(
+                        return FeedUpdateCard(heroTagPrefix: "prof_", 
                           update: mediaPosts[index],
                           onRefresh: () {
                             setState(() {

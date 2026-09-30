@@ -618,7 +618,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              FeedUpdateCard(update: profile['pinned_update']),
+                              FeedUpdateCard(heroTagPrefix: "pubprof_", update: profile['pinned_update']),
                               const SizedBox(height: 40),
                             ],
 

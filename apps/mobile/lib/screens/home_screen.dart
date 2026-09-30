@@ -9,6 +9,7 @@ import 'feed_screen.dart';
 import 'rooms_screen.dart';
 import 'explore_screen.dart';
 import 'observer_dashboard_screen.dart';
+import 'messages_screen.dart';
 import '../widgets/dashboard_overview.dart';
 import '../widgets/profile_sheet.dart';
 import '../services/notification_service.dart';
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
   bool _isNavBarVisible = true;
+  int _unreadMessagesCount = 0;
 
   bool get _isObserver => _userProfile?['role'] == 'observer';
 
@@ -44,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       return [
         ObserverDashboardScreen(userProfile: _userProfile),
         const FeedScreen(),
+        const MessagesScreen(),
         const ExploreScreen(),
       ];
     } else {
@@ -51,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         const DashboardOverview(),
         const FeedScreen(),
         const RoomsScreen(),
+        const MessagesScreen(),
         const ExploreScreen(),
       ];
     }
@@ -61,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.initState();
     _setupNotifications();
     _fetchUserProfile();
+    _fetchUnreadMessages();
     _initDeepLinks();
     
     if (widget.isFirstTime) {
@@ -132,6 +137,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
+  Future<void> _fetchUnreadMessages() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      final res = await Supabase.instance.client
+          .from('notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('read', false)
+          .eq('type', 'new_message');
+      if (mounted) setState(() => _unreadMessagesCount = (res as List).length);
+    } catch (_) {}
+  }
+
   void _setupNotifications() {
     _updatesChannel = Supabase.instance.client.channel('public:updates');
     _updatesChannel.onPostgresChanges(
@@ -182,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(int index, IconData icon, String label, {bool showBadge = false}) {
     final isActive = _selectedIndex == index;
     return Expanded(
       child: GestureDetector(
@@ -222,7 +241,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon, color: isActive ? context.themeColors.primary500 : context.themeColors.textTertiary, size: 24),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(icon, color: isActive ? context.themeColors.primary500 : context.themeColors.textTertiary, size: 24),
+                        if (showBadge)
+                          Positioned(
+                            top: -2,
+                            right: -2,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: context.themeColors.surface, width: 1.5),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       label,
@@ -293,11 +331,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _buildNavItem(0, LucideIcons.home, 'Home'),
                 if (_isObserver) ...[
                   _buildNavItem(1, LucideIcons.activity, 'Feed'),
-                  _buildNavItem(2, LucideIcons.compass, 'Explore'),
+                  _buildNavItem(2, LucideIcons.messageCircle, 'Messages', showBadge: _unreadMessagesCount > 0),
+                  _buildNavItem(3, LucideIcons.compass, 'Explore'),
                 ] else ...[
                   _buildNavItem(1, LucideIcons.activity, 'Feed'),
                   _buildNavItem(2, LucideIcons.hammer, 'Rooms'),
-                  _buildNavItem(3, LucideIcons.compass, 'Explore'),
+                  _buildNavItem(3, LucideIcons.messageCircle, 'Messages', showBadge: _unreadMessagesCount > 0),
+                  _buildNavItem(4, LucideIcons.compass, 'Explore'),
                 ],
                 // Profile Avatar Button
                 Expanded(

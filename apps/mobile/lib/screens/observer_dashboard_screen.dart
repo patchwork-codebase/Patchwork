@@ -67,7 +67,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           .from('notifications')
           .select('id')
           .eq('user_id', userId)
-          .eq('is_read', false);
+          .eq('read', false);
       if (mounted) setState(() => _unreadNotifications = (res as List).length);
     } catch (_) {}
   }
@@ -1341,6 +1341,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 96.0),
         child: FloatingActionButton(
+          heroTag: 'observer_fab',
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const CreateUpdateScreen()),

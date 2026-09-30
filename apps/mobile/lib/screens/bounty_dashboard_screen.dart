@@ -5,6 +5,8 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import 'public_profile_screen.dart';
 import 'room_detail_screen.dart';
+import 'chat_thread_screen.dart';
+import '../widgets/shared/user_avatar.dart';
 
 class BountyDashboardScreen extends StatefulWidget {
   const BountyDashboardScreen({super.key});
@@ -61,16 +63,44 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
           const SnackBar(content: Text('Match Accepted! Room created. 🚀')),
         );
         final roomId = res['room_id'];
-        
-        Navigator.pushReplacement(
+        _fetchApplications(); // Refresh list
+        // Navigate to chat in the newly created room
+        Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => RoomDetailScreen(roomId: roomId, title: 'Bounty Match')),
+          MaterialPageRoute(
+            builder: (_) => ChatThreadScreen(
+              roomId: roomId,
+              roomTitle: 'Bounty Match',
+            ),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to accept match: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _rejectMatch(String applicationId) async {
+    try {
+      await Supabase.instance.client
+          .from('bounty_applications')
+          .update({'status': 'rejected'})
+          .eq('id', applicationId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pitch declined.')),
+        );
+        _fetchApplications(); // Refresh list to reflect rejection
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reject match: $e')),
         );
       }
     }
@@ -141,13 +171,10 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                         // Builder Info
                         Row(
                           children: [
-                            GestureDetector(
+                            UserAvatar(
+                              imageUrl: builder['avatar'],
+                              radius: 20,
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: builder['id']))),
-                              child: CircleAvatar(
-                                radius: 20,
-                                backgroundImage: builder['avatar'] != null ? NetworkImage(builder['avatar']) : null,
-                                child: builder['avatar'] == null ? const Icon(LucideIcons.user, size: 20) : null,
-                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -192,26 +219,75 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                         
                         // Actions
                         if (isAccepted)
-                          Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            width: double.infinity,
-                            decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                            child: const Center(
-                              child: Text('✅ Match Accepted', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                width: double.infinity,
+                                decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                child: const Center(
+                                  child: Text('✅ Match Accepted', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  // Get the room_id from the application if stored
+                                  // Otherwise navigate via the Messages tab
+                                  if (app['room_id'] != null) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ChatThreadScreen(
+                                          roomId: app['room_id'],
+                                          roomTitle: app['room_title'] ?? 'Bounty Match',
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Open the Messages tab to find your chat!')),
+                                    );
+                                  }
+                                },
+                                icon: const Icon(LucideIcons.messageCircle, size: 16),
+                                label: const Text('Open Chat'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.green,
+                                  side: const BorderSide(color: Colors.green),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ],
                           )
                         else if (app['status'] == 'pending')
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () => _acceptMatch(app['id']),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: context.themeColors.primary500,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => _rejectMatch(app['id']),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.redAccent,
+                                    side: BorderSide(color: Colors.redAccent.withOpacity(0.5)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: const Text('Reject'),
+                                ),
                               ),
-                              child: const Text('Accept Match'),
-                            ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton(
+                                  onPressed: () => _acceptMatch(app['id']),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: context.themeColors.primary500,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: const Text('Accept Match'),
+                                ),
+                              ),
+                            ],
                           )
                         else 
                           const Center(child: Text('Rejected', style: TextStyle(color: Colors.red))),

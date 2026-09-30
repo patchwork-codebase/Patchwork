@@ -28,6 +28,7 @@ class FeedUpdateCard extends StatefulWidget {
   final bool isThreadView;
   final VoidCallback? onReplyTap;
   final VoidCallback? onRefresh;
+  final String heroTagPrefix;
 
   const FeedUpdateCard({
     super.key, 
@@ -35,6 +36,7 @@ class FeedUpdateCard extends StatefulWidget {
     this.isThreadView = false,
     this.onReplyTap,
     this.onRefresh,
+    this.heroTagPrefix = '',
   });
 
   @override
@@ -588,7 +590,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
       });
       
       final newReaction = {
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'id': DateTime.now().millisecondsSinceEpoch.toString() + '_' + (userId ?? ''),
         'room_id': roomId,
         'update_id': updateId,
         'observer_id': userId,
@@ -609,7 +611,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
           _emojiCounts.clear();
           _emojiCounts.addAll(previousEmojiCounts);
         });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to react. Check your connection.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to react: $e')));
       }
     }
   }
@@ -673,18 +675,32 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
     if (confirm != true) return;
 
     try {
-      // Use the secure Edge Function to handle both database and storage deletion atomically
-      final response = await Supabase.instance.client.functions.invoke(
-        'delete-update',
-        body: {'update_id': widget.update['id']},
-      );
-
-      if (response.status != 200) {
-        throw Exception('Failed to delete update');
+      // Direct database deletion as fallback for edge function issues
+      final updateId = widget.update['id'];
+      
+      // Optionally try to delete media if present, ignoring errors
+      final mediaUrls = widget.update['media_urls'] as List?;
+      final mediaUrl = widget.update['media_url'] as String?;
+      
+      if (mediaUrls != null && mediaUrls.isNotEmpty) {
+         try {
+            for (var url in mediaUrls) {
+               final path = Uri.parse(url).pathSegments.last;
+               await Supabase.instance.client.storage.from('updates_media').remove([path]);
+            }
+         } catch (_) {}
+      } else if (mediaUrl != null && mediaUrl.isNotEmpty) {
+         try {
+            final path = Uri.parse(mediaUrl).pathSegments.last;
+            await Supabase.instance.client.storage.from('updates_media').remove([path]);
+         } catch (_) {}
       }
+
+      await Supabase.instance.client.from('updates').delete().eq('id', updateId);
 
       if (mounted) {
         setState(() => _isDeleted = true);
+        ToastService.show(context, 'Update deleted successfully');
       }
     } catch (e) {
       if (mounted) {
@@ -814,7 +830,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         }
 
                         return Hero(
-                          tag: 'avatar-${update['id']}-${update['author_id'] ?? users['id']}',
+                          tag: '${widget.heroTagPrefix}avatar-${update['id']}-${update['author_id'] ?? users['id']}',
                           child: AuraAvatar(
                             avatarUrl: finalAvatarUrl,
                             initials: authorName,
@@ -1333,7 +1349,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
       return GestureDetector(
         onTap: () => _openGalleryViewer(images, 0, updateId),
         child: Hero(
-          tag: 'media-$updateId-0',
+          tag: '${widget.heroTagPrefix}media-$updateId-0',
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 360),
             child: _buildSingleImageTile(images[0]),
@@ -1426,7 +1442,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
         }
       },
       child: Hero(
-        tag: 'media-$updateId-$index',
+        tag: '${widget.heroTagPrefix}media-$updateId-$index',
         child: _buildSingleImageTile(url),
       ),
     );
@@ -1492,7 +1508,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
         pageBuilder: (context, _, __) => FullScreenImageViewer.gallery(
           imageUrls: images,
           initialIndex: initialIndex,
-          heroTag: 'media-$updateId',
+          heroTag: '${widget.heroTagPrefix}media-$updateId',
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);

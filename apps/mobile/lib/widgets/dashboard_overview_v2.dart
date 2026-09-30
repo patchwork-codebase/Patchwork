@@ -973,7 +973,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                           }
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
-                            child: FeedUpdateCard(update: updates[index] as Map<String, dynamic>),
+                            child: FeedUpdateCard(heroTagPrefix: "dash2_", update: updates[index] as Map<String, dynamic>),
                           );
                         },
                       );

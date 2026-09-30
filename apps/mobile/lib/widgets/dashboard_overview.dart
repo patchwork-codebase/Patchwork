@@ -1019,7 +1019,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                           }
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
-                            child: FeedUpdateCard(update: updates[index] as Map<String, dynamic>),
+                            child: FeedUpdateCard(heroTagPrefix: "dash_", update: updates[index] as Map<String, dynamic>),
                           );
                         },
                       );

@@ -7,6 +7,7 @@ import '../theme.dart';
 import 'public_profile_screen.dart';
 import 'update_thread_screen.dart';
 import 'room_detail_screen.dart';
+import 'bounty_dashboard_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -41,12 +42,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await Supabase.instance.client
           .from('notifications')
-          .update({'read': true}).eq('id', id);
+          .update({'read': true, 'is_read': true}).eq('id', id);
       setState(() {
         _notificationsFuture = _fetchNotifications();
       });
     } catch (e) {
-      // Silently fail or log
+      // Silently fail — column may not exist yet
     }
   }
 
@@ -56,14 +57,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await Supabase.instance.client
           .from('notifications')
-          .update({'read': true})
+          .update({'read': true, 'is_read': true})
           .eq('user_id', user.id)
           .eq('read', false);
       setState(() {
         _notificationsFuture = _fetchNotifications();
       });
     } catch (e) {
-      // Silently fail or log
+      // Silently fail
     }
   }
 
@@ -72,7 +73,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final type = notif['type'] ?? '';
     final metadata = notif['metadata'] ?? {};
 
-    if (type == 'reaction') {
+    if (type == 'reaction' || type == 'update_posted') {
       final updateId = metadata['update_id']?.toString();
       if (updateId == null || updateId.isEmpty) return;
       try {
@@ -90,6 +91,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         }
       } catch (_) {}
+    } else if (type == 'bounty_pitch') {
+      // Navigate to the observer's Bounty Dashboard to review and accept/reject the pitch
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const BountyDashboardScreen(),
+          ),
+        );
+      }
     } else if (type == 'room_follow') {
       final roomId = metadata['room_id']?.toString();
       if (roomId == null || roomId.isEmpty) return;
@@ -367,7 +377,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   final bool isNavigable =
                       (type == 'reaction' && metadata['update_id'] != null) ||
                       (type == 'update_posted' && metadata['update_id'] != null) ||
-                      (type == 'bounty_pitch' && metadata['update_id'] != null) ||
+                      type == 'bounty_pitch' ||
                           (type == 'room_follow' &&
                               metadata['room_id'] != null);
 

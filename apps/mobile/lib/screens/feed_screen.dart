@@ -580,6 +580,7 @@ class _FeedScreenState extends State<FeedScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 96.0),
         child: FloatingActionButton(
+          heroTag: 'feed_fab',
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const CreateUpdateScreen()),

@@ -346,6 +346,22 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.themeColors.background,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => CreateUpdateScreen(
+                preselectedRoomId: widget.roomId,
+              ),
+            ),
+          ).then((value) {
+            if (value == true) _refresh();
+          });
+        },
+        backgroundColor: context.themeColors.primary500,
+        icon: const Icon(LucideIcons.messageSquare, color: Colors.white),
+        label: const Text('Post Update', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _roomDataFuture,
         builder: (context, snapshot) {
@@ -802,7 +818,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                               ),
                             );
                           }
-                          return FeedUpdateCard(update: _updatesList[index]);
+                          return FeedUpdateCard(heroTagPrefix: "room_", update: _updatesList[index]);
                         },
                       )
                   ,
