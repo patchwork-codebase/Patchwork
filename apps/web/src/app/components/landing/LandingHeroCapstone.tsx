@@ -116,47 +116,46 @@ export function LandingHeroCapstone({ onSignup, audience = "builders" }: Props) 
             <GooglePlayButton />
           </motion.div>
         </motion.div>
+        {/* Floating mockup — anchored bottom-right on desktop, inline center on mobile */}
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.7, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-16 lg:mt-0 lg:absolute lg:right-12 lg:top-24 flex justify-center w-full lg:w-auto relative z-20 pb-10 lg:pb-0"
+        >
+          {/* Glow */}
+          <div className="absolute -inset-4 bg-primary-500/10 rounded-[40px] blur-2xl pointer-events-none" />
+
+          <div className="relative bg-black rounded-[40px] shadow-2xl overflow-hidden border-[6px] border-[#1a1a1a] aspect-[9/19.5] w-64 sm:w-72 lg:w-80 lg:ml-auto lg:rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+            {/* Dynamic Notch */}
+            <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
+              <div className="w-24 h-6 bg-[#1a1a1a] rounded-b-[16px]" />
+            </div>
+
+            {/* Animated Screenshots (Crossfade) */}
+            <div className="w-full h-full relative bg-[#0a0a0a]">
+              <motion.img 
+                src="/assets/app-screen-1.jpg" 
+                className="absolute inset-0 w-full h-full object-cover"
+                animate={{ opacity: [1, 1, 0, 0, 0, 1] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.img 
+                src="/assets/app-screen-2.jpg" 
+                className="absolute inset-0 w-full h-full object-cover"
+                animate={{ opacity: [0, 1, 1, 0, 0, 0] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.img 
+                src="/assets/app-screen-3.jpg" 
+                className="absolute inset-0 w-full h-full object-cover"
+                animate={{ opacity: [0, 0, 0, 1, 1, 0] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </div>
+        </motion.div>
       </div>
-
-      {/* Floating mockup — anchored bottom-right, QuickFleet style */}
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ delay: 0.7, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute right-4 sm:right-10 lg:right-12 top-28 sm:top-24 w-72 sm:w-80 lg:w-96 hidden lg:block"
-      >
-        {/* Glow */}
-        <div className="absolute -inset-4 bg-primary-500/10 rounded-[40px] blur-2xl pointer-events-none" />
-
-        <div className="relative bg-black rounded-[40px] shadow-2xl overflow-hidden border-[6px] border-[#1a1a1a] aspect-[9/19.5] w-64 sm:w-72 lg:w-80 ml-auto rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
-          {/* Dynamic Notch */}
-          <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
-            <div className="w-24 h-6 bg-[#1a1a1a] rounded-b-[16px]" />
-          </div>
-
-          {/* Animated Screenshots (Crossfade) */}
-          <div className="w-full h-full relative bg-[#0a0a0a]">
-            <motion.img 
-              src="/assets/app-screen-1.jpg" 
-              className="absolute inset-0 w-full h-full object-cover"
-              animate={{ opacity: [1, 1, 0, 0, 0, 1] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.img 
-              src="/assets/app-screen-2.jpg" 
-              className="absolute inset-0 w-full h-full object-cover"
-              animate={{ opacity: [0, 1, 1, 0, 0, 0] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.img 
-              src="/assets/app-screen-3.jpg" 
-              className="absolute inset-0 w-full h-full object-cover"
-              animate={{ opacity: [0, 0, 0, 1, 1, 0] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </div>
-        </div>
-      </motion.div>
     </section>
   );
 }
