@@ -35,7 +35,7 @@ class ChatThreadScreen extends StatefulWidget {
   State<ChatThreadScreen> createState() => _ChatThreadScreenState();
 }
 
-class _ChatThreadScreenState extends State<ChatThreadScreen> {
+class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBindingObserver {
   final ChatRepository _chatRepo = ChatRepository();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -74,6 +74,16 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     
     _audioRecorder = FlutterSoundRecorder();
     _initRecorder();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      if (_isRecordingAudio) {
+        _cancelRecording();
+      }
+    }
   }
 
   Future<void> _initRecorder() async {
@@ -108,6 +118,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _audioRecorder?.closeRecorder();
     _audioRecorder = null;
     _messageController.removeListener(_onTextChanged);
