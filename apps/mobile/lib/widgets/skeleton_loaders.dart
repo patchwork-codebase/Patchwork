@@ -270,3 +270,89 @@ class FeedCardSkeleton extends StatelessWidget {
     );
   }
 }
+
+class MessageInboxSkeleton extends StatelessWidget {
+  const MessageInboxSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: EdgeInsets.only(
+        top: 16,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
+      itemCount: 8,
+      physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (_, __) => const SizedBox(height: 1),
+      itemBuilder: (_, __) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          color: context.themeColors.surface,
+          child: Row(
+            children: [
+              const SkeletonCircle(size: 52),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        SkeletonBox(width: 120, height: 16, borderRadius: 4),
+                        SkeletonBox(width: 40, height: 12, borderRadius: 4),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const SkeletonBox(width: double.infinity, height: 14, borderRadius: 4),
+                    const SizedBox(height: 4),
+                    const SkeletonBox(width: 180, height: 14, borderRadius: 4),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ChatThreadSkeleton extends StatelessWidget {
+  const ChatThreadSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      itemCount: 6,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (_, index) {
+        final isMe = index % 2 != 0;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) ...[
+                const SkeletonCircle(size: 32),
+                const SizedBox(width: 8),
+              ],
+              Column(
+                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(
+                    width: 180 + (index * 20 % 60).toDouble(), // Randomize widths
+                    height: 40 + (index * 10 % 30).toDouble(),
+                    borderRadius: 18,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

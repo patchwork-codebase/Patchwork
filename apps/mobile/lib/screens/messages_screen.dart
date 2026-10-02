@@ -5,6 +5,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import 'chat_thread_screen.dart';
+import '../widgets/skeleton_loaders.dart';
+import '../services/cache_service.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -27,7 +29,24 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
 
-    setState(() => _isLoading = true);
+    // 1. Load from cache
+    try {
+      final cachedData = await CacheService().getJson(CacheService.keyChatInbox);
+      if (cachedData != null && cachedData is List && _conversations.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _conversations = List<Map<String, dynamic>>.from(cachedData);
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Cache read error: $e');
+    }
+
+    if (_conversations.isEmpty) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       // Fetch all rooms where the current user is the builder or an observer
@@ -92,6 +111,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
           _conversations = conversations;
           _isLoading = false;
         });
+        // 2. Save fresh data to cache
+        CacheService().saveJson(CacheService.keyChatInbox, conversations);
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -146,7 +167,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             // Body
             Expanded(
               child: _isLoading
-                  ? Center(child: CircularProgressIndicator(color: context.themeColors.primary500))
+                  ? const MessageInboxSkeleton()
                   : _conversations.isEmpty
                       ? _buildEmptyState()
                       : RefreshIndicator(

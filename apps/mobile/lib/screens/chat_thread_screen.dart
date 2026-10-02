@@ -4,10 +4,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'dart:math' as math;
 import 'dart:io';
+import 'dart:ui';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
+import '../repositories/chat_repository.dart';
+import '../widgets/rich_link_preview_card.dart';
+import '../widgets/fullscreen_image_viewer.dart';
+import '../widgets/skeleton_loaders.dart';
+import '../widgets/floating_reactions.dart';
+import '../widgets/audio_waveform.dart';
+import '../widgets/audio_player_widget.dart';
 
 class ChatThreadScreen extends StatefulWidget {
   final String roomId;
@@ -24,6 +36,7 @@ class ChatThreadScreen extends StatefulWidget {
 }
 
 class _ChatThreadScreenState extends State<ChatThreadScreen> {
+  final ChatRepository _chatRepo = ChatRepository();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
@@ -31,6 +44,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   bool _isLoading = true;
   bool _isSending = false;
   bool _isUploadingMedia = false;
+  bool _isRecordingAudio = false;
+  FlutterSoundRecorder? _audioRecorder;
+  bool _isRecorderInitialized = false;
+  String? _recordedFilePath;
+  bool _hasInputText = false;
   RealtimeChannel? _channel;
   RealtimeChannel? _presenceChannel;
   String? _currentUserId;
@@ -41,6 +59,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   Map<String, List<Map<String, dynamic>>> _reactions = {};
   bool _showTip = false;
   final Set<String> _optimisticIds = {}; // temp IDs for optimistically added messages
+  final GlobalKey<FloatingReactionsState> _reactionsKey = GlobalKey<FloatingReactionsState>();
 
   @override
   void initState() {
@@ -52,6 +71,19 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     _setupRealtime();
     _messageController.addListener(_onTextChanged);
     _checkIfShowTip();
+    
+    _audioRecorder = FlutterSoundRecorder();
+    _initRecorder();
+  }
+
+  Future<void> _initRecorder() async {
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      print('Microphone permission not granted');
+      return;
+    }
+    await _audioRecorder!.openRecorder();
+    _isRecorderInitialized = true;
   }
 
   Future<void> _checkIfShowTip() async {
@@ -65,14 +97,19 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   }
 
   void _onTextChanged() {
+    final isTyping = _messageController.text.isNotEmpty;
+    if (mounted && _hasInputText != isTyping) {
+      setState(() => _hasInputText = isTyping);
+    }
     if (_presenceChannel != null && _currentUserId != null) {
-      final isTyping = _messageController.text.isNotEmpty;
       _presenceChannel!.track({'userId': _currentUserId, 'typing': isTyping});
     }
   }
 
   @override
   void dispose() {
+    _audioRecorder?.closeRecorder();
+    _audioRecorder = null;
     _messageController.removeListener(_onTextChanged);
     _messageController.dispose();
     _scrollController.dispose();
@@ -111,6 +148,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           .contains('metadata', {'room_id': widget.roomId});
           
       // 2. Mark chat messages as read in room_messages
+      // This is currently a bulk update, so we'll keep the direct query 
+      // or we could add a bulk markAsRead to ChatRepository. For now, direct query is fine for bulk.
       await Supabase.instance.client
           .from('room_messages')
           .update({'read_at': DateTime.now().toUtc().toIso8601String()})
@@ -122,14 +161,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   Future<void> _fetchMessages() async {
     try {
-      final res = await Supabase.instance.client
-          .from('room_messages')
-          .select('*, users:sender_id(id, name, avatar)')
-          .eq('room_id', widget.roomId)
-          .order('created_at', ascending: true);
+      final messagesList = await _chatRepo.getMessages(widget.roomId);
       if (mounted) {
         setState(() {
-          _messages = List<Map<String, dynamic>>.from(res);
+          _messages = messagesList.map((m) => m.toJson()).toList();
           _isLoading = false;
         });
         _scrollToBottom();
@@ -274,10 +309,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       final editId = _editingMessageId!;
       _cancelEditing();
       try {
-        await Supabase.instance.client
-            .from('room_messages')
-            .update({'content': content, 'is_edited': true})
-            .eq('id', editId);
+        await _chatRepo.editMessage(
+          messageId: editId,
+          newContent: content,
+        );
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -313,13 +348,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     _scrollToBottom();
 
     try {
-      await Supabase.instance.client.from('room_messages').insert({
-        'room_id': widget.roomId,
-        'sender_id': _currentUserId,
-        'content': content.isEmpty ? '' : content,
-        if (mediaUrl != null) 'media_url': mediaUrl,
-        if (mediaType != null) 'media_type': mediaType,
-      });
+      await _chatRepo.sendMessage(
+        roomId: widget.roomId,
+        senderId: _currentUserId!,
+        content: content.isEmpty ? '' : content,
+        // TODO: Handle media params in repository
+      );
       // The realtime INSERT event will replace the optimistic msg via _optimisticIds tracking
     } catch (e) {
       // Remove the optimistic message on failure
@@ -335,6 +369,70 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
+  Future<void> _startRecording() async {
+    if (!_isRecorderInitialized || _audioRecorder == null) return;
+    
+    HapticFeedback.heavyImpact();
+    setState(() => _isRecordingAudio = true);
+
+    final dir = await getApplicationDocumentsDirectory();
+    _recordedFilePath = '${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac';
+
+    await _audioRecorder!.startRecorder(
+      toFile: _recordedFilePath,
+      codec: Codec.aacADTS,
+    );
+  }
+
+  Future<void> _stopAndSendRecording() async {
+    if (!_isRecordingAudio || _audioRecorder == null) return;
+
+    await _audioRecorder!.stopRecorder();
+    setState(() => _isRecordingAudio = false);
+    
+    if (_recordedFilePath != null && File(_recordedFilePath!).existsSync()) {
+      setState(() => _isUploadingMedia = true);
+      try {
+        final bytes = await File(_recordedFilePath!).readAsBytes();
+        final ext = 'aac';
+        final fileName = '${widget.roomId}/${_currentUserId}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+        await Supabase.instance.client.storage
+            .from('chat_media')
+            .uploadBinary(fileName, bytes, fileOptions: const FileOptions(contentType: 'audio/aac'));
+
+        final publicUrl = Supabase.instance.client.storage
+            .from('chat_media')
+            .getPublicUrl(fileName);
+
+        await _sendMessage(mediaUrl: publicUrl, mediaType: 'audio');
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to upload audio: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUploadingMedia = false);
+      }
+    }
+  }
+
+  Future<void> _cancelRecording() async {
+    if (!_isRecordingAudio || _audioRecorder == null) return;
+
+    HapticFeedback.lightImpact();
+    await _audioRecorder!.stopRecorder();
+    setState(() => _isRecordingAudio = false);
+
+    if (_recordedFilePath != null) {
+      final file = File(_recordedFilePath!);
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+    }
+  }
+
   void _startEditing(Map<String, dynamic> msg) {
     setState(() {
       _editingMessageId = msg['id']?.toString();
@@ -345,7 +443,21 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       TextPosition(offset: _messageController.text.length),
     );
     _focusNode.requestFocus();
-    Navigator.of(context).pop(); // Close bottom sheet
+  }
+
+  void _startReplying(Map<String, dynamic> msg) {
+    final originalContent = msg['content']?.toString() ?? '';
+    final senderName = msg['users']?['name']?.toString() ?? 'User';
+    final quoteText = "> **$senderName:** $originalContent\n\n";
+    
+    setState(() {
+      _editingMessageId = null;
+      _messageController.text = quoteText;
+      _messageController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _messageController.text.length),
+      );
+    });
+    _focusNode.requestFocus();
   }
 
   void _cancelEditing() {
@@ -375,8 +487,20 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
-  Future<void> _sendReaction(String msgId, String emoji) async {
-    Navigator.of(context).pop(); // Close bottom sheet
+  Future<void> _sendReaction(String msgId, String emoji, {bool fromDoubleTap = false}) async {
+    if (!fromDoubleTap && Navigator.canPop(context)) {
+      Navigator.of(context).pop(); // Close bottom sheet if open
+    }
+    
+    // Trigger floating burst
+    if (_reactionsKey.currentState != null) {
+      final size = MediaQuery.of(context).size;
+      _reactionsKey.currentState!.triggerBurst(
+        emoji, 
+        Offset(size.width / 2, size.height * 0.6)
+      );
+    }
+
     if (_currentUserId == null) return;
     try {
       await Supabase.instance.client.from('message_reactions').upsert({
@@ -391,74 +515,101 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   void _showMessageOptions(Map<String, dynamic> msg, bool isMe) {
     final msgId = msg['id']?.toString() ?? '';
     final content = msg['content']?.toString() ?? '';
-    HapticFeedback.mediumImpact();
+    HapticFeedback.heavyImpact();
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.themeColors.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: context.themeColors.borderSubtle),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Emoji Quick Reactions
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: ['👍', '❤️', '😂', '😮', '😢', '🔥'].map((emoji) {
-                    return GestureDetector(
-                      onTap: () => _sendReaction(msgId, emoji),
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: context.themeColors.surfaceHighlight,
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+              bottom: MediaQuery.of(context).padding.bottom + 24,
+            ),
+            decoration: BoxDecoration(
+              color: context.themeColors.surface.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 30,
+                  spreadRadius: 5,
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Emoji Quick Reactions
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: ['👍', '❤️', '😂', '😮', '😢', '🔥'].map((emoji) {
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          _sendReaction(msgId, emoji);
+                          Navigator.of(ctx).pop();
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: context.themeColors.surfaceHighlight.withOpacity(0.5),
+                          ),
+                          child: Center(
+                            child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                          ),
                         ),
-                        child: Center(
-                          child: Text(emoji, style: const TextStyle(fontSize: 22)),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
-              Divider(color: context.themeColors.borderSubtle, height: 1),
-              // Action Buttons
-              if (content.isNotEmpty)
-                _buildActionTile(
-                  icon: LucideIcons.copy,
-                  label: 'Copy',
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: content));
-                    Navigator.of(ctx).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Copied to clipboard')),
-                    );
-                  },
-                ),
-              if (isMe && content.isNotEmpty)
-                _buildActionTile(
-                  icon: LucideIcons.pencil,
-                  label: 'Edit',
-                  onTap: () => _startEditing(msg),
-                ),
-              if (isMe)
-                _buildActionTile(
-                  icon: LucideIcons.trash2,
-                  label: 'Delete',
-                  isDestructive: true,
-                  onTap: () => _deleteMessage(msgId),
-                ),
-              const SizedBox(height: 8),
-            ],
+                Divider(color: Colors.white.withOpacity(0.05), height: 1),
+                
+                // Action Buttons
+                if (content.isNotEmpty)
+                  _buildActionTile(
+                    icon: LucideIcons.copy,
+                    label: 'Copy Message',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Clipboard.setData(ClipboardData(text: content));
+                      Navigator.of(ctx).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Copied to clipboard')),
+                      );
+                    },
+                  ),
+                if (isMe && content.isNotEmpty)
+                  _buildActionTile(
+                    icon: LucideIcons.pencil,
+                    label: 'Edit Message',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(ctx).pop();
+                      _startEditing(msg);
+                    },
+                  ),
+                if (isMe)
+                  _buildActionTile(
+                    icon: LucideIcons.trash2,
+                    label: 'Delete Message',
+                    isDestructive: true,
+                    onTap: () {
+                      HapticFeedback.heavyImpact();
+                      Navigator.of(ctx).pop();
+                      _deleteMessage(msgId);
+                    },
+                  ),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
         );
       },
@@ -472,21 +623,28 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     bool isDestructive = false,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : context.themeColors.textPrimary,
-        size: 20,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isDestructive ? Colors.red.withOpacity(0.1) : context.themeColors.surfaceHighlight.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: isDestructive ? Colors.redAccent : context.themeColors.textPrimary,
+          size: 18,
+        ),
       ),
       title: Text(
         label,
         style: TextStyle(
-          color: isDestructive ? Colors.red : context.themeColors.textPrimary,
+          color: isDestructive ? Colors.redAccent : context.themeColors.textPrimary,
+          fontWeight: FontWeight.w600,
           fontSize: 15,
         ),
       ),
       onTap: onTap,
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
     );
   }
 
@@ -530,9 +688,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.themeColors.background,
-      appBar: AppBar(
+    return FloatingReactions(
+      key: _reactionsKey,
+      child: Scaffold(
+        backgroundColor: context.themeColors.background,
+        appBar: AppBar(
         backgroundColor: context.themeColors.surface,
         elevation: 0,
         titleSpacing: 0,
@@ -591,7 +751,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
               // Messages List
               Expanded(
                 child: _isLoading
-                    ? Center(child: CircularProgressIndicator(color: context.themeColors.primary500))
+                    ? const ChatThreadSkeleton()
                     : _messages.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
@@ -627,7 +787,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           if (_showTip) _buildTipBanner(),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildMessageBubble(
@@ -681,26 +841,41 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                       style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary, fontWeight: FontWeight.w600),
                     ),
                   ),
-                GestureDetector(
-                  onLongPress: () => _showMessageOptions(msg, isMe),
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.68),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: _editingMessageId == msg['id']?.toString()
-                          ? context.themeColors.primary500.withOpacity(0.85)
-                          : isMe
-                              ? context.themeColors.primary500
-                              : context.themeColors.surface,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(18),
-                        topRight: const Radius.circular(18),
-                        bottomLeft: Radius.circular(isMe ? 18 : 4),
-                        bottomRight: Radius.circular(isMe ? 4 : 18),
+                Dismissible(
+                  key: Key(msg['id']?.toString() ?? UniqueKey().toString()),
+                  direction: DismissDirection.startToEnd,
+                  confirmDismiss: (_) async {
+                    HapticFeedback.heavyImpact();
+                    _startReplying(msg);
+                    return false; // Never actually dismiss the item
+                  },
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Icon(LucideIcons.reply, color: context.themeColors.primary500, size: 24),
+                  ),
+                  child: GestureDetector(
+                    onLongPress: () => _showMessageOptions(msg, isMe),
+                    onDoubleTap: () => _sendReaction(msg['id']?.toString() ?? '', '❤️', fromDoubleTap: true),
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.68),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _editingMessageId == msg['id']?.toString()
+                            ? context.themeColors.primary500.withOpacity(0.85)
+                            : isMe
+                                ? context.themeColors.primary500
+                                : context.themeColors.surface,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(18),
+                          topRight: const Radius.circular(18),
+                          bottomLeft: Radius.circular(isMe ? 18 : 4),
+                          bottomRight: Radius.circular(isMe ? 4 : 18),
+                        ),
+                        border: isMe ? null : Border.all(color: context.themeColors.borderSubtle),
                       ),
-                      border: isMe ? null : Border.all(color: context.themeColors.borderSubtle),
+                      child: _buildBubbleContent(msg, isMe, content),
                     ),
-                    child: _buildBubbleContent(msg, isMe, content),
                   ),
                 ),
                 // Reactions
@@ -712,6 +887,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (msg['is_edited'] == true) ...[
+                          Text(
+                            'Edited · ',
+                            style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary, fontStyle: FontStyle.italic),
+                          ),
+                        ],
                         Text(
                           timeago.format(DateTime.parse(createdAt)),
                           style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
@@ -789,49 +970,87 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final mediaType = msg['media_type'] as String?;
 
     if (mediaUrl != null && mediaType == 'image') {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: CachedNetworkImage(
-          imageUrl: mediaUrl,
-          width: 220,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            width: 220,
-            height: 160,
-            color: isMe
-                ? Colors.white.withOpacity(0.15)
-                : context.themeColors.surfaceHighlight,
-            child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: isMe ? Colors.white : context.themeColors.primary500,
+      final heroTag = 'chat-media-${msg['id'] ?? UniqueKey()}';
+      return GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              opaque: false,
+              pageBuilder: (context, _, __) => FullScreenImageViewer(
+                imageUrl: mediaUrl,
+                heroTag: heroTag,
               ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
             ),
-          ),
-          errorWidget: (context, url, error) => Container(
-            width: 220,
-            height: 80,
-            color: isMe
-                ? Colors.white.withOpacity(0.15)
-                : context.themeColors.surfaceHighlight,
-            child: Center(
-              child: Icon(
-                LucideIcons.imageOff,
-                color: isMe ? Colors.white54 : context.themeColors.textTertiary,
+          );
+        },
+        child: Hero(
+          tag: '$heroTag-0',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: mediaUrl,
+              width: 220,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                width: 220,
+                height: 160,
+                color: isMe
+                    ? Colors.white.withOpacity(0.15)
+                    : context.themeColors.surfaceHighlight,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: isMe ? Colors.white : context.themeColors.primary500,
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                width: 220,
+                height: 80,
+                color: isMe
+                    ? Colors.white.withOpacity(0.15)
+                    : context.themeColors.surfaceHighlight,
+                child: Center(
+                  child: Icon(
+                    LucideIcons.imageOff,
+                    color: isMe ? Colors.white54 : context.themeColors.textTertiary,
+                  ),
+                ),
               ),
             ),
           ),
         ),
       );
     }
+    
+    if (mediaUrl != null && mediaType == 'audio') {
+      return AudioPlayerWidget(url: mediaUrl, isMe: isMe);
+    }
 
-    return Text(
-      content,
-      style: TextStyle(
-        color: isMe ? Colors.white : context.themeColors.textPrimary,
-        fontSize: 14,
-        height: 1.4,
-      ),
+    final urlRegExp = RegExp(r'(https?:\/\/[^\s]+)', caseSensitive: false);
+    final match = urlRegExp.firstMatch(content);
+    final String? extractedUrl = match?.group(0);
+
+    return Column(
+      crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        if (content.isNotEmpty)
+          Text(
+            content,
+            style: TextStyle(
+              color: isMe ? Colors.white : context.themeColors.textPrimary,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+        if (extractedUrl != null)
+          RichLinkPreviewCard(url: extractedUrl),
+      ],
     );
   }
 
@@ -1072,7 +1291,40 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                   ),
                   const SizedBox(width: 8),
                 ],
-                Expanded(
+                if (_isRecordingAudio)
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(LucideIcons.mic, color: Colors.red, size: 18)
+                              .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                              .fade(duration: 800.ms, begin: 0.3, end: 1.0),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: AudioWaveform(
+                              isRecording: true,
+                              color: Colors.red,
+                              height: 30,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('< Slide to cancel', 
+                            style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold))
+                              .animate(onPlay: (controller) => controller.repeat())
+                              .shimmer(duration: 2.seconds, color: Colors.white38),
+                        ],
+                      ),
+                    )
+                  )
+                else
+                  Expanded(
                   child: Container(
                     constraints: const BoxConstraints(maxHeight: 120),
                     decoration: BoxDecoration(
@@ -1102,14 +1354,38 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => _sendMessage(),
+                  onLongPressStart: (_) {
+                    if (!_hasInputText && _editingMessageId == null) {
+                      _startRecording();
+                    }
+                  },
+                  onLongPressEnd: (_) {
+                    if (_isRecordingAudio) {
+                      _stopAndSendRecording();
+                    }
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    if (_isRecordingAudio && details.delta.dx < -10) {
+                       _cancelRecording();
+                    }
+                  },
+                  onTap: () {
+                    if (_hasInputText || _editingMessageId != null) {
+                      _sendMessage();
+                    }
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 44,
-                    height: 44,
+                    width: _isRecordingAudio ? 56 : 44,
+                    height: _isRecordingAudio ? 56 : 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _editingMessageId != null ? Colors.green : context.themeColors.primary500,
+                      color: _isRecordingAudio 
+                          ? Colors.red 
+                          : (_editingMessageId != null ? Colors.green : context.themeColors.primary500),
+                      boxShadow: _isRecordingAudio 
+                          ? [BoxShadow(color: Colors.red.withOpacity(0.4), blurRadius: 12, spreadRadius: 4)]
+                          : null,
                     ),
                     child: _isSending
                         ? const Padding(
@@ -1117,9 +1393,13 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : Icon(
-                            _editingMessageId != null ? LucideIcons.check : LucideIcons.send,
+                            _isRecordingAudio 
+                                ? LucideIcons.mic 
+                                : (_editingMessageId != null 
+                                    ? LucideIcons.check 
+                                    : (_hasInputText ? LucideIcons.send : LucideIcons.mic)),
                             color: Colors.white,
-                            size: 20,
+                            size: _isRecordingAudio ? 26 : 20,
                           ),
                   ),
                 ),

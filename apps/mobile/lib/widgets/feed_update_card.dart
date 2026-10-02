@@ -22,6 +22,8 @@ import '../screens/public_profile_screen.dart';
 import '../screens/update_thread_screen.dart';
 import '../screens/create_update_screen.dart';
 import 'fullscreen_image_viewer.dart';
+import 'rich_link_preview_card.dart';
+import 'parallax_container.dart';
 
 class FeedUpdateCard extends StatefulWidget {
   final Map<String, dynamic> update;
@@ -1077,7 +1079,9 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   
                   // Figma Embed
                   if (update['figma_url'] != null || content.contains('figma.com'))
-                    FigmaEmbedWidget(url: _buildFigmaEmbedUrl(update['figma_url']?.toString(), content)),
+                    FigmaEmbedWidget(url: _buildFigmaEmbedUrl(update['figma_url']?.toString(), content))
+                  else if (RegExp(r'(https?:\/\/[^\s]+)', caseSensitive: false).hasMatch(content))
+                    RichLinkPreviewCard(url: RegExp(r'(https?:\/\/[^\s]+)', caseSensitive: false).firstMatch(content)!.group(0)!),
 
                   // Code Snippet block
                   if (update['code_snippet'] != null)
@@ -1251,7 +1255,8 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         child: InkWell(
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            Share.share('Check out this update on Patchwork: https://www.joinpatchwork.xyz/update/${widget.update['id']}');
+                            Share.shareUri(Uri.parse('https://www.joinpatchwork.xyz/update/${widget.update['id']}'),
+                              title: 'Check out this update on Patchwork');
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: _buildReactionGhostButton(LucideIcons.share2, null),
@@ -1330,15 +1335,19 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: context.themeColors.borderSubtle),
-            borderRadius: BorderRadius.circular(16),
+      child: ParallaxContainer(
+        maxTilt: 0.1,
+        enableShadows: true,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: context.themeColors.borderSubtle),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: _buildGalleryLayout(images, updateId),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: _buildGalleryLayout(images, updateId),
         ),
       ),
     );

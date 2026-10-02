@@ -10,6 +10,7 @@ import '../theme.dart';
 import 'room_detail_screen.dart';
 import '../widgets/feed_update_card.dart';
 import '../widgets/aura_avatar.dart';
+import '../widgets/bento_profile_header.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String userId;
@@ -210,28 +211,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
               }
 
               final profile = snapshot.data!;
-              final name = profile['name'] ?? 'Unknown Builder';
-              final bio = profile['bio'] ??
-                  'Building better products that solve real problems and create meaningful impact.';
-              final role = profile['role'] ?? 'Builder';
-              final isVerified = profile['is_verified_expert'] == true;
-              final avatarUrl = profile['avatar']?.toString();
-              final initial =
-                  name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
-
               final followerCount = profile['followerCount'] ?? 0;
-              final followingCount = profile['followingCount'] ?? 0;
-
-              // Social links
-              final twitterHandle = profile['twitter']?.toString();
-              final linkedinUrl = profile['linkedin_url']?.toString();
-              final websiteUrl = profile['website']?.toString();
-              final githubUrl = profile['github_url']?.toString();
-
-              final hasSocialLinks = (twitterHandle?.isNotEmpty ?? false) ||
-                  (linkedinUrl?.isNotEmpty ?? false) ||
-                  (websiteUrl?.isNotEmpty ?? false) ||
-                  (githubUrl?.isNotEmpty ?? false);
+              final isOwnProfile = widget.userId == Supabase.instance.client.auth.currentUser?.id;
 
               return FutureBuilder<List<Map<String, dynamic>>>(
                 future: _roomsFuture,
@@ -240,363 +221,25 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   final projectsCount = rooms.length;
 
                   return CustomScrollView(slivers: [
-                    SliverAppBar(
-                      expandedHeight: 220,
-                      pinned: true,
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      iconTheme:
-                          IconThemeData(color: context.themeColors.textPrimary),
-                      flexibleSpace: ClipRRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                          child: FlexibleSpaceBar(
-                            title: Text(
-                              name,
-                              style: TextStyle(
-                                  color: context.themeColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            background: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    context.themeColors.primary500
-                                        .withOpacity(0.2),
-                                    context.themeColors.background
-                                        .withOpacity(0.8),
-                                  ],
-                                ),
-                              ),
-                              child: SafeArea(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Avatar
-                                    AuraAvatar(
-                                      avatarUrl: avatarUrl,
-                                      initials: name,
-                                      role: role?.toString(),
-                                      size: 100,
-                                    ).animate().scale(
-                                        delay: 200.ms,
-                                        duration: 400.ms,
-                                        curve: Curves.easeOutBack),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Avatar is now in SliverAppBar
-
-                            Text(
-                              name,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w900,
-                                  color: context.themeColors.textPrimary,
-                                  letterSpacing: -0.5),
-                            ),
-                            const SizedBox(height: 6),
-
-                            // ── Role / Verified badge ─────────────────────────────
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 24),
+                          BentoProfileHeader(
+                            profile: profile,
+                            projectsCount: projectsCount,
+                            followerCount: followerCount,
+                            isOwnProfile: isOwnProfile,
+                            isFollowing: _isFollowing,
+                            isTogglingFollow: _isTogglingFollow,
+                            onToggleFollow: _toggleFollow,
+                            onLaunchUrl: _launchSocialUrl,
+                          ),
+                          const SizedBox(height: 24),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
                               children: [
-                                Text('Patchwork',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: context.themeColors.textPrimary,
-                                        fontSize: 14)),
-                                if (isVerified) ...[
-                                  const SizedBox(width: 4),
-                                  Icon(LucideIcons.badgeCheck,
-                                      color: context.themeColors.primary500,
-                                      size: 16),
-                                ],
-                                const SizedBox(width: 8),
-                                Text('•',
-                                    style: TextStyle(
-                                        color: context.themeColors.textTertiary,
-                                        fontSize: 14)),
-                                const SizedBox(width: 8),
-                                Text(
-                                  role.toString()[0].toUpperCase() +
-                                      role
-                                          .toString()
-                                          .substring(1)
-                                          .toLowerCase(),
-                                  style: TextStyle(
-                                      color: context.themeColors.textSecondary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-
-                            // ── Follow / Unfollow Button ──────────────────────────
-                            if (!isOwnProfile && !_isFollowLoading)
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeOutCubic,
-                                child: ElevatedButton.icon(
-                                  onPressed: _toggleFollow,
-                                  icon: _isTogglingFollow
-                                      ? const SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white))
-                                      : Icon(
-                                          _isFollowing
-                                              ? LucideIcons.userCheck
-                                              : LucideIcons.userPlus,
-                                          size: 16),
-                                  label: Text(
-                                      _isFollowing ? 'Following' : 'Follow'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: _isFollowing
-                                        ? context.themeColors.surfaceHighlight
-                                        : context.themeColors.primary500,
-                                    foregroundColor: _isFollowing
-                                        ? context.themeColors.textPrimary
-                                        : Colors.white,
-                                    side: _isFollowing
-                                        ? BorderSide(
-                                            color: context
-                                                .themeColors.borderSubtle)
-                                        : BorderSide.none,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 24, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(24)),
-                                  ),
-                                ),
-                              )
-                                  .animate()
-                                  .fadeIn(duration: 300.ms, delay: 100.ms),
-                            if (!isOwnProfile && !_isFollowLoading)
-                              const SizedBox(height: 20),
-
-                            // ── Bio ───────────────────────────────────────────────
-                            Text(
-                              bio,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  height: 1.6,
-                                  color: context.themeColors.textSecondary,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 28),
-
-                            // ── Stats Pill ────────────────────────────────────────
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 16),
-                              decoration: BoxDecoration(
-                                color: context.themeColors.surfaceHighlight
-                                    .withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(32),
-                                border: Border.all(
-                                    color: context.themeColors.borderSubtle,
-                                    width: 1),
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black.withOpacity(0.02),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4))
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _buildStatItem(
-                                      LucideIcons.users,
-                                      followerCount.toString(),
-                                      'Followers',
-                                      Colors.blueAccent),
-                                  _buildStatItem(
-                                      LucideIcons.users,
-                                      followingCount.toString(),
-                                      'Following',
-                                      context.themeColors.primary400),
-                                  _buildStatItem(
-                                      LucideIcons.award,
-                                      projectsCount.toString(),
-                                      'Projects',
-                                      Colors.amber),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-
-                            // ── Verified Proof-of-Work Credential ─────────────────
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: context.themeColors.surfaceHighlight
-                                    .withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: context.themeColors.borderSubtle,
-                                    width: 1),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(LucideIcons.badgeCheck,
-                                          color: Colors.green, size: 16),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'VERIFIED PROOF-OF-WORK CREDENTIAL',
-                                        style: TextStyle(
-                                            color: Colors.green.shade600,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 0.5),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    '$projectsCount Build ${projectsCount == 1 ? 'Room' : 'Rooms'} & SHA-256 Proof of Authorship verified on Patchwork',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        color:
-                                            context.themeColors.textSecondary,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.4),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Material(
-                                    color: context.themeColors.surfaceHighlight,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                      side: BorderSide(
-                                          color:
-                                              context.themeColors.borderSubtle),
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(
-                                                    'Credential link copied!',
-                                                    style: TextStyle(
-                                                        color: context
-                                                            .themeColors
-                                                            .textPrimary)),
-                                                backgroundColor: context
-                                                    .themeColors
-                                                    .surfaceHighlight));
-                                      },
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 8),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(LucideIcons.share2,
-                                                size: 14,
-                                                color: context
-                                                    .themeColors.primary500),
-                                            const SizedBox(width: 8),
-                                            Text('Copy Credential Link',
-                                                style: TextStyle(
-                                                    color: context
-                                                        .themeColors.primary500,
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-
-                            // ── Social Links ──────────────────────────────────────
-                            if (hasSocialLinks) ...[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (twitterHandle?.isNotEmpty ?? false)
-                                    _buildSocialIcon(
-                                      LucideIcons.twitter,
-                                      () => _launchSocialUrl(twitterHandle,
-                                          'https://twitter.com/'),
-                                      const Color(0xFF1DA1F2),
-                                    ),
-                                  if (twitterHandle?.isNotEmpty ?? false)
-                                    const SizedBox(width: 12),
-                                  if (linkedinUrl?.isNotEmpty ?? false)
-                                    _buildSocialIcon(
-                                      LucideIcons.linkedin,
-                                      () => _launchSocialUrl(linkedinUrl,
-                                          'https://linkedin.com/in/'),
-                                      const Color(0xFF0A66C2),
-                                    ),
-                                  if (linkedinUrl?.isNotEmpty ?? false)
-                                    const SizedBox(width: 12),
-                                  if (githubUrl?.isNotEmpty ?? false)
-                                    _buildSocialIcon(
-                                      LucideIcons.github,
-                                      () => _launchSocialUrl(
-                                          githubUrl, 'https://github.com/'),
-                                      context.themeColors.textPrimary,
-                                    ),
-                                  if (githubUrl?.isNotEmpty ?? false)
-                                    const SizedBox(width: 12),
-                                  if (websiteUrl?.isNotEmpty ?? false)
-                                    _buildSocialIcon(
-                                      LucideIcons.globe,
-                                      () => _launchSocialUrl(
-                                          websiteUrl, 'https://'),
-                                      context.themeColors.primary500,
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Connect and showcase your work',
-                                style: TextStyle(
-                                    color: context.themeColors.textTertiary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(height: 40),
-                            ] else ...[
-                              const SizedBox(height: 40),
-                            ],
 
                             // ── Pinned Update ─────────────────────────────────────
                             if (profile['pinned_update'] != null) ...[
@@ -700,6 +343,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                           ], // closes Column children: [
                         ), // closes Column(
                       ), // closes Padding(
+                          ],
+                        ),
                     ), // closes SliverToBoxAdapter(
                   ]); // closes slivers: [ of CustomScrollView(
                 }, // closes roomsSnapshot builder:

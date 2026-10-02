@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import 'edit_profile_screen.dart';
 import '../widgets/feed_update_card.dart';
+import '../widgets/bento_profile_header.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -153,15 +155,18 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
-  String _formatNumber(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    } else if (count >= 10000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    } else if (count >= 1000) {
-      return count.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+
+
+  Future<void> _launchSocialUrl(String? url, String prefix) async {
+    if (url == null || url.trim().isEmpty) return;
+    String fullUrl = url.trim();
+    if (!fullUrl.startsWith('http')) {
+      fullUrl = '$prefix${fullUrl.replaceAll('@', '')}';
     }
-    return count.toString();
+    final uri = Uri.tryParse(fullUrl);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -183,123 +188,22 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             return const Center(child: Text('Failed to load profile.'));
           }
 
-          final name = (profile['name'] as String?)?.isNotEmpty == true ? profile['name'] as String : 'Builder';
-          final bio = (profile['bio'] as String?) ?? '';
-          final city = (profile['city'] as String?) ?? '';
-          final avatarUrl = profile['avatar'] as String?;
-          final coverUrl = profile['cover_url'] as String?;
-          final isVerified = profile['is_verified_expert'] == true;
-          
           final followerCount = (profile['followerCount'] as int?) ?? 0;
-          final followingCount = (profile['followingCount'] as int?) ?? 0;
           final postsCount = (profile['postsCount'] as int?) ?? 0;
-
-          // Format real joined date from user account
-          String joinedText = 'Joined';
-          final createdAtStr = profile['created_at'] as String?;
-          if (createdAtStr != null) {
-            final dt = DateTime.tryParse(createdAtStr);
-            if (dt != null) {
-              const months = [
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
-              ];
-              joinedText = 'Joined ${months[dt.month - 1]} ${dt.year}';
-            }
-          }
-
-          // Handle username/handle format
-          String handle = '@${name.toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '')}';
-          if (profile['username'] != null && (profile['username'] as String).trim().isNotEmpty) {
-            final u = (profile['username'] as String).trim();
-            handle = u.startsWith('@') ? u : '@$u';
-          } else if (profile['twitter'] != null && (profile['twitter'] as String).trim().isNotEmpty) {
-            final t = (profile['twitter'] as String).trim();
-            handle = t.startsWith('@') ? t : '@$t';
-          }
 
           return NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
-                // Top AppBar with Cover Banner
-                SliverAppBar(
-                  expandedHeight: 140.0,
-                  pinned: true,
-                  backgroundColor: context.themeColors.background,
-                  elevation: 0,
-                  iconTheme: IconThemeData(color: context.themeColors.textPrimary),
-                  leading: IconButton(
-                    icon: Icon(Icons.arrow_back, color: context.themeColors.textPrimary),
-                    onPressed: () {
-                      if (Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                  ),
-                  title: innerBoxIsScrolled ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                    SliverToBoxAdapter(
+                      child: Column(
                         children: [
-                          Flexible(
-                            child: Text(
-                              name,
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.verified, color: Color(0xFF1D9BF0), size: 16),
-                        ],
-                      ),
-                      Text(
-                        '${_formatNumber(postsCount)} posts',
-                        style: TextStyle(fontSize: 12, color: context.themeColors.textTertiary, fontWeight: FontWeight.normal),
-                      ),
-                    ],
-                  ) : null,
-                  actions: [
-                    IconButton(
-                      icon: Icon(LucideIcons.compass, color: context.themeColors.textPrimary, size: 22),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      icon: Icon(LucideIcons.search, color: context.themeColors.textPrimary, size: 22),
-                      onPressed: () {},
-                    ),
-                  ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade900,
-                        image: DecorationImage(
-                          image: (coverUrl != null && coverUrl.isNotEmpty)
-                              ? NetworkImage(coverUrl)
-                              : const NetworkImage('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                
-                // Profile Information (Avatar, Edit Profile, Bio, Metas, Stats)
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Avatar & Edit Profile Button Row
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            height: 48,
-                            padding: const EdgeInsets.only(top: 8, right: 16),
-                            alignment: Alignment.topRight,
-                            child: OutlinedButton(
-                              onPressed: () async {
+                          const SizedBox(height: 24),
+                          BentoProfileHeader(
+                            profile: profile,
+                            projectsCount: postsCount, // Since it's their own profile, we show posts count for now.
+                            followerCount: followerCount,
+                            isOwnProfile: true,
+                            onEditProfile: () async {
                                 final result = await Navigator.of(context).push(
                                   MaterialPageRoute(builder: (context) => const EditProfileScreen()),
                                 );
@@ -308,193 +212,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                     _loadData();
                                   });
                                 }
-                              },
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: context.themeColors.borderSubtle, width: 1.2),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
-                                minimumSize: const Size(0, 36),
-                                backgroundColor: Colors.transparent,
-                              ),
-                              child: Text(
-                                'Edit profile',
-                                style: TextStyle(
-                                  color: context.themeColors.textPrimary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
+                            },
+                            onLaunchUrl: _launchSocialUrl,
                           ),
-                          Positioned(
-                            top: -38,
-                            left: 16,
-                            child: Container(
-                              width: 82,
-                              height: 82,
-                              decoration: BoxDecoration(
-                                color: context.themeColors.surfaceHighlight,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: context.themeColors.background, width: 4),
-                                image: (avatarUrl != null && avatarUrl.isNotEmpty) 
-                                  ? DecorationImage(image: NetworkImage(avatarUrl), fit: BoxFit.cover)
-                                  : null,
-                              ),
-                              child: (avatarUrl == null || avatarUrl.isEmpty)
-                                  ? Center(
-                                      child: Text(
-                                        name.isNotEmpty ? name[0].toUpperCase() : 'B',
-                                        style: TextStyle(
-                                          color: context.themeColors.textPrimary,
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                          ),
+                          const SizedBox(height: 24),
                         ],
                       ),
-                      
-                      // Name & Verified Badge & Username
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    name,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900,
-                                      color: context.themeColors.textPrimary,
-                                      letterSpacing: -0.4,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (isVerified) ...[
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.verified, color: Color(0xFF1D9BF0), size: 20),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              handle,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: context.themeColors.textTertiary,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      // Rich Bio with highlighted links / mentions
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: _buildRichBio(bio, context),
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      // Metadata (City / Location, Joined Date)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Wrap(
-                          spacing: 12,
-                          runSpacing: 6,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            if (city.isNotEmpty)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(LucideIcons.mapPin, size: 15, color: context.themeColors.textTertiary),
-                                  const SizedBox(width: 4),
-                                  Text(city, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 14)),
-                                ],
-                              ),
-                            if (profile['website'] != null && (profile['website'] as String).isNotEmpty)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(LucideIcons.link, size: 15, color: context.themeColors.textTertiary),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    profile['website'].toString().replaceAll(RegExp(r'https?://'), ''),
-                                    style: const TextStyle(color: Color(0xFF1D9BF0), fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(LucideIcons.calendar, size: 15, color: context.themeColors.textTertiary),
-                                const SizedBox(width: 4),
-                                Text(joinedText, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 14)),
-                                const SizedBox(width: 2),
-                                Icon(Icons.chevron_right, size: 16, color: context.themeColors.textTertiary),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 14),
-                      
-                      // Following & Followers count row
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: '${_formatNumber(followingCount)} ',
-                                    style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                                  ),
-                                  TextSpan(
-                                    text: 'Following',
-                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 15),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: '${_formatNumber(followerCount)} ',
-                                    style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
-                                  ),
-                                  TextSpan(
-                                    text: 'Followers',
-                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 15),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 14),
-                    ],
-                  ),
-                ),
-                
-                // Tabs: Posts ∨, Replies, Reposts, Media
+                    ),
+                    
+                    // Tabs: Posts ∨, Replies, Reposts, Media
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(

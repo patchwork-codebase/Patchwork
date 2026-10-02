@@ -23,12 +23,12 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   try {
-    await NotificationService().init();
-
     await Supabase.initialize(
       url: SupabaseConfig.url,
       anonKey: SupabaseConfig.anonKey,
     );
+    
+    await NotificationService().init();
 
     runApp(
       const ProviderScope(

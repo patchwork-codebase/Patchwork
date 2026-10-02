@@ -48,6 +48,7 @@ class NotificationService {
 
   Future<void> init() async {
     _initLocalNotifications();
+    _setupRealtimeNotifications();
 
     try {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -58,6 +59,67 @@ class NotificationService {
     } catch (e) {
       debugPrint('[FCM] Firebase init failed: $e');
     }
+  }
+
+  void _setupRealtimeNotifications() {
+    // Listen for sign-in state to setup the realtime channel
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final user = data.session?.user;
+      if (user != null) {
+        Supabase.instance.client
+            .channel('public:notifications:${user.id}')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: 'notifications',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'user_id',
+                value: user.id,
+              ),
+              callback: _handleRealtimeNotification,
+            )
+            .subscribe();
+      }
+    });
+  }
+
+  void _handleRealtimeNotification(PostgresChangePayload payload) async {
+    final notification = payload.newRecord;
+    final type = notification['type'] as String?;
+    final metadata = notification['metadata'] as Map<String, dynamic>?;
+    
+    String title = 'New notification';
+    String body = 'You have a new notification on Patchwork';
+    Map<String, dynamic> data = {'type': type};
+    
+    // We fetch the actor name to make the notification look nice
+    final actorId = notification['actor_id'];
+    String actorName = 'Someone';
+    if (actorId != null) {
+      try {
+        final res = await Supabase.instance.client.from('users').select('name').eq('id', actorId).maybeSingle();
+        if (res != null) actorName = res['name'] as String;
+      } catch (_) {}
+    }
+
+    if (type == 'new_message') {
+      title = '$actorName sent a message';
+      body = metadata?['message_preview'] ?? 'New message in ${metadata?['room_title'] ?? 'a room'}';
+      data['room_id'] = metadata?['room_id'];
+      data['room_title'] = metadata?['room_title'];
+    } else if (type == 'reaction' || type == 'update_posted') {
+      title = 'New update activity';
+      body = '$actorName interacted with your update';
+      data['update_id'] = metadata?['update_id'];
+    }
+
+    // Only show if we aren't currently IN the chat room
+    showLocalNotification(
+      title: title,
+      body: body,
+      data: data,
+    );
   }
 
   void _initLocalNotifications() {

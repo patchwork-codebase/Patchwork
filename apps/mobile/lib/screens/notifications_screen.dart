@@ -116,6 +116,46 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _handleInlineReaction(Map<String, dynamic> notif, String reactionType) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final roomId = notif['metadata']?['room_id'];
+    final updateId = notif['metadata']?['update_id'];
+    if (roomId == null || updateId == null) return;
+
+    final reactionId = '$roomId-reaction-$reactionType-${user.id}-${DateTime.now().millisecondsSinceEpoch}';
+
+    try {
+      await Supabase.instance.client.from('reactions').insert({
+        'id': reactionId,
+        'room_id': roomId,
+        'update_id': updateId,
+        'observer_id': user.id,
+        'observer_name': user.userMetadata?['name'] ?? 'Observer',
+        'type': reactionType,
+        'text': reactionType,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Reaction sent!'), duration: Duration(seconds: 1)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to send reaction'), duration: Duration(seconds: 2)));
+      }
+    }
+  }
+
+  String _formatShortTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inSeconds < 60) return '${diff.inSeconds}s';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+    if (diff.inHours < 24) return '${diff.inHours}h';
+    if (diff.inDays < 7) return '${diff.inDays}d';
+    return '${date.day}/${date.month}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,9 +251,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 );
               }
 
-              return ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              return ListView.separated(
+                separatorBuilder: (context, index) => Divider(
+                  color: Colors.white.withOpacity(0.05),
+                  height: 1,
+                  indent: 16,
+                  endIndent: 16,
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: notifications.length,
                 itemBuilder: (context, index) {
                   final notif = notifications[index];
@@ -227,298 +272,233 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                   IconData notifIcon = LucideIcons.bell;
                   Color notifColor = context.themeColors.textSecondary;
-                  Widget messageWidget = const SizedBox.shrink();
+                  String actionText = 'sent you a notification';
+                  String contextText = '';
+                  String? previewText;
 
                   if (type == 'reaction') {
                     final rType = metadata['reaction_type'];
                     if (rType == 'reply') {
                       notifIcon = LucideIcons.messageCircle;
-                      notifColor = Colors.blueAccent;
-                      messageWidget = RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: context.themeColors.textSecondary,
-                              height: 1.4),
-                          children: [
-                            TextSpan(
-                                text: '${actor['name'] ?? 'Someone'}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        context.themeColors.textPrimary)),
-                            const TextSpan(
-                                text: ' replied to your update in '),
-                            TextSpan(
-                                text: metadata['room_title'] ?? 'a room',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        context.themeColors.textPrimary)),
-                            const TextSpan(text: '.\n\n"'),
-                            TextSpan(
-                                text: metadata['reaction_text'] ?? '',
-                                style: const TextStyle(
-                                    fontStyle: FontStyle.italic)),
-                            const TextSpan(text: '"'),
-                          ],
-                        ),
-                      );
+                      notifColor = context.themeColors.primary500;
+                      actionText = 'replied to your update in';
+                      contextText = metadata['room_title'] ?? 'a room';
+                      previewText = metadata['reaction_text'];
                     } else {
                       notifIcon = LucideIcons.heart;
-                      notifColor = Colors.redAccent;
-                      messageWidget = RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: context.themeColors.textSecondary,
-                              height: 1.4),
-                          children: [
-                            TextSpan(
-                                text: '${actor['name'] ?? 'Someone'}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        context.themeColors.textPrimary)),
-                            const TextSpan(text: ' reacted with '),
-                            TextSpan(
-                                text: metadata['reaction_text'] ?? rType,
-                                style: const TextStyle(fontSize: 16)),
-                            const TextSpan(text: ' to your update in '),
-                            TextSpan(
-                                text: metadata['room_title'] ?? 'a room',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        context.themeColors.textPrimary)),
-                            const TextSpan(text: '.'),
-                          ],
-                        ),
-                      );
+                      notifColor = Colors.pinkAccent;
+                      actionText = 'reacted to your update in';
+                      contextText = metadata['room_title'] ?? 'a room';
+                      previewText = metadata['reaction_text'] ?? rType;
                     }
                   } else if (type == 'room_follow') {
                     notifIcon = LucideIcons.eye;
-                    notifColor = context.themeColors.primary400;
-                    messageWidget = RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: context.themeColors.textSecondary,
-                            height: 1.4),
-                        children: [
-                          TextSpan(
-                              text: '${actor['name'] ?? 'Someone'}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.themeColors.textPrimary)),
-                          const TextSpan(
-                              text: ' started observing your room '),
-                          TextSpan(
-                              text: metadata['room_title'] ?? '',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.themeColors.textPrimary)),
-                          const TextSpan(text: '.'),
-                        ],
-                      ),
-                    );
+                    notifColor = Colors.greenAccent;
+                    actionText = 'started following';
+                    contextText = metadata['room_title'] ?? 'a room';
                   } else if (type == 'update_posted') {
                     notifIcon = LucideIcons.bellRing;
+                    notifColor = Colors.amberAccent;
+                    actionText = 'posted a new update in';
+                    contextText = metadata['room_title'] ?? 'a room';
+                    previewText = metadata['update_text'];
+                  } else if (type == 'decision_updated' || type == 'decision') {
+                    notifIcon = LucideIcons.fileText;
                     notifColor = Colors.purpleAccent;
-                    messageWidget = RichText(
-                      text: TextSpan(
-                        style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.4),
-                        children: [
-                          TextSpan(text: '${actor['name'] ?? 'Someone'}', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                          const TextSpan(text: ' posted a new update in '),
-                          TextSpan(text: metadata['room_title'] ?? 'a room', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                          if (metadata['update_text'] != null) ...[
-                            const TextSpan(text: ':\n\n"'),
-                            TextSpan(text: metadata['update_text'].toString().length > 50 ? '${metadata['update_text'].toString().substring(0, 50)}...' : metadata['update_text'], style: const TextStyle(fontStyle: FontStyle.italic)),
-                            const TextSpan(text: '"'),
-                          ]
-                        ],
-                      ),
-                    );
-                  } else if (type == 'decision_updated') {
-                    notifIcon = LucideIcons.gitMerge;
-                    notifColor = Colors.orangeAccent;
-                    messageWidget = RichText(
-                      text: TextSpan(
-                        style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.4),
-                        children: [
-                          TextSpan(text: '${actor['name'] ?? 'Someone'}', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                          const TextSpan(text: ' updated a decision in '),
-                          TextSpan(text: metadata['room_title'] ?? 'a room', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                        ],
-                      ),
-                    );
+                    actionText = 'updated a decision in';
+                    contextText = metadata['room_title'] ?? 'a room';
+                    previewText = metadata['decision_text'];
                   } else if (type == 'bounty_pitch') {
                     notifIcon = LucideIcons.target;
                     notifColor = Colors.cyanAccent;
-                    messageWidget = RichText(
-                      text: TextSpan(
-                        style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.4),
-                        children: [
-                          TextSpan(text: '${actor['name'] ?? 'Someone'}', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                          const TextSpan(text: ' wants to build your idea! '),
-                        ],
-                      ),
-                    );
-                  } else {
-                    notifIcon = LucideIcons.info;
-                    notifColor = Colors.grey;
-                    messageWidget = Text(
-                      'New $type notification.',
-                      style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary),
-                    );
+                    actionText = 'wants to build your idea!';
+                  } else if (type == 'new_message') {
+                    notifIcon = LucideIcons.messageCircle;
+                    notifColor = Colors.blueAccent;
+                    actionText = 'sent a message in';
+                    contextText = metadata['room_title'] ?? 'a room';
+                    previewText = metadata['message_preview'];
                   }
 
-                  final bool isNavigable =
-                      (type == 'reaction' && metadata['update_id'] != null) ||
-                      (type == 'update_posted' && metadata['update_id'] != null) ||
-                      type == 'bounty_pitch' ||
-                          (type == 'room_follow' &&
-                              metadata['room_id'] != null);
+                  final bool isUpdate = type == 'update_posted';
+                  final actorName = actor['name'] ?? 'Someone';
 
                   return GestureDetector(
                     onTap: () {
                       if (!isRead) _markAsRead(notif['id']);
                       _navigateToNotification(notif);
                     },
+                    behavior: HitTestBehavior.opaque,
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isRead
-                            ? Colors.white.withOpacity(0.01)
-                            : Colors.white.withOpacity(0.04),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isRead
-                              ? Colors.white.withOpacity(0.05)
-                              : context.themeColors.primary500
-                                  .withOpacity(0.4),
-                          width: isRead ? 1 : 1.5,
-                        ),
-                        boxShadow: isRead
-                            ? null
-                            : [
-                                BoxShadow(
-                                    color: context.themeColors.primary500
-                                        .withOpacity(0.1),
-                                    blurRadius: 10)
-                              ],
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      color: isRead
+                          ? Colors.transparent
+                          : context.themeColors.primary500.withOpacity(0.05),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Actor Avatar — tapping opens their profile
-                          GestureDetector(
-                            onTap: () {
-                              if (notif['actor_id'] != null) {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PublicProfileScreen(
-                                          userId: notif['actor_id']),
-                                    ));
-                              }
-                            },
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: context.themeColors.surfaceHighlight,
-                                border: Border.all(
-                                    color: context.themeColors.borderSubtle),
-                                image: actor['avatar'] != null &&
-                                        actor['avatar']
-                                            .toString()
-                                            .isNotEmpty
-                                    ? DecorationImage(
-                                        image: NetworkImage(actor['avatar']),
-                                        fit: BoxFit.cover)
-                                    : null,
-                              ),
-                              child: (actor['avatar'] == null ||
-                                      actor['avatar'].toString().isEmpty)
-                                  ? Center(
-                                      child: Text(
-                                          (actor['name'] ?? '?')
-                                              .substring(0, 1)
-                                              .toUpperCase(),
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: context
-                                                  .themeColors.textPrimary)))
-                                  : null,
-                            ),
+                          // GUTTER: Action Icon
+                          Container(
+                            width: 32,
+                            alignment: Alignment.topRight,
+                            padding: const EdgeInsets.only(right: 8, top: 4),
+                            child: Icon(notifIcon, size: 20, color: notifColor),
                           ),
-                          const SizedBox(width: 12),
-                          // Content
+                          
+                          // CONTENT AREA
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // Avatar and Header Row
                                 Row(
                                   children: [
-                                    Icon(notifIcon,
-                                        size: 14,
-                                        color: isRead
-                                            ? context
-                                                .themeColors.textTertiary
-                                            : notifColor),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      timeago.format(createdAt),
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: isRead
-                                              ? FontWeight.normal
-                                              : FontWeight.bold,
-                                          color: isRead
-                                              ? context
-                                                  .themeColors.textTertiary
-                                              : context
-                                                  .themeColors.primary400),
-                                    ),
-                                    const Spacer(),
-                                    if (!isRead)
-                                      Container(
-                                        width: 8,
-                                        height: 8,
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (notif['actor_id'] != null) {
+                                          Navigator.push(context, MaterialPageRoute(builder: (context) => PublicProfileScreen(userId: notif['actor_id'])));
+                                        }
+                                      },
+                                      child: Container(
+                                        width: 24,
+                                        height: 24,
+                                        margin: const EdgeInsets.only(right: 8),
                                         decoration: BoxDecoration(
-                                          color:
-                                              context.themeColors.primary500,
                                           shape: BoxShape.circle,
+                                          color: context.themeColors.surfaceHighlight,
+                                          image: actor['avatar'] != null && actor['avatar'].toString().isNotEmpty
+                                              ? DecorationImage(image: NetworkImage(actor['avatar']), fit: BoxFit.cover)
+                                              : null,
+                                        ),
+                                        child: (actor['avatar'] == null || actor['avatar'].toString().isEmpty)
+                                            ? Center(child: Text(actorName.substring(0, 1).toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)))
+                                            : null,
+                                      ),
+                                    ),
+                                    
+                                    Expanded(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.4),
+                                          children: [
+                                            TextSpan(text: actorName, style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                                            TextSpan(text: ' $actionText '),
+                                            if (contextText.isNotEmpty)
+                                              TextSpan(text: contextText, style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                                          ],
                                         ),
                                       ),
-                                    if (isNavigable) ...[
-                                      const SizedBox(width: 8),
-                                      Icon(LucideIcons.chevronRight,
-                                          size: 14,
-                                          color: context
-                                              .themeColors.textTertiary),
-                                    ],
+                                    ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-                                messageWidget,
+                                
+                                // RICH PREVIEW
+                                if (previewText != null && previewText.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    previewText,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: context.themeColors.textSecondary.withOpacity(0.9),
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+
+                                // INLINE ACTION BAR (Only for update_posted)
+                                if (isUpdate) ...[
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Reply
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (!isRead) _markAsRead(notif['id']);
+                                          _navigateToNotification(notif);
+                                        },
+                                        behavior: HitTestBehavior.opaque,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(LucideIcons.messageCircle, size: 16, color: context.themeColors.textTertiary),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      // Repost
+                                      GestureDetector(
+                                        onTap: () => _handleInlineReaction(notif, 'repost'),
+                                        behavior: HitTestBehavior.opaque,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(LucideIcons.repeat, size: 16, color: context.themeColors.textTertiary),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      // Like
+                                      GestureDetector(
+                                        onTap: () => _handleInlineReaction(notif, 'heart'),
+                                        behavior: HitTestBehavior.opaque,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(LucideIcons.heart, size: 16, color: context.themeColors.textTertiary),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      // Bookmark
+                                      GestureDetector(
+                                        onTap: () => _handleInlineReaction(notif, 'bookmark'),
+                                        behavior: HitTestBehavior.opaque,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(LucideIcons.bookmark, size: 16, color: context.themeColors.textTertiary),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      // Spacer for alignment
+                                      const SizedBox(width: 16),
+                                    ],
+                                  ),
+                                ],
                               ],
+                            ),
+                          ),
+                          
+                          // TIMESTAMP
+                          Container(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Text(
+                              _formatShortTimeAgo(createdAt),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isRead ? context.themeColors.textTertiary : context.themeColors.primary400,
+                                fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     )
                         .animate()
-                        .fadeIn(
-                            duration: 300.ms, delay: (index * 40).ms)
-                        .slideX(
-                            begin: 0.1,
-                            end: 0,
-                            curve: Curves.easeOut),
+                        .fadeIn(duration: 300.ms, delay: (index * 40).ms)
+                        .slideX(begin: 0.05, end: 0, curve: Curves.easeOut),
                   );
                 },
               );

@@ -19,6 +19,7 @@ import 'recent_activity_list.dart';
 import 'dashboard_achievements.dart';
 import 'feed_update_card.dart';
 import 'skeleton_loaders.dart';
+import '../utils/page_routes.dart';
 
 class DashboardOverview extends ConsumerStatefulWidget {
   const DashboardOverview({super.key});
@@ -192,14 +193,14 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 64, // Fixed height for action cards
+                    height: 64,
                     child: _buildActionCard(
                       title: "New Update",
                       icon: LucideIcons.zap,
-                      color: Colors.amber,
+                      color: context.themeColors.primary500,
                       onTap: () {
                         HapticFeedback.lightImpact();
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateUpdateScreen())).then((_) => _fetchData());
+                        Navigator.of(context).push(PremiumPageRoute(page: const CreateUpdateScreen())).then((_) => _fetchData());
                       },
                     ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
                   ),
@@ -207,14 +208,14 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: SizedBox(
-                    height: 64, // Fixed height for action cards
+                    height: 64,
                     child: _buildActionCard(
                       title: "New Room",
                       icon: LucideIcons.box,
-                      color: context.themeColors.primary400,
+                      color: context.themeColors.textPrimary,
                       onTap: () {
                         HapticFeedback.lightImpact();
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateRoomScreen())).then((_) => _fetchData());
+                        Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData());
                       },
                     ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
                   ),
@@ -373,7 +374,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())).then((_) => _fetchData());
+            Navigator.push(context, PremiumPageRoute(page: const NotificationsScreen())).then((_) => _fetchData());
           },
           child: Container(
             width: 40,
@@ -409,8 +410,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E211D), // Dark olive/grey from screenshot
+        color: context.themeColors.surfaceHighlight.withOpacity(0.5),
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: context.themeColors.borderSubtle),
       ),
       child: Stack(
         children: [
@@ -429,7 +431,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     height: 160,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
+                      border: Border.all(color: context.themeColors.primary500.withOpacity(0.05), width: 1),
                     ),
                   ),
                   Container(
@@ -437,7 +439,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                      border: Border.all(color: context.themeColors.primary500.withOpacity(0.1), width: 1),
                     ),
                   ),
                   Container(
@@ -445,17 +447,23 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                      border: Border.all(color: context.themeColors.primary500.withOpacity(0.2), width: 1),
                     ),
                   ),
                   Container(
                     width: 48,
                     height: 48,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFF5733), // Vibrant orange
+                    decoration: BoxDecoration(
+                      color: context.themeColors.primary500,
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.themeColors.primary500.withOpacity(0.3),
+                          blurRadius: 12,
+                        ),
+                      ]
                     ),
-                    child: const Icon(LucideIcons.zap, color: Colors.white, size: 20),
+                    child: Icon(LucideIcons.zap, color: context.themeColors.surface, size: 20),
                   ),
                 ],
               ),
@@ -467,12 +475,12 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'YOUR MOMENTUM',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white54,
+                    color: context.themeColors.textTertiary,
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -482,39 +490,38 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                   children: [
                     Text(
                       '$_currentStreak',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: context.themeColors.textPrimary,
                         height: 1.0,
                         letterSpacing: -2,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DAY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
-                        Text('STREAK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text('DAY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+                        Text('STREAK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
                       ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   "You're building consistently. Keep the signal\nalive.",
-                  style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.5),
+                  style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary, height: 1.5),
                 ),
                 const SizedBox(height: 24),
-                Divider(color: Colors.white.withOpacity(0.1)),
+                Divider(color: context.themeColors.borderSubtle),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: List.generate(7, (index) {
                     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                    // Assume index 5 is today, 6 is tomorrow for visual match with screenshot
                     final val = _weeklyActivity[index];
-                    final isToday = index == 5; // Fixed based on screenshot layout
+                    final isToday = index == 5; 
                     
                     Widget circle;
                     if (isToday) {
@@ -523,14 +530,14 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         height: 24,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFFF5733), width: 2),
+                          border: Border.all(color: context.themeColors.primary500, width: 2),
                         ),
                         child: Center(
                           child: Container(
                             width: 10,
                             height: 10,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFF5733),
+                            decoration: BoxDecoration(
+                              color: context.themeColors.primary500,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -541,10 +548,10 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: context.themeColors.primary500.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(LucideIcons.check, size: 12, color: Colors.greenAccent),
+                        child: Icon(LucideIcons.check, size: 12, color: context.themeColors.primary500),
                       );
                     } else {
                       circle = Container(
@@ -552,7 +559,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         height: 24,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          border: Border.all(color: context.themeColors.borderSubtle),
                         ),
                       );
                     }
@@ -563,7 +570,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         const SizedBox(height: 8),
                         Text(
                           days[index],
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isToday ? const Color(0xFFFF5733) : Colors.white54),
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isToday ? context.themeColors.primary500 : context.themeColors.textTertiary),
                         ),
                       ],
                     );
@@ -934,7 +941,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                               ElevatedButton(
                                 onPressed: () {
                                    Navigator.of(context).pop();
-                                   Navigator.of(context).push(MaterialPageRoute(builder: (context) => RoomDetailScreen(roomId: room['id'], title: room['title'] ?? 'Untitled')));
+                                   Navigator.of(context).push(PremiumPageRoute(page: RoomDetailScreen(roomId: room['id'], title: room['title'] ?? 'Untitled')));
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: context.themeColors.primary500,
@@ -1058,14 +1065,14 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF1E211D) : Colors.transparent,
+                color: isActive ? context.themeColors.textPrimary : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isActive ? const Color(0xFF1E211D) : context.themeColors.borderSubtle),
+                border: Border.all(color: isActive ? context.themeColors.textPrimary : context.themeColors.borderSubtle),
               ),
               child: Text(
                 room['title'] ?? 'Untitled',
                 style: TextStyle(
-                  color: isActive ? Colors.white : context.themeColors.textSecondary,
+                  color: isActive ? context.themeColors.surface : context.themeColors.textSecondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
@@ -1399,7 +1406,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateRoomScreen())).then((_) => _fetchData()),
+            onPressed: () => Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData()),
             style: ElevatedButton.styleFrom(
               backgroundColor: context.themeColors.primary500,
               foregroundColor: Colors.white,

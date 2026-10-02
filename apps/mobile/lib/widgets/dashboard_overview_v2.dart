@@ -16,6 +16,7 @@ import 'recent_activity_list.dart';
 import 'dashboard_achievements.dart';
 import 'feed_update_card.dart';
 import 'skeleton_loaders.dart';
+import '../utils/page_routes.dart';
 
 class DashboardOverview extends StatefulWidget {
   const DashboardOverview({super.key});
@@ -248,7 +249,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                             color: Colors.amber,
                             onTap: () {
                               HapticFeedback.lightImpact();
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateUpdateScreen())).then((_) => _fetchData());
+                              Navigator.of(context).push(PremiumPageRoute(page: const CreateUpdateScreen())).then((_) => _fetchData());
                             },
                           ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
                         ),
@@ -260,7 +261,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                             color: context.themeColors.primary400,
                             onTap: () {
                               HapticFeedback.lightImpact();
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateRoomScreen())).then((_) => _fetchData());
+                              Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData());
                             },
                           ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
                         ),
@@ -401,7 +402,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())).then((_) => _fetchData());
+            Navigator.push(context, PremiumPageRoute(page: const NotificationsScreen())).then((_) => _fetchData());
           },
           child: Container(
             width: 40,
@@ -888,7 +889,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                               ElevatedButton(
                                 onPressed: () {
                                    Navigator.of(context).pop();
-                                   Navigator.of(context).push(MaterialPageRoute(builder: (context) => RoomDetailScreen(roomId: room['id'], title: room['title'] ?? 'Untitled')));
+                                   Navigator.of(context).push(PremiumPageRoute(page: RoomDetailScreen(roomId: room['id'], title: room['title'] ?? 'Untitled')));
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: context.themeColors.primary500,
@@ -1321,7 +1322,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateRoomScreen())).then((_) => _fetchData()),
+            onPressed: () => Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData()),
             style: ElevatedButton.styleFrom(
               backgroundColor: context.themeColors.primary500,
               foregroundColor: Colors.white,

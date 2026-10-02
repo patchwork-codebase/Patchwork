@@ -7,7 +7,9 @@ import '../theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/feed_update_card.dart';
+import '../services/cache_service.dart';
 import '../widgets/empty_state.dart';
+import '../utils/page_routes.dart';
 import '../widgets/skeleton_loaders.dart';
 import 'create_update_screen.dart';
 import 'notifications_screen.dart';
@@ -188,11 +190,31 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _fetchInitialFeed() async { HapticFeedback.mediumImpact();
+    // 1. Try to load from cache immediately for instant startup
+    try {
+      final cachedData = await CacheService().getJson(CacheService.keyFeedUpdates);
+      if (cachedData != null && cachedData is List && _updates.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _updates.clear();
+            _updates.addAll(List<Map<String, dynamic>>.from(cachedData));
+            _isLoading = false; // We have data, so stop initial loading spinner
+          });
+        }
+      }
+    } catch (e) {
+      print('Cache read error: $e');
+    }
+
+    if (_updates.isEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+    
     setState(() {
-      _isLoading = true;
       _hasMore = true;
       _errorMessage = null;
-      _updates.clear();
     });
 
     try {
@@ -200,16 +222,22 @@ class _FeedScreenState extends State<FeedScreen> {
 
       if (mounted) {
         setState(() {
+          _updates.clear();
           _updates.addAll(List<Map<String, dynamic>>.from(response));
           _hasMore = _updates.length == _pageSize;
           _isLoading = false;
         });
+        // 2. Save the fresh data to cache for next time
+        CacheService().saveJson(CacheService.keyFeedUpdates, _updates);
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = "Failed to connect. Please check your internet connection.";
+          // Only show error if we have NO cached data
+          if (_updates.isEmpty) {
+            _errorMessage = "Failed to connect. Please check your internet connection.";
+          }
         });
       }
     }
@@ -326,7 +354,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       padding: const EdgeInsets.only(right: 16),
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen())).then((_) => _fetchUnreadNotifications());
+                          Navigator.push(context, PremiumPageRoute(page: const NotificationsScreen())).then((_) => _fetchUnreadNotifications());
                         },
                         child: Container(
                           width: 40,
@@ -437,7 +465,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       description: 'Check back later or follow more builders to populate your feed.',
                       buttonText: 'Find Builders',
                       onButtonTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (c) => const ExploreScreen()));
+                        Navigator.push(context, PremiumPageRoute(page: const ExploreScreen()));
                       },
                     ),
                   )
@@ -471,8 +499,8 @@ class _FeedScreenState extends State<FeedScreen> {
                                 onReplyTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CreateUpdateScreen(
+                                    PremiumPageRoute(
+                                      page: CreateUpdateScreen(
                                         preselectedRoomId: update['room_id'],
                                         preselectedRoomTitle: update['rooms']?['title'],
                                         parentUpdateId: update['id'],
@@ -490,8 +518,8 @@ class _FeedScreenState extends State<FeedScreen> {
                             onReplyTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => CreateUpdateScreen(
+                                PremiumPageRoute(
+                                  page: CreateUpdateScreen(
                                     preselectedRoomId: update['room_id'],
                                     preselectedRoomTitle: update['rooms']?['title'],
                                     parentUpdateId: update['id'],
@@ -583,7 +611,7 @@ class _FeedScreenState extends State<FeedScreen> {
           heroTag: 'feed_fab',
           onPressed: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const CreateUpdateScreen()),
+              PremiumModalRoute(page: const CreateUpdateScreen()),
             ).then((_) {
               _fetchInitialFeed();
             });
@@ -665,7 +693,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ExploreScreen()),
+                      PremiumPageRoute(page: const ExploreScreen()),
                     );
                   },
                   child: Text('See all', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.themeColors.primary500)),
@@ -710,8 +738,8 @@ class _FeedScreenState extends State<FeedScreen> {
                   child: GestureDetector(
                     onTap: () {
                       if (builder['id'] != null) {
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => PublicProfileScreen(userId: builder['id'].toString()),
+                        Navigator.push(context, PremiumPageRoute(
+                          page: PublicProfileScreen(userId: builder['id'].toString()),
                         ));
                       }
                     },

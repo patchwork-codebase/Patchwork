@@ -1201,7 +1201,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF14161E), // Dark slate/black color
+                color: context.themeColors.background,
                 borderRadius: BorderRadius.circular(100),
                 boxShadow: [
                   BoxShadow(
