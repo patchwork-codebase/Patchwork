@@ -46,7 +46,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       profile = await client
           .from('users')
           .select(
-              '*, pinned_update:pinned_update_id(*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*)))')
+              '*, pinned_update:updates!pinned_update_id(*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*)))')
           .eq('id', widget.userId)
           .maybeSingle();
     } catch (_) {
@@ -111,7 +111,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     try {
       final res = await Supabase.instance.client
           .from('follows')
-          .select('id')
+          .select('follower_id')
           .eq('follower_id', currentUserId)
           .eq('following_id', widget.userId)
           .maybeSingle();
@@ -145,7 +145,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
             .eq('follower_id', currentUserId)
             .eq('following_id', widget.userId);
       } else {
-        await Supabase.instance.client.from('follows').insert({
+        await Supabase.instance.client.from('follows').upsert({
           'follower_id': currentUserId,
           'following_id': widget.userId,
         });

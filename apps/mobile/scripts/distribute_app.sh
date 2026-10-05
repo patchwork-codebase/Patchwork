@@ -30,12 +30,17 @@ fi
 
 # 3. Create GitHub Release
 echo "🐙 Creating GitHub Release v$VERSION_NAME..."
-# Assumes you are in a git repo tracking the patchwork project
-gh release create "v$VERSION_NAME" "$APK_PATH" \
-  --title "Patchwork Mobile v$VERSION_NAME" \
-  --notes "Automated release of Patchwork Mobile version $VERSION_NAME."
-
-echo "✅ Successfully uploaded APK to GitHub Releases!"
+if command -v gh &> /dev/null; then
+  gh release create "v$VERSION_NAME" "$APK_PATH" \
+    --title "Patchwork Mobile v$VERSION_NAME" \
+    --notes "Automated release of Patchwork Mobile version $VERSION_NAME."
+  echo "✅ Successfully uploaded APK to GitHub Releases!"
+else
+  echo "⚠️ GitHub CLI ('gh') is not installed or not in PATH."
+  echo "👉 APK is ready at: $APK_PATH"
+  echo "👉 You can upload it manually to: https://github.com/patchwork-codebase/Patchwork/releases/tag/v$VERSION_NAME"
+  echo "👉 Or install gh with: winget install --id GitHub.cli"
+fi
 
 # 4. (Optional) Upload to Firebase App Distribution for internal testers
 read -p "Do you want to distribute to Firebase App Distribution? (y/n): " UPLOAD_FIREBASE
