@@ -28,13 +28,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.24.3'
           channel: 'stable'
           cache: true
 
       - name: Install Dependencies
-        run: |
-          rm -f pubspec.lock
-          flutter pub get
+        run: flutter pub get
 
       - name: Build Android APK
         run: flutter build apk --release --android-skip-build-dependency-validation
