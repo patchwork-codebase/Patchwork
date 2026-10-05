@@ -25,7 +25,8 @@ subprojects {
         project.ext.flutter = [
             compileSdkVersion: 34,
             minSdkVersion: 21,
-            targetSdkVersion: 34
+            targetSdkVersion: 34,
+            ndkVersion: "26.1.10909125"
         ]
     }
 }
