@@ -55,7 +55,7 @@ class PremiumEmptyState extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: context.themeColors.textPrimary,
                 letterSpacing: -0.5,
@@ -69,7 +69,7 @@ class PremiumEmptyState extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: context.themeColors.textSecondary,
                 height: 1.5,
@@ -96,7 +96,7 @@ class PremiumEmptyState extends StatelessWidget {
                 child: Text(
                   buttonText!,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
                   ),
@@ -125,7 +125,7 @@ class PremiumEmptyState extends StatelessWidget {
       ),
       child: Icon(
         fallbackIcon ?? LucideIcons.inbox,
-        size: 64,
+        size: 54,
         color: context.themeColors.textTertiary,
       ),
     );

@@ -56,9 +56,30 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } on AuthException catch (e) {
-      _showError(e.message);
+      if (e.message.toLowerCase().contains('invalid login credentials')) {
+        try {
+          final emailExists = await Supabase.instance.client.rpc(
+            'check_email_exists',
+            params: {'email_address': _emailController.text.trim()},
+          );
+          if (emailExists == true) {
+            _showError('Incorrect password. Please try again.');
+          } else {
+            _showError('No account found with this email address.');
+          }
+        } catch (_) {
+          _showError(e.message); // Fallback to original if RPC fails
+        }
+      } else {
+        _showError(e.message);
+      }
     } catch (e) {
-      _showError('An unexpected error occurred.');
+      final errorStr = e.toString();
+      if (errorStr.contains('ClientException') || errorStr.contains('SocketException') || errorStr.contains('connection abort')) {
+        _showError('Network error. Please check your internet connection and try again.');
+      } else {
+        _showError('An unexpected error occurred.');
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -124,7 +145,12 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       _showError(e.message);
     } catch (e) {
-      _showError('An unexpected error occurred.');
+      final errorStr = e.toString();
+      if (errorStr.contains('ClientException') || errorStr.contains('SocketException') || errorStr.contains('connection abort')) {
+        _showError('Network error. Please check your internet connection and try again.');
+      } else {
+        _showError('An unexpected error occurred.');
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -181,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
             }),
           ),
           const SizedBox(height: 6),
-          Text(text, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+          Text(text, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -227,10 +253,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(LucideIcons.hammer, color: Colors.white, size: 18),
+                          child: const Icon(LucideIcons.hammer, color: Colors.white, size: 15),
                         ),
                         const SizedBox(width: 12),
-                        Text('patch·work', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -0.5)),
+                        Text('patch·work', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -0.5)),
                       ],
                     ),
                     const SizedBox(height: 40),
@@ -263,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 8),
                           Text(
                             _isLogin ? 'Sign in to your Patchwork account' : 'Join the founding cohort. Takes 30 seconds.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
                           ),
                           const SizedBox(height: 32),
 
@@ -278,9 +304,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(LucideIcons.alertCircle, color: Colors.red, size: 16),
+                                  const Icon(LucideIcons.alertCircle, color: Colors.red, size: 13),
                                   const SizedBox(width: 8),
-                                  Expanded(child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600))),
+                                  Expanded(child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.w600))),
                                 ],
                               ),
                             ),
@@ -294,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Expanded(
                                   child: TextField(
                                     controller: _fNameController,
-                                    decoration: const InputDecoration(hintText: 'First name', prefixIcon: Icon(LucideIcons.user, size: 18, color: AppTheme.slate400)),
+                                    decoration: const InputDecoration(hintText: 'First name', prefixIcon: Icon(LucideIcons.user, size: 15, color: AppTheme.slate400)),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -312,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(hintText: 'Email address', prefixIcon: Icon(LucideIcons.mail, size: 18, color: AppTheme.slate400)),
+                            decoration: const InputDecoration(hintText: 'Email address', prefixIcon: Icon(LucideIcons.mail, size: 15, color: AppTheme.slate400)),
                           ),
                           const SizedBox(height: 16),
 
@@ -322,9 +348,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             onChanged: (_) => setState(() {}),
                             decoration: InputDecoration(
                               hintText: _isLogin ? 'Password' : 'Password (min 8 characters)',
-                              prefixIcon: const Icon(LucideIcons.lock, size: 18, color: AppTheme.slate400),
+                              prefixIcon: const Icon(LucideIcons.lock, size: 15, color: AppTheme.slate400),
                               suffixIcon: IconButton(
-                                icon: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 18, color: AppTheme.slate400),
+                                icon: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 15, color: AppTheme.slate400),
                                 onPressed: () => setState(() => _showPassword = !_showPassword),
                               ),
                             ),
@@ -348,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     minimumSize: const Size(0, 0),
                                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  child: Text('Forgot password?', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.w700, fontSize: 13)),
+                                  child: Text('Forgot password?', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.w700, fontSize: 11)),
                                 ),
                               ),
                             )
@@ -364,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   children: [
                                     Text(_isLogin ? 'Sign in' : 'Create account — free'),
                                     const SizedBox(width: 8),
-                                    const Icon(LucideIcons.arrowRight, size: 16),
+                                    const Icon(LucideIcons.arrowRight, size: 13),
                                   ],
                                 ),
                           ),
@@ -376,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(child: Divider(color: context.themeColors.borderSubtle)),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text('OR CONTINUE WITH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.2)),
+                                child: Text('OR CONTINUE WITH', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.2)),
                               ),
                               Expanded(child: Divider(color: context.themeColors.borderSubtle)),
                             ],
@@ -387,7 +413,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(Icons.language, size: 18, color: Color(0xFF4285F4)),
+                                  icon: const Icon(Icons.language, size: 15, color: Color(0xFF4285F4)),
                                   label: Text('Google', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -401,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(Icons.work, size: 18, color: Color(0xFF0A66C2)),
+                                  icon: const Icon(Icons.work, size: 15, color: Color(0xFF0A66C2)),
                                   label: Text('LinkedIn', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -436,7 +462,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: _isLogin ? 'No account? ' : 'Already have an account? ',
-                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontFamily: 'Inter'),
+                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontFamily: 'Inter'),
                                     children: [
                                       TextSpan(
                                         text: _isLogin ? "Create one — it's free" : 'Sign in',
@@ -456,12 +482,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w500)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text('·', style: TextStyle(color: context.themeColors.textTertiary)),
                         ),
-                        Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ],

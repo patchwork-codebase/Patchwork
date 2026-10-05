@@ -148,11 +148,11 @@ class AppTheme {
       scaffoldBackgroundColor: colors.background,
       extensions: [colors],
       textTheme: bodyTextTheme.copyWith(
-        displayLarge: displayTextTheme.displayLarge?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w800, fontSize: 36, letterSpacing: -1.5),
-        displayMedium: displayTextTheme.displayMedium?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w800, fontSize: 26, letterSpacing: -1),
-        titleLarge: displayTextTheme.titleLarge?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: -0.5),
-        bodyLarge: bodyTextTheme.bodyLarge?.copyWith(color: colors.textPrimary, fontSize: 15, height: 1.5),
-        bodyMedium: bodyTextTheme.bodyMedium?.copyWith(color: colors.textSecondary, fontSize: 14, fontWeight: FontWeight.w500, height: 1.5),
+        displayLarge: displayTextTheme.displayLarge?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w800, fontSize: 30, letterSpacing: -1.5),
+        displayMedium: displayTextTheme.displayMedium?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -1),
+        titleLarge: displayTextTheme.titleLarge?.copyWith(color: colors.textPrimary, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.5),
+        bodyLarge: bodyTextTheme.bodyLarge?.copyWith(color: colors.textPrimary, fontSize: 12, height: 1.5),
+        bodyMedium: bodyTextTheme.bodyMedium?.copyWith(color: colors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500, height: 1.5),
       ),
       colorScheme: ColorScheme.fromSeed(
         seedColor: colors.primary500,
@@ -176,7 +176,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: colors.primary500, width: 2),
         ),
-        hintStyle: TextStyle(color: colors.textTertiary, fontSize: 15),
+        hintStyle: TextStyle(color: colors.textTertiary, fontSize: 12),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -186,7 +186,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.symmetric(vertical: 14),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
           elevation: 0,
         ),
       ),

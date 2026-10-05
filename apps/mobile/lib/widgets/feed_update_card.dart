@@ -122,7 +122,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   child: Icon(LucideIcons.edit, color: context.themeColors.primary500),
                 ),
                 title: Text('Repost with thoughts', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
-                subtitle: Text('Create a new update and quote this one', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)),
+                subtitle: Text('Create a new update and quote this one', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
                 onTap: () async {
                   Navigator.pop(context);
                   final result = await Navigator.of(context).push(
@@ -150,7 +150,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   child: Icon(LucideIcons.repeat, color: context.themeColors.primary500),
                 ),
                 title: Text('Repost instantly', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
-                subtitle: Text('Instantly share this to your feed', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)),
+                subtitle: Text('Instantly share this to your feed', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
                 onTap: () {
                   Navigator.pop(context);
                   _handleInstantRepost();
@@ -217,10 +217,10 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(color: context.themeColors.primary500.withOpacity(0.15), shape: BoxShape.circle),
-                              child: Icon(LucideIcons.check, color: context.themeColors.primary500, size: 40),
+                              child: Icon(LucideIcons.check, color: context.themeColors.primary500, size: 34),
                             ),
                             const SizedBox(height: 16),
-                            Text('Reposted!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                            Text('Reposted!', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                           ],
                         ),
                       ),
@@ -276,22 +276,22 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(color: Colors.cyanAccent.withOpacity(0.2), shape: BoxShape.circle),
-                        child: const Icon(LucideIcons.target, color: Colors.cyanAccent, size: 20),
+                        child: const Icon(LucideIcons.target, color: Colors.cyanAccent, size: 17),
                       ),
                       const SizedBox(width: 12),
-                      Text('Apply to Build This', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                      Text('Apply to Build This', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Pitch yourself! Why are you the right builder for this idea? Keep it short and sharp.',
-                    style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary),
+                    style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: pitchController,
                     maxLines: 4,
-                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11),
                     decoration: InputDecoration(
                       hintText: "E.g. I've built 3 Web3 wallets, I can ship the MVP in 2 weeks...",
                       hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -343,7 +343,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       ),
                       child: isSubmitting 
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('Submit Pitch', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          : const Text('Submit Pitch', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
                   ),
                 ],
@@ -516,7 +516,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('React', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+              const Text('React', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 24),
               Wrap(
                 spacing: 16,
@@ -533,7 +533,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       color: Colors.white.withOpacity(0.05),
                       shape: BoxShape.circle,
                     ),
-                    child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                    child: Text(emoji, style: const TextStyle(fontSize: 20)),
                   ),
                 ).animate()
                  .scale(delay: (emojis.indexOf(emoji) * 50).ms, duration: 600.ms, curve: Curves.elasticOut)
@@ -758,7 +758,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
           color: context.themeColors.primary500.withOpacity(0.8),
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.only(left: 24),
-          child: const Icon(LucideIcons.bookmark, color: Colors.white, size: 28),
+          child: const Icon(LucideIcons.bookmark, color: Colors.white, size: 23),
         ),
         secondaryBackground: Container(
           color: context.themeColors.surfaceHighlight, // Subtle color for premium feel
@@ -770,7 +770,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
               color: context.themeColors.primary500.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(LucideIcons.reply, color: context.themeColors.primary500, size: 20),
+            child: Icon(LucideIcons.reply, color: context.themeColors.primary500, size: 17),
           ),
         ),
         confirmDismiss: (direction) async {
@@ -830,7 +830,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                   padding: const EdgeInsets.only(left: 52, bottom: 6),
                   child: Row(
                     children: [
-                      Icon(LucideIcons.repeat, size: 13, color: context.themeColors.textTertiary),
+                      Icon(LucideIcons.repeat, size: 11, color: context.themeColors.textTertiary),
                       const SizedBox(width: 6),
                       GestureDetector(
                         onTap: () {
@@ -843,7 +843,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         child: Text(
                           (reposterId == currentUserId) ? 'You reposted' : '$reposterName reposted',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.w600,
                             color: context.themeColors.textTertiary,
                           ),
@@ -881,7 +881,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                             avatarUrl: finalAvatarUrl,
                             initials: authorName,
                             role: users['role']?.toString(),
-                            size: 40.0,
+                            size: 34,
                           ),
                         );
                       },
@@ -908,14 +908,14 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                 },
                                 child: Text(
                                   authorName,
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.themeColors.textPrimary),
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.textPrimary),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
                             if (users['is_verified_expert'] == true) ...[
                               const SizedBox(width: 4),
-                              Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 12),
+                              Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 10),
                                 if (users['organization_logo_url'] != null && users['organization_logo_url'].toString().trim().isNotEmpty) ...[
                                   const SizedBox(width: 4),
                                   ClipRRect(
@@ -938,16 +938,16 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                     : (users['twitter'] != null && users['twitter'].toString().trim().isNotEmpty)
                                         ? (users['twitter'].toString().trim().startsWith('@') ? users['twitter'].toString().trim() : '@${users['twitter'].toString().trim()}')
                                         : '@${authorName.toLowerCase().replaceAll(' ', '')}',
-                                style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                                style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Text('·', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                            Text('·', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
                             const SizedBox(width: 4),
                             Text(
                               timeago.format(createdAt, locale: 'en_short'),
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
                             ),
                           ],
                         ),
@@ -965,7 +965,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                 ),
                                 child: Text(
                                   typeUI['label'],
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: typeUI['color']),
+                                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: typeUI['color']),
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -974,7 +974,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                 decoration: BoxDecoration(color: context.themeColors.primary500.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
-                                child: Text('LAUNCH', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                                child: Text('LAUNCH', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
                               ),
                               const SizedBox(width: 6),
                             ],
@@ -982,7 +982,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                               Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                   decoration: BoxDecoration(color: context.themeColors.textPrimary, borderRadius: BorderRadius.circular(4)),
-                                  child: Text('In ${rooms['title']}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.surface)),
+                                  child: Text('In ${rooms['title']}', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.surface)),
                               ),
                           ],
                         ),
@@ -995,7 +995,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Icon(LucideIcons.trash2, size: 16, color: context.themeColors.textTertiary.withOpacity(0.5)),
+                        child: Icon(LucideIcons.trash2, size: 13, color: context.themeColors.textTertiary.withOpacity(0.5)),
                       ),
                     ),
                 ],
@@ -1021,12 +1021,12 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         }
                       },
                       styleSheet: MarkdownStyleSheet(
-                        p: TextStyle(fontSize: 13, color: context.themeColors.textPrimary, height: 1.4, letterSpacing: 0),
-                        h1: TextStyle(fontSize: 16, color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, height: 1.2),
-                        h2: TextStyle(fontSize: 14, color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, height: 1.2),
-                        h3: TextStyle(fontSize: 13, color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, height: 1.2),
+                        p: TextStyle(fontSize: 11, color: context.themeColors.textPrimary, height: 1.4, letterSpacing: 0),
+                        h1: TextStyle(fontSize: 13, color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, height: 1.2),
+                        h2: TextStyle(fontSize: 11, color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, height: 1.2),
+                        h3: TextStyle(fontSize: 11, color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, height: 1.2),
                         listBullet: TextStyle(color: context.themeColors.textPrimary),
-                        code: TextStyle(fontFamily: 'monospace', backgroundColor: Colors.transparent, color: context.themeColors.primary400, fontSize: 12),
+                        code: TextStyle(fontFamily: 'monospace', backgroundColor: Colors.transparent, color: context.themeColors.primary400, fontSize: 10),
                         codeblockDecoration: BoxDecoration(color: context.themeColors.surfaceHighlight, borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
@@ -1075,7 +1075,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                     child: CachedNetworkImage(
                                       imageUrl: origAvatar,
                                       fit: BoxFit.cover,
-                                      errorWidget: (c, e, s) => const Icon(LucideIcons.user, size: 12),
+                                      errorWidget: (c, e, s) => const Icon(LucideIcons.user, size: 10),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -1085,18 +1085,18 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                       children: [
                                         Text(
                                           origName,
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.themeColors.textPrimary),
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.textPrimary),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         if (origUser['is_verified_expert'] == true) ...[
                                           const SizedBox(width: 4),
-                                          Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 12),
+                                          Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 10),
                                         ],
                                         const SizedBox(width: 4),
                                         Flexible(
                                           child: Text(
                                             origUsername,
-                                            style: TextStyle(fontSize: 12, color: context.themeColors.textTertiary),
+                                            style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -1109,7 +1109,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                 const SizedBox(height: 8),
                                 Text(
                                   origContent,
-                                  style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary, height: 1.4),
+                                  style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.4),
                                   maxLines: 4,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1118,13 +1118,13 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Icon(LucideIcons.quote, size: 12, color: context.themeColors.textTertiary),
+                                    Icon(LucideIcons.quote, size: 10, color: context.themeColors.textTertiary),
                                     const SizedBox(width: 6),
                                     Text(
                                       origUpdate['update_type'] != null 
                                           ? 'Shared a ${origUpdate['update_type']}'
                                           : 'Reposted update',
-                                      style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: context.themeColors.textTertiary),
+                                      style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: context.themeColors.textTertiary),
                                     ),
                                   ],
                                 ),
@@ -1156,7 +1156,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         language: 'dart',
                         theme: githubTheme,
                         padding: const EdgeInsets.all(16),
-                        textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                        textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 11),
                       ),
                     ),
 
@@ -1183,7 +1183,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                             child: Container(
                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                decoration: BoxDecoration(color: Colors.cyanAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.cyanAccent.withOpacity(0.3))),
-                               child: const Text('🎯 Build This', style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                               child: const Text('🎯 Build This', style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 10)),
                             )
                           ),
                         ),
@@ -1252,13 +1252,13 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                             : entry.key == 'pushback' ? '🤔 Pushback' 
                                             : entry.key == 'tellmemore' ? '💡 Tell me more' 
                                             : entry.key, 
-                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)
+                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
                                           '${entry.value}',
                                           style: TextStyle(
-                                            fontSize: 13,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                             color: isSelected 
                                                 ? context.themeColors.primary500 
@@ -1290,7 +1290,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                               ),
                               child: Icon(
                                 _emojiCounts.isEmpty ? LucideIcons.heart : LucideIcons.plusCircle, 
-                                size: 16, 
+                                size: 13, 
                                 color: context.themeColors.textTertiary,
                               ),
                             ),
@@ -1359,10 +1359,10 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          Icon(icon, size: 11, color: color),
           if (count != null) ...[
             const SizedBox(width: 6),
-            Text(count, style: TextStyle(fontSize: 11, color: color)),
+            Text(count, style: TextStyle(fontSize: 9, color: color)),
           ],
         ],
       ),
@@ -1530,11 +1530,11 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(LucideIcons.fileText, size: 48, color: context.themeColors.primary500),
+              Icon(LucideIcons.fileText, size: 40, color: context.themeColors.primary500),
               const SizedBox(height: 8),
-              Text('Document Attachment', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
+              Text('Document Attachment', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text('Tap to open', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
+              Text('Tap to open', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8)),
             ],
           ),
         ),
@@ -1602,7 +1602,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Icon(LucideIcons.arrowUp, color: Colors.white, size: 12),
+          const Icon(LucideIcons.arrowUp, color: Colors.white, size: 10),
           const SizedBox(width: 6),
           SizedBox(
             width: (_reactionAvatars.length * 12.0) + 4.0, // Proper width calculation
@@ -1723,7 +1723,7 @@ class _VideoFeedWidgetState extends State<_VideoFeedWidget> {
                     color: Colors.black54,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(LucideIcons.play, size: 32, color: Colors.white),
+                  child: const Icon(LucideIcons.play, size: 27, color: Colors.white),
                 ),
               ),
             ),

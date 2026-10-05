@@ -75,7 +75,7 @@ class BentoProfileHeader extends StatelessWidget {
                                     : null,
                               ),
                               child: avatarUrl == null || avatarUrl.isEmpty
-                                  ? Center(child: Text(initial, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))
+                                  ? Center(child: Text(initial, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)))
                                   : null,
                             ),
                             const Spacer(),
@@ -88,7 +88,7 @@ class BentoProfileHeader extends StatelessWidget {
                               child: Text(
                                 role,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: context.themeColors.primary500,
                                 ),
@@ -100,7 +100,7 @@ class BentoProfileHeader extends StatelessWidget {
                         Text(
                           name,
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 17,
                             fontWeight: FontWeight.w900,
                             color: context.themeColors.textPrimary,
                             letterSpacing: -0.5,
@@ -113,7 +113,7 @@ class BentoProfileHeader extends StatelessWidget {
                           child: Text(
                             bio,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 11,
                               color: context.themeColors.textSecondary,
                               height: 1.4,
                             ),
@@ -141,7 +141,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 Text(
                                   projectsCount.toString(),
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w900,
                                     color: context.themeColors.textPrimary,
                                   ),
@@ -150,7 +150,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 Text(
                                   'Projects',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: context.themeColors.textTertiary,
                                   ),
@@ -171,7 +171,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 Text(
                                   followerCount.toString(),
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w900,
                                     color: context.themeColors.textPrimary,
                                   ),
@@ -180,7 +180,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 Text(
                                   'Followers',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: context.themeColors.textTertiary,
                                   ),
@@ -365,7 +365,7 @@ class _SocialButton extends StatelessWidget {
             border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
           ),
           child: Center(
-            child: Icon(icon, color: iconColor, size: 14), // Even smaller icon size
+            child: Icon(icon, color: iconColor, size: 11), // Even smaller icon size
           ),
         ),
       ),

@@ -121,7 +121,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                 ),
                 labelColor: context.themeColors.textPrimary,
                 unselectedLabelColor: context.themeColors.textSecondary,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                 dividerColor: Colors.transparent,
                 tabs: const [
                   Tab(text: 'My Rooms'),
@@ -218,9 +218,9 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
         // Header Texts
-        Text('My Rooms', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -1)),
+        Text('My Rooms', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -1)),
         const SizedBox(height: 8),
-        Text('Manage your active build rooms and feature rollouts', style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary)),
+        Text('Manage your active build rooms and feature rollouts', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
         const SizedBox(height: 24),
         
         // Create Room Button
@@ -237,14 +237,14 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                 });
               });
             },
-            icon: const Icon(LucideIcons.plus, size: 16),
+            icon: const Icon(LucideIcons.plus, size: 13),
             label: const Text('Create Room'),
             style: ElevatedButton.styleFrom(
               backgroundColor: context.themeColors.primary500,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+              textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
               elevation: 0,
             ),
           ),
@@ -326,7 +326,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title and Tags
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: context.themeColors.textPrimary)),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: context.themeColors.textPrimary)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -342,16 +342,16 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                     description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary, height: 1.5),
+                    style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.5),
                   ),
                   const SizedBox(height: 16),
                   
                   // Meta Info
                   Row(
                     children: [
-                      Text('Day $daysActive', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text('Day $daysActive', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.bold)),
                       Text(' • ', style: TextStyle(color: context.themeColors.textTertiary)),
-                      Text('$updateCount updates', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text('$updateCount updates', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.bold)),
                       Text(' • ', style: TextStyle(color: context.themeColors.textTertiary)),
                       // Avatar pile
                       if (displayObservers.isNotEmpty)
@@ -375,11 +375,11 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                           ),
                         ),
                       if (totalObservers > displayObservers.length) ...[
-                        Text(' +${totalObservers - displayObservers.length}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text(' +${totalObservers - displayObservers.length}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
                       ],
                       if (totalObservers > 0)
                         Text(' • ', style: TextStyle(color: context.themeColors.textTertiary)),
-                      Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -397,11 +397,11 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.brush, size: 14, color: context.themeColors.textSecondary),
+                            Icon(Icons.brush, size: 11, color: context.themeColors.textSecondary),
                             SizedBox(width: 12),
-                            Icon(Icons.view_kanban, size: 14, color: context.themeColors.textSecondary), // Notion substitute
+                            Icon(Icons.view_kanban, size: 11, color: context.themeColors.textSecondary), // Notion substitute
                             SizedBox(width: 12),
-                            Icon(Icons.code, size: 14, color: context.themeColors.textSecondary),
+                            Icon(Icons.code, size: 11, color: context.themeColors.textSecondary),
                           ],
                         ),
                       ),
@@ -415,9 +415,9 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                         ),
                         child: Row(
                           children: [
-                            Text('View Room', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text('View Room', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 11)),
                             SizedBox(width: 6),
-                            Icon(LucideIcons.arrowRight, size: 14, color: context.themeColors.primary500),
+                            Icon(LucideIcons.arrowRight, size: 11, color: context.themeColors.primary500),
                           ],
                         ),
                       ),
@@ -440,7 +440,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: textColor.withOpacity(0.3)),
       ),
-      child: Text(text, style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+      child: Text(text, style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 0.5)),
     );
   }
 
@@ -501,7 +501,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.w900,
-              fontSize: 9.5,
+              fontSize: 8,
               letterSpacing: 0.6,
             ),
           ),
@@ -557,7 +557,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                     ? (context.themeColors.textPrimary) 
                     : context.themeColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                fontSize: 12,
+                fontSize: 10,
               ),
             ),
           ],
@@ -581,7 +581,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
             : null,
       ),
       child: avatarUrl == null || avatarUrl.isEmpty
-          ? Center(child: Text(label, style: TextStyle(color: fallbackColor, fontSize: 10, fontWeight: FontWeight.bold)))
+          ? Center(child: Text(label, style: TextStyle(color: fallbackColor, fontSize: 8, fontWeight: FontWeight.bold)))
           : null,
     );
   }

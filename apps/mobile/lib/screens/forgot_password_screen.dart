@@ -116,7 +116,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(LucideIcons.keyRound, size: 48, color: context.themeColors.primary500),
+                      Icon(LucideIcons.keyRound, size: 40, color: context.themeColors.primary500),
                       const SizedBox(height: 24),
                       Text(
                         'Reset Password',
@@ -126,7 +126,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Enter your email address and we\'ll send you a recovery code to reset your password.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
@@ -141,9 +141,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(LucideIcons.alertCircle, color: Colors.red, size: 16),
+                              const Icon(LucideIcons.alertCircle, color: Colors.red, size: 13),
                               const SizedBox(width: 8),
-                              Expanded(child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600))),
+                              Expanded(child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.w600))),
                             ],
                           ),
                         ),
@@ -159,7 +159,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         style: TextStyle(color: context.themeColors.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Email address',
-                          prefixIcon: Icon(LucideIcons.mail, size: 18, color: context.themeColors.textTertiary),
+                          prefixIcon: Icon(LucideIcons.mail, size: 15, color: context.themeColors.textTertiary),
                         ),
                       ),
                       const SizedBox(height: 24),

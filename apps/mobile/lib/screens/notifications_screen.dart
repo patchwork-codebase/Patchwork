@@ -186,7 +186,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           IconButton(
             icon: Icon(LucideIcons.checkCheck,
-                color: context.themeColors.primary500, size: 20),
+                color: context.themeColors.primary500, size: 17),
             onPressed: _markAllAsRead,
             tooltip: 'Mark all as read',
           ),
@@ -242,13 +242,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               color: Colors.white.withOpacity(0.05)),
                         ),
                         child: Icon(LucideIcons.bellRing,
-                            size: 48,
+                            size: 40,
                             color: context.themeColors.textTertiary),
                       ),
                       const SizedBox(height: 24),
                       Text('You\'re all caught up!',
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: context.themeColors.textPrimary)),
                       const SizedBox(height: 8),
@@ -363,7 +363,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             width: 32,
                             alignment: Alignment.topRight,
                             padding: const EdgeInsets.only(right: 8, top: 4),
-                            child: Icon(notifIcon, size: 20, color: notifColor),
+                            child: Icon(notifIcon, size: 17, color: notifColor),
                           ),
                           
                           // CONTENT AREA
@@ -392,7 +392,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               : null,
                                         ),
                                         child: (actor['avatar'] == null || actor['avatar'].toString().isEmpty)
-                                            ? Center(child: Text(actorName.substring(0, 1).toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)))
+                                            ? Center(child: Text(actorName.substring(0, 1).toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold)))
                                             : null,
                                       ),
                                     ),
@@ -400,7 +400,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     Expanded(
                                       child: RichText(
                                         text: TextSpan(
-                                          style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.4),
+                                          style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.4),
                                           children: [
                                             TextSpan(text: actorName, style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                                             TextSpan(text: ' $actionText '),
@@ -421,7 +421,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     maxLines: 3,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 11,
                                       color: context.themeColors.textSecondary.withOpacity(0.9),
                                       height: 1.4,
                                     ),
@@ -445,7 +445,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           padding: const EdgeInsets.all(4.0),
                                           child: Row(
                                             children: [
-                                              Icon(LucideIcons.messageCircle, size: 16, color: context.themeColors.textTertiary),
+                                              Icon(LucideIcons.messageCircle, size: 13, color: context.themeColors.textTertiary),
                                             ],
                                           ),
                                         ),
@@ -459,7 +459,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           padding: const EdgeInsets.all(4.0),
                                           child: Row(
                                             children: [
-                                              Icon(LucideIcons.repeat, size: 16, color: context.themeColors.textTertiary),
+                                              Icon(LucideIcons.repeat, size: 13, color: context.themeColors.textTertiary),
                                             ],
                                           ),
                                         ),
@@ -473,7 +473,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           padding: const EdgeInsets.all(4.0),
                                           child: Row(
                                             children: [
-                                              Icon(LucideIcons.heart, size: 16, color: context.themeColors.textTertiary),
+                                              Icon(LucideIcons.heart, size: 13, color: context.themeColors.textTertiary),
                                             ],
                                           ),
                                         ),
@@ -487,7 +487,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           padding: const EdgeInsets.all(4.0),
                                           child: Row(
                                             children: [
-                                              Icon(LucideIcons.bookmark, size: 16, color: context.themeColors.textTertiary),
+                                              Icon(LucideIcons.bookmark, size: 13, color: context.themeColors.textTertiary),
                                             ],
                                           ),
                                         ),
@@ -508,7 +508,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             child: Text(
                               _formatShortTimeAgo(createdAt),
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 11,
                                 color: isRead ? context.themeColors.textTertiary : context.themeColors.primary400,
                                 fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
                               ),

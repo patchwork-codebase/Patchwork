@@ -157,13 +157,13 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                 color: context.themeColors.primary500.withOpacity(0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(LucideIcons.check, color: context.themeColors.primary500, size: 40),
+                              child: Icon(LucideIcons.check, color: context.themeColors.primary500, size: 34),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Reply sent!',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: context.themeColors.textPrimary,
                               ),
@@ -252,7 +252,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
       appBar: AppBar(
         backgroundColor: context.themeColors.background.withOpacity(0.9),
         elevation: 0,
-        title: const Text('Thread', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text('Thread', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         leading: IconButton(
           icon: Icon(LucideIcons.arrowLeft, color: context.themeColors.textPrimary),
           onPressed: () => Navigator.pop(context),
@@ -363,7 +363,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                               : Center(
                                                   child: Text(
                                                     reply['observer_name'].toString().substring(0, 1).toUpperCase(),
-                                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.themeColors.textPrimary),
+                                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: context.themeColors.textPrimary),
                                                   ),
                                                 ),
                                         ),
@@ -395,7 +395,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                   Flexible(
                                                     child: Text(
                                                       reply['observer_name'], 
-                                                      style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 14),
+                                                      style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 11),
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
                                                   ),
@@ -414,7 +414,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                   Flexible(
                                                     child: Text(
                                                       '@${reply['observer_name'].toString().toLowerCase().replaceAll(' ', '')}',
-                                                      style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                                                      style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
                                                   ),
@@ -422,11 +422,11 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                               ),
                                             ),
                                             const SizedBox(width: 8),
-                                            Text(timeago.format(createdAt, locale: 'en_short'), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                                            Text(timeago.format(createdAt, locale: 'en_short'), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
                                           ],
                                         ),
                                         const SizedBox(height: 4),
-                                        Text(reply['text'], style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14, height: 1.4)),
+                                        Text(reply['text'], style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11, height: 1.4)),
                                         
                                         const SizedBox(height: 12),
                                         // Mini reply/like row for comments
@@ -441,7 +441,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                 });
                                                 _replyFocusNode.requestFocus();
                                               },
-                                              child: Icon(LucideIcons.messageCircle, size: 14, color: context.themeColors.textTertiary),
+                                              child: Icon(LucideIcons.messageCircle, size: 11, color: context.themeColors.textTertiary),
                                             ),
                                             const SizedBox(width: 16),
                                             GestureDetector(
@@ -452,7 +452,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                     _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
                                                         ? LucideIcons.heart // Should be filled heart, but keeping LucideIcons.heart and changing color
                                                         : LucideIcons.heart,
-                                                    size: 14,
+                                                    size: 11,
                                                     color: _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
                                                         ? Colors.redAccent
                                                         : context.themeColors.textTertiary,
@@ -462,7 +462,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                     Text(
                                                       '${_commentLikes.where((l) => l['parent_id'] == reply['id']).length}',
                                                       style: TextStyle(
-                                                        fontSize: 12,
+                                                        fontSize: 10,
                                                         color: _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
                                                           ? Colors.redAccent
                                                           : context.themeColors.textTertiary,
@@ -511,14 +511,14 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                       shape: BoxShape.circle,
                       color: context.themeColors.surfaceHighlight,
                     ),
-                    child: Icon(LucideIcons.user, size: 16, color: context.themeColors.textTertiary),
+                    child: Icon(LucideIcons.user, size: 13, color: context.themeColors.textTertiary),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: _replyController,
                       focusNode: _replyFocusNode,
-                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11),
                       maxLines: null,
                       keyboardType: TextInputType.multiline,
                       decoration: InputDecoration(

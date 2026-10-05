@@ -46,7 +46,7 @@ class ComingSoonDialog extends StatelessWidget {
                 child: Center(
                   child: Icon(
                     LucideIcons.rocket,
-                    size: 36,
+                    size: 30,
                     color: context.themeColors.primary500,
                   ).animate(onPlay: (controller) => controller.repeat(reverse: true)).moveY(begin: -4, end: 4, duration: 1000.ms, curve: Curves.easeInOut),
                 ),
@@ -55,7 +55,7 @@ class ComingSoonDialog extends StatelessWidget {
               Text(
                 featureName.toUpperCase(),
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: context.themeColors.textTertiary,
                   letterSpacing: 1.5,
@@ -66,7 +66,7 @@ class ComingSoonDialog extends StatelessWidget {
               Text(
                 'Chief, we are making progress!',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: context.themeColors.textPrimary,
                   height: 1.2,
@@ -77,7 +77,7 @@ class ComingSoonDialog extends StatelessWidget {
               Text(
                 'Our builders are hard at work. We would ship this out soon.',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: context.themeColors.textSecondary,
                   height: 1.5,
@@ -101,7 +101,7 @@ class ComingSoonDialog extends StatelessWidget {
                   child: const Text(
                     'Got it, Chief',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

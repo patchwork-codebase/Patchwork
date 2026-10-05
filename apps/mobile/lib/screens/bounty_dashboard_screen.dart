@@ -112,7 +112,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
       backgroundColor: context.themeColors.background,
       appBar: AppBar(
         backgroundColor: context.themeColors.surface,
-        title: const Text('Bounty Matches', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: const Text('Bounty Matches', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
         elevation: 0,
         centerTitle: true,
       ),
@@ -123,9 +123,9 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(LucideIcons.target, size: 64, color: context.themeColors.textTertiary),
+                  Icon(LucideIcons.target, size: 54, color: context.themeColors.textTertiary),
                   const SizedBox(height: 16),
-                  Text('No pitches yet', style: TextStyle(fontSize: 18, color: context.themeColors.textSecondary)),
+                  Text('No pitches yet', style: TextStyle(fontSize: 15, color: context.themeColors.textSecondary)),
                 ],
               ),
             )
@@ -154,14 +154,14 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                         // Update Reference
                         Row(
                           children: [
-                            Icon(LucideIcons.fileText, size: 14, color: context.themeColors.textTertiary),
+                            Icon(LucideIcons.fileText, size: 11, color: context.themeColors.textTertiary),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 update['content'] ?? 'Request For Builder',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontStyle: FontStyle.italic),
+                                style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontStyle: FontStyle.italic),
                               ),
                             ),
                           ],
@@ -186,17 +186,17 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                                       Text(builder['name'] ?? 'Unknown', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                                       if (builder['is_verified_expert'] == true) ...[
                                         const SizedBox(width: 4),
-                                        Icon(LucideIcons.badgeCheck, size: 14, color: context.themeColors.primary500),
+                                        Icon(LucideIcons.badgeCheck, size: 11, color: context.themeColors.primary500),
                                       ],
                                     ],
                                   ),
-                                  Text('Reputation: ${builder['reputation'] ?? 0} ★', style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text('Reputation: ${builder['reputation'] ?? 0} ★', style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
                                 ],
                               ),
                             ),
                             Text(
                               timeago.format(DateTime.parse(app['created_at'])),
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
                             ),
                           ],
                         ),
@@ -211,7 +211,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                           ),
                           child: Text(
                             app['pitch_text'] ?? '',
-                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11),
                           ),
                         ),
                         
@@ -250,7 +250,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                                     );
                                   }
                                 },
-                                icon: const Icon(LucideIcons.messageCircle, size: 16),
+                                icon: const Icon(LucideIcons.messageCircle, size: 13),
                                 label: const Text('Open Chat'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.green,

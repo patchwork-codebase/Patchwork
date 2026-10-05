@@ -356,9 +356,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Add an insight (optional)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+              Text("Add an insight (optional)", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
               const SizedBox(height: 8),
-              Text("Why did you choose this reaction?", style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary)),
+              Text("Why did you choose this reaction?", style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
               const SizedBox(height: 16),
               TextField(
                 controller: textController,
@@ -467,7 +467,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
         children: [
           Positioned(
              right: -20, top: -20,
-             child: Icon(LucideIcons.fingerprint, size: 160, color: Colors.white.withOpacity(0.1)),
+             child: Icon(LucideIcons.fingerprint, size: 136, color: Colors.white.withOpacity(0.1)),
           ),
           Padding(
             padding: const EdgeInsets.all(24),
@@ -477,12 +477,12 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('OBSERVER PASS', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 10)),
-                    const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
+                    Text('OBSERVER PASS', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 8)),
+                    const Icon(LucideIcons.checkCircle, color: Colors.white, size: 17),
                   ],
                 ),
                 const Spacer(),
-                Text(currentRank.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                Text(currentRank.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                 const SizedBox(height: 16),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -498,7 +498,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('$rep REP', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
-                    Text('Next: $nextLevelRep', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
+                    Text('Next: $nextLevelRep', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10)),
                   ],
                 ),
               ],
@@ -514,11 +514,11 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
       width: 140, margin: const EdgeInsets.only(right: 12), padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: context.themeColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: context.themeColors.borderSubtle)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: color, size: 16)),
+        Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: color, size: 13)),
         const Spacer(),
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color, height: 1.0)),
+        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color, height: 1.0)),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+        Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
         const SizedBox(height: 4),
         Text(delta, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color)),
       ]),
@@ -539,7 +539,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           border: Border.all(color: isActive ? context.themeColors.primary500 : context.themeColors.borderSubtle),
           boxShadow: isActive ? [BoxShadow(color: context.themeColors.primary500.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 2))] : null,
         ),
-        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isActive ? Colors.white : context.themeColors.textSecondary)),
+        child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isActive ? Colors.white : context.themeColors.textSecondary)),
       ),
     );
   }
@@ -548,7 +548,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
       child: Row(children: [
-        Text(label.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+        Text(label.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
         const SizedBox(width: 12),
         Expanded(child: Divider(color: context.themeColors.borderSubtle, height: 1)),
       ]),
@@ -563,10 +563,10 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: color),
+          Icon(icon, size: 15, color: color),
           if (count.isNotEmpty) ...[
             const SizedBox(width: 4),
-            Text(count, style: TextStyle(fontSize: 12, color: color, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+            Text(count, style: TextStyle(fontSize: 10, color: color, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
           ],
         ],
       ),
@@ -629,14 +629,14 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(authorName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary)),
-            Text('in $roomTitle', style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary)),
-            if (createdAt != null) Text(timeago.format(createdAt), style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
+            Text(authorName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary)),
+            Text('in $roomTitle', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
+            if (createdAt != null) Text(timeago.format(createdAt), style: TextStyle(fontSize: 9, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
           ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: tagBg, borderRadius: BorderRadius.circular(20), border: Border.all(color: tagColor.withOpacity(0.3))),
-              child: Text(tag, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: tagColor)),
+              child: Text(tag, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: tagColor)),
             ),
           ]),
           
@@ -652,9 +652,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(LucideIcons.lightbulb, size: 14, color: Colors.amber),
+                  const Icon(LucideIcons.lightbulb, size: 11, color: Colors.amber),
                   const SizedBox(width: 6),
-                  const Text("Builder requested feedback", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber)),
+                  const Text("Builder requested feedback", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber)),
                 ],
               ),
             ),
@@ -672,10 +672,10 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
             ),
             child: Text(
               _aiSummaries[updateId]!,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.amber.shade700, fontStyle: FontStyle.italic),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.amber.shade700, fontStyle: FontStyle.italic),
             ),
           ),
-        Text(content.toString(), style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.5), maxLines: 6, overflow: TextOverflow.ellipsis),
+        Text(content.toString(), style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.5), maxLines: 6, overflow: TextOverflow.ellipsis),
         
         if (content.length > 200 && !_aiSummaries.containsKey(updateId)) ...[
           const SizedBox(height: 8),
@@ -686,11 +686,11 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
               children: [
                 _loadingSummaries.contains(updateId) 
                   ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.amber))
-                  : Icon(LucideIcons.sparkles, size: 14, color: Colors.amber),
+                  : Icon(LucideIcons.sparkles, size: 11, color: Colors.amber),
                 const SizedBox(width: 6),
                 Text(
                   _loadingSummaries.contains(updateId) ? 'Summarizing...' : 'TL;DR Summary', 
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber)
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber)
                 ),
               ],
             ),
@@ -720,15 +720,15 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(isSharp ? LucideIcons.sparkles : LucideIcons.messageSquare, size: 16, color: color),
+                          Icon(isSharp ? LucideIcons.sparkles : LucideIcons.messageSquare, size: 13, color: color),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('${insight['observer_name']} said:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                                Text('${insight['observer_name']} said:', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                                 const SizedBox(height: 2),
-                                Text(insight['text'], style: TextStyle(fontSize: 13, color: context.themeColors.textPrimary)),
+                                Text(insight['text'], style: TextStyle(fontSize: 11, color: context.themeColors.textPrimary)),
                               ],
                             ),
                           ),
@@ -805,13 +805,13 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
           child: Row(
             children: [
-              Icon(LucideIcons.bookmark, color: context.themeColors.primary500, size: 20),
+              Icon(LucideIcons.bookmark, color: context.themeColors.primary500, size: 17),
               const SizedBox(width: 8),
               Text(
                 'Inspiration Vault',
                 style: TextStyle(
                   color: context.themeColors.textPrimary,
-                  fontSize: 18,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
                 ),
@@ -883,7 +883,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                       Icon(
                         type == 'video' ? LucideIcons.video : 
                         type == 'image' ? LucideIcons.image : LucideIcons.alignLeft,
-                        size: 14,
+                        size: 11,
                         color: context.themeColors.primary500,
                       ),
                       const SizedBox(width: 6),
@@ -892,7 +892,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                           roomTitle,
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
@@ -906,7 +906,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     content,
                     style: TextStyle(
                       color: context.themeColors.textPrimary,
-                      fontSize: 13,
+                      fontSize: 11,
                       height: 1.4,
                     ),
                     maxLines: hasImage ? 3 : 6, // Show more text if no image
@@ -935,15 +935,15 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
         children: [
           Row(
             children: [
-              const Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
+              const Icon(LucideIcons.sparkles, color: Colors.amber, size: 17),
               const SizedBox(width: 8),
-              Text('The Daily Pulse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary)),
+              Text('The Daily Pulse', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary)),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             "Your network is moving fast. Today, Moniflow logged 3 major decisions, Patchwork resolved a critical blocker, and 2 new startups joined your ecosystem.",
-            style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary, height: 1.5),
+            style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.5),
           ),
         ],
       ),
@@ -1007,13 +1007,13 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                             Positioned(
                               top: 12, right: 12,
                               child: isShipped 
-                                ? const Icon(LucideIcons.rocket, size: 16, color: Colors.green)
+                                ? const Icon(LucideIcons.rocket, size: 13, color: Colors.green)
                                     .animate(onPlay: (c) => c.repeat(reverse: true)).slideY(begin: 0, end: -0.2, duration: 1.seconds)
                                 : isLive 
-                                  ? const Icon(LucideIcons.activity, size: 16, color: Colors.redAccent)
+                                  ? const Icon(LucideIcons.activity, size: 13, color: Colors.redAccent)
                                     .animate(onPlay: (c) => c.repeat(reverse: true))
                                      .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 800.ms)
-                                  : const Icon(LucideIcons.moon, size: 16, color: Colors.grey)
+                                  : const Icon(LucideIcons.moon, size: 13, color: Colors.grey)
                                     .animate(onPlay: (c) => c.repeat(reverse: true)).fade(begin: 0.4, end: 1.0, duration: 2.seconds),
                             ),
                           Padding(
@@ -1023,9 +1023,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
 
-                                Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
                                 const SizedBox(height: 4),
-                                Text('${room['update_count'] ?? (i * 4 + 2)} updates', style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary)),
+                                Text('${room['update_count'] ?? (i * 4 + 2)} updates', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
                               ],
                             ),
                           ),
@@ -1055,11 +1055,11 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6), padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(color: context.themeColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: context.themeColors.borderSubtle)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tag.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: Colors.amber.shade600)),
+            Text(tag.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: Colors.amber.shade600)),
             const SizedBox(height: 4),
-            Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+            Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
             const SizedBox(height: 4),
-            Text('$updateCount updates \u00b7 $observerCount observers', style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
+            Text('$updateCount updates \u00b7 $observerCount observers', style: TextStyle(fontSize: 9, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -1070,7 +1070,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   foregroundColor: isFollowed ? Colors.green.shade600 : Colors.white,
                   elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
-                child: Text(isFollowed ? 'Following \u2713' : '+ Follow room', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                child: Text(isFollowed ? 'Following \u2713' : '+ Follow room', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ),
           ]),
@@ -1100,8 +1100,8 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(label, style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary)),
-          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: valueColor)),
+          Text(label, style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
+          Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: valueColor)),
         ]),
       ),
       if (divider) Divider(height: 1, color: context.themeColors.borderSubtle, indent: 16, endIndent: 16),
@@ -1146,8 +1146,8 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     const SizedBox(width: 16),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       RichText(text: TextSpan(children: [
-                        TextSpan(text: '$greeting, ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary)),
-                        TextSpan(text: '$firstName \ud83d\udc4b', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                        TextSpan(text: '$greeting, ', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary)),
+                        TextSpan(text: '$firstName \ud83d\udc4b', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
                       ])),
                       const SizedBox(height: 6),
                       Wrap(spacing: 8, runSpacing: 4, children: [
@@ -1182,7 +1182,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                Icon(LucideIcons.bell, size: 20, color: context.themeColors.textPrimary),
+                                Icon(LucideIcons.bell, size: 17, color: context.themeColors.textPrimary),
                                 if (_unreadNotifications > 0)
                                   Positioned(
                                     top: 10,
@@ -1230,7 +1230,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                             Text(
                               'For You',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 13,
                                 fontWeight: _feedTab == 'For You' ? FontWeight.bold : FontWeight.normal,
                                 color: _feedTab == 'For You' ? context.themeColors.textPrimary : context.themeColors.textSecondary,
                               ),
@@ -1256,7 +1256,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                             Text(
                               'Recent',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 13,
                                 fontWeight: _feedTab == 'Recent' ? FontWeight.bold : FontWeight.normal,
                                 color: _feedTab == 'Recent' ? context.themeColors.textPrimary : context.themeColors.textSecondary,
                               ),
@@ -1286,7 +1286,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Container(width: 7, height: 7, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)).animate(onPlay: (c) => c.repeat(reverse: true)).fade(begin: 0.3, end: 1.0),
                       const SizedBox(width: 8),
-                      Text('${_observerStats?['roomsFollowed'] ?? 0} rooms followed', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+                      Text('${_observerStats?['roomsFollowed'] ?? 0} rooms followed', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
                     ]),
                   ),
                 ),
@@ -1305,15 +1305,15 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(color: context.themeColors.surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: context.themeColors.borderSubtle)),
                     child: Column(children: [
-                      const Text('\u2615', style: TextStyle(fontSize: 32)),
+                      const Text('\u2615', style: TextStyle(fontSize: 27)),
                       const SizedBox(height: 12),
-                      Text('No builds in your feed yet', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                      Text('No builds in your feed yet', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                       const SizedBox(height: 8),
-                      Text('Follow some builders or rooms to see their updates here.', style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary), textAlign: TextAlign.center),
+                      Text('Follow some builders or rooms to see their updates here.', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary), textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExploreScreen())),
-                        icon: const Icon(LucideIcons.compass, size: 16), label: const Text('Explore builders'),
+                        icon: const Icon(LucideIcons.compass, size: 13), label: const Text('Explore builders'),
                         style: ElevatedButton.styleFrom(backgroundColor: context.themeColors.primary500, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                       ),
                     ]),
@@ -1369,8 +1369,8 @@ class _Badge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(color: color.withOpacity(0.1), border: Border.all(color: color.withOpacity(0.2)), borderRadius: BorderRadius.circular(12)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        if (icon != null) ...[Icon(icon, size: 10, color: color), const SizedBox(width: 4)],
-        Text(text, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: color)),
+        if (icon != null) ...[Icon(icon, size: 8, color: color), const SizedBox(width: 4)],
+        Text(text, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: color)),
       ]),
     );
   }

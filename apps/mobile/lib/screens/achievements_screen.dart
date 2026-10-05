@@ -106,16 +106,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
-                    child: Icon(LucideIcons.medal, size: 32, color: Colors.purpleAccent),
+                    child: Icon(LucideIcons.medal, size: 27, color: Colors.purpleAccent),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Proof of Work', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Proof of Work', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text('Verified credentials backing your experience.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)),
+                        Text('Verified credentials backing your experience.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
                       ],
                     ),
                   )
@@ -123,7 +123,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            Text('Your Credentials', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Your Credentials', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             
             if (_isLoading)
@@ -134,7 +134,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   padding: const EdgeInsets.all(32.0),
                   child: Column(
                     children: [
-                      Icon(LucideIcons.ghost, size: 48, color: context.themeColors.textTertiary),
+                      Icon(LucideIcons.ghost, size: 40, color: context.themeColors.textTertiary),
                       const SizedBox(height: 16),
                       Text("No achievements yet", style: TextStyle(color: context.themeColors.textSecondary)),
                     ],
@@ -177,7 +177,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(iconData, size: 48, color: colorData),
+                          Icon(iconData, size: 40, color: colorData),
                           const SizedBox(height: 16),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),

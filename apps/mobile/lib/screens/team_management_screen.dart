@@ -104,7 +104,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
         backgroundColor: context.themeColors.background,
         elevation: 0,
         iconTheme: IconThemeData(color: context.themeColors.textPrimary),
-        title: Text('Team Management', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16)),
+        title: Text('Team Management', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13)),
       ),
       body: _isLoading 
         ? Center(child: CircularProgressIndicator(color: context.themeColors.primary500))
@@ -113,7 +113,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Invite Member', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Invite Member', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -170,15 +170,15 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                 ),
                 
                 const SizedBox(height: 48),
-                Text('Pending Invitations', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Pending Invitations', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 if (_invites.isEmpty)
                   Text('No pending invitations.', style: TextStyle(color: context.themeColors.textTertiary)),
                 ..._invites.map((invite) => ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(backgroundColor: context.themeColors.surfaceHighlight, child: Icon(LucideIcons.mail, color: context.themeColors.textSecondary, size: 16)),
+                  leading: CircleAvatar(backgroundColor: context.themeColors.surfaceHighlight, child: Icon(LucideIcons.mail, color: context.themeColors.textSecondary, size: 13)),
                   title: Text(invite['email'], style: TextStyle(color: context.themeColors.textPrimary)),
-                  subtitle: Text('Role: ${invite['role']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
+                  subtitle: Text('Role: ${invite['role']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
                   trailing: IconButton(
                     icon: const Icon(LucideIcons.x, color: Colors.redAccent),
                     onPressed: () => _revokeInvite(invite['id']),
@@ -186,7 +186,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                 )),
                 
                 const SizedBox(height: 32),
-                Text('Current Team', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Current Team', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 if (_members.isEmpty)
                   Text('No team members yet.', style: TextStyle(color: context.themeColors.textTertiary)),
@@ -199,8 +199,8 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                       child: Text(user['name']?.substring(0, 1).toUpperCase() ?? '?', style: const TextStyle(color: Colors.white)),
                     ),
                     title: Text(user['name'] ?? 'Unknown', style: TextStyle(color: context.themeColors.textPrimary)),
-                    subtitle: Text(user['email'] ?? '', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
-                    trailing: Text(member['role'].toString().toUpperCase(), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.bold)),
+                    subtitle: Text(user['email'] ?? '', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
+                    trailing: Text(member['role'].toString().toUpperCase(), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8, fontWeight: FontWeight.bold)),
                   );
                 }),
               ],

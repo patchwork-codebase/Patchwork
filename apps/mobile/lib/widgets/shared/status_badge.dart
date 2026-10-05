@@ -25,13 +25,13 @@ class StatusBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: color),
+            Icon(icon, size: 10, color: color),
             const SizedBox(width: 4),
           ],
           Text(
             text,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 8,
               fontWeight: FontWeight.bold,
               color: color,
             ),

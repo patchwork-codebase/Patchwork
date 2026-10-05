@@ -92,7 +92,7 @@ class FloatingReactionsState extends State<FloatingReactions> with TickerProvide
                       scale: r.scale * (0.5 + (0.5 * Curves.elasticOut.transform(progress > 0.2 ? 1.0 : progress * 5))),
                       child: Text(
                         r.emoji,
-                        style: const TextStyle(fontSize: 28),
+                        style: const TextStyle(fontSize: 23),
                       ),
                     ),
                   ),

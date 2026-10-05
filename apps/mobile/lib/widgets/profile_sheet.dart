@@ -133,11 +133,11 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20, color: color.withOpacity(0.8)),
+            Icon(icon, size: 17, color: color.withOpacity(0.8)),
             const SizedBox(height: 8),
-            Text(value, style: TextStyle(color: context.themeColors.textPrimary, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+            Text(value, style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+            Text(label, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
           ],
         ),
       ),
@@ -152,7 +152,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 12, bottom: 8),
-            child: Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.5)),
+            child: Text(title, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.5)),
           ),
           Container(
             decoration: const BoxDecoration(
@@ -187,10 +187,10 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              Icon(icon, size: 16, color: context.themeColors.textSecondary),
+              Icon(icon, size: 13, color: context.themeColors.textSecondary),
               const SizedBox(width: 16),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary))),
-              if (trailing != null) trailing else Icon(LucideIcons.chevronRight, size: 16, color: context.themeColors.textTertiary),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary))),
+              if (trailing != null) trailing else Icon(LucideIcons.chevronRight, size: 13, color: context.themeColors.textTertiary),
             ],
           ),
         ),
@@ -257,7 +257,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                               : null,
                         ),
                         child: (_avatarUrl == null || _avatarUrl!.isEmpty)
-                            ? Center(child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 20)))
+                            ? Center(child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 17)))
                             : null,
                       ),
                       const SizedBox(width: 16),
@@ -268,9 +268,9 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                             if (_isLoadingStats && displayName == 'Builder')
                               Container(width: 120, height: 24, decoration: BoxDecoration(color: context.themeColors.borderSubtle, borderRadius: BorderRadius.circular(4)))
                             else
-                              Text(displayName, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: context.themeColors.textPrimary)),
+                              Text(displayName, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: context.themeColors.textPrimary)),
                             const SizedBox(height: 4),
-                            Text(email, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w500)),
+                            Text(email, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.w500)),
                           ],
                         ),
                       ),
@@ -307,9 +307,9 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                     trailing: DropdownButtonHideUnderline(
                       child: DropdownButton<ThemeMode>(
                         value: themeMode,
-                        icon: const Icon(LucideIcons.chevronDown, size: 16, color: AppTheme.textTertiary),
+                        icon: const Icon(LucideIcons.chevronDown, size: 13, color: AppTheme.textTertiary),
                         dropdownColor: context.themeColors.surfaceHighlight,
-                        style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                         items: const [
                           DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
                           DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
@@ -353,9 +353,9 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
-                    Text('-', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
-                    Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.w600)),
+                    Text('-', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.w600)),
+                    Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.w600)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -375,9 +375,9 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(LucideIcons.logOut, color: Color(0xFFFF2B5E), size: 18),
+                          Icon(LucideIcons.logOut, color: Color(0xFFFF2B5E), size: 15),
                           SizedBox(width: 8),
-                          Text('Sign out', style: TextStyle(color: Color(0xFFFF2B5E), fontWeight: FontWeight.w900, fontSize: 15)),
+                          Text('Sign out', style: TextStyle(color: Color(0xFFFF2B5E), fontWeight: FontWeight.w900, fontSize: 12)),
                         ],
                       ),
                     ),

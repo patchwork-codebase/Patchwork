@@ -95,14 +95,14 @@ class _WelcomeWalkthroughDialogState extends State<WelcomeWalkthroughDialog> {
                             color: slide['color'].withOpacity(0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(slide['icon'], size: 32, color: slide['color']),
+                          child: Icon(slide['icon'], size: 27, color: slide['color']),
                         ),
                         const SizedBox(height: 24),
                         Text(
                           slide['title'],
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -112,7 +112,7 @@ class _WelcomeWalkthroughDialogState extends State<WelcomeWalkthroughDialog> {
                           slide['description'],
                           style: TextStyle(
                             color: AppTheme.slate400,
-                            fontSize: 14,
+                            fontSize: 11,
                             height: 1.5,
                           ),
                           textAlign: TextAlign.center,
@@ -164,7 +164,7 @@ class _WelcomeWalkthroughDialogState extends State<WelcomeWalkthroughDialog> {
                         Text(_currentPage == _slides.length - 1 ? 'Get Started' : 'Next'),
                         if (_currentPage < _slides.length - 1) ...[
                           const SizedBox(width: 8),
-                          const Icon(LucideIcons.arrowRight, size: 16),
+                          const Icon(LucideIcons.arrowRight, size: 13),
                         ]
                       ],
                     ),

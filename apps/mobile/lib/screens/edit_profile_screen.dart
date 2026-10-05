@@ -198,6 +198,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       await Supabase.instance.client.from('users').update(updateData).eq('id', userId);
 
+      // Also update the auth user metadata so the app picks up the new name instantly
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(
+          data: {'name': name},
+        ),
+      );
       if (mounted) {
         ToastService.show(context, 'Profile updated successfully! 🎉');
         await Future.delayed(const Duration(milliseconds: 300));
@@ -227,7 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         title: Text('Delete Account', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
         content: Text(
           'Are you sure you want to permanently delete your Patchwork account? This will remove your rooms, updates, and profile. This action cannot be undone.',
-          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14, height: 1.4),
+          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -281,7 +287,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Text(
         label.toUpperCase(),
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 9,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.5,
           color: context.themeColors.textTertiary,
@@ -304,7 +310,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             keyboardType: keyboardType,
             style: TextStyle(
               color: context.themeColors.textPrimary,
-              fontSize: 15,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
             decoration: InputDecoration(
@@ -342,8 +348,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           DropdownButtonFormField<String>(
             value: value.isNotEmpty && options.contains(value) ? value : options.first,
             dropdownColor: context.themeColors.surfaceHighlight,
-            icon: Icon(LucideIcons.chevronDown, color: context.themeColors.textTertiary, size: 20),
-            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w500),
+            icon: Icon(LucideIcons.chevronDown, color: context.themeColors.textTertiary, size: 17),
+            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               filled: true,
               fillColor: context.themeColors.surfaceHighlight,
@@ -379,9 +385,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
+                Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 13)),
+                Text(subtitle, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11)),
               ],
             ),
           ),
@@ -400,7 +406,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: context.themeColors.background,
       appBar: AppBar(
-        title: Text('Edit profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: context.themeColors.textPrimary)),
+        title: Text('Edit profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: context.themeColors.textPrimary)),
         backgroundColor: context.themeColors.background,
         elevation: 0,
         centerTitle: false,
@@ -457,7 +463,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           : null,
                                 ),
                                 child: (_selectedImage == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
-                                    ? Center(child: Text(_nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 36)))
+                                    ? Center(child: Text(_nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'B', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 30)))
                                     : null,
                               ),
                               Positioned(
@@ -472,7 +478,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   ),
                                   child: _isUploadingImage
                                       ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                      : const Icon(LucideIcons.camera, color: Colors.white, size: 14),
+                                      : const Icon(LucideIcons.camera, color: Colors.white, size: 11),
                                 ),
                               ),
                             ],
@@ -514,7 +520,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Divider(color: context.themeColors.borderSubtle),
                     const SizedBox(height: 24),
                     
-                    Text('EXPERT SETTINGS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+                    Text('EXPERT SETTINGS', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
                     const SizedBox(height: 16),
                     
                     _buildSwitch('Available for requests', 'Manage your review capacity', _expertAvailable, (val) => setState(() => _expertAvailable = val)),
@@ -533,7 +539,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Divider(color: context.themeColors.borderSubtle),
                   const SizedBox(height: 24),
                   
-                  Text('NOTIFICATIONS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+                  Text('NOTIFICATIONS', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
                   const SizedBox(height: 16),
                   
                   _buildSwitch('Email Notifications', 'Receive important updates via email', _emailNotifications, (val) => setState(() => _emailNotifications = val)),
@@ -544,7 +550,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 24),
 
                   // Danger Zone (App Store Compliance)
-                  Text('DANGER ZONE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: Colors.redAccent.withOpacity(0.8))),
+                  Text('DANGER ZONE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: Colors.redAccent.withOpacity(0.8))),
                   const SizedBox(height: 12),
                   
                   Container(
@@ -557,17 +563,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Delete Account', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Delete Account', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11)),
                         const SizedBox(height: 4),
                         Text(
                           'Permanently delete your profile, rooms, and updates. This action is irreversible.',
-                          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, height: 1.4),
+                          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, height: 1.4),
                         ),
                         const SizedBox(height: 14),
                         OutlinedButton.icon(
                           onPressed: _confirmDeleteAccount,
-                          icon: const Icon(LucideIcons.trash2, size: 14, color: Colors.redAccent),
-                          label: const Text('Delete My Account', style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+                          icon: const Icon(LucideIcons.trash2, size: 11, color: Colors.redAccent),
+                          label: const Text('Delete My Account', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.redAccent.withOpacity(0.4)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

@@ -177,7 +177,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             textAlign: TextAlign.center,
                             text: TextSpan(
                               style: TextStyle(
-                                fontSize: 40,
+                                fontSize: 34,
                                 fontWeight: FontWeight.w900,
                                 color: context.themeColors.textPrimary,
                                 height: 1.1,
@@ -199,7 +199,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             'Discover builders working in the open across Patchwork. Find inspiration and follow their progress.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 11,
                               color: context.themeColors.textSecondary,
                               height: 1.4,
                             ),
@@ -229,11 +229,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                   style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold),
                                   decoration: InputDecoration(
                                     hintText: 'Search products, tags, or builders...',
-                                    hintStyle: TextStyle(color: context.themeColors.textTertiary, fontSize: 15, fontWeight: FontWeight.normal),
-                                    prefixIcon: Icon(LucideIcons.search, color: context.themeColors.primary500, size: 20),
+                                    hintStyle: TextStyle(color: context.themeColors.textTertiary, fontSize: 12, fontWeight: FontWeight.normal),
+                                    prefixIcon: Icon(LucideIcons.search, color: context.themeColors.primary500, size: 17),
                                     suffixIcon: _searchQuery.isNotEmpty
                                         ? IconButton(
-                                            icon: Icon(LucideIcons.x, size: 16, color: context.themeColors.textTertiary),
+                                            icon: Icon(LucideIcons.x, size: 13, color: context.themeColors.textTertiary),
                                             onPressed: () {
                                               _searchController.clear();
                                             },
@@ -251,7 +251,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           // Trending Topics
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Trending', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                            child: Text('Trending', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                           const SizedBox(height: 12),
                           SingleChildScrollView(
@@ -289,14 +289,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                         ),
                                         child: Row(
                                           children: [
-                                            Icon(LucideIcons.trendingUp, size: 12,
+                                            Icon(LucideIcons.trendingUp, size: 10,
                                                 color: isSelected ? Colors.white : context.themeColors.primary500),
                                             const SizedBox(width: 4),
                                             Text(topic,
                                                 style: TextStyle(
                                                     color: isSelected ? Colors.white : context.themeColors.primary500,
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 12)),
+                                                    fontSize: 10)),
                                           ],
                                         ),
                                       ),
@@ -311,7 +311,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           // Suggested Builders
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Discover Builders', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                            child: Text('Discover Builders', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                           const SizedBox(height: 12),
                           SizedBox(
@@ -339,7 +339,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                           const SizedBox(height: 8),
                                           Text(
                                             builder['name']?.toString() ?? 'Builder',
-                                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
+                                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 9, fontWeight: FontWeight.bold),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             textAlign: TextAlign.center,
@@ -360,9 +360,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             alignment: Alignment.centerLeft,
                             child: Row(
                               children: [
-                                Text('Leaderboard', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                                Text('Leaderboard', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12)),
                                 const SizedBox(width: 8),
-                                Icon(LucideIcons.flame, color: Colors.orange, size: 16),
+                                Icon(LucideIcons.flame, color: Colors.orange, size: 13),
                               ],
                             ),
                           ),
@@ -416,7 +416,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text('Active Rooms', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+                            child: Text('Active Rooms', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
                           ),
                           
                           const SizedBox(height: 16),
@@ -454,7 +454,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 child: Text(
                                   category,
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected ? Colors.white : context.themeColors.textSecondary,
                                   ),
@@ -506,17 +506,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                       color: Colors.white.withOpacity(0.05),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: Icon(LucideIcons.search, color: context.themeColors.textTertiary, size: 32),
+                                    child: Icon(LucideIcons.search, color: context.themeColors.textTertiary, size: 27),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     'No active rooms found',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary),
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'Try adjusting your filters or search query.',
-                                    style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary),
+                                    style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
                                   ),
                                 ],
                               ),
@@ -608,15 +608,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(room['title'] ?? 'Untitled', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: context.themeColors.textPrimary)),
+                                            Text(room['title'] ?? 'Untitled', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: context.themeColors.textPrimary)),
                                             const SizedBox(height: 4),
-                                            Text('by ${room['builder_name'] ?? 'Unknown'}', style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
+                                            Text('by ${room['builder_name'] ?? 'Unknown'}', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
                                             const SizedBox(height: 16),
                                             Text(
                                               room['description'] ?? 'No description',
                                               maxLines: 3,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary, height: 1.5),
+                                              style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.5),
                                             ),
                                             const SizedBox(height: 20),
                                             Divider(height: 1, color: context.themeColors.borderSubtle),
@@ -626,9 +626,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                               children: [
                                                 Row(
                                                   children: [
-                                                    Icon(LucideIcons.clock, size: 14, color: context.themeColors.textTertiary),
+                                                    Icon(LucideIcons.clock, size: 11, color: context.themeColors.textTertiary),
                                                     const SizedBox(width: 4),
-                                                    Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary)),
+                                                    Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
                                                   ],
                                                 ),
                                                 Container(
@@ -713,12 +713,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
           width: 24,
           child: Text(
             rank,
-            style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 11),
             textAlign: TextAlign.center,
           ),
         ),
         const SizedBox(width: 12),
-        Icon(LucideIcons.medal, color: medalColor, size: 18),
+        Icon(LucideIcons.medal, color: medalColor, size: 15),
         const SizedBox(width: 12),
         _buildAvatar(avatarUrl, name, userId, 28),
         const SizedBox(width: 12),
@@ -728,7 +728,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               Flexible(
                 child: Text(
                   name,
-                  style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -749,7 +749,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
         Text(
           points,
-          style: TextStyle(color: context.themeColors.primary400, fontWeight: FontWeight.bold, fontSize: 12),
+          style: TextStyle(color: context.themeColors.primary400, fontWeight: FontWeight.bold, fontSize: 10),
         ),
       ],
     );

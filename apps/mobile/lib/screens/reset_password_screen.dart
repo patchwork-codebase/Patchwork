@@ -95,7 +95,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
           const SizedBox(height: 6),
           Text(text,
-              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+              style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -111,14 +111,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         children: [
           Icon(
             matches ? LucideIcons.checkCircle2 : LucideIcons.xCircle,
-            size: 14,
+            size: 11,
             color: matches ? Colors.green : Colors.red,
           ),
           const SizedBox(width: 6),
           Text(
             matches ? 'Passwords match' : 'Passwords do not match',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 9,
               fontWeight: FontWeight.bold,
               color: matches ? Colors.green : Colors.red,
             ),
@@ -232,7 +232,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   color: Colors.green.withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(LucideIcons.checkCircle2, size: 36, color: Colors.green),
+                                child: const Icon(LucideIcons.checkCircle2, size: 30, color: Colors.green),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -244,7 +244,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Your password has been successfully changed. Redirecting you to home...',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 24),
@@ -255,7 +255,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Icon(LucideIcons.lock, size: 48, color: context.themeColors.primary500),
+                            Icon(LucideIcons.lock, size: 40, color: context.themeColors.primary500),
                             const SizedBox(height: 24),
                             Text(
                               'Update Password',
@@ -265,7 +265,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Choose a strong new password for your account.',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 32),
@@ -280,9 +280,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(LucideIcons.alertCircle, color: Colors.red, size: 16),
+                                    const Icon(LucideIcons.alertCircle, color: Colors.red, size: 13),
                                     const SizedBox(width: 8),
-                                    Expanded(child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600))),
+                                    Expanded(child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.w600))),
                                   ],
                                 ),
                               ),
@@ -300,9 +300,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               style: TextStyle(color: context.themeColors.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'New password',
-                                prefixIcon: Icon(LucideIcons.lock, size: 18, color: context.themeColors.textTertiary),
+                                prefixIcon: Icon(LucideIcons.lock, size: 15, color: context.themeColors.textTertiary),
                                 suffixIcon: IconButton(
-                                  icon: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 18, color: context.themeColors.textTertiary),
+                                  icon: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 15, color: context.themeColors.textTertiary),
                                   onPressed: () => setState(() => _showPassword = !_showPassword),
                                 ),
                               ),
@@ -323,9 +323,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               style: TextStyle(color: context.themeColors.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'Confirm new password',
-                                prefixIcon: Icon(LucideIcons.lock, size: 18, color: context.themeColors.textTertiary),
+                                prefixIcon: Icon(LucideIcons.lock, size: 15, color: context.themeColors.textTertiary),
                                 suffixIcon: IconButton(
-                                  icon: Icon(_showConfirm ? LucideIcons.eyeOff : LucideIcons.eye, size: 18, color: context.themeColors.textTertiary),
+                                  icon: Icon(_showConfirm ? LucideIcons.eyeOff : LucideIcons.eye, size: 15, color: context.themeColors.textTertiary),
                                   onPressed: () => setState(() => _showConfirm = !_showConfirm),
                                 ),
                               ),

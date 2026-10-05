@@ -84,7 +84,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             child: Icon(
               _isPlaying ? LucideIcons.pauseCircle : LucideIcons.playCircle,
               color: iconColor,
-              size: 32,
+              size: 27,
             ),
           ),
           const SizedBox(width: 8),
@@ -118,11 +118,11 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     children: [
                       Text(
                         _formatDuration(_position),
-                        style: TextStyle(fontSize: 10, color: textColor.withOpacity(0.8)),
+                        style: TextStyle(fontSize: 8, color: textColor.withOpacity(0.8)),
                       ),
                       Text(
                         _formatDuration(_duration),
-                        style: TextStyle(fontSize: 10, color: textColor.withOpacity(0.8)),
+                        style: TextStyle(fontSize: 8, color: textColor.withOpacity(0.8)),
                       ),
                     ],
                   ),

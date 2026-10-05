@@ -84,7 +84,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                         children: [
                           const Icon(LucideIcons.sparkles, color: Colors.purpleAccent),
                           const SizedBox(width: 8),
-                          Text('AI Release Note', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text('AI Release Note', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
                         ],
                       ),
                       IconButton(
@@ -346,22 +346,6 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.themeColors.background,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CreateUpdateScreen(
-                preselectedRoomId: widget.roomId,
-              ),
-            ),
-          ).then((value) {
-            if (value == true) _refresh();
-          });
-        },
-        backgroundColor: context.themeColors.primary500,
-        icon: const Icon(LucideIcons.messageSquare, color: Colors.white),
-        label: const Text('Post Update', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _roomDataFuture,
         builder: (context, snapshot) {
@@ -464,7 +448,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                     titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
                     title: Text(
                       widget.title, 
-                      style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5, shadows: [Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)])
+                      style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.5, shadows: [Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)])
                     ),
                     background: Stack(
                       fit: StackFit.expand,
@@ -475,7 +459,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Container(
                               color: context.themeColors.primary500.withOpacity(0.1),
-                              child: Icon(LucideIcons.image, color: context.themeColors.primary500, size: 40),
+                              child: Icon(LucideIcons.image, color: context.themeColors.primary500, size: 34),
                             ),
                           )
                         else
@@ -522,7 +506,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                         Expanded(
                           child: Text(
                             widget.title,
-                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                           ),
                         ),
                       ],
@@ -560,7 +544,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                     activityLabel,
                                     style: TextStyle(
                                       color: activityColor,
-                                      fontSize: 9.5,
+                                      fontSize: 8,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 0.6,
                                     ),
@@ -582,7 +566,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                 children: [
                                   Icon(
                                     isPrivate ? LucideIcons.lock : LucideIcons.globe, 
-                                    size: 10, 
+                                    size: 8, 
                                     color: isPrivate ? context.themeColors.background : Colors.blueAccent
                                   ),
                                   const SizedBox(width: 4),
@@ -690,7 +674,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                     // Description
                     Text(
                       description,
-                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14, height: 1.5),
+                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.5),
                     ),
                     const SizedBox(height: 24),
                     
@@ -709,7 +693,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                             ),
                             child: Text(
                               t.toUpperCase(),
-                              style: TextStyle(color: context.themeColors.primary500, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                              style: TextStyle(color: context.themeColors.primary500, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                             ),
                           )).toList(),
                         ),
@@ -727,7 +711,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                           radius: 14,
                           backgroundColor: context.themeColors.primary500.withOpacity(0.2),
                           backgroundImage: builderAvatar != null ? NetworkImage(builderAvatar) : null,
-                          child: builderAvatar == null ? Text(builderName[0].toUpperCase(), style: TextStyle(color: context.themeColors.primary500, fontSize: 12)) : null,
+                          child: builderAvatar == null ? Text(builderName[0].toUpperCase(), style: TextStyle(color: context.themeColors.primary500, fontSize: 10)) : null,
                         ),
                         const SizedBox(width: 12),
                         // Name & Verified
@@ -739,25 +723,25 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                 children: [
                                   Text(
                                     builderName,
-                                    style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                                    style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   if (isVerified) ...[
                                     const SizedBox(width: 4),
-                                    Icon(LucideIcons.checkCircle2, size: 14, color: Colors.blueAccent),
+                                    Icon(LucideIcons.checkCircle2, size: 11, color: Colors.blueAccent),
                                   ]
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(LucideIcons.users, size: 12, color: context.themeColors.textTertiary),
+                                  Icon(LucideIcons.users, size: 10, color: context.themeColors.textTertiary),
                                   const SizedBox(width: 4),
-                                  Text('$_observersCount', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
+                                  Text('$_observersCount', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.w600)),
                                   const SizedBox(width: 12),
                                   if (createdDate != null)
-                                    Text(timeago.format(createdDate), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11)),
+                                    Text(timeago.format(createdDate), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9)),
                                 ],
                               )
                             ],
@@ -851,7 +835,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                   children: [
                                     Icon(
                                       isShipped ? LucideIcons.checkCircle : LucideIcons.gitCommit,
-                                      size: 16,
+                                      size: 13,
                                       color: isShipped ? Colors.greenAccent : context.themeColors.primary500,
                                     ),
                                     const SizedBox(width: 8),
@@ -879,20 +863,20 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                   style: TextStyle(
                                     color: context.themeColors.textPrimary,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 if (decision['description'] != null && decision['description'].toString().isNotEmpty) ...[
                                   const SizedBox(height: 8),
                                   Text(
                                     decision['description'],
-                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.4),
                                   ),
                                 ],
                                 const SizedBox(height: 12),
                                 Text(
                                   timeago.format(DateTime.parse(decision['created_at'])),
-                                  style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -907,11 +891,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(LucideIcons.barChart3, size: 48, color: context.themeColors.textTertiary),
+                              Icon(LucideIcons.barChart3, size: 40, color: context.themeColors.textTertiary),
                               const SizedBox(height: 16),
                               Text(
                                 'Room Analytics',
-                                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 24),
                               _buildAnalyticsCard(context, 'Total Views', analytics['totalViews'].toString(), '+12%', true),
@@ -924,7 +908,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Detailed analytics available on web.')));
                                 },
-                                icon: const Icon(LucideIcons.externalLink, size: 16),
+                                icon: const Icon(LucideIcons.externalLink, size: 13),
                                 label: const Text('View Full Report'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: context.themeColors.primary500.withOpacity(0.1),
@@ -938,7 +922,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                     ? const CircularProgressIndicator()
                                     : ElevatedButton.icon(
                                         onPressed: () => _generateReleaseNote(context),
-                                        icon: const Icon(LucideIcons.sparkles, size: 16),
+                                        icon: const Icon(LucideIcons.sparkles, size: 13),
                                         label: const Text('Generate Release Note'),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.purpleAccent.withOpacity(0.1),
@@ -970,7 +954,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                               Text(
                                 'ROADMAP & MILESTONES',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 1.5,
                                   color: context.themeColors.textTertiary,
@@ -987,7 +971,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                     '${roadmapItems.length} items',
                                     style: TextStyle(
                                       color: context.themeColors.primary400,
-                                      fontSize: 10,
+                                      fontSize: 8,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -1042,7 +1026,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                         color: Colors.purpleAccent.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Icon(LucideIcons.checkSquare, size: 14, color: Colors.purpleAccent),
+                                      child: const Icon(LucideIcons.checkSquare, size: 11, color: Colors.purpleAccent),
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(
@@ -1051,12 +1035,12 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                         children: [
                                           Text(
                                             issue['title'] ?? 'Linear Task',
-                                            style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                                            style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11),
                                           ),
                                           if (issue['state'] != null)
                                             Text(
                                               issue['state'].toString().toUpperCase(),
-                                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.w600),
+                                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8, fontWeight: FontWeight.w600),
                                             ),
                                         ],
                                       ),
@@ -1077,17 +1061,17 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                               ),
                               child: Column(
                                 children: [
-                                  Icon(LucideIcons.map, size: 36, color: context.themeColors.textTertiary),
+                                  Icon(LucideIcons.map, size: 30, color: context.themeColors.textTertiary),
                                   const SizedBox(height: 12),
                                   Text(
                                     'No Roadmap Items Yet',
-                                    style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                                    style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     'Milestones and tasks linked via Linear or Roadmap appear here.',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, height: 1.4),
+                                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, height: 1.4),
                                   ),
                                 ],
                               ),
@@ -1099,7 +1083,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                           Text(
                             'WORKSPACE & INTEGRATIONS',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 9,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.5,
                               color: context.themeColors.textTertiary,
@@ -1119,15 +1103,15 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.code, size: 16, color: Colors.purpleAccent),
+                                  const Icon(Icons.code, size: 13, color: Colors.purpleAccent),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
                                       '${repo['github_owner']}/${repo['github_repo_name']}',
-                                      style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                                      style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11),
                                     ),
                                   ),
-                                  Icon(LucideIcons.externalLink, size: 14, color: context.themeColors.textTertiary),
+                                  Icon(LucideIcons.externalLink, size: 11, color: context.themeColors.textTertiary),
                                 ],
                               ),
                             ))),
@@ -1150,15 +1134,15 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(LucideIcons.fileText, size: 16, color: Colors.blueAccent),
+                                    const Icon(LucideIcons.fileText, size: 13, color: Colors.blueAccent),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
                                         doc['title'] ?? 'Untitled Document',
-                                        style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                                        style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11),
                                       ),
                                     ),
-                                    Icon(LucideIcons.externalLink, size: 14, color: context.themeColors.textTertiary),
+                                    Icon(LucideIcons.externalLink, size: 11, color: context.themeColors.textTertiary),
                                   ],
                                 ),
                               ),
@@ -1172,7 +1156,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                               onPressed: () {
                                 launchUrl(Uri.parse('https://joinpatchwork.xyz/dashboard'), mode: LaunchMode.externalApplication);
                               },
-                              icon: const Icon(LucideIcons.externalLink, size: 14),
+                              icon: const Icon(LucideIcons.externalLink, size: 11),
                               label: const Text('Manage Webhooks & Integrations'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: context.themeColors.primary400,
@@ -1299,10 +1283,10 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14)),
+          Text(title, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
           Row(
             children: [
-              Text(value, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(value, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(width: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1312,7 +1296,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                 ),
                 child: Text(
                   change,
-                  style: TextStyle(color: isPositive ? Colors.green : Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: isPositive ? Colors.green : Colors.red, fontSize: 9, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -1325,9 +1309,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
   Widget _buildIndicatorRow(IconData icon, String label, Color color) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: color),
+        Icon(icon, size: 13, color: color),
         const SizedBox(width: 12),
-        Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+        Text(label, style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11)),
       ],
     );
   }
@@ -1344,7 +1328,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
           border: Border.all(color: color != null ? color.withOpacity(0.3) : Colors.white.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, size: 14, color: color ?? context.themeColors.textSecondary),
+        child: Icon(icon, size: 11, color: color ?? context.themeColors.textSecondary),
       ),
     );
   }
@@ -1370,7 +1354,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 13,
               color: isActive ? context.themeColors.primary400 : context.themeColors.textTertiary,
             ),
             const SizedBox(width: 8),
@@ -1379,7 +1363,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
               style: TextStyle(
                 color: isActive ? Colors.white : context.themeColors.textTertiary,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 10,
               ),
             ),
             if (count != null) ...[
@@ -1394,7 +1378,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                   '$count',
                   style: TextStyle(
                     color: isActive ? context.themeColors.primary400 : context.themeColors.textTertiary,
-                    fontSize: 10,
+                    fontSize: 8,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'monospace',
                   ),
@@ -1419,7 +1403,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
         Text(
           title,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 9,
             fontWeight: FontWeight.bold,
             color: color,
             letterSpacing: 1.0,
@@ -1435,7 +1419,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
           child: Text(
             '$count',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 8,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -1469,7 +1453,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                   style: TextStyle(
                     color: context.themeColors.textPrimary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 11,
                   ),
                 ),
               ),
@@ -1496,7 +1480,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
               description,
               style: TextStyle(
                 color: context.themeColors.textSecondary,
-                fontSize: 12,
+                fontSize: 10,
                 height: 1.4,
               ),
               maxLines: 2,

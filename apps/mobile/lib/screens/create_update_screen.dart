@@ -383,13 +383,13 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                 color: context.themeColors.primary500.withOpacity(0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(LucideIcons.check, color: context.themeColors.primary500, size: 40),
+                              child: Icon(LucideIcons.check, color: context.themeColors.primary500, size: 34),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Posted successfully',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: context.themeColors.textPrimary,
                               ),
@@ -437,7 +437,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
             onPressed: _isLoading ? null : _submitUpdate,
             child: _isLoading 
                 ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: context.themeColors.primary500))
-                : Text('Post', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 16)),
+                : Text('Post', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 13)),
           ),
         ],
       ),
@@ -464,7 +464,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
               children: [
                 // Room Selector (Hidden for pure observers or if preselected)
                 if (rooms.isNotEmpty && widget.preselectedRoomId == null) ...[
-                  Text('ROOM', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text('ROOM', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                   const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -480,7 +480,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                       dropdownColor: context.themeColors.surface,
                       icon: Icon(LucideIcons.chevronDown, color: context.themeColors.textSecondary),
                       isExpanded: true,
-                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                       items: rooms.map((room) {
                         return DropdownMenuItem<String>(
                           value: room['id'],
@@ -497,7 +497,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 if (rooms.isNotEmpty && widget.preselectedRoomId == null) const SizedBox(height: 32),
                 
                 // Update Type Selector
-                Text('TYPE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                Text('TYPE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -525,14 +525,14 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(data['icon'], size: 16, color: isSelected ? data['color'] : context.themeColors.textSecondary),
+                              Icon(data['icon'], size: 13, color: isSelected ? data['color'] : context.themeColors.textSecondary),
                               const SizedBox(width: 8),
                               Text(
                                 data['label'],
                                 style: TextStyle(
                                   color: isSelected ? data['color'] : context.themeColors.textSecondary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 11,
                                 ),
                               ),
                             ],
@@ -547,7 +547,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 
                 // Quoted Update Preview (if any)
                 if (widget.quotedUpdateId != null && widget.quotedUpdateContent != null) ...[
-                  Text('QUOTED UPDATE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text('QUOTED UPDATE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
@@ -562,18 +562,18 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(LucideIcons.quote, size: 16, color: context.themeColors.primary500),
+                            Icon(LucideIcons.quote, size: 13, color: context.themeColors.primary500),
                             const SizedBox(width: 8),
                             Text(
                               widget.quotedUpdateAuthor ?? 'Builder',
-                              style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 13),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, fontSize: 11),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
                           widget.quotedUpdateContent!,
-                          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                          style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.4),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -584,7 +584,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 ],
 
                 // Content Input
-                Text('YOUR THOUGHTS (MARKDOWN SUPPORTED)', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                Text('YOUR THOUGHTS (MARKDOWN SUPPORTED)', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
@@ -607,12 +607,12 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           children: [
                             GestureDetector(
                               onTap: () => setState(() => _isPreviewMode = false),
-                              child: Text('Write', style: TextStyle(fontSize: 14, fontWeight: _isPreviewMode ? FontWeight.normal : FontWeight.bold, color: _isPreviewMode ? context.themeColors.textTertiary : context.themeColors.textPrimary)),
+                              child: Text('Write', style: TextStyle(fontSize: 11, fontWeight: _isPreviewMode ? FontWeight.normal : FontWeight.bold, color: _isPreviewMode ? context.themeColors.textTertiary : context.themeColors.textPrimary)),
                             ),
                             const SizedBox(width: 24),
                             GestureDetector(
                               onTap: () => setState(() => _isPreviewMode = true),
-                              child: Text('Preview', style: TextStyle(fontSize: 14, fontWeight: _isPreviewMode ? FontWeight.bold : FontWeight.normal, color: _isPreviewMode ? context.themeColors.textPrimary : context.themeColors.textTertiary)),
+                              child: Text('Preview', style: TextStyle(fontSize: 11, fontWeight: _isPreviewMode ? FontWeight.bold : FontWeight.normal, color: _isPreviewMode ? context.themeColors.textPrimary : context.themeColors.textTertiary)),
                             ),
                           ],
                         ),
@@ -675,7 +675,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           child: MarkdownBody(
                             data: _mentionsKey.currentState?.controller?.text ?? '',
                             styleSheet: MarkdownStyleSheet(
-                              p: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, height: 1.5),
+                              p: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, height: 1.5),
                             ),
                           ),
                         )
@@ -690,7 +690,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                         suggestionPosition: SuggestionPosition.Bottom,
                         maxLines: 12,
                         minLines: 4,
-                        style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, height: 1.5),
+                        style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, height: 1.5),
                         decoration: InputDecoration(
                           hintText: "What's the latest? Share progress, decisions, or code...",
                           hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -717,7 +717,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(data['full_name'], style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
-                                        Text('@${data['display']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
+                                        Text('@${data['display']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
                                       ],
                                     )
                                   ],
@@ -758,7 +758,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           const SizedBox(height: 12),
                           Text('Attach images (up to 4)', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text('JPG, PNG up to 5MB each', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                          Text('JPG, PNG up to 5MB each', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
                         ],
                       ),
                     ),
@@ -774,7 +774,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                             'ATTACHMENTS (${_selectedMediaList.length}/4)',
                             style: TextStyle(
                               color: context.themeColors.textSecondary,
-                              fontSize: 12,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.2,
                             ),
@@ -787,7 +787,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                 style: TextStyle(
                                   color: context.themeColors.primary500,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 10,
                                 ),
                               ),
                             ),
@@ -818,11 +818,11 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(LucideIcons.plus, color: context.themeColors.textSecondary, size: 28),
+                                      Icon(LucideIcons.plus, color: context.themeColors.textSecondary, size: 23),
                                       const SizedBox(height: 6),
                                       Text(
                                         'Add',
-                                        style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold),
+                                        style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -837,9 +837,9 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                   
                                   Widget mediaPreview;
                                   if (isVideo) {
-                                    mediaPreview = Center(child: Icon(LucideIcons.video, size: 48, color: context.themeColors.textSecondary));
+                                    mediaPreview = Center(child: Icon(LucideIcons.video, size: 40, color: context.themeColors.textSecondary));
                                   } else if (isDoc) {
-                                    mediaPreview = Center(child: Icon(LucideIcons.fileText, size: 48, color: context.themeColors.textSecondary));
+                                    mediaPreview = Center(child: Icon(LucideIcons.fileText, size: 40, color: context.themeColors.textSecondary));
                                   } else {
                                     mediaPreview = Image.memory(bytes, fit: BoxFit.cover);
                                   }
@@ -889,7 +889,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                         color: Colors.black87,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Icon(LucideIcons.x, color: Colors.white, size: 14),
+                                      child: const Icon(LucideIcons.x, color: Colors.white, size: 11),
                                     ),
                                   ),
                                 ),
@@ -933,7 +933,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                 ),
                                 child: Icon(
                                   LucideIcons.barChart2, 
-                                  size: 18, 
+                                  size: 15, 
                                   color: _hasPoll 
                                       ? context.themeColors.primary500 
                                       : context.themeColors.textSecondary,
@@ -948,14 +948,14 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                     style: TextStyle(
                                       color: context.themeColors.textPrimary,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: 11,
                                     ),
                                   ),
                                   Text(
                                     'Ask observers to vote on decisions',
                                     style: TextStyle(
                                       color: context.themeColors.textTertiary,
-                                      fontSize: 11,
+                                      fontSize: 9,
                                     ),
                                   ),
                                 ],
@@ -982,7 +982,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           'POLL QUESTION',
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 11,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),
@@ -990,7 +990,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                         const SizedBox(height: 8),
                         TextField(
                           controller: _pollQuestionController,
-                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11),
                           decoration: InputDecoration(
                             hintText: 'e.g., Which pricing tier works best?',
                             hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -1014,7 +1014,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           'OPTIONS (2–4)',
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 11,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),
@@ -1029,7 +1029,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                 Expanded(
                                   child: TextField(
                                     controller: _pollOptionControllers[idx],
-                                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13),
+                                    style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11),
                                     decoration: InputDecoration(
                                       hintText: 'Option ${idx + 1}',
                                       hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -1062,7 +1062,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                         color: Colors.redAccent.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Icon(LucideIcons.trash2, color: Colors.redAccent, size: 16),
+                                      child: const Icon(LucideIcons.trash2, color: Colors.redAccent, size: 13),
                                     ),
                                   ),
                                 ],
@@ -1090,14 +1090,14 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(LucideIcons.plus, size: 14, color: context.themeColors.primary500),
+                                  Icon(LucideIcons.plus, size: 11, color: context.themeColors.primary500),
                                   const SizedBox(width: 6),
                                   Text(
                                     'Add Option',
                                     style: TextStyle(
                                       color: context.themeColors.primary500,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontSize: 10,
                                     ),
                                   ),
                                 ],
@@ -1115,7 +1115,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               'Poll Duration',
                               style: TextStyle(
                                 color: context.themeColors.textSecondary,
-                                fontSize: 12,
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1123,7 +1123,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               value: _pollDurationDays,
                               dropdownColor: context.themeColors.surface,
                               underline: const SizedBox.shrink(),
-                              style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 10),
                               items: const [
                                 DropdownMenuItem(value: 1, child: Text('1 Day')),
                                 DropdownMenuItem(value: 3, child: Text('3 Days')),
@@ -1172,7 +1172,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                 ),
                                 child: Icon(
                                   Icons.brush, 
-                                  size: 18, 
+                                  size: 15, 
                                   color: _hasFigma 
                                       ? const Color(0xFFF24E1E) 
                                       : context.themeColors.textSecondary,
@@ -1187,14 +1187,14 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                     style: TextStyle(
                                       color: context.themeColors.textPrimary,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: 11,
                                     ),
                                   ),
                                   Text(
                                     'Link your design file',
                                     style: TextStyle(
                                       color: context.themeColors.textTertiary,
-                                      fontSize: 11,
+                                      fontSize: 9,
                                     ),
                                   ),
                                 ],
@@ -1218,7 +1218,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           'FIGMA URL',
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 11,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),
@@ -1226,7 +1226,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                         const SizedBox(height: 8),
                         TextField(
                           controller: _figmaUrlController,
-                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
+                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11),
                           decoration: InputDecoration(
                             hintText: 'https://www.figma.com/file/...',
                             hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -1276,7 +1276,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: context.themeColors.borderSubtle),
             ),
-            child: Icon(icon, size: 15, color: context.themeColors.textSecondary),
+            child: Icon(icon, size: 12, color: context.themeColors.textSecondary),
           ),
         ),
       ),

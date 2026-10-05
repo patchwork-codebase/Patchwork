@@ -93,7 +93,7 @@ class _PollWidgetState extends State<PollWidget> {
           Text(
             question,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: context.themeColors.textPrimary,
             ),
@@ -147,7 +147,7 @@ class _PollWidgetState extends State<PollWidget> {
                               child: Text(
                                 optionText,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 11,
                                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                   color: isSelected ? context.themeColors.primary500 : context.themeColors.textPrimary,
                                 ),
@@ -159,7 +159,7 @@ class _PollWidgetState extends State<PollWidget> {
                               Text(
                                 '${(percentage * 100).toStringAsFixed(0)}%',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: context.themeColors.textSecondary,
                                 ),
@@ -177,7 +177,7 @@ class _PollWidgetState extends State<PollWidget> {
           Text(
             '$_totalVotes votes',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               color: context.themeColors.textTertiary,
             ),
           ),

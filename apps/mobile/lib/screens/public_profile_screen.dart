@@ -248,13 +248,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 child: Row(
                                   children: [
                                     Icon(LucideIcons.pin,
-                                        size: 16,
+                                        size: 13,
                                         color: context.themeColors.primary500),
                                     const SizedBox(width: 8),
                                     Text('Pinned Milestone',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 18,
+                                            fontSize: 15,
                                             color: context
                                                 .themeColors.textPrimary)),
                                   ],
@@ -272,7 +272,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                 child: Text('Rooms Built',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 18,
+                                        fontSize: 15,
                                         color:
                                             context.themeColors.textPrimary)),
                               ),
@@ -310,7 +310,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                           Text(room['title'] ?? 'Untitled',
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
+                                                  fontSize: 13,
                                                   color: context.themeColors
                                                       .textPrimary)),
                                           const SizedBox(height: 6),
@@ -320,7 +320,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 11,
                                                 color: context
                                                     .themeColors.textSecondary,
                                                 height: 1.4),
@@ -363,19 +363,19 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: iconColor),
+            Icon(icon, size: 11, color: iconColor),
             const SizedBox(width: 6),
             Text(value,
                 style: TextStyle(
                     fontWeight: FontWeight.w900,
-                    fontSize: 18,
+                    fontSize: 15,
                     color: context.themeColors.textPrimary)),
           ],
         ),
         const SizedBox(height: 4),
         Text(label,
             style: TextStyle(
-                fontSize: 11,
+                fontSize: 9,
                 fontWeight: FontWeight.bold,
                 color: context.themeColors.textTertiary)),
       ],
@@ -392,7 +392,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           border: Border.all(color: context.themeColors.borderSubtle),
           color: context.themeColors.surfaceHighlight.withOpacity(0.5),
         ),
-        child: Icon(icon, size: 16, color: color),
+        child: Icon(icon, size: 13, color: color),
       ),
     );
   }

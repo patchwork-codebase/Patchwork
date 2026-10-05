@@ -72,7 +72,7 @@ class _EditRoomScreenState extends State<EditRoomScreen> {
         backgroundColor: context.themeColors.background,
         elevation: 0,
         iconTheme: IconThemeData(color: context.themeColors.textPrimary),
-        title: Text('Edit Room Settings', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16)),
+        title: Text('Edit Room Settings', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13)),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _handleSave,
@@ -139,7 +139,7 @@ class _EditRoomScreenState extends State<EditRoomScreen> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text('Private Room', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
-                subtitle: Text('Only you and invited members can view this room.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)),
+                subtitle: Text('Only you and invited members can view this room.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
                 value: _isPrivate,
                 activeColor: context.themeColors.primary500,
                 onChanged: (val) => setState(() => _isPrivate = val),

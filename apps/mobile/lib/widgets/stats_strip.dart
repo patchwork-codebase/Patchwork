@@ -165,7 +165,7 @@ class _StatsStripState extends State<StatsStrip> {
                       ),
                       child: Icon(
                         s['icon'] as IconData,
-                        size: 12,
+                        size: 10,
                         color: s['iconColor'] as Color,
                       ),
                     ),

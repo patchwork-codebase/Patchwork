@@ -44,7 +44,7 @@ class FigmaEmbedCard extends StatelessWidget {
               child: const Icon(
                 Icons.brush,
                 color: Color(0xFFF24E1E),
-                size: 20,
+                size: 17,
               ),
             ),
             const SizedBox(width: 12),
@@ -57,20 +57,20 @@ class FigmaEmbedCard extends StatelessWidget {
                     style: TextStyle(
                       color: context.themeColors.textPrimary,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 11,
                     ),
                   ),
                   Text(
                     'Tap to view in Figma',
                     style: TextStyle(
                       color: context.themeColors.textTertiary,
-                      fontSize: 12,
+                      fontSize: 10,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(LucideIcons.externalLink, color: context.themeColors.textSecondary, size: 16),
+            Icon(LucideIcons.externalLink, color: context.themeColors.textSecondary, size: 13),
           ],
         ),
       ),

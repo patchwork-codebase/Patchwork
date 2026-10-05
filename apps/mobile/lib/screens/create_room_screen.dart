@@ -100,7 +100,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             onPressed: _isLoading ? null : _submitRoom,
             child: _isLoading
                 ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: context.themeColors.primary500))
-                : Text('Launch', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 16)),
+                : Text('Launch', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 13)),
           ),
         ],
       ),
@@ -131,7 +131,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title Input
-            Text('ROOM TITLE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('ROOM TITLE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -141,7 +141,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
               ),
               child: TextField(
                 controller: _titleController,
-                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
                   hintText: "e.g. Mobile App Redesign",
                   hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -154,7 +154,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Description Input
-            Text('DESCRIPTION', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('DESCRIPTION', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -165,7 +165,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
               child: TextField(
                 controller: _descriptionController,
                 maxLines: 4,
-                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, height: 1.5),
+                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, height: 1.5),
                 decoration: InputDecoration(
                   hintText: "What are you building here? What is the goal?",
                   hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -178,7 +178,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Tags Selector
-            Text('TAGS', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('TAGS', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -209,7 +209,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                       style: TextStyle(
                         color: isSelected ? context.themeColors.primary500 : context.themeColors.textSecondary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: 10,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -221,7 +221,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Primary Link Input
-            Text('PRIMARY LINK', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('PRIMARY LINK', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -231,7 +231,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
               ),
               child: TextField(
                 controller: _primaryLinkController,
-                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16),
+                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: "e.g. https://github.com/my-repo",
                   hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -244,7 +244,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Cover Image URL Input
-            Text('COVER IMAGE URL', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('COVER IMAGE URL', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -254,7 +254,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
               ),
               child: TextField(
                 controller: _coverImageController,
-                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16),
+                style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: "e.g. https://example.com/image.png",
                   hintStyle: TextStyle(color: context.themeColors.textTertiary),
@@ -279,13 +279,13 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(LucideIcons.lock, color: context.themeColors.textSecondary, size: 20),
+                      Icon(LucideIcons.lock, color: context.themeColors.textSecondary, size: 17),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Private Room', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                          Text('Only you and invited members can view', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12)),
+                          Text('Private Room', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
+                          Text('Only you and invited members can view', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
                         ],
                       ),
                     ],
@@ -316,7 +316,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   Expanded(
                     child: Text(
                       'Rooms are public by default. Once launched, you can invite observers and start posting updates to the timeline.',
-                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.5),
+                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.5),
                     ),
                   )
                 ],

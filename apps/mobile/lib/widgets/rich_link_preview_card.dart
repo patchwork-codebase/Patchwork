@@ -58,7 +58,7 @@ class RichLinkPreviewCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     url,
-                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12),
+                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -95,7 +95,7 @@ class RichLinkPreviewCard extends StatelessWidget {
               width: double.infinity,
               height: 120,
               color: context.themeColors.surfaceHighlight,
-              child: Icon(LucideIcons.image, size: 48, color: context.themeColors.textTertiary),
+              child: Icon(LucideIcons.image, size: 40, color: context.themeColors.textTertiary),
             ),
           
           // Glassmorphic overlay at the bottom
@@ -129,13 +129,13 @@ class RichLinkPreviewCard extends StatelessWidget {
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Icon(LucideIcons.globe, size: 10, color: Colors.white),
+                            child: const Icon(LucideIcons.globe, size: 8, color: Colors.white),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               _getDomain(url),
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white70),
+                              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white70),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -146,7 +146,7 @@ class RichLinkPreviewCard extends StatelessWidget {
                       Text(
                         metadata.title ?? _getDomain(url),
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
                           letterSpacing: 0.2,
@@ -159,7 +159,7 @@ class RichLinkPreviewCard extends StatelessWidget {
                         Text(
                           metadata.desc!,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             color: Colors.white70,
                             height: 1.3,
                           ),

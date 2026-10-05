@@ -66,7 +66,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   width: double.infinity,
                   height: double.infinity,
                   placeholder: (context, url) => const Center(child: CircularProgressIndicator(color: Colors.white)),
-                  errorWidget: (context, error, stackTrace) => const Center(child: Icon(LucideIcons.imageOff, color: Colors.white, size: 40)),
+                  errorWidget: (context, error, stackTrace) => const Center(child: Icon(LucideIcons.imageOff, color: Colors.white, size: 34)),
                 ),
               );
 
@@ -114,7 +114,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontSize: 11,
                   ),
                 ),
               ),

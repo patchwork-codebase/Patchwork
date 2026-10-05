@@ -70,7 +70,7 @@ class EmptyState extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: context.themeColors.textPrimary,
                 letterSpacing: -0.5,
@@ -84,7 +84,7 @@ class EmptyState extends StatelessWidget {
               description,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: context.themeColors.textSecondary,
                 height: 1.5,
@@ -108,7 +108,7 @@ class EmptyState extends StatelessWidget {
                 child: Text(
                   buttonText!,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
                   ),
@@ -137,7 +137,7 @@ class EmptyState extends StatelessWidget {
       ),
       child: Icon(
         icon,
-        size: 56,
+        size: 47,
         color: context.themeColors.textTertiary,
       ),
     ).animate(onPlay: (controller) => controller.repeat(reverse: true))

@@ -98,7 +98,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('PROOF OF WORK', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+              Text('PROOF OF WORK', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
               const SizedBox(height: 16),
               
               // 1. Hero Section: Current Level and Awards
@@ -137,25 +137,25 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                                 children: [
                                   Text(
                                     'CURRENT LEVEL', 
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.primary400, letterSpacing: 1.5)
+                                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.primary400, letterSpacing: 1.5)
                                   ),
                                   const SizedBox(width: 4),
-                                  Icon(LucideIcons.sparkles, size: 12, color: Colors.amber),
+                                  Icon(LucideIcons.sparkles, size: 10, color: Colors.amber),
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 currentLevel?['title'] ?? 'Beginner', 
-                                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: context.themeColors.textPrimary)
+                                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: context.themeColors.textPrimary)
                               ),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(LucideIcons.award, size: 14, color: Colors.amber),
+                                  Icon(LucideIcons.award, size: 11, color: Colors.amber),
                                   const SizedBox(width: 6),
                                   Text(
                                     _awardsCount > 0 ? '$_awardsCount Verified Awards' : 'No awards yet', 
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)
                                   ),
                                 ],
                               ),
@@ -168,7 +168,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.1),
                           ),
-                          child: Icon(LucideIcons.arrowRight, size: 20, color: context.themeColors.textPrimary),
+                          child: Icon(LucideIcons.arrowRight, size: 17, color: context.themeColors.textPrimary),
                         ),
                       ],
                     ),
@@ -182,9 +182,9 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
               if (nextLevel != null) ...[
                 Row(
                   children: [
-                    Icon(LucideIcons.trendingUp, size: 14, color: context.themeColors.textTertiary),
+                    Icon(LucideIcons.trendingUp, size: 11, color: context.themeColors.textTertiary),
                     const SizedBox(width: 6),
-                    Text('NEXT MILESTONE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
+                    Text('NEXT MILESTONE', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -218,15 +218,15 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(nextLevel['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: context.themeColors.textPrimary)),
+                                        Text(nextLevel['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.themeColors.textPrimary)),
                                         const SizedBox(width: 6),
-                                        Icon(LucideIcons.info, size: 14, color: context.themeColors.textTertiary),
+                                        Icon(LucideIcons.info, size: 11, color: context.themeColors.textTertiary),
                                       ],
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       nextLevel['description'] ?? 'Earn more XP to unlock', 
-                                      style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary),
+                                      style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -236,8 +236,8 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                               RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(text: '$_currentReputation', style: TextStyle(fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, fontSize: 14)),
-                                    TextSpan(text: ' / ${nextLevel['points_required']} XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 12)),
+                                    TextSpan(text: '$_currentReputation', style: TextStyle(fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, fontSize: 11)),
+                                    TextSpan(text: ' / ${nextLevel['points_required']} XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 10)),
                                   ],
                                 ),
                               ),
@@ -284,7 +284,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                   child: const Center(
                     child: Text(
                       '🎉 You have reached the highest current milestone!',
-                      style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold, fontSize: 11),
                     ),
                   ),
                 ),
@@ -306,7 +306,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
-        child: const Center(child: Icon(LucideIcons.award, color: Colors.white54, size: 32)),
+        child: const Center(child: Icon(LucideIcons.award, color: Colors.white54, size: 27)),
       );
     }
     
@@ -332,14 +332,14 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
           Positioned(
             right: -10,
             bottom: -10,
-            child: Icon(LucideIcons.sparkles, size: 40, color: Colors.white.withOpacity(0.2)),
+            child: Icon(LucideIcons.sparkles, size: 34, color: Colors.white.withOpacity(0.2)),
           ),
           Center(
             child: Text(
               '$points',
               style: const TextStyle(
                 fontWeight: FontWeight.w900,
-                fontSize: 18,
+                fontSize: 15,
                 color: Colors.white,
                 shadows: [Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 4)],
               ),

@@ -42,7 +42,7 @@ class ToastService {
                     Icon(
                       icon ?? (isError ? LucideIcons.alertCircle : LucideIcons.checkCircle),
                       color: isError ? Colors.redAccent : context.themeColors.primary500,
-                      size: 20,
+                      size: 17,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -51,7 +51,7 @@ class ToastService {
                         style: TextStyle(
                           color: context.themeColors.textPrimary,
                           fontWeight: FontWeight.w500,
-                          fontSize: 14,
+                          fontSize: 11,
                         ),
                       ),
                     ),

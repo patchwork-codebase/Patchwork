@@ -138,7 +138,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         Text(
                           'Messages',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 23,
                             fontWeight: FontWeight.w900,
                             color: context.themeColors.textPrimary,
                             letterSpacing: -0.5,
@@ -147,7 +147,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         Text(
                           'Conversations with your collaborators',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 11,
                             color: context.themeColors.textTertiary,
                           ),
                         ),
@@ -156,7 +156,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   ),
                   IconButton(
                     onPressed: _fetchConversations,
-                    icon: Icon(LucideIcons.refreshCw, color: context.themeColors.textSecondary, size: 20),
+                    icon: Icon(LucideIcons.refreshCw, color: context.themeColors.textSecondary, size: 17),
                   ),
                 ],
               ),
@@ -234,7 +234,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 child: Icon(
                   isPrivate ? LucideIcons.lock : LucideIcons.messageCircle,
                   color: context.themeColors.primary500,
-                  size: 22,
+                  size: 18,
                 ),
               ),
             ),
@@ -253,7 +253,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           roomTitle,
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                            fontSize: 12,
                             color: context.themeColors.textPrimary,
                           ),
                           maxLines: 1,
@@ -264,7 +264,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         Text(
                           timeago.format(DateTime.parse(lastTime)),
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 9,
                             color: context.themeColors.textTertiary,
                           ),
                         ),
@@ -276,7 +276,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ? '${isMyMessage ? 'You' : (lastSender ?? 'Them')}: $lastContent'
                         : 'Tap to start chatting',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 11,
                       color: lastContent != null
                           ? context.themeColors.textSecondary
                           : context.themeColors.textTertiary,
@@ -290,7 +290,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
 
             const SizedBox(width: 8),
-            Icon(LucideIcons.chevronRight, size: 16, color: context.themeColors.textTertiary),
+            Icon(LucideIcons.chevronRight, size: 13, color: context.themeColors.textTertiary),
           ],
         ),
       ),
@@ -310,13 +310,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 shape: BoxShape.circle,
                 color: context.themeColors.primary500.withOpacity(0.1),
               ),
-              child: Icon(LucideIcons.messageCircle, size: 48, color: context.themeColors.primary500),
+              child: Icon(LucideIcons.messageCircle, size: 40, color: context.themeColors.primary500),
             ),
             const SizedBox(height: 24),
             Text(
               'No conversations yet',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
                 color: context.themeColors.textPrimary,
               ),
@@ -326,7 +326,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               'When you accept a Bounty Match or join a Room, your conversation threads will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 11,
                 color: context.themeColors.textTertiary,
                 height: 1.5,
               ),

@@ -37,11 +37,11 @@ class GamificationModals {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(LucideIcons.sparkles, color: Colors.amber, size: 24),
+                    Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
                     const SizedBox(width: 8),
-                    Text('NEW ACHIEVEMENT', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.amber, fontSize: 12, letterSpacing: 2.0)),
+                    Text('NEW ACHIEVEMENT', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.amber, fontSize: 10, letterSpacing: 2.0)),
                     const SizedBox(width: 8),
-                    Icon(LucideIcons.sparkles, color: Colors.amber, size: 24),
+                    Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -62,14 +62,14 @@ class GamificationModals {
                     ],
                   ),
                   child: const Center(
-                    child: Icon(LucideIcons.award, size: 48, color: Colors.white),
+                    child: Icon(LucideIcons.award, size: 40, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 24),
                 
-                Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary), textAlign: TextAlign.center),
+                Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary), textAlign: TextAlign.center),
                 const SizedBox(height: 8),
-                Text(description, style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary), textAlign: TextAlign.center),
+                Text(description, style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary), textAlign: TextAlign.center),
                 
                 const SizedBox(height: 32),
                 
@@ -93,7 +93,7 @@ class GamificationModals {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
-                    child: const Text('View in Gallery', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text('View in Gallery', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -138,15 +138,15 @@ class GamificationModals {
                     color: Colors.white.withOpacity(0.05),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(LucideIcons.rocket, size: 40, color: context.themeColors.primary500),
+                  child: Icon(LucideIcons.rocket, size: 34, color: context.themeColors.primary500),
                 ),
                 const SizedBox(height: 24),
                 
-                Text('Almost There!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary)),
+                Text('Almost There!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary)),
                 const SizedBox(height: 8),
                 Text(
                   'You only need $xpNeeded more XP to unlock the ${nextLevel['title']} certificate.', 
-                  style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary),
+                  style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 
@@ -158,8 +158,8 @@ class GamificationModals {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$currentReputation XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.primary400, fontSize: 12)),
-                        Text('$pointsRequired XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 12)),
+                        Text('$currentReputation XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.primary400, fontSize: 10)),
+                        Text('$pointsRequired XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 10)),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -203,7 +203,7 @@ class GamificationModals {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
-                    child: const Text('Post an Update (+10 XP)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text('Post an Update (+10 XP)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ),
                 const SizedBox(height: 12),

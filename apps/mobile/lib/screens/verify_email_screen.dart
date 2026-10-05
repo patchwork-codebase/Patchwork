@@ -160,7 +160,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             color: context.themeColors.primary500.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(LucideIcons.mailCheck, size: 36, color: context.themeColors.primary500),
+                          child: Icon(LucideIcons.mailCheck, size: 30, color: context.themeColors.primary500),
                         ).animate()
                           .scale(begin: const Offset(0.7, 0.7), end: const Offset(1.0, 1.0), duration: 400.ms, curve: Curves.elasticOut),
                       ),
@@ -178,7 +178,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             ? 'We\'ve sent a recovery code to'
                             : 'We\'ve sent a verification link to',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14, height: 1.5),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11, height: 1.5),
                       ),
                       const SizedBox(height: 6),
 
@@ -188,7 +188,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 12,
                           color: context.themeColors.textPrimary,
                         ),
                       ),
@@ -196,7 +196,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       Text(
                         'Didn\'t receive it? Check your spam folder.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: context.themeColors.textTertiary),
+                        style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
                       ),
                       const SizedBox(height: 32),
 
@@ -211,9 +211,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(LucideIcons.alertCircle, color: Colors.red, size: 16),
+                                const Icon(LucideIcons.alertCircle, color: Colors.red, size: 13),
                                 const SizedBox(width: 8),
-                                Expanded(child: Text(_verifyError, style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600))),
+                                Expanded(child: Text(_verifyError, style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.w600))),
                               ],
                             ),
                           ),
@@ -225,7 +225,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                           maxLength: 8,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 6,
                             color: context.themeColors.textPrimary,
@@ -260,9 +260,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                           ),
                           child: Row(
                             children: const [
-                              Icon(LucideIcons.checkCircle2, color: Colors.green, size: 16),
+                              Icon(LucideIcons.checkCircle2, color: Colors.green, size: 13),
                               SizedBox(width: 8),
-                              Expanded(child: Text('Email resent!', style: TextStyle(color: Colors.green, fontSize: 13, fontWeight: FontWeight.w600))),
+                              Expanded(child: Text('Email resent!', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.w600))),
                             ],
                           ),
                         ).animate().fadeIn(duration: 300.ms),
@@ -278,9 +278,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(LucideIcons.alertCircle, color: Colors.red, size: 16),
+                              const Icon(LucideIcons.alertCircle, color: Colors.red, size: 13),
                               const SizedBox(width: 8),
-                              Expanded(child: Text(_resendError, style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600))),
+                              Expanded(child: Text(_resendError, style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.w600))),
                             ],
                           ),
                         ),
@@ -313,7 +313,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                                   onPressed: canResend ? _handleResend : null,
                                   icon: Icon(
                                     _cooldownSeconds > 0 ? LucideIcons.timer : LucideIcons.refreshCw,
-                                    size: 16,
+                                    size: 13,
                                     color: canResend ? context.themeColors.primary500 : context.themeColors.textTertiary,
                                   ),
                                   label: Text(

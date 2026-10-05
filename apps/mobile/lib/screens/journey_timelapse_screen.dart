@@ -157,7 +157,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                   color: Colors.white.withOpacity(0.2),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(LucideIcons.rocket, color: Colors.white, size: 16),
+                                child: const Icon(LucideIcons.rocket, color: Colors.white, size: 13),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -166,12 +166,12 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                   children: [
                                     Text(
                                       widget.roomTitle,
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                                       maxLines: 1, overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
                                       'Build Journey',
-                                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
+                                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10),
                                     ),
                                   ],
                                 ),
@@ -250,7 +250,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
               child: CachedNetworkImage(
                 imageUrl: images.first,
                 fit: BoxFit.cover,
-                errorWidget: (context, url, error) => const Icon(LucideIcons.imageOff, color: Colors.white24, size: 64),
+                errorWidget: (context, url, error) => const Icon(LucideIcons.imageOff, color: Colors.white24, size: 54),
               ),
             ),
             Container(
@@ -336,9 +336,9 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(LucideIcons.flag, size: 14, color: Colors.black),
+                                  Icon(LucideIcons.flag, size: 11, color: Colors.black),
                                   SizedBox(width: 8),
-                                  Text('MILESTONE REACHED', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5)),
+                                  Text('MILESTONE REACHED', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1.5)),
                                 ],
                               ),
                             ),
@@ -354,9 +354,9 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(LucideIcons.gitCommit, size: 14, color: Colors.white),
+                                  Icon(LucideIcons.gitCommit, size: 11, color: Colors.white),
                                   SizedBox(width: 8),
-                                  Text('DECISION LOGGED', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5)),
+                                  Text('DECISION LOGGED', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1.5)),
                                 ],
                               ),
                             ),
@@ -365,7 +365,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                             content,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 28,
+                              fontSize: 23,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -0.5,
                               height: 1.3,
@@ -384,7 +384,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                 timeString.toUpperCase(),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.6),
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 2.0,
                                 ),

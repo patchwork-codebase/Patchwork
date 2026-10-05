@@ -333,7 +333,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           child: Icon(
                             LucideIcons.loader,
                             color: context.themeColors.primary500,
-                            size: 20 + (percentage * 4), // Scales up slightly as you pull
+                            size: 17 + (percentage * 4), // Scales up slightly as you pull
                           ),
                         ),
                       ),
@@ -345,7 +345,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   floating: true,
                   snap: true,
                   pinned: false, // Let it scroll away gracefully to avoid RenderFlex infinite height errors
-                  title: const Text('Global timeline', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  title: const Text('Global timeline', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                   centerTitle: false,
                   backgroundColor: context.themeColors.background.withOpacity(0.85),
                   elevation: 0,
@@ -367,7 +367,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              Icon(LucideIcons.bell, size: 20, color: context.themeColors.textPrimary),
+                              Icon(LucideIcons.bell, size: 17, color: context.themeColors.textPrimary),
                               if (_unreadNotifications > 0)
                                 Positioned(
                                   top: 10,
@@ -433,17 +433,17 @@ class _FeedScreenState extends State<FeedScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.wifiOff, size: 48, color: context.themeColors.textTertiary),
+                            Icon(LucideIcons.wifiOff, size: 40, color: context.themeColors.textTertiary),
                             const SizedBox(height: 16),
                             Text(
                               _errorMessage!, 
                               textAlign: TextAlign.center, 
-                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 16)
+                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13)
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton.icon(
                               onPressed: _fetchInitialFeed,
-                              icon: const Icon(LucideIcons.refreshCw, size: 16),
+                              icon: const Icon(LucideIcons.refreshCw, size: 13),
                               label: const Text('Retry'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: context.themeColors.primary500.withOpacity(0.1),
@@ -582,14 +582,14 @@ class _FeedScreenState extends State<FeedScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(LucideIcons.arrowUp, color: Colors.white, size: 16),
+                                const Icon(LucideIcons.arrowUp, color: Colors.white, size: 13),
                                 const SizedBox(width: 6),
                                 Text(
                                   '$count New update${count == 1 ? '' : 's'}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ],
@@ -640,7 +640,7 @@ class _FeedScreenState extends State<FeedScreen> {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 12,
             fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
             color: isActive ? context.themeColors.textPrimary : context.themeColors.textSecondary,
           ),
@@ -662,7 +662,7 @@ class _FeedScreenState extends State<FeedScreen> {
         child: Text(
           label.toUpperCase(),
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 9,
             fontWeight: FontWeight.bold,
             color: isActive ? context.themeColors.surface : context.themeColors.textSecondary,
             letterSpacing: 1.0,
@@ -688,7 +688,7 @@ class _FeedScreenState extends State<FeedScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('People to follow', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: context.themeColors.textPrimary)),
+                Text('People to follow', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: context.themeColors.textPrimary)),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -696,7 +696,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       PremiumPageRoute(page: const ExploreScreen()),
                     );
                   },
-                  child: Text('See all', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.themeColors.primary500)),
+                  child: Text('See all', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.primary500)),
                 ),
               ],
             ),
@@ -770,7 +770,7 @@ class _FeedScreenState extends State<FeedScreen> {
                             const SizedBox(height: 12),
                             Text(
                               name,
-                              style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -778,7 +778,7 @@ class _FeedScreenState extends State<FeedScreen> {
                             const SizedBox(height: 4),
                             Text(
                               builder['bio'] != null && builder['bio'].toString().isNotEmpty ? builder['bio'].toString() : 'Builder on Patchwork',
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -841,7 +841,7 @@ class _FeedScreenState extends State<FeedScreen> {
                                   minimumSize: const Size(0, 32),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
-                                child: Text(_followingBuilders.contains(builder['id']) ? 'Following' : 'Follow', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                child: Text(_followingBuilders.contains(builder['id']) ? 'Following' : 'Follow', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                               ),
                             ),
                           ],
@@ -856,7 +856,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               _suggestedBuilders.removeAt(i);
                             });
                           },
-                          child: Icon(LucideIcons.x, size: 14, color: context.themeColors.textTertiary),
+                          child: Icon(LucideIcons.x, size: 11, color: context.themeColors.textTertiary),
                         ),
                       ),
                     ],

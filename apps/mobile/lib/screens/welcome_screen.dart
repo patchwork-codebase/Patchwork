@@ -83,13 +83,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(LucideIcons.hammer, color: Colors.white, size: 14),
+                          child: const Icon(LucideIcons.hammer, color: Colors.white, size: 11),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'patch·work',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
                             color: textColor,
                             letterSpacing: -0.5,
@@ -105,7 +105,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       onPressed: _finish,
                       style: TextButton.styleFrom(
                         foregroundColor: context.themeColors.textSecondary,
-                        textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                        textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
                       ),
                       child: const Text('Skip'),
                     ),
@@ -186,11 +186,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             style: TextStyle(
                               color: buttonTextColor,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 13,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(LucideIcons.arrowRight, color: buttonTextColor, size: 18),
+                          Icon(LucideIcons.arrowRight, color: buttonTextColor, size: 15),
                         ],
                       ),
                     ),
@@ -258,7 +258,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('STUDIO UPDATE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                              Text('STUDIO UPDATE', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
@@ -270,7 +270,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          Text('A better way to share\nprogress.', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary, height: 1.2)),
+                          Text('A better way to share\nprogress.', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary, height: 1.2)),
                           const SizedBox(height: 16),
                           // Placeholder lines
                           Container(height: 4, width: double.infinity, color: context.themeColors.border, margin: const EdgeInsets.only(bottom: 6)),
@@ -292,7 +292,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   ],
                                 ),
                               ),
-                              Icon(LucideIcons.barChart2, color: const Color(0xFFFF7A4D), size: 20),
+                              Icon(LucideIcons.barChart2, color: const Color(0xFFFF7A4D), size: 17),
                             ],
                           ),
                         ],
@@ -318,7 +318,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         children: [
                           Text('BUILD LOG', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                           const SizedBox(height: 4),
-                          Text('Day 14', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                          Text('Day 14', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                         ],
                       ),
                     ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -343,13 +343,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(color: const Color(0xFFFF7A4D), borderRadius: BorderRadius.circular(8)),
-                            child: const Icon(LucideIcons.arrowUpRight, color: Colors.white, size: 16),
+                            child: const Icon(LucideIcons.arrowUpRight, color: Colors.white, size: 13),
                           ),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('24 new\nviews', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, height: 1.1)),
+                              Text('24 new\nviews', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, height: 1.1)),
                             ],
                           ),
                           const SizedBox(width: 12),
@@ -375,14 +375,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFFFF7A4D),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 12,
+                    fontSize: 10,
                   ),
                 ).animate().fade(delay: 300.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
                 Text(
                   'Build in public.',
                   style: TextStyle(
-                    fontSize: 40,
+                    fontSize: 34,
                     fontWeight: FontWeight.w800,
                     color: context.themeColors.textPrimary,
                     letterSpacing: -1,
@@ -393,7 +393,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 Text(
                   'Share the process, not just the polished result. Turn every small win into momentum.',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13,
                     color: context.themeColors.textSecondary,
                     height: 1.5,
                   ),
@@ -575,7 +575,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text('Synced with Figma', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary)),
+                          Text('Synced with Figma', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary)),
                         ],
                       ),
                     ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -607,7 +607,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Love this direction', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                              Text('Love this direction', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                               Text('Just now', style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary)),
                             ],
                           )
@@ -632,14 +632,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFF5A79FF),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 12,
+                    fontSize: 10,
                   ),
                 ).animate().fade(delay: 300.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
                 Text(
                   'Show what you\nmake.',
                   style: TextStyle(
-                    fontSize: 40,
+                    fontSize: 34,
                     fontWeight: FontWeight.w800,
                     color: context.themeColors.textPrimary,
                     letterSpacing: -1,
@@ -650,7 +650,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 Text(
                   'Bring your Figma files, notes, and progress together in one beautifully simple space.',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13,
                     color: context.themeColors.textSecondary,
                     height: 1.5,
                   ),
@@ -722,12 +722,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           width: 56, height: 56,
                           decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(16)),
                           alignment: Alignment.center,
-                          child: const Text('AN', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          child: const Text('AN', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                         ),
                         const SizedBox(height: 12),
-                        Text('You', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                        Text('You', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                         const SizedBox(height: 4),
-                        Text('Building in public', style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary)),
+                        Text('Building in public', style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary)),
                       ],
                     ),
                   ).animate().fade(delay: 200.ms).scale(duration: 500.ms, curve: Curves.easeOutBack),
@@ -769,10 +769,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
-                            child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
                           ),
                           const SizedBox(width: 8),
-                          const Text('new connections', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                          const Text('new connections', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -794,14 +794,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFF10B981),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 12,
+                    fontSize: 10,
                   ),
                 ).animate().fade(delay: 300.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
                 Text(
                   'Find your people.',
                   style: TextStyle(
-                    fontSize: 40,
+                    fontSize: 34,
                     fontWeight: FontWeight.w800,
                     color: context.themeColors.textPrimary,
                     letterSpacing: -1,
@@ -812,7 +812,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 Text(
                   'Meet thoughtful builders, exchange real feedback, and grow alongside your community.',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13,
                     color: context.themeColors.textSecondary,
                     height: 1.5,
                   ),
@@ -862,7 +862,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       borderRadius: BorderRadius.circular(32),
                     ),
                     alignment: Alignment.center,
-                    child: const Text('PW', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: -2)),
+                    child: const Text('PW', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: -2)),
                   ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                 ],
               ),
@@ -880,7 +880,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFFFF7A4D),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 12,
+                    fontSize: 10,
                   ),
                 ).animate().fade(delay: 300.ms).slideY(begin: 0.2),
                 const SizedBox(height: 16),
@@ -888,7 +888,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   'Welcome to\nPatchwork.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 44,
+                    fontSize: 37,
                     fontWeight: FontWeight.w800,
                     color: context.themeColors.textPrimary,
                     letterSpacing: -1,
@@ -900,7 +900,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   'Your next idea deserves to be seen. Let\'s start building.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13,
                     color: context.themeColors.textSecondary,
                     height: 1.5,
                   ),
@@ -944,7 +944,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ],
           ),
           alignment: Alignment.center,
-          child: Text(text, style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold)),
+          child: Text(text, style: TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold)),
         ),
         Positioned(
           bottom: -2, right: -2,

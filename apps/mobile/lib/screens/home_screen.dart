@@ -207,6 +207,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildNavItem(int index, IconData icon, String label, {bool showBadge = false}) {
     final isActive = _selectedIndex == index;
+    final itemColor = isActive ? context.themeColors.primary500 : context.themeColors.textPrimary.withOpacity(0.85);
+
     return Expanded(
       child: GestureDetector(
         onTap: () => _onItemTapped(index),
@@ -214,71 +216,45 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: Container(
           height: 60,
           margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Active Background Glowing Radial Gradient
-              AnimatedOpacity(
-                opacity: isActive ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        context.themeColors.primary500.withOpacity(0.3),
-                        Colors.transparent,
-                      ],
-                      radius: 0.6,
-                    ),
-                  ),
-                ),
-              ),
-              
-              // Icon and Label
-              AnimatedScale(
-                scale: isActive ? 1.1 : 1.0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          child: AnimatedScale(
+            scale: isActive ? 1.1 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutBack,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(icon, color: isActive ? context.themeColors.primary500 : context.themeColors.textTertiary, size: 24),
-                        if (showBadge)
-                          Positioned(
-                            top: -2,
-                            right: -2,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.redAccent,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: context.themeColors.surface, width: 1.5),
-                              ),
-                            ),
+                    Icon(icon, color: itemColor, size: 20),
+                    if (showBadge)
+                      Positioned(
+                        top: -2,
+                        right: -2,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: context.themeColors.surface, width: 1.5),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                        color: isActive ? context.themeColors.primary500 : context.themeColors.textTertiary,
+                        ),
                       ),
-                    ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: itemColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -318,16 +294,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
               child: Container(
                 height: 64,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: context.themeColors.surface.withOpacity(0.45), // True transparent glassmorphism
-                  border: Border.all(color: context.themeColors.borderSubtle.withOpacity(0.3), width: 1.0),
+                  color: context.themeColors.textPrimary.withOpacity(0.05), // Extremely transparent frost tint
+                  border: Border.all(color: context.themeColors.textPrimary.withOpacity(0.15), width: 0.5),
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 4)),
                   ],
                 ),
             child: Row(
@@ -357,24 +333,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          AnimatedOpacity(
-                            opacity: _profileMenuOpen ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 200),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: RadialGradient(
-                                  colors: [
-                                    context.themeColors.primary500.withOpacity(0.3),
-                                    Colors.transparent,
-                                  ],
-                                  radius: 0.6,
-                                ),
-                              ),
-                            ),
-                          ),
                           AnimatedScale(
                             scale: _profileMenuOpen ? 1.1 : 1.0,
                             duration: const Duration(milliseconds: 300),
@@ -386,8 +344,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   width: 24, height: 24,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _profileMenuOpen ? context.themeColors.primary500 : context.themeColors.border, width: _profileMenuOpen ? 2 : 1),
-                                    color: context.themeColors.primary500.withOpacity(0.1),
+                                    border: Border.all(color: _profileMenuOpen ? context.themeColors.primary500 : context.themeColors.textPrimary.withOpacity(0.85), width: _profileMenuOpen ? 1.5 : 1),
+                                    color: Colors.transparent,
                                     image: userAvatar != null && userAvatar.isNotEmpty
                                         ? DecorationImage(
                                             image: NetworkImage(userAvatar),
@@ -396,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         : null,
                                   ),
                                   child: userAvatar == null || userAvatar.isEmpty
-                                      ? Center(child: Text(initial, style: TextStyle(color: context.themeColors.primary500, fontSize: 10, fontWeight: FontWeight.bold)))
+                                      ? Center(child: Text(initial, style: TextStyle(color: _profileMenuOpen ? context.themeColors.primary500 : context.themeColors.textPrimary.withOpacity(0.85), fontSize: 8, fontWeight: FontWeight.bold)))
                                       : null,
                                 ),
                                 const SizedBox(height: 2),
@@ -406,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.5,
-                                    color: _profileMenuOpen ? context.themeColors.primary500 : context.themeColors.textTertiary,
+                                    color: _profileMenuOpen ? context.themeColors.primary500 : context.themeColors.textPrimary.withOpacity(0.85),
                                   ),
                                 ),
                               ],

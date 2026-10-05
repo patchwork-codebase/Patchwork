@@ -242,7 +242,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 children: [
                   Text(
                     'Pick up where you left off',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary),
                   ),
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -251,7 +251,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                       shape: BoxShape.circle,
                       border: Border.all(color: context.themeColors.borderSubtle),
                     ),
-                    child: Icon(LucideIcons.arrowRight, size: 16, color: context.themeColors.textSecondary),
+                    child: Icon(LucideIcons.arrowRight, size: 13, color: context.themeColors.textSecondary),
                   ),
                 ],
               ),
@@ -306,7 +306,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
             const SizedBox(height: 32),
 
             // 4. Activity Pulse
-            Text('LATEST PULSE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5))
+            Text('LATEST PULSE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5))
                 .animate().fadeIn(delay: 600.ms),
             const SizedBox(height: 16),
             Container(
@@ -353,7 +353,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     : null,
               ),
               child: userAvatar == null || userAvatar.isEmpty
-                  ? Center(child: Text(initial, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: context.themeColors.textPrimary)))
+                  ? Center(child: Text(initial, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: context.themeColors.textPrimary)))
                   : null,
             ),
             const SizedBox(width: 12),
@@ -362,11 +362,11 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
               children: [
                 Text(
                   '$_greeting,',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.themeColors.textSecondary),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: context.themeColors.textSecondary),
                 ),
                 Text(
                   firstName,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -0.5),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, letterSpacing: -0.5),
                 ),
               ],
             ),
@@ -387,7 +387,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Icon(LucideIcons.bell, size: 20, color: context.themeColors.textPrimary),
+                Icon(LucideIcons.bell, size: 17, color: context.themeColors.textPrimary),
                 if (_unreadNotifications > 0)
                   Positioned(
                     top: 10,
@@ -463,7 +463,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         ),
                       ]
                     ),
-                    child: Icon(LucideIcons.zap, color: context.themeColors.surface, size: 20),
+                    child: Icon(LucideIcons.zap, color: context.themeColors.surface, size: 17),
                   ),
                 ],
               ),
@@ -478,7 +478,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 Text(
                   'YOUR MOMENTUM',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 8,
                     fontWeight: FontWeight.w900,
                     color: context.themeColors.textTertiary,
                     letterSpacing: 1.5,
@@ -491,7 +491,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     Text(
                       '$_currentStreak',
                       style: TextStyle(
-                        fontSize: 48,
+                        fontSize: 40,
                         fontWeight: FontWeight.w900,
                         color: context.themeColors.textPrimary,
                         height: 1.0,
@@ -502,8 +502,8 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DAY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
-                        Text('STREAK', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+                        Text('DAY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+                        Text('STREAK', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
                       ],
                     ),
                   ],
@@ -511,7 +511,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 const SizedBox(height: 16),
                 Text(
                   "You're building consistently. Keep the signal\nalive.",
-                  style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary, height: 1.5),
+                  style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary, height: 1.5),
                 ),
                 const SizedBox(height: 24),
                 Divider(color: context.themeColors.borderSubtle),
@@ -553,7 +553,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                           color: context.themeColors.primary500.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(LucideIcons.check, size: 12, color: context.themeColors.primary500),
+                        child: Icon(LucideIcons.check, size: 10, color: context.themeColors.primary500),
                       );
                     } else {
                       circle = Container(
@@ -572,7 +572,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         const SizedBox(height: 8),
                         Text(
                           dayLabel,
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isToday ? context.themeColors.primary500 : context.themeColors.textTertiary),
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: isToday ? context.themeColors.primary500 : context.themeColors.textTertiary),
                         ),
                       ],
                     );
@@ -605,16 +605,16 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                   color: color.withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: color, size: 16),
+                child: Icon(icon, color: color, size: 13),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary),
                 ),
               ),
-              Icon(LucideIcons.arrowRight, size: 16, color: color.withOpacity(0.7)),
+              Icon(LucideIcons.arrowRight, size: 13, color: color.withOpacity(0.7)),
             ],
           ),
         ),
@@ -625,7 +625,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5),
+      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5),
     );
   }
 
@@ -674,7 +674,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     color: Colors.amber.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(LucideIcons.messageSquare, color: Colors.amber, size: 20),
+                  child: const Icon(LucideIcons.messageSquare, color: Colors.amber, size: 17),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -683,19 +683,19 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary),
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         content,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary),
                       ),
                     ],
                   ),
                 ),
-                Icon(LucideIcons.chevronRight, color: context.themeColors.textTertiary, size: 20),
+                Icon(LucideIcons.chevronRight, color: context.themeColors.textTertiary, size: 17),
               ],
             ),
           ),
@@ -729,7 +729,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         children: [
                           Text(
                             room['title'] ?? 'Untitled Project',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary),
                           ),
                         ],
                       ),
@@ -770,9 +770,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(LucideIcons.gitCommit, size: 14, color: context.themeColors.primary500),
+                                Icon(LucideIcons.gitCommit, size: 11, color: context.themeColors.primary500),
                                 const SizedBox(width: 8),
-                                Text('Decision Log', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                                Text('Decision Log', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                               ],
                             ),
                           ),
@@ -799,9 +799,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(LucideIcons.target, size: 14, color: context.themeColors.textSecondary),
+                                Icon(LucideIcons.target, size: 11, color: context.themeColors.textSecondary),
                                 const SizedBox(width: 8),
-                                Text('Milestones', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+                                Text('Milestones', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
                               ],
                             ),
                           ),
@@ -821,10 +821,10 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                               color: context.themeColors.primary500.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text('${room['update_count'] ?? 0}', style: TextStyle(color: context.themeColors.primary500, fontSize: 12, fontWeight: FontWeight.bold)),
+                            child: Text('${room['update_count'] ?? 0}', style: TextStyle(color: context.themeColors.primary500, fontSize: 10, fontWeight: FontWeight.bold)),
                           ),
                           const SizedBox(width: 8),
-                          Text('decisions logged', style: TextStyle(fontSize: 13, color: context.themeColors.textSecondary)),
+                          Text('decisions logged', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                         ],
                       ),
                       GestureDetector(
@@ -845,9 +845,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(LucideIcons.plus, color: Colors.white, size: 14),
+                              const Icon(LucideIcons.plus, color: Colors.white, size: 11),
                               const SizedBox(width: 4),
-                              const Text('Log decision', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              const Text('Log decision', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
@@ -910,7 +910,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary),
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary),
                     ),
                     IconButton(
                       icon: Icon(LucideIcons.x, color: context.themeColors.textSecondary),
@@ -932,11 +932,11 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(title == 'Decision Log' ? LucideIcons.gitCommit : LucideIcons.target, size: 48, color: context.themeColors.textTertiary),
+                              Icon(title == 'Decision Log' ? LucideIcons.gitCommit : LucideIcons.target, size: 40, color: context.themeColors.textTertiary),
                               const SizedBox(height: 16),
-                              Text('No $title found', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                              Text('No $title found', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                               const SizedBox(height: 8),
-                              Text('Data for ${room['title']} will appear here.', style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary)),
+                              Text('Data for ${room['title']} will appear here.', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                               const SizedBox(height: 24),
                               ElevatedButton(
                                 onPressed: () {
@@ -977,7 +977,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                                     children: [
                                       Icon(
                                         isShipped ? LucideIcons.checkCircle : LucideIcons.gitCommit,
-                                        size: 16,
+                                        size: 13,
                                         color: isShipped ? Colors.greenAccent : context.themeColors.primary500,
                                       ),
                                       const SizedBox(width: 8),
@@ -1005,20 +1005,20 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                                     style: TextStyle(
                                       color: context.themeColors.textPrimary,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      fontSize: 13,
                                     ),
                                   ),
                                   if (decision['description'] != null && decision['description'].toString().isNotEmpty) ...[
                                     const SizedBox(height: 8),
                                     Text(
                                       decision['description'],
-                                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, height: 1.4),
+                                      style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.4),
                                     ),
                                   ],
                                   const SizedBox(height: 12),
                                   Text(
                                     timeago.format(DateTime.parse(decision['created_at'])),
-                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
+                                    style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -1074,7 +1074,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 style: TextStyle(
                   color: isActive ? context.themeColors.surface : context.themeColors.textSecondary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  fontSize: 11,
                 ),
               ),
             ),
@@ -1111,7 +1111,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                   color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text('+10% this week', style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                child: const Text('+10% this week', style: TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -1119,7 +1119,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
           Text(
             '$reactionsCount',
             style: TextStyle(
-              fontSize: 48,
+              fontSize: 40,
               fontWeight: FontWeight.w900,
               color: context.themeColors.textPrimary,
               height: 1.0,
@@ -1175,7 +1175,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                           child: ClipOval(
                             child: avatar.startsWith('http') 
                                 ? CachedNetworkImage(imageUrl: avatar, fit: BoxFit.cover)
-                                : Center(child: Text(initial, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                                : Center(child: Text(initial, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
                           ),
                         ),
                       );
@@ -1185,7 +1185,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
               ),
               Text(
                 'Your latest update is getting noticed.',
-                style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary),
+                style: TextStyle(fontSize: 8, color: context.themeColors.textSecondary),
               ),
             ],
           ),
@@ -1200,8 +1200,8 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-            Text('$count · $pct%', style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: context.themeColors.textSecondary)),
+            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+            Text('$count · $pct%', style: TextStyle(fontFamily: 'monospace', fontSize: 10, color: context.themeColors.textSecondary)),
           ],
         ),
         const SizedBox(height: 8),
@@ -1245,7 +1245,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
         children: [
           _buildSectionHeader('TOP OBSERVERS'),
           const SizedBox(height: 4),
-          Text('${observers.length} observers', style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: context.themeColors.textSecondary)),
+          Text('${observers.length} observers', style: TextStyle(fontFamily: 'monospace', fontSize: 10, color: context.themeColors.textSecondary)),
           const SizedBox(height: 24),
           
           if (observers.isEmpty)
@@ -1254,9 +1254,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    Icon(LucideIcons.users, size: 24, color: context.themeColors.textSecondary),
+                    Icon(LucideIcons.users, size: 20, color: context.themeColors.textSecondary),
                     const SizedBox(height: 8),
-                    Text('No observers yet', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                    Text('No observers yet', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                   ],
                 ),
               ),
@@ -1299,8 +1299,8 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text('${obs['role'] ?? 'Observer'} · ${obs['city'] ?? 'Unknown'}', style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: context.themeColors.textSecondary)),
+                          Text(name, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text('${obs['role'] ?? 'Observer'} · ${obs['city'] ?? 'Unknown'}', style: TextStyle(fontFamily: 'monospace', fontSize: 9, color: context.themeColors.textSecondary)),
                         ],
                       ),
                     ),
@@ -1308,8 +1308,8 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     RichText(
                       text: TextSpan(
                         children: [
-                          TextSpan(text: '${obs['interaction_count'] ?? 0} ', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.primary400)),
-                          TextSpan(text: 'interactions', style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: context.themeColors.textSecondary)),
+                          TextSpan(text: '${obs['interaction_count'] ?? 0} ', style: TextStyle(fontFamily: 'monospace', fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.primary400)),
+                          TextSpan(text: 'interactions', style: TextStyle(fontFamily: 'monospace', fontSize: 9, color: context.themeColors.textSecondary)),
                         ],
                       ),
                     ),
@@ -1340,9 +1340,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.link, color: context.themeColors.textTertiary, size: 20),
+              Icon(LucideIcons.link, color: context.themeColors.textTertiary, size: 17),
               const SizedBox(width: 12),
-              Text('Linked Docs', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14, fontWeight: FontWeight.bold)),
+              Text('Linked Docs', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
               const Spacer(),
               if (activeDocs.isNotEmpty)
                 Container(
@@ -1351,7 +1351,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     color: context.themeColors.primary500.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text('${activeDocs.length} Connected', style: TextStyle(color: context.themeColors.primary500, fontSize: 12, fontWeight: FontWeight.bold)),
+                  child: Text('${activeDocs.length} Connected', style: TextStyle(color: context.themeColors.primary500, fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
             ],
           ),
@@ -1360,7 +1360,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
             Center(
               child: Column(
                 children: [
-                  Icon(LucideIcons.fileText, size: 32, color: context.themeColors.textTertiary.withOpacity(0.5)),
+                  Icon(LucideIcons.fileText, size: 27, color: context.themeColors.textTertiary.withOpacity(0.5)),
                   const SizedBox(height: 12),
                   Text('No docs linked', style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
                 ],
@@ -1371,9 +1371,9 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  Icon(LucideIcons.fileText, size: 16, color: context.themeColors.textSecondary),
+                  Icon(LucideIcons.fileText, size: 13, color: context.themeColors.textSecondary),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(doc['title'] ?? 'Untitled Doc', style: TextStyle(fontSize: 14, color: context.themeColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  Expanded(child: Text(doc['title'] ?? 'Untitled Doc', style: TextStyle(fontSize: 11, color: context.themeColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis)),
                 ],
               ),
             )).toList(),
@@ -1393,16 +1393,16 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
       ),
       child: Column(
         children: [
-          Icon(LucideIcons.layers, size: 48, color: context.themeColors.textTertiary),
+          Icon(LucideIcons.layers, size: 40, color: context.themeColors.textTertiary),
           const SizedBox(height: 16),
           Text(
             "Your workspace is empty",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             "Start building your first project room.",
-            style: TextStyle(fontSize: 14, color: context.themeColors.textSecondary),
+            style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
           ),
           const SizedBox(height: 24),
           ElevatedButton(

@@ -163,7 +163,7 @@ class ObserverDashboardSkeleton extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const SkeletonCircle(size: 40),
+                    const SkeletonCircle(size: 34),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +235,7 @@ class FeedCardSkeleton extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SkeletonCircle(size: 32),
+          const SkeletonCircle(size: 27),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -290,7 +290,7 @@ class MessageInboxSkeleton extends StatelessWidget {
           color: context.themeColors.surface,
           child: Row(
             children: [
-              const SkeletonCircle(size: 52),
+              const SkeletonCircle(size: 44),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -336,7 +336,7 @@ class ChatThreadSkeleton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!isMe) ...[
-                const SkeletonCircle(size: 32),
+                const SkeletonCircle(size: 27),
                 const SizedBox(width: 8),
               ],
               Column(

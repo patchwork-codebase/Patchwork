@@ -228,8 +228,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       controller: _tabController,
                       labelColor: context.themeColors.textPrimary,
                       unselectedLabelColor: context.themeColors.textTertiary,
-                      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                       indicatorColor: const Color(0xFF1D9BF0),
                       indicatorWeight: 3.5,
                       indicatorSize: TabBarIndicatorSize.label,
@@ -242,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                             children: [
                               Text('Posts'),
                               SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down, size: 16),
+                              Icon(Icons.keyboard_arrow_down, size: 13),
                             ],
                           ),
                         ),
@@ -272,16 +272,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.messageSquare, size: 40, color: context.themeColors.textTertiary),
+                            Icon(LucideIcons.messageSquare, size: 34, color: context.themeColors.textTertiary),
                             const SizedBox(height: 12),
                             Text(
                               'No posts yet',
-                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Updates and project logs will appear here.',
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 14),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                             ),
                           ],
                         ),
@@ -318,16 +318,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.messageCircle, size: 40, color: context.themeColors.textTertiary),
+                            Icon(LucideIcons.messageCircle, size: 34, color: context.themeColors.textTertiary),
                             const SizedBox(height: 12),
                             Text(
                               'No replies yet',
-                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Replies to builder updates will appear here.',
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 14),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                             ),
                           ],
                         ),
@@ -364,16 +364,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.repeat, size: 40, color: context.themeColors.textTertiary),
+                            Icon(LucideIcons.repeat, size: 34, color: context.themeColors.textTertiary),
                             const SizedBox(height: 12),
                             Text(
                               'No reposts yet',
-                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Milestones reposted will appear here.',
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 14),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                             ),
                           ],
                         ),
@@ -410,16 +410,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.image, size: 40, color: context.themeColors.textTertiary),
+                            Icon(LucideIcons.image, size: 34, color: context.themeColors.textTertiary),
                             const SizedBox(height: 12),
                             Text(
                               'No media shared yet',
-                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Updates with photos or videos will appear here.',
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 14),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                             ),
                           ],
                         ),
@@ -466,7 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             text: '$word ',
             style: const TextStyle(
               color: Color(0xFF1D9BF0), // Signature Twitter Blue
-              fontSize: 15,
+              fontSize: 12,
               height: 1.35,
               fontWeight: FontWeight.normal,
             ),
@@ -478,7 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             text: '$word ',
             style: TextStyle(
               color: context.themeColors.textPrimary,
-              fontSize: 15,
+              fontSize: 12,
               height: 1.35,
               fontWeight: FontWeight.normal,
             ),

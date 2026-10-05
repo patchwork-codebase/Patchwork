@@ -68,7 +68,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
     return Scaffold(
       backgroundColor: context.themeColors.background,
       appBar: AppBar(
-        title: Text('Verified Credential', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16)),
+        title: Text('Verified Credential', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13)),
         backgroundColor: context.themeColors.background,
         elevation: 0,
         iconTheme: IconThemeData(color: context.themeColors.textPrimary),
@@ -138,7 +138,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
               Positioned(
                 right: -40,
                 bottom: -40,
-                child: Icon(LucideIcons.award, size: 200, color: Colors.black.withOpacity(0.03)),
+                child: Icon(LucideIcons.award, size: 170, color: Colors.black.withOpacity(0.03)),
               ),
               
               Padding(
@@ -157,10 +157,10 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                             color: const Color(0xFF5A5EEA),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Center(child: Text('P', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20))),
+                          child: const Center(child: Text('P', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17))),
                         ),
                         const SizedBox(width: 12),
-                        const Text('PATCHWORK', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1.2)),
+                        const Text('PATCHWORK', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 1.2)),
                       ],
                     ),
                     
@@ -174,13 +174,13 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                       ),
                       child: Text(
                         'MILESTONE $badgeType',
-                        style: const TextStyle(color: Color(0xFF5A5EEA), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2.0),
+                        style: const TextStyle(color: Color(0xFF5A5EEA), fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 2.0),
                       ),
                     ),
                     
                     const SizedBox(height: 32),
                     
-                    const Text('This is to certify that', style: TextStyle(color: Colors.black54, fontSize: 14)),
+                    const Text('This is to certify that', style: TextStyle(color: Colors.black54, fontSize: 11)),
                     
                     const SizedBox(height: 12),
                     
@@ -191,7 +191,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                       style: const TextStyle(
                         fontFamily: 'Georgia', // Using a generic serif font fallback
                         color: Color(0xFF4F46E5), 
-                        fontSize: 32, 
+                        fontSize: 27, 
                         fontWeight: FontWeight.bold,
                         fontStyle: FontStyle.italic,
                       ),
@@ -199,7 +199,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                     
                     const SizedBox(height: 12),
                     
-                    const Text('has successfully achieved the milestone', style: TextStyle(color: Colors.black54, fontSize: 14)),
+                    const Text('has successfully achieved the milestone', style: TextStyle(color: Colors.black54, fontSize: 11)),
                     
                     const SizedBox(height: 16),
                     
@@ -207,7 +207,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                     Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.w900),
+                      style: const TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900),
                     ),
                     
                     const SizedBox(height: 32),
@@ -221,9 +221,9 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('AWARDED ON', style: const TextStyle(color: Colors.black45, fontSize: 10, fontWeight: FontWeight.bold)),
+                            Text('AWARDED ON', style: const TextStyle(color: Colors.black45, fontSize: 8, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
-                            Text(dateStr, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold)),
+                            Text(dateStr, style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold)),
                           ],
                         ),
                         
@@ -232,13 +232,13 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('POINTS VALUE', style: const TextStyle(color: Colors.black45, fontSize: 10, fontWeight: FontWeight.bold)),
+                              Text('POINTS VALUE', style: const TextStyle(color: Colors.black45, fontSize: 8, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
-                              Text('$points XP', style: const TextStyle(color: Color(0xFF4F46E5), fontSize: 16, fontWeight: FontWeight.w900)),
+                              Text('$points XP', style: const TextStyle(color: Color(0xFF4F46E5), fontSize: 13, fontWeight: FontWeight.w900)),
                             ],
                           )
                         else
-                          Icon(LucideIcons.medal, color: const Color(0xFF5A5EEA), size: 32),
+                          Icon(LucideIcons.medal, color: const Color(0xFF5A5EEA), size: 27),
                       ],
                     ),
                   ],
@@ -268,24 +268,24 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.info, size: 20, color: context.themeColors.textPrimary),
+              Icon(LucideIcons.info, size: 17, color: context.themeColors.textPrimary),
               const SizedBox(width: 8),
-              Text('About this credential', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('About this credential', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 16),
           Text(
             description,
-            style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14, height: 1.5),
+            style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, height: 1.5),
           ),
           const SizedBox(height: 24),
           const Divider(height: 1),
           const SizedBox(height: 16),
-          Text('Credential ID', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 12, fontWeight: FontWeight.bold)),
+          Text('Credential ID', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
             widget.credentialId,
-            style: TextStyle(color: context.themeColors.textSecondary, fontSize: 13, fontFamily: 'monospace'),
+            style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontFamily: 'monospace'),
           ),
         ],
       ),

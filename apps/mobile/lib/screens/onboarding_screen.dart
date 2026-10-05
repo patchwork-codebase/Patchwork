@@ -130,9 +130,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       key: const ValueKey(0),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Welcome to Patchwork', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+        Text('Welcome to Patchwork', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
         const SizedBox(height: 8),
-        Text('How do you plan to use the platform?', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+        Text('How do you plan to use the platform?', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11), textAlign: TextAlign.center),
         const SizedBox(height: 32),
         
         // Builder Option
@@ -155,12 +155,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     color: _userRole == 'builder' ? context.themeColors.primary400 : context.themeColors.surfaceHighlight,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(LucideIcons.hammer, size: 20, color: _userRole == 'builder' ? Colors.white : context.themeColors.textTertiary),
+                  child: Icon(LucideIcons.hammer, size: 17, color: _userRole == 'builder' ? Colors.white : context.themeColors.textTertiary),
                 ),
                 const SizedBox(height: 12),
-                Text('Builder', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Builder', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('I want to share my work and build in public.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
+                Text('I want to share my work and build in public.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
               ],
             ),
           ),
@@ -187,12 +187,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     color: _userRole == 'observer' ? context.themeColors.primary400 : context.themeColors.surfaceHighlight,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(LucideIcons.eye, size: 20, color: _userRole == 'observer' ? Colors.white : context.themeColors.textTertiary),
+                  child: Icon(LucideIcons.eye, size: 17, color: _userRole == 'observer' ? Colors.white : context.themeColors.textTertiary),
                 ),
                 const SizedBox(height: 12),
-                Text('Observer', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Observer', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('I want to discover and follow other builders.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 12)),
+                Text('I want to discover and follow other builders.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
               ],
             ),
           ),
@@ -214,7 +214,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text('Continue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), SizedBox(width: 8), Icon(LucideIcons.arrowRight, size: 18)],
+            children: [Text('Continue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), SizedBox(width: 8), Icon(LucideIcons.arrowRight, size: 15)],
           ),
         ),
       ],
@@ -229,9 +229,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       key: const ValueKey(1),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(_userRole == 'builder' ? 'What do you build?' : 'What are you tracking?', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+        Text(_userRole == 'builder' ? 'What do you build?' : 'What are you tracking?', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
         const SizedBox(height: 8),
-        Text(_userRole == 'builder' ? 'Select your primary domain.' : 'Select up to 3 topics you are interested in.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+        Text(_userRole == 'builder' ? 'Select your primary domain.' : 'Select up to 3 topics you are interested in.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11), textAlign: TextAlign.center),
         const SizedBox(height: 24),
 
         Expanded(
@@ -313,7 +313,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text('Continue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), SizedBox(width: 8), Icon(LucideIcons.arrowRight, size: 18)],
+                  children: [Text('Continue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), SizedBox(width: 8), Icon(LucideIcons.arrowRight, size: 15)],
                 ),
               ),
             ),
@@ -328,9 +328,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       key: const ValueKey(2),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Add a Photo', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+        Text('Add a Photo', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
         const SizedBox(height: 8),
-        Text('Put a face to the name. Builders with avatars get 3x more engagement.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+        Text('Put a face to the name. Builders with avatars get 3x more engagement.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11), textAlign: TextAlign.center),
         const SizedBox(height: 48),
 
         Center(
@@ -350,7 +350,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       : null,
                   ),
                   child: _avatarFile == null 
-                    ? Icon(LucideIcons.user, size: 48, color: context.themeColors.textTertiary)
+                    ? Icon(LucideIcons.user, size: 40, color: context.themeColors.textTertiary)
                     : null,
                 ),
                 Positioned(
@@ -363,7 +363,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: context.themeColors.background, width: 3),
                     ),
-                    child: const Icon(LucideIcons.camera, color: Colors.white, size: 20),
+                    child: const Icon(LucideIcons.camera, color: Colors.white, size: 17),
                   ),
                 ),
               ],
@@ -402,7 +402,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text(_avatarFile == null ? 'Skip for now' : 'Complete Setup', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), const SizedBox(width: 8), const Icon(LucideIcons.check, size: 18)],
+                      children: [Text(_avatarFile == null ? 'Skip for now' : 'Complete Setup', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), const SizedBox(width: 8), const Icon(LucideIcons.check, size: 15)],
                     ),
               ),
             ),
