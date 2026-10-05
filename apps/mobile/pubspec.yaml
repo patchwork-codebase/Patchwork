@@ -40,8 +40,8 @@ dependencies:
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
   timeago: ^3.7.1
-  lucide_icons: ^0.257.0
-  google_fonts: ^6.3.0
+  lucide_icons: any
+  google_fonts: any
   flutter_animate: ^4.5.2
   webview_flutter: ^4.10.0
   flutter_highlight: ^0.7.0
