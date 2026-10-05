@@ -61,5 +61,4 @@ jobs:
         with:
           appId: 1:177372310250:android:62c00b5c4a8d60cdfe0593
           token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: internal-testers
           file: apps/mobile/build/app/outputs/flutter-apk/app-release.apk
