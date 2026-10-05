@@ -8,6 +8,7 @@ import 'public_profile_screen.dart';
 import 'update_thread_screen.dart';
 import 'room_detail_screen.dart';
 import 'bounty_dashboard_screen.dart';
+import 'chat_thread_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -31,7 +32,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     final response = await Supabase.instance.client
         .from('notifications')
-        .select('*, actor:users!actor_id(name, avatar, is_verified_expert)')
+        .select('*, actor:users!actor_id(name, avatar, is_verified_expert, organization_logo_url)')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
@@ -80,7 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         final update = await Supabase.instance.client
             .from('updates')
             .select(
-                '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, avatar, is_verified_expert)), polls(*, poll_options(*))')
+                '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
             .eq('id', updateId)
             .maybeSingle();
         if (update != null && mounted) {
@@ -109,6 +110,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             builder: (context) => RoomDetailScreen(
               roomId: roomId,
               title: metadata['room_title']?.toString() ?? 'Room',
+            ),
+          ),
+        );
+      }
+    } else if (type == 'mention' || type == 'new_message') {
+      final roomId = metadata['room_id']?.toString();
+      if (roomId == null || roomId.isEmpty) return;
+      final roomTitle = metadata['room_title']?.toString() ?? 'Room Chat';
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ChatThreadScreen(
+              roomId: roomId,
+              roomTitle: roomTitle,
             ),
           ),
         );
@@ -316,6 +331,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     notifIcon = LucideIcons.messageCircle;
                     notifColor = Colors.blueAccent;
                     actionText = 'sent a message in';
+                    contextText = metadata['room_title'] ?? 'a room';
+                    previewText = metadata['message_preview'];
+                  } else if (type == 'mention') {
+                    notifIcon = LucideIcons.atSign;
+                    notifColor = context.themeColors.primary500;
+                    actionText = 'mentioned you in';
                     contextText = metadata['room_title'] ?? 'a room';
                     previewText = metadata['message_preview'];
                   }

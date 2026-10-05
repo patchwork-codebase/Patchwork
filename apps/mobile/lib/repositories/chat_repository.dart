@@ -22,11 +22,14 @@ class ChatRepository {
     required String roomId,
     required String senderId,
     required String content,
+    List<String>? mentionedUserIds,
   }) async {
     await _client.from('room_messages').insert({
       'room_id': roomId,
       'sender_id': senderId,
       'content': content,
+      if (mentionedUserIds != null && mentionedUserIds.isNotEmpty)
+        'mentioned_user_ids': mentionedUserIds,
     });
   }
 

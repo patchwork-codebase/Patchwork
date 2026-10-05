@@ -46,7 +46,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       profile = await client
           .from('users')
           .select(
-              '*, pinned_update:pinned_update_id(*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, avatar, is_verified_expert)), polls(*, poll_options(*)))')
+              '*, pinned_update:pinned_update_id(*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*)))')
           .eq('id', widget.userId)
           .maybeSingle();
     } catch (_) {

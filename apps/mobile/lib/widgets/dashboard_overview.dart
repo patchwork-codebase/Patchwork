@@ -873,7 +873,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
             .order('created_at', ascending: false)
         : Supabase.instance.client
             .from('updates')
-            .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name)')
+            .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url)')
             .eq('room_id', room['id'])
             .eq('update_type', 'shipped')
             .order('created_at', ascending: false);

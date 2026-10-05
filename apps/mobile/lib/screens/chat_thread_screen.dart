@@ -13,6 +13,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
+import '../utils/cors_image_helper.dart';
 import '../repositories/chat_repository.dart';
 import '../widgets/rich_link_preview_card.dart';
 import '../widgets/fullscreen_image_viewer.dart';
@@ -20,6 +21,9 @@ import '../widgets/skeleton_loaders.dart';
 import '../widgets/floating_reactions.dart';
 import '../widgets/audio_waveform.dart';
 import '../widgets/audio_player_widget.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
+import 'package:flutter/gestures.dart';
+import 'public_profile_screen.dart';
 
 class ChatThreadScreen extends StatefulWidget {
   final String roomId;
@@ -58,7 +62,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
   String? _editingOriginalContent;
   Map<String, List<Map<String, dynamic>>> _reactions = {};
   bool _showTip = false;
-  final Set<String> _optimisticIds = {}; // temp IDs for optimistically added messages
+  final Set<String> _optimisticIds = {};
+  final GlobalKey<FlutterMentionsState> _mentionsKey = GlobalKey<FlutterMentionsState>();
+  List<Map<String, dynamic>> _roomParticipants = []; // temp IDs for optimistically added messages
   final GlobalKey<FloatingReactionsState> _reactionsKey = GlobalKey<FloatingReactionsState>();
 
   @override
@@ -66,6 +72,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _fetchCurrentUser();
+    _fetchRoomParticipants();
     _fetchMessages();
     _markMessagesAsRead();
     _setupRealtime();
@@ -168,6 +175,61 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
           .neq('sender_id', _currentUserId!)
           .isFilter('read_at', null);
     } catch (_) {}
+  }
+
+  
+  Future<void> _fetchRoomParticipants() async {
+    try {
+      final roomResponse = await Supabase.instance.client
+          .from('rooms')
+          .select('builder_id')
+          .eq('id', widget.roomId)
+          .single();
+      
+      final obsResponse = await Supabase.instance.client
+          .from('room_observers')
+          .select('observer_id')
+          .eq('room_id', widget.roomId);
+
+      Set<String> userIds = {};
+      if (roomResponse['builder_id'] != null) {
+        userIds.add(roomResponse['builder_id']);
+      }
+      for (var obs in (obsResponse as List)) {
+        if (obs['observer_id'] != null) {
+          userIds.add(obs['observer_id']);
+        }
+      }
+
+      if (userIds.isEmpty) return;
+
+      final profilesResponse = await Supabase.instance.client
+          .from('users')
+          .select('id, name, username, avatar, is_verified_expert, organization_logo_url')
+          .filter('id', 'in', '(${userIds.join(',')})');
+
+      List<Map<String, dynamic>> participants = [];
+      for (var p in (profilesResponse as List)) {
+        final name = p['name'] ?? 'User';
+        final username = (p['username'] != null && p['username'].toString().trim().isNotEmpty)
+            ? p['username'].toString().trim().replaceAll('@', '')
+            : name.replaceAll(' ', '');
+        participants.add({
+          'id': p['id'],
+          'display': username,
+          'full_name': name,
+          'photo': (p['avatar'] != null && p['avatar'].toString().trim().isNotEmpty)
+              ? p['avatar']
+              : 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}',
+          'is_verified_expert': p['is_verified_expert'] == true,
+          'organization_logo_url': p['organization_logo_url'],
+        });
+      }
+
+      if (mounted) setState(() => _roomParticipants = participants);
+    } catch (e) {
+      debugPrint('Failed to fetch participants: $e');
+    }
   }
 
   Future<void> _fetchMessages() async {
@@ -304,8 +366,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
   }
 
   Future<void> _sendMessage({String? mediaUrl, String? mediaType}) async {
-    final content = _messageController.text.trim();
-    if ((content.isEmpty && mediaUrl == null) || _isSending || _currentUserId == null) return;
+    final content = _mentionsKey.currentState?.controller?.markupText ?? _messageController.text.trim();
+      final plainText = _mentionsKey.currentState?.controller?.text ?? _messageController.text.trim();
+    if ((plainText.isEmpty && mediaUrl == null) || _isSending || _currentUserId == null) return;
+      final mentionRegex = RegExp(r'@\[.*?\]\((.*?)\)');
+      final mentionedUserIds = mentionRegex.allMatches(content).map((m) => m.group(1)!).toSet().toList();
 
     HapticFeedback.lightImpact();
 
@@ -360,11 +425,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
 
     try {
       await _chatRepo.sendMessage(
-        roomId: widget.roomId,
-        senderId: _currentUserId!,
-        content: content.isEmpty ? '' : content,
-        // TODO: Handle media params in repository
-      );
+          roomId: widget.roomId,
+          senderId: _currentUserId!,
+          content: content.isEmpty ? '' : content,
+          mentionedUserIds: mentionedUserIds,
+          // TODO: Handle media params in repository
+        );
       // The realtime INSERT event will replace the optimistic msg via _optimisticIds tracking
     } catch (e) {
       // Remove the optimistic message on failure
@@ -450,6 +516,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
       _editingOriginalContent = msg['content']?.toString() ?? '';
     });
     _messageController.text = _editingOriginalContent ?? '';
+      _mentionsKey.currentState?.controller?.text = _editingOriginalContent ?? '';
     _messageController.selection = TextSelection.fromPosition(
       TextPosition(offset: _messageController.text.length),
     );
@@ -813,6 +880,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
     final senderAvatar = sender?['avatar'] as String?;
     final createdAt = msg['created_at'] as String?;
     final readAt = msg['read_at'] as String?;
+    final mentionedUserIds = msg['mentioned_user_ids'];
+    final bool isMentioned = _currentUserId != null &&
+        ((mentionedUserIds is List && mentionedUserIds.contains(_currentUserId)) ||
+         content.contains('($_currentUserId)'));
 
     return Padding(
       padding: EdgeInsets.only(
@@ -852,6 +923,34 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                       style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary, fontWeight: FontWeight.w600),
                     ),
                   ),
+                if (isMentioned && !isMe)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4, left: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: context.themeColors.primary500.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: context.themeColors.primary500.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.atSign, size: 11, color: context.themeColors.primary500),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Mentioned you',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: context.themeColors.primary500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 Dismissible(
                   key: Key(msg['id']?.toString() ?? UniqueKey().toString()),
                   direction: DismissDirection.startToEnd,
@@ -876,14 +975,23 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                             ? context.themeColors.primary500.withOpacity(0.85)
                             : isMe
                                 ? context.themeColors.primary500
-                                : context.themeColors.surface,
+                                : isMentioned
+                                    ? context.themeColors.primary500.withOpacity(0.08)
+                                    : context.themeColors.surface,
                         borderRadius: BorderRadius.only(
                           topLeft: const Radius.circular(18),
                           topRight: const Radius.circular(18),
                           bottomLeft: Radius.circular(isMe ? 18 : 4),
                           bottomRight: Radius.circular(isMe ? 4 : 18),
                         ),
-                        border: isMe ? null : Border.all(color: context.themeColors.borderSubtle),
+                        border: isMe
+                            ? null
+                            : Border.all(
+                                color: isMentioned
+                                    ? context.themeColors.primary500.withOpacity(0.6)
+                                    : context.themeColors.borderSubtle,
+                                width: isMentioned ? 1.5 : 1.0,
+                              ),
                       ),
                       child: _buildBubbleContent(msg, isMe, content),
                     ),
@@ -1051,17 +1159,86 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
       crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         if (content.isNotEmpty)
-          Text(
-            content,
-            style: TextStyle(
-              color: isMe ? Colors.white : context.themeColors.textPrimary,
-              fontSize: 14,
-              height: 1.4,
-            ),
-          ),
+          _buildMessageTextWithMentions(content, isMe),
         if (extractedUrl != null)
           RichLinkPreviewCard(url: extractedUrl),
       ],
+    );
+  }
+
+  Widget _buildMessageTextWithMentions(String content, bool isMe) {
+    final mentionPattern = RegExp(r'@\[([^\]]+)\]\(([^)]+)\)');
+    final matches = mentionPattern.allMatches(content);
+
+    if (matches.isEmpty) {
+      return Text(
+        content,
+        style: TextStyle(
+          color: isMe ? Colors.white : context.themeColors.textPrimary,
+          fontSize: 14,
+          height: 1.4,
+        ),
+      );
+    }
+
+    final List<InlineSpan> spans = [];
+    int lastIndex = 0;
+
+    for (final match in matches) {
+      if (match.start > lastIndex) {
+        spans.add(TextSpan(
+          text: content.substring(lastIndex, match.start),
+          style: TextStyle(
+            color: isMe ? Colors.white : context.themeColors.textPrimary,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ));
+      }
+
+      final displayName = match.group(1) ?? 'user';
+      final userId = match.group(2) ?? '';
+
+      spans.add(
+        TextSpan(
+          text: '@$displayName',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isMe ? Colors.white : context.themeColors.primary500,
+            decoration: isMe ? TextDecoration.underline : TextDecoration.none,
+            fontSize: 14,
+            height: 1.4,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              if (userId.isNotEmpty) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PublicProfileScreen(userId: userId),
+                  ),
+                );
+              }
+            },
+        ),
+      );
+
+      lastIndex = match.end;
+    }
+
+    if (lastIndex < content.length) {
+      spans.add(TextSpan(
+        text: content.substring(lastIndex),
+        style: TextStyle(
+          color: isMe ? Colors.white : context.themeColors.textPrimary,
+          fontSize: 14,
+          height: 1.4,
+        ),
+      ));
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
     );
   }
 
@@ -1345,12 +1522,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: TextField(
-                        controller: _messageController,
+                      child: FlutterMentions(
+                        key: _mentionsKey,
                         focusNode: _focusNode,
-                        maxLines: null,
+                        maxLines: 5,
+                        minLines: 1,
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
+                        onChanged: (val) {
+                          _messageController.text = val;
+                          _onTextChanged();
+                        },
                         style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15),
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -1359,6 +1541,98 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
                         ),
+                        suggestionPosition: SuggestionPosition.Top,
+                        mentions: [
+                          Mention(
+                            trigger: '@',
+                            style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold),
+                            data: _roomParticipants,
+                            suggestionBuilder: (data) {
+                              final name = data['full_name']?.toString() ?? 'User';
+                              final photo = data['photo']?.toString();
+                              final isVerified = data['is_verified_expert'] == true;
+                              final orgLogo = data['organization_logo_url']?.toString();
+
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: context.themeColors.surfaceHighlight,
+                                  border: Border(bottom: BorderSide(color: context.themeColors.borderSubtle)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 15,
+                                      backgroundColor: context.themeColors.primary500.withOpacity(0.15),
+                                      backgroundImage: (photo != null && photo.isNotEmpty)
+                                          ? CachedNetworkImageProvider(photo)
+                                          : null,
+                                      child: (photo == null || photo.isEmpty)
+                                          ? Text(
+                                              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                                              style: TextStyle(
+                                                color: context.themeColors.primary500,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  name,
+                                                  style: TextStyle(
+                                                    color: context.themeColors.textPrimary,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (isVerified) ...[
+                                                const SizedBox(width: 4),
+                                                Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 13),
+                                                if (orgLogo != null && orgLogo.trim().isNotEmpty) ...[
+                                                  const SizedBox(width: 4),
+                                                  ClipRRect(
+                                                    borderRadius: BorderRadius.circular(2),
+                                                    child: Image.network(
+                                                      orgLogo,
+                                                      width: 12,
+                                                      height: 12,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ],
+                                          ),
+                                          Text(
+                                            '@${data['display']}',
+                                            style: TextStyle(
+                                              color: context.themeColors.textTertiary,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),

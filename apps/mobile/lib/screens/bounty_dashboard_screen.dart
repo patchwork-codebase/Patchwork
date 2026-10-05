@@ -33,7 +33,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
 
       final res = await Supabase.instance.client
           .from('bounty_applications')
-          .select('*, builder:users!builder_id(id, name, avatar, reputation, is_verified_expert), update:updates!update_id(id, content)')
+          .select('*, builder:users!builder_id(id, name, avatar, reputation, is_verified_expert, organization_logo_url), update:updates!update_id(id, content)')
           .eq('observer_id', userId)
           .order('created_at', ascending: false);
 

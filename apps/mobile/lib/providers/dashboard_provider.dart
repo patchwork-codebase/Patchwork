@@ -52,7 +52,7 @@ final triageUpdatesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) a
 
   final response = await Supabase.instance.client
       .from('updates')
-      .select('*, rooms(title, tags), users(name, avatar, is_verified_expert), original_update:repost_id(*, users(name, avatar, is_verified_expert)), polls(*, poll_options(*))')
+      .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
       .eq('author_id', user.id)
       .eq('needs_feedback', true)
       .order('created_at', ascending: false)
@@ -101,7 +101,7 @@ final workspaceMetricsProvider = FutureProvider<Map<String, dynamic>?>((ref) asy
       final userIds = top3.map((e) => e.key).toList();
       final usersRes = await Supabase.instance.client
           .from('users')
-          .select('id, name, avatar, is_verified_expert')
+          .select('id, name, avatar, is_verified_expert, organization_logo_url')
           .inFilter('id', userIds);
           
       final usersList = List<Map<String, dynamic>>.from(usersRes);

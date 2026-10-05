@@ -11,6 +11,7 @@ import 'screens/welcome_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/update_thread_screen.dart';
 import 'screens/room_detail_screen.dart';
+import 'screens/chat_thread_screen.dart';
 import 'theme.dart';
 import 'providers/theme_provider.dart';
 import 'services/notification_service.dart';
@@ -88,6 +89,14 @@ class PatchworkApp extends ConsumerWidget {
                 builder: (_) => RoomDetailScreen(
                   roomId: args['roomId'] as String,
                   title: args['title'] as String,
+                ),
+              );
+            case '/chat-thread':
+              final args = settings.arguments as Map<String, dynamic>;
+              return MaterialPageRoute(
+                builder: (_) => ChatThreadScreen(
+                  roomId: args['roomId'] as String,
+                  roomTitle: (args['title'] ?? args['roomTitle'] ?? 'Room Chat') as String,
                 ),
               );
             default:

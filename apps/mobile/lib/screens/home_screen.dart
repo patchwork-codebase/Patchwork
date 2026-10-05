@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
            try {
              final update = await Supabase.instance.client
                 .from('updates')
-                .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name)')
+                .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url)')
                 .eq('id', updateId)
                 .single();
              if (mounted) {

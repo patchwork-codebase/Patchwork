@@ -94,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     try {
       final response = await Supabase.instance.client
           .from('updates')
-          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
           .eq('author_id', user.id)
           .isFilter('parent_update_id', null)
           .order('created_at', ascending: false);
@@ -111,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     try {
       final response = await Supabase.instance.client
           .from('updates')
-          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
           .eq('author_id', user.id)
           .not('parent_update_id', 'is', null)
           .order('created_at', ascending: false);
@@ -128,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     try {
       final response = await Supabase.instance.client
           .from('updates')
-          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
           .eq('author_id', user.id)
           .not('repost_id', 'is', null)
           .order('created_at', ascending: false);
@@ -145,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     try {
       final response = await Supabase.instance.client
           .from('updates')
-          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+          .select('*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
           .eq('author_id', user.id)
           .not('media_url', 'is', null)
           .order('created_at', ascending: false);

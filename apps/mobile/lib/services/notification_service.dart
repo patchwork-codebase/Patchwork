@@ -108,6 +108,11 @@ class NotificationService {
       body = metadata?['message_preview'] ?? 'New message in ${metadata?['room_title'] ?? 'a room'}';
       data['room_id'] = metadata?['room_id'];
       data['room_title'] = metadata?['room_title'];
+    } else if (type == 'mention') {
+      title = '$actorName mentioned you';
+      body = metadata?['message_preview'] ?? 'You were mentioned in ${metadata?['room_title'] ?? 'a room'}';
+      data['room_id'] = metadata?['room_id'];
+      data['room_title'] = metadata?['room_title'];
     } else if (type == 'reaction' || type == 'update_posted') {
       title = 'New update activity';
       body = '$actorName interacted with your update';
@@ -260,6 +265,18 @@ class NotificationService {
         }
         break;
 
+      case 'mention':
+      case 'new_message':
+        final chatRoomId = data['room_id'] as String?;
+        final chatRoomTitle = data['room_title'] as String? ?? 'Room Chat';
+        if (chatRoomId != null) {
+          navigator.pushNamed('/chat-thread', arguments: {
+            'roomId': chatRoomId,
+            'title': chatRoomTitle,
+          });
+        }
+        break;
+
       default:
         // Fall through to the in-app notifications tab
         navigator.pushNamed('/notifications');
@@ -272,7 +289,7 @@ class NotificationService {
       final update = await Supabase.instance.client
           .from('updates')
           .select(
-              '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, avatar, is_verified_expert)), polls(*, poll_options(*))')
+              '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
           .eq('id', updateId)
           .maybeSingle();
       if (update != null) {

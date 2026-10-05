@@ -80,7 +80,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     try {
       final response = await Supabase.instance.client
           .from('users')
-          .select('id, name, avatar, reputation, is_verified_expert')
+          .select('id, name, avatar, reputation, is_verified_expert, organization_logo_url')
           .order('reputation', ascending: false)
           .limit(3);
       return List<Map<String, dynamic>>.from(response);
@@ -93,7 +93,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     try {
       final response = await Supabase.instance.client
           .from('users')
-          .select('id, name, avatar, is_verified_expert')
+          .select('id, name, avatar, is_verified_expert, organization_logo_url')
           .limit(5);
       return List<Map<String, dynamic>>.from(response);
     } catch (_) {

@@ -170,8 +170,8 @@ class _FeedScreenState extends State<FeedScreen> {
     // If we need to filter by a room tag or update_count, we MUST use an inner join.
     final needsInnerJoin = _activeDomainFilter != 'All' || _activeViewToggle == 'Launches';
     final selectString = needsInnerJoin
-        ? '*, rooms!inner(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))'
-        : '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))';
+        ? '*, rooms!inner(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))'
+        : '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))';
 
     var filterBuilder = Supabase.instance.client.from('updates').select(selectString);
 

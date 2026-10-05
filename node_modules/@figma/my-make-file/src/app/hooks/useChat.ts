@@ -19,6 +19,54 @@ export function useChatRoom(roomId: string | undefined) {
   return { room };
 }
 
+
+export function useChatParticipants(roomId: string | undefined) {
+  const { data: participants = [] } = useQuery({
+    queryKey: ['chat_participants', roomId],
+    queryFn: async () => {
+      const { data: room, error: roomError } = await supabase
+        .from('rooms')
+        .select('builder_id')
+        .eq('id', roomId)
+        .single();
+        
+      if (roomError) throw roomError;
+
+      const { data: observers, error: obsError } = await supabase
+        .from('room_observers')
+        .select('observer_id')
+        .eq('room_id', roomId);
+        
+      if (obsError) throw obsError;
+
+      const userIds = new Set<string>();
+      if (room?.builder_id) userIds.add(room.builder_id);
+      observers?.forEach(o => userIds.add(o.observer_id));
+
+      if (userIds.size === 0) return [];
+
+      const { data: profiles, error: profError } = await supabase
+        .from('users')
+        .select('id, name, username, avatar, is_verified_expert, organization_logo_url')
+        .in('id', Array.from(userIds));
+
+      if (profError) throw profError;
+
+      return profiles.map(p => ({
+        id: p.id,
+        display: (p.username || p.name || 'User').replace(/\s+/g, ''),
+        full_name: p.name || 'User',
+        avatar: p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || 'User')}`,
+        is_verified_expert: !!p.is_verified_expert,
+        organization_logo_url: p.organization_logo_url || null,
+      }));
+    },
+    enabled: !!roomId,
+  });
+
+  return { participants };
+}
+
 export function useChatMessages(roomId: string | undefined, user: any) {
   const queryClient = useQueryClient();
   const [typingUsers, setTypingUsers] = useState<string[]>([]);

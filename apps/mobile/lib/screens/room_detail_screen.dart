@@ -154,7 +154,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     try {
       final updatesResponse = await Supabase.instance.client
           .from('updates')
-          .select('*, rooms(title, tags), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+          .select('*, rooms(title, tags), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
           .eq('room_id', widget.roomId)
           .order('created_at', ascending: false)
           .range(_updatesList.length, _updatesList.length + _pageSize - 1);
@@ -184,7 +184,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     // Fetch room details including author
     final roomResponse = await Supabase.instance.client
         .from('rooms')
-        .select('*, users!builder_id(name, avatar, is_verified_expert)')
+        .select('*, users!builder_id(name, avatar, is_verified_expert, organization_logo_url)')
         .eq('id', widget.roomId)
         .single();
         
@@ -200,7 +200,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     // Fetch updates for this room
     final updatesResponse = await Supabase.instance.client
         .from('updates')
-        .select('*, rooms(title, tags), users(name, username, twitter, avatar, is_verified_expert, organization_name), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert)), polls(*, poll_options(*))')
+        .select('*, rooms(title, tags), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
         .eq('room_id', widget.roomId)
         .order('created_at', ascending: false)
         .range(0, _pageSize - 1);

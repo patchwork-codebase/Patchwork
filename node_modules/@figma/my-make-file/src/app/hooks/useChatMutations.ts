@@ -7,7 +7,7 @@ export function useChatMutations(roomId: string | undefined, user: any) {
   const queryClient = useQueryClient();
 
   const sendMessage = useMutation({
-    mutationFn: async ({ content, mediaUrl, mediaType }: { content: string; mediaUrl?: string; mediaType?: string }) => {
+    mutationFn: async ({ content, mediaUrl, mediaType, mentionedUserIds }: { content: string; mediaUrl?: string; mediaType?: string, mentionedUserIds?: string[] }) => {
       if (!roomId || !user) throw new Error("Missing room or user");
       const { data, error } = await supabase
         .from('room_messages')
@@ -17,6 +17,7 @@ export function useChatMutations(roomId: string | undefined, user: any) {
           content: content,
           media_url: mediaUrl,
           media_type: mediaType,
+          mentioned_user_ids: mentionedUserIds,
         })
         .select('*, sender:users!sender_id(id, name, avatar)')
         .single();

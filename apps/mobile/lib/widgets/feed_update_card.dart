@@ -619,7 +619,13 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
   }
 
   void _showComments() {
-    final updateId = widget.update['id'];
+    final originalUpdate = widget.update['original_update'];
+    final rawContent = (widget.update['content'] ?? '').toString();
+    final isPureRepost = originalUpdate != null && (widget.update['is_repost_only'] == true || rawContent.trim().isEmpty);
+    final targetUpdate = (isPureRepost && originalUpdate is Map<String, dynamic>)
+        ? originalUpdate
+        : widget.update;
+    final updateId = targetUpdate['id'] ?? widget.update['id'];
     if (updateId == null) return;
     
     if (widget.isThreadView && widget.onReplyTap != null) {
@@ -717,13 +723,22 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
 
     final update = widget.update;
     final isAuthor = update['author_id'] == Supabase.instance.client.auth.currentUser?.id;
-    final users = update['users'] ?? {};
-    final rooms = update['rooms'] ?? {};
-    final authorName = update['author_name'] ?? users['name'] ?? 'Unknown Author';
-    final content = update['content'] ?? '';
-    final roomTitle = rooms['title'] ?? 'Unknown Room';
-    final createdAt = DateTime.tryParse(update['created_at'] ?? '') ?? DateTime.now();
-    final updateType = update['update_type']?.toString().toLowerCase();
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    final rawContent = (update['content'] ?? '').toString();
+    final originalUpdate = update['original_update'];
+    final isPureRepost = originalUpdate != null && (update['is_repost_only'] == true || rawContent.trim().isEmpty);
+    final isQuoteRepost = originalUpdate != null && !isPureRepost;
+
+    final reposterId = update['author_id'] ?? update['users']?['id'];
+    final reposterName = update['author_name'] ?? update['users']?['name'] ?? 'Builder';
+
+    final Map<String, dynamic> activeUpdate = isPureRepost ? Map<String, dynamic>.from(originalUpdate) : update;
+    final users = activeUpdate['users'] ?? {};
+    final rooms = update['rooms'] ?? activeUpdate['rooms'] ?? {};
+    final authorName = activeUpdate['author_name'] ?? users['name'] ?? 'Unknown Author';
+    final content = (activeUpdate['content'] ?? '').toString();
+    final createdAt = DateTime.tryParse(activeUpdate['created_at'] ?? '') ?? DateTime.now();
+    final updateType = activeUpdate['update_type']?.toString().toLowerCase();
     
     // Fallback UI data if type matches
     final typeUI = updateTypeUI[updateType];
@@ -809,6 +824,35 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
             child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Pure Retweet Header (Twitter/X style)
+              if (isPureRepost) ...[
+                Padding(
+                  padding: const EdgeInsets.only(left: 52, bottom: 6),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.repeat, size: 13, color: context.themeColors.textTertiary),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () {
+                          if (reposterId != null) {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => PublicProfileScreen(userId: reposterId),
+                            ));
+                          }
+                        },
+                        child: Text(
+                          (reposterId == currentUserId) ? 'You reposted' : '$reposterName reposted',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: context.themeColors.textTertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               // Header Row: Avatar, Name, Handle, Time, Trash
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -872,6 +916,19 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                             if (users['is_verified_expert'] == true) ...[
                               const SizedBox(width: 4),
                               Icon(LucideIcons.badgeCheck, color: context.themeColors.primary500, size: 12),
+                                if (users['organization_logo_url'] != null && users['organization_logo_url'].toString().trim().isNotEmpty) ...[
+                                  const SizedBox(width: 4),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(2),
+                                    child: Image.network(
+                                      users['organization_logo_url'],
+                                      width: 12,
+                                      height: 12,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                    ),
+                                  ),
+                                ],
                             ],
                             const SizedBox(width: 4),
                             Flexible(
@@ -944,7 +1001,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                 ],
               ),
               
-              const SizedBox(height: 16),
+              if (content.isNotEmpty) const SizedBox(height: 12),
                   
                   // Text Content
                   if (content.isNotEmpty && !content.contains('figma.com'))
@@ -975,11 +1032,11 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                     ),
 
                   // Poll Widget
-                  if (update['polls'] != null && (update['polls'] as List).isNotEmpty)
-                    PollWidget(poll: (update['polls'] as List).first),
+                  if (activeUpdate['polls'] != null && (activeUpdate['polls'] as List).isNotEmpty)
+                    PollWidget(poll: (activeUpdate['polls'] as List).first),
 
-                  // Quoted / Reposted Content
-                  if (update['original_update'] != null)
+                  // Quoted Content (Only for quote reposts with thoughts)
+                  if (isQuoteRepost)
                     Builder(
                       builder: (context) {
                         final origUpdate = update['original_update'];
@@ -1079,13 +1136,13 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                     ),
                   
                   // Figma Embed
-                  if (update['figma_url'] != null || content.contains('figma.com'))
-                    FigmaEmbedWidget(url: _buildFigmaEmbedUrl(update['figma_url']?.toString(), content))
+                  if (activeUpdate['figma_url'] != null || content.contains('figma.com'))
+                    FigmaEmbedWidget(url: _buildFigmaEmbedUrl(activeUpdate['figma_url']?.toString(), content))
                   else if (RegExp(r'(https?:\/\/[^\s]+)', caseSensitive: false).hasMatch(content))
                     RichLinkPreviewCard(url: RegExp(r'(https?:\/\/[^\s]+)', caseSensitive: false).firstMatch(content)!.group(0)!),
 
                   // Code Snippet block
-                  if (update['code_snippet'] != null)
+                  if (activeUpdate['code_snippet'] != null)
                     Container(
                       margin: const EdgeInsets.only(top: 12),
                       decoration: BoxDecoration(
@@ -1095,7 +1152,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: HighlightView(
-                        update['code_snippet'],
+                        activeUpdate['code_snippet'],
                         language: 'dart',
                         theme: githubTheme,
                         padding: const EdgeInsets.all(16),
@@ -1104,7 +1161,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                     ),
 
                   // Uploaded Media (Single or Multiple Images)
-                  _buildMediaGallery(update),
+                  _buildMediaGallery(activeUpdate),
 
                   const SizedBox(height: 12),
                   

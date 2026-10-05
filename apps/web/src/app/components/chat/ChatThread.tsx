@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
 import { useParams, Link } from "react-router";
-import { Send, ArrowLeft, Image as ImageIcon, CheckCircle2 } from "lucide-react";
+import { Send, ArrowLeft, Image as ImageIcon, CheckCircle2, BadgeCheck, AtSign } from "lucide-react";
 import { supabase, useAuth } from "../auth/AuthContext";
 import { UserAvatar } from "../ui/UserAvatar";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useChatMutations } from "../../hooks/useChatMutations";
-import { useChatRoom, useChatMessages } from "../../hooks/useChat";
+import { useChatRoom, useChatMessages, useChatParticipants } from "../../hooks/useChat";
+import { MentionsInput, Mention } from 'react-mentions';
 import { uploadImage } from "../../utils/uploadImage";
 import { Loader2, X } from "lucide-react";
 
@@ -21,6 +22,7 @@ export default function ChatThread() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { room } = useChatRoom(roomId);
+  const { participants } = useChatParticipants(roomId); console.log("PARTICIPANTS:", participants);
   const { 
     messages, 
     isLoading, 
@@ -30,6 +32,66 @@ export default function ChatThread() {
   } = useChatMessages(roomId, user);
 
   const { sendMessage } = useChatMutations(roomId, user);
+
+  
+  const mentionsInputStyle = {
+    control: {
+      backgroundColor: 'transparent',
+      fontSize: 15,
+      fontWeight: 'normal',
+    },
+    highlighter: {
+      padding: '10px 8px',
+    },
+    input: {
+      padding: '10px 8px',
+      outline: 'none',
+      border: 'none',
+    },
+    suggestions: {
+      list: {
+        backgroundColor: 'white',
+        border: '1px solid rgba(0,0,0,0.1)',
+        borderRadius: '8px',
+        fontSize: 14,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        overflow: 'hidden',
+        zIndex: 50
+      },
+      item: {
+        padding: '8px 12px',
+        borderBottom: '1px solid rgba(0,0,0,0.05)',
+        '&focused': {
+          backgroundColor: '#f1f5f9',
+        },
+      },
+    },
+  };
+
+  const renderContentWithMentions = (content: string, isMine: boolean) => {
+    if (!content) return null;
+    const parts = content.split(/(@\[[^\]]+\]\([^)]+\))/g);
+    return parts.map((part, i) => {
+      const match = part.match(/@\[([^\]]+)\]\(([^)]+)\)/);
+      if (match) {
+        const displayName = match[1];
+        const userId = match[2];
+        return (
+          <Link
+            key={i}
+            to={`/dashboard/profile/${userId}`}
+            onClick={(e) => e.stopPropagation()}
+            className={`font-bold inline-flex items-center hover:underline ${
+              isMine ? 'text-white underline decoration-white/40' : 'text-primary-600 dark:text-primary-400'
+            }`}
+          >
+            @{displayName}
+          </Link>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -110,10 +172,14 @@ export default function ChatThread() {
         setIsUploading(false);
       }
 
+      const mentionRegex = /@\[.*?\]\((.*?)\)/g;
+      const mentionedUserIds = Array.from(text.matchAll(mentionRegex)).map(m => m[1]);
+      
       sendMessage.mutate({ 
         content: text.trim(),
         mediaUrl,
-        mediaType: mediaUrl ? 'image' : undefined
+        mediaType: mediaUrl ? 'image' : undefined,
+        mentionedUserIds
       });
       scrollToBottom();
     } catch (err: any) {
@@ -163,6 +229,12 @@ export default function ChatThread() {
           <div className="space-y-6">
             {messages.map((msg, i) => {
               const isMine = msg.sender_id === user?.id;
+              const isMentioned = Boolean(
+                user?.id && (
+                  (msg as any).mentioned_user_ids?.includes(user.id) ||
+                  (msg.content && msg.content.includes(`](${user.id})`))
+                )
+              );
               const showAvatar = i === 0 || messages[i-1].sender_id !== msg.sender_id;
               
               return (
@@ -177,14 +249,26 @@ export default function ChatThread() {
                     {!isMine && showAvatar && (
                       <span className="text-[11px] text-slate-500 mb-1 font-medium pl-1">{msg.sender?.name}</span>
                     )}
+
+                    {isMentioned && !isMine && (
+                      <span className="text-[10px] font-semibold text-primary-600 dark:text-primary-400 bg-primary-500/10 dark:bg-primary-500/20 px-2 py-0.5 rounded-full mb-1 self-start inline-flex items-center gap-1 border border-primary-500/20">
+                        <AtSign className="w-2.5 h-2.5" /> Mentioned you
+                      </span>
+                    )}
                     
-                    <div className={`px-4 py-2.5 rounded-[20px] text-[15px] leading-relaxed ${isMine ? 'bg-primary-500 text-white rounded-tr-sm' : 'bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-tl-sm'}`}>
+                    <div className={`px-4 py-2.5 rounded-[20px] text-[15px] leading-relaxed ${
+                      isMine 
+                        ? 'bg-primary-500 text-white rounded-tr-sm' 
+                        : isMentioned
+                          ? 'bg-primary-500/10 dark:bg-primary-500/15 border-2 border-primary-500/40 text-slate-900 dark:text-slate-100 rounded-tl-sm shadow-sm'
+                          : 'bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-tl-sm'
+                    }`}>
                       {msg.media_url && (
                         <div className="mb-2 -mx-2 -mt-1 rounded-xl overflow-hidden">
                           <img src={msg.media_url} alt="Attachment" className="max-w-full rounded-xl" style={{ maxHeight: 250, objectFit: 'cover' }} />
                         </div>
                       )}
-                      {msg.content}
+                      {renderContentWithMentions(msg.content || '', isMine)}
                     </div>
                     
                     <span className="text-[10px] text-slate-500 mt-1 opacity-60">
@@ -252,19 +336,54 @@ export default function ChatThread() {
             <ImageIcon className="w-5 h-5" />
           </button>
           
-          <textarea
-            value={inputText}
-            onChange={handleInputChange}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Type a message..."
-            className="flex-1 max-h-32 min-h-[44px] bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none py-2.5 px-2 focus:outline-none text-[15px]"
-            rows={1}
-          />
+          <div className="flex-1 max-h-32 min-h-[44px]">
+              <MentionsInput
+                value={inputText}
+                onChange={(e, newValue) => {
+                  setInputText(newValue);
+                  handleInputChange(e as any);
+                }}
+                onKeyDown={(e: any) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Type a message..."
+                style={mentionsInputStyle}
+                className="w-full h-full text-slate-900 dark:text-white"
+                a11ySuggestionsListLabel={"Suggested mentions"} forceSuggestionsAboveCursor={true}
+              >
+                <Mention
+                  trigger="@"
+                  data={participants}
+                  displayTransform={(id, display) => `@${display}`}
+                  renderSuggestion={(suggestion: any) => (
+                    <div className="flex items-center gap-2.5 text-slate-900 dark:text-white py-1">
+                      <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-slate-200 dark:bg-white/10 flex items-center justify-center">
+                        {suggestion.avatar ? (
+                          <img src={suggestion.avatar as string} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                        ) : (
+                          <span className="text-xs font-bold text-slate-500">{(suggestion.full_name || 'U')[0].toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-[13px] truncate">{suggestion.full_name}</span>
+                          {suggestion.is_verified_expert && (
+                            <BadgeCheck className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                          )}
+                          {suggestion.organization_logo_url && (
+                            <img src={suggestion.organization_logo_url} alt="" className="w-3.5 h-3.5 rounded-sm object-cover shrink-0" />
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">@{suggestion.display}</span>
+                      </div>
+                    </div>
+                  )}
+                />
+              </MentionsInput>
+            </div>
           
           <button 
             onClick={handleSend}

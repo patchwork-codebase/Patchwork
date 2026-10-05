@@ -125,7 +125,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     try {
       final response = await Supabase.instance.client
           .from('updates')
-          .select('*, rooms(id, title, tags), users(name, avatar, is_verified_expert), reactions(type, text, observer_name)')
+          .select('*, rooms(id, title, tags), users(name, avatar, is_verified_expert, organization_logo_url), reactions(type, text, observer_name)')
           .order('created_at', ascending: false)
           .limit(30);
       if (mounted) {
@@ -193,7 +193,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     try {
       final res = await Supabase.instance.client
           .from('update_bookmarks')
-          .select('update_id, updates(*, rooms(id, title, tags), users(name, avatar, is_verified_expert))')
+          .select('update_id, updates(*, rooms(id, title, tags), users(name, avatar, is_verified_expert, organization_logo_url))')
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .limit(10);

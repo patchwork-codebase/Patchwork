@@ -3,7 +3,7 @@ import { useAuth, supabase } from "../auth/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { ArrowLeft, ExternalLink, Heart, MessageCircle, Eye, FileText, Bell, Pin, Mail, Edit3, Image as ImageIcon, Repeat2, Bookmark } from "lucide-react";
+import { ArrowLeft, ExternalLink, Heart, MessageCircle, Eye, FileText, Bell, Pin, Mail, Edit3, Image as ImageIcon, Repeat2, Bookmark, AtSign } from "lucide-react";
 import { timeAgo } from "../../utils/helpers";
 import { RequestsAndInvites } from "./RequestsAndInvites";
 import { UserAvatar } from "../ui/UserAvatar";
@@ -175,7 +175,17 @@ function getNotifConfig(n: any) {
         context: roomTitle,
         preview: n.metadata?.message_preview,
         thumbnailUrl: null,
-        primaryLink: n.metadata?.room_id ? `/dashboard/room/${n.metadata.room_id}` : null,
+        primaryLink: n.metadata?.room_id ? `/dashboard/messages/${n.metadata.room_id}` : null,
+      };
+    case 'mention':
+      return {
+        Icon: AtSign,
+        iconColor: 'text-primary-500',
+        text: 'mentioned you in',
+        context: roomTitle,
+        preview: n.metadata?.message_preview,
+        thumbnailUrl: null,
+        primaryLink: n.metadata?.room_id ? `/dashboard/messages/${n.metadata.room_id}` : null,
       };
     case 'ticket_assigned': {
       const ticketId = n.metadata?.item_id || n.reference_id;
