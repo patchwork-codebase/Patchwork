@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import '../providers/theme_provider.dart';
+import '../widgets/coming_soon_dialog.dart';
 
 class ProfileSheet extends ConsumerStatefulWidget {
   const ProfileSheet({super.key});
@@ -326,14 +327,24 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                 ]),
                 
                 _buildSheetSection('PRODUCT OPS', [
-                  _buildSheetItem(LucideIcons.map, 'Roadmap View'),
-                  _buildSheetItem(LucideIcons.fileText, 'Build Logs'),
+                  _buildSheetItem(LucideIcons.map, 'Roadmap View', onTap: () {
+                    showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Roadmap View'));
+                  }),
+                  _buildSheetItem(LucideIcons.fileText, 'Build Logs', onTap: () {
+                    showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Build Logs'));
+                  }),
                 ]),
 
                 _buildSheetSection('EXPLORE', [
-                  _buildSheetItem(LucideIcons.lightbulb, 'Discovery Mode'),
-                  _buildSheetItem(LucideIcons.badge, 'Expert Directory'),
-                  _buildSheetItem(LucideIcons.compass, 'Replay Tour'),
+                  _buildSheetItem(LucideIcons.lightbulb, 'Discovery Mode', onTap: () {
+                    showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Discovery Mode'));
+                  }),
+                  _buildSheetItem(LucideIcons.badge, 'Expert Directory', onTap: () {
+                    showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Expert Directory'));
+                  }),
+                  _buildSheetItem(LucideIcons.compass, 'Replay Tour', onTap: () {
+                    showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Replay Tour'));
+                  }),
                 ]),
 
                 const SizedBox(height: 16),

@@ -673,8 +673,6 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                     children: [
                       Row(
                         children: [
-                          Icon(LucideIcons.box, color: context.themeColors.primary400, size: 18),
-                          const SizedBox(width: 8),
                           Text(
                             room['title'] ?? 'Untitled Project',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary),

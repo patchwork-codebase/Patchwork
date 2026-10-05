@@ -19,6 +19,7 @@ import 'room_detail_screen.dart';
 import 'update_thread_screen.dart';
 import 'dart:async';
 import '../widgets/welcome_walkthrough_dialog.dart';
+import '../services/gamification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isFirstTime;
@@ -67,6 +68,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _fetchUserProfile();
     _fetchUnreadMessages();
     _initDeepLinks();
+    
+    // Start Gamification Engine Listener
+    GamificationService().startListening(context);
     
     if (widget.isFirstTime) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -9,6 +9,7 @@ import UpdateNotification from "./components/ui/UpdateNotification";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 
 import { ThemeProvider } from "./components/ui/ThemeProvider";
+import { GamificationProvider } from "./context/GamificationContext";
 
 export default function App() {
   return (
@@ -18,11 +19,13 @@ export default function App() {
           client={queryClient}
           persistOptions={{ persister }}
         >
-          <RouterProvider router={router} />
-          <CookiesPolicyModal />
-          <UpdateNotification />
-          <Toaster position="bottom-right" richColors />
-          <Analytics />
+          <GamificationProvider>
+            <RouterProvider router={router} />
+            <CookiesPolicyModal />
+            <UpdateNotification />
+            <Toaster position="bottom-right" richColors />
+            <Analytics />
+          </GamificationProvider>
         </PersistQueryClientProvider>
       </ThemeProvider>
     </ErrorBoundary>

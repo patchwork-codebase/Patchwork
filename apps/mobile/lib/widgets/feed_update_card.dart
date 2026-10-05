@@ -921,11 +921,12 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                               ),
                               const SizedBox(width: 6),
                             ],
-                            Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                decoration: BoxDecoration(color: context.themeColors.textPrimary, borderRadius: BorderRadius.circular(4)),
-                                child: Text('In $roomTitle', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.surface)),
-                            ),
+                            if (rooms['title'] != null)
+                              Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                  decoration: BoxDecoration(color: context.themeColors.textPrimary, borderRadius: BorderRadius.circular(4)),
+                                  child: Text('In ${rooms['title']}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.surface)),
+                              ),
                           ],
                         ),
                       ],
@@ -1254,9 +1255,8 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                         padding: const EdgeInsets.only(right: 8),
                         child: InkWell(
                           onTap: () {
-                            HapticFeedback.lightImpact();
-                            Share.shareUri(Uri.parse('https://www.joinpatchwork.xyz/update/${widget.update['id']}'),
-                              title: 'Check out this update on Patchwork');
+                            // ignore: deprecated_member_use
+                            Share.share('Check out this update on Patchwork: https://www.joinpatchwork.xyz/update/${widget.update['id']}');
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: _buildReactionGhostButton(LucideIcons.share2, null),

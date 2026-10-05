@@ -1,0 +1,62 @@
+name: Mobile App Release
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build_and_release:
+    name: Build & Release Android APK
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      # - name: Build Android App Bundle (Optional for Play Store)
+      #   run: flutter build appbundle --release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: apps/mobile/build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: Uncomment below to automatically upload to Firebase App Distribution as well
+      # You will need to add FIREBASE_TOKEN and FIREBASE_APP_ID to your GitHub Repository Secrets
+      # 
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: 1:177372310250:android:62c00b5c4a8d60cdfe0593
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: internal-testers
+          file: apps/mobile/build/app/outputs/flutter-apk/app-release.apk

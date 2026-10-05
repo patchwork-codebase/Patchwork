@@ -597,7 +597,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                       );
                     },
                   ),
-                if (isMe && content.isNotEmpty)
+                if (isMe && content.isNotEmpty && !msgId.startsWith('temp_'))
                   _buildActionTile(
                     icon: LucideIcons.pencil,
                     label: 'Edit Message',
@@ -607,7 +607,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                       _startEditing(msg);
                     },
                   ),
-                if (isMe)
+                if (isMe && !msgId.startsWith('temp_'))
                   _buildActionTile(
                     icon: LucideIcons.trash2,
                     label: 'Delete Message',

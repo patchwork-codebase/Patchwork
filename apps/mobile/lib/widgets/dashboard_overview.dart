@@ -519,10 +519,12 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: List.generate(7, (index) {
-                    final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                    final now = DateTime.now();
+                    final date = now.subtract(Duration(days: 6 - index));
+                    final dayLabel = DateFormat('E').format(date)[0];
                     final val = _weeklyActivity[index];
-                    final isToday = index == 5; 
-                    
+                    final isToday = index == 6; 
+
                     Widget circle;
                     if (isToday) {
                       circle = Container(
@@ -569,7 +571,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                         circle,
                         const SizedBox(height: 8),
                         Text(
-                          days[index],
+                          dayLabel,
                           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isToday ? context.themeColors.primary500 : context.themeColors.textTertiary),
                         ),
                       ],
@@ -725,8 +727,6 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     children: [
                       Row(
                         children: [
-                          Icon(LucideIcons.box, color: context.themeColors.primary400, size: 18),
-                          const SizedBox(width: 8),
                           Text(
                             room['title'] ?? 'Untitled Project',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary),
@@ -1140,7 +1140,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                   width: 32,
                   height: heights[index],
                   decoration: BoxDecoration(
-                    color: isHighlight ? const Color(0xFFFF5733) : context.themeColors.borderSubtle.withOpacity(0.5),
+                    color: isHighlight ? const Color(0xFFFF5733) : context.themeColors.textPrimary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                 );

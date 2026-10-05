@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
+import '../screens/achievements_screen.dart';
+import '../services/gamification_service.dart';
 
 class DashboardAchievements extends StatefulWidget {
   final String userId;
@@ -40,8 +42,9 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
           
       final userBadgesRes = await Supabase.instance.client
           .from('user_badges')
-          .select('id')
-          .eq('user_id', widget.userId);
+          .select('id, badges!inner(badge_type)')
+          .eq('user_id', widget.userId)
+          .neq('badges.badge_type', 'level');
 
       if (mounted) {
         setState(() {
@@ -50,6 +53,9 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
           _awardsCount = (userBadgesRes as List).length;
           _isLoading = false;
         });
+
+        // Check if we should pop up the "Keep Building" reminder (it has a built-in cooldown)
+        GamificationService().checkKeepBuildingReminder(context, widget.userId);
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -60,19 +66,21 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Center(child: Padding(
-        padding: EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24.0),
         child: CircularProgressIndicator(color: context.themeColors.primary500),
       ));
     }
 
-    // Determine next milestones
-    List<Map<String, dynamic>> nextLevels = _levelBadges.where((b) => (b['points_required'] as int) > _currentReputation).take(2).toList();
-    if (nextLevels.isEmpty && _levelBadges.isNotEmpty) {
-      nextLevels = _levelBadges.length >= 2 ? _levelBadges.sublist(_levelBadges.length - 2) : _levelBadges;
-    } else if (nextLevels.length == 1 && _levelBadges.length >= 2) {
-      final idx = _levelBadges.indexWhere((b) => b['id'] == nextLevels[0]['id']);
-      if (idx > 0) {
-        nextLevels = [_levelBadges[idx - 1], nextLevels[0]];
+    // Determine current level and next level
+    Map<String, dynamic>? currentLevel;
+    Map<String, dynamic>? nextLevel;
+    
+    for (var b in _levelBadges) {
+      final points = b['points_required'] as int;
+      if (_currentReputation >= points) {
+        currentLevel = b;
+      } else if (nextLevel == null) {
+        nextLevel = b;
       }
     }
 
@@ -81,146 +89,206 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.02),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('ACHIEVEMENTS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary, letterSpacing: 1.5)),
-                  Row(
-                    children: const [
-                      Text('View all', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal)),
-                      SizedBox(width: 4),
-                      Icon(LucideIcons.arrowRight, size: 14, color: Colors.teal),
-                    ],
-                  ),
-                ],
-              ),
+              Text('PROOF OF WORK', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
               const SizedBox(height: 16),
-              Text('MILESTONES IN PROGRESS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
-              const SizedBox(height: 12),
               
-              if (nextLevels.isEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('You have completed all current milestones!', style: TextStyle(fontStyle: FontStyle.italic, color: context.themeColors.textTertiary, fontSize: 13)),
-                )
-              else
-                ...nextLevels.map((lvl) {
-                  final pointsRequired = lvl['points_required'] as int;
-                  final isCompleted = _currentReputation >= pointsRequired;
-                  final progress = (_currentReputation / pointsRequired).clamp(0.0, 1.0);
-                  
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
+              // 1. Hero Section: Current Level and Awards
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => AchievementsScreen(userId: widget.userId),
+                    ));
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.01),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.05)),
+                      gradient: LinearGradient(
+                        colors: [
+                          context.themeColors.primary500.withOpacity(0.15),
+                          Colors.purpleAccent.withOpacity(0.15),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: context.themeColors.primary500.withOpacity(0.3)),
                     ),
-                    child: Column(
+                    child: Row(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                _buildBadgeIcon(pointsRequired, isCompleted),
-                                const SizedBox(width: 12),
-                                Text(lvl['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.themeColors.textPrimary)),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: context.themeColors.primary500.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: context.themeColors.primary500.withOpacity(0.2)),
+                        _buildCurrentLevelBadge(currentLevel),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'CURRENT LEVEL', 
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.primary400, letterSpacing: 1.5)
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(LucideIcons.sparkles, size: 12, color: Colors.amber),
+                                ],
                               ),
-                              child: RichText(
+                              const SizedBox(height: 4),
+                              Text(
+                                currentLevel?['title'] ?? 'Beginner', 
+                                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: context.themeColors.textPrimary)
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(LucideIcons.award, size: 14, color: Colors.amber),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _awardsCount > 0 ? '$_awardsCount Verified Awards' : 'No awards yet', 
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.1),
+                          ),
+                          child: Icon(LucideIcons.arrowRight, size: 20, color: context.themeColors.textPrimary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // 2. Next Milestone Section
+              if (nextLevel != null) ...[
+                Row(
+                  children: [
+                    Icon(LucideIcons.trendingUp, size: 14, color: context.themeColors.textTertiary),
+                    const SizedBox(width: 6),
+                    Text('NEXT MILESTONE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      // Takes them to the gallery to see what's needed
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => AchievementsScreen(userId: widget.userId),
+                      ));
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.02),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.05)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(nextLevel['title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: context.themeColors.textPrimary)),
+                                        const SizedBox(width: 6),
+                                        Icon(LucideIcons.info, size: 14, color: context.themeColors.textTertiary),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      nextLevel['description'] ?? 'Earn more XP to unlock', 
+                                      style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(text: '${_currentReputation.clamp(0, pointsRequired)}', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.primary400, fontSize: 11)),
-                                    TextSpan(text: ' / $pointsRequired', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.primary500, fontSize: 11)),
+                                    TextSpan(text: '$_currentReputation', style: TextStyle(fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, fontSize: 14)),
+                                    TextSpan(text: ' / ${nextLevel['points_required']} XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            height: 8,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: (_currentReputation / (nextLevel['points_required'] as int)).clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(colors: [context.themeColors.primary400, context.themeColors.primary600]),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(color: context.themeColors.primary500.withOpacity(0.5), blurRadius: 8, spreadRadius: 0),
                                   ],
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Progress bar
-                        Container(
-                          height: 10,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: progress,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: isCompleted 
-                                  ? const LinearGradient(colors: [Colors.teal, Colors.teal])
-                                  : LinearGradient(colors: [Colors.pinkAccent, context.themeColors.primary500, Colors.indigo]),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: isCompleted ? null : [
-                                  BoxShadow(color: context.themeColors.primary500.withOpacity(0.5), blurRadius: 10, spreadRadius: 0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                
-              const SizedBox(height: 8),
-              
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.02),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: context.themeColors.borderSubtle),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: context.themeColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: context.themeColors.borderSubtle),
-                      ),
-                      child: Icon(LucideIcons.award, color: _awardsCount > 0 ? Colors.amber : context.themeColors.textTertiary, size: 20),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_awardsCount > 0 ? 'You achieved $_awardsCount awards' : 'No awards yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.themeColors.textPrimary)),
-                          const SizedBox(height: 2),
-                          Text('Keep building to unlock more', style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary)),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+              
+              if (nextLevel == null && currentLevel != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.teal.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '🎉 You have reached the highest current milestone!',
+                      style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -228,28 +296,56 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
     );
   }
 
-  Widget _buildBadgeIcon(int points, bool completed) {
+  Widget _buildCurrentLevelBadge(Map<String, dynamic>? currentLevel) {
+    if (currentLevel == null) {
+      return Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: const Center(child: Icon(LucideIcons.award, color: Colors.white54, size: 32)),
+      );
+    }
+    
+    final points = currentLevel['points_required'] as int;
+    
     return Container(
-      width: 36,
-      height: 36,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: completed ? [Colors.blue.shade200, Colors.blue.shade700] : [Colors.blue.shade900.withOpacity(0.5), Colors.blue.shade900.withOpacity(0.2)],
+          colors: [context.themeColors.primary400, context.themeColors.primary600],
         ),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: completed ? Colors.blue.shade300 : Colors.blue.shade900, width: 2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.themeColors.primary400, width: 2),
+        boxShadow: [
+          BoxShadow(color: context.themeColors.primary500.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4)),
+        ],
       ),
-      child: Center(
-        child: Text(
-          '$points',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 12,
-            color: completed ? Colors.white : Colors.white54,
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: Icon(LucideIcons.sparkles, size: 40, color: Colors.white.withOpacity(0.2)),
           ),
-        ),
+          Center(
+            child: Text(
+              '$points',
+              style: const TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+                color: Colors.white,
+                shadows: [Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 4)],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

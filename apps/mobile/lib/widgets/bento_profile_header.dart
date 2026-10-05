@@ -48,7 +48,7 @@ class BentoProfileHeader extends StatelessWidget {
         children: [
           // Top Row: Avatar/Bio + Stats
           SizedBox(
-            height: 180,
+            height: 200, // Increased from 180 to prevent bottom overflow
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -133,54 +133,60 @@ class BentoProfileHeader extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _BentoBox(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                projectsCount.toString(),
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: context.themeColors.textPrimary,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  projectsCount.toString(),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: context.themeColors.textPrimary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Projects',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: context.themeColors.textTertiary,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Projects',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.themeColors.textTertiary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Expanded(
                         child: _BentoBox(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                followerCount.toString(),
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: context.themeColors.textPrimary,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  followerCount.toString(),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: context.themeColors.textPrimary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Followers',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: context.themeColors.textTertiary,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Followers',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.themeColors.textTertiary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -195,7 +201,7 @@ class BentoProfileHeader extends StatelessWidget {
           
           // Bottom Row: Actions & Socials
           SizedBox(
-            height: 64,
+            height: 44, // Reduced from 52
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -237,34 +243,38 @@ class BentoProfileHeader extends StatelessWidget {
                 ),
                 if (twitter != null && twitter.isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  _BentoButton(
+                  _SocialButton(
                     onTap: () => onLaunchUrl(twitter, 'https://twitter.com/'),
                     color: const Color(0xFF1DA1F2).withOpacity(0.15),
-                    child: const Icon(LucideIcons.twitter, color: Color(0xFF1DA1F2), size: 22),
+                    icon: LucideIcons.twitter,
+                    iconColor: const Color(0xFF1DA1F2),
                   ),
                 ],
                 if (github != null && github.isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  _BentoButton(
+                  _SocialButton(
                     onTap: () => onLaunchUrl(github, ''),
                     color: Colors.white.withOpacity(0.1),
-                    child: const Icon(LucideIcons.github, color: Colors.white, size: 22),
+                    icon: LucideIcons.github,
+                    iconColor: Colors.white,
                   ),
                 ],
                 if (linkedin != null && linkedin.isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  _BentoButton(
+                  _SocialButton(
                     onTap: () => onLaunchUrl(linkedin, ''),
                     color: const Color(0xFF0077B5).withOpacity(0.15),
-                    child: const Icon(LucideIcons.linkedin, color: Color(0xFF0077B5), size: 22),
+                    icon: LucideIcons.linkedin,
+                    iconColor: const Color(0xFF0077B5),
                   ),
                 ],
                 if (website != null && website.isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  _BentoButton(
+                  _SocialButton(
                     onTap: () => onLaunchUrl(website, ''),
                     color: context.themeColors.surfaceHighlight,
-                    child: Icon(LucideIcons.globe, color: context.themeColors.textPrimary, size: 22),
+                    icon: LucideIcons.globe,
+                    iconColor: context.themeColors.textPrimary,
                   ),
                 ],
               ],
@@ -321,6 +331,42 @@ class _BentoButton extends StatelessWidget {
             border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
           ),
           child: Center(child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final Color iconColor;
+  final VoidCallback? onTap;
+
+  const _SocialButton({
+    required this.color,
+    required this.icon,
+    required this.iconColor,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ParallaxContainer(
+      maxTilt: 0.12,
+      enableShadows: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44, // Matched with row height 44
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
+          ),
+          child: Center(
+            child: Icon(icon, color: iconColor, size: 14), // Even smaller icon size
+          ),
         ),
       ),
     );
