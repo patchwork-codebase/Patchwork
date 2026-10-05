@@ -1,15 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { Send, ArrowLeft, Image as ImageIcon, CheckCircle2, BadgeCheck, AtSign } from "lucide-react";
+import { Send, ArrowLeft, Image as ImageIcon, CheckCircle2, BadgeCheck, AtSign, Loader2, X } from "lucide-react";
 import { supabase, useAuth } from "../auth/AuthContext";
 import { UserAvatar } from "../ui/UserAvatar";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useChatMutations } from "../../hooks/useChatMutations";
 import { useChatRoom, useChatMessages, useChatParticipants } from "../../hooks/useChat";
-import { MentionsInput, Mention } from 'react-mentions';
 import { uploadImage } from "../../utils/uploadImage";
-import { Loader2, X } from "lucide-react";
 
 export default function ChatThread() {
   const { roomId } = useParams();
@@ -18,11 +16,17 @@ export default function ChatThread() {
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionStartIndex, setMentionStartIndex] = useState(-1);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { room } = useChatRoom(roomId);
-  const { participants } = useChatParticipants(roomId); console.log("PARTICIPANTS:", participants);
+  const { participants } = useChatParticipants(roomId);
   const { 
     messages, 
     isLoading, 
@@ -33,40 +37,13 @@ export default function ChatThread() {
 
   const { sendMessage } = useChatMutations(roomId, user);
 
-  
-  const mentionsInputStyle = {
-    control: {
-      backgroundColor: 'transparent',
-      fontSize: 15,
-      fontWeight: 'normal',
-    },
-    highlighter: {
-      padding: '10px 8px',
-    },
-    input: {
-      padding: '10px 8px',
-      outline: 'none',
-      border: 'none',
-    },
-    suggestions: {
-      list: {
-        backgroundColor: 'white',
-        border: '1px solid rgba(0,0,0,0.1)',
-        borderRadius: '8px',
-        fontSize: 14,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        overflow: 'hidden',
-        zIndex: 50
-      },
-      item: {
-        padding: '8px 12px',
-        borderBottom: '1px solid rgba(0,0,0,0.05)',
-        '&focused': {
-          backgroundColor: '#f1f5f9',
-        },
-      },
-    },
-  };
+  const filteredParticipants = participants.filter((p) => {
+    const q = mentionQuery.toLowerCase();
+    return (
+      (p.full_name && p.full_name.toLowerCase().includes(q)) ||
+      (p.display && p.display.toLowerCase().includes(q))
+    );
+  });
 
   const renderContentWithMentions = (content: string, isMine: boolean) => {
     if (!content) return null;
@@ -118,9 +95,24 @@ export default function ChatThread() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const isTyping = e.target.value.length > 0;
-    setInputText(e.target.value);
-    
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setInputText(value);
+
+    // Check if user is typing a mention
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtMatch = textBeforeCursor.match(/@([a-zA-Z0-9_]*)$/);
+
+    if (lastAtMatch) {
+      setShowMentions(true);
+      setMentionQuery(lastAtMatch[1]);
+      setMentionStartIndex(cursorPos - lastAtMatch[0].length);
+      setSelectedMentionIndex(0);
+    } else {
+      setShowMentions(false);
+    }
+
+    const isTyping = value.length > 0;
     // Track typing status via Presence
     if (channelRef.current && user) {
       channelRef.current.track({
@@ -145,6 +137,53 @@ export default function ChatThread() {
     }
   };
 
+  const insertMention = (participant: any) => {
+    const textBefore = inputText.substring(0, mentionStartIndex);
+    const textAfter = inputText.substring(inputRef.current?.selectionStart || inputText.length);
+    const mentionToken = `@[${participant.full_name}](${participant.id}) `;
+    const newText = `${textBefore}${mentionToken}${textAfter}`;
+    setInputText(newText);
+    setShowMentions(false);
+
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        const newCursorPos = textBefore.length + mentionToken.length;
+        inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 10);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (showMentions && filteredParticipants.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedMentionIndex((prev) => (prev + 1) % filteredParticipants.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedMentionIndex((prev) => (prev - 1 + filteredParticipants.length) % filteredParticipants.length);
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        insertMention(filteredParticipants[selectedMentionIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowMentions(false);
+        return;
+      }
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   const handleSend = async () => {
     if ((!inputText.trim() && !selectedImage) || !user || !roomId || isUploading) return;
     
@@ -153,6 +192,7 @@ export default function ChatThread() {
     
     setInputText("");
     setSelectedImage(null);
+    setShowMentions(false);
     
     // Broadcast stopped typing immediately
     if (channelRef.current) {
@@ -179,23 +219,30 @@ export default function ChatThread() {
         content: text.trim(),
         mediaUrl,
         mediaType: mediaUrl ? 'image' : undefined,
-        mentionedUserIds
+        mentionedUserIds: mentionedUserIds.length > 0 ? mentionedUserIds : undefined,
+      }, {
+        onSuccess: () => {
+          scrollToBottom();
+        },
+        onError: (err: any) => {
+          toast.error("Failed to send message: " + (err.message || 'Unknown error'));
+        }
       });
-      scrollToBottom();
     } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to send message");
-      setInputText(text); // Restore on fail
-      setSelectedImage(imageToUpload);
       setIsUploading(false);
+      toast.error("Error: " + err.message);
     }
   };
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a]">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto bg-white dark:bg-[#0a0a0a] rounded-none sm:rounded-2xl border-0 sm:border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
       {/* HEADER */}
-      <div className="h-[68px] border-b border-slate-100 dark:border-white/5 flex items-center px-4 shrink-0 bg-slate-50 dark:bg-[#050505]">
-        <Link to="/dashboard/messages" className="md:hidden mr-3 p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-full text-slate-500 dark:text-slate-400">
+      <div className="flex items-center gap-4 p-4 border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#050505] shrink-0">
+        <Link to="/dashboard/messages" className="p-2 -ml-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-full hover:bg-slate-200 dark:hover:bg-white/5 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex items-center gap-3">
@@ -297,8 +344,46 @@ export default function ChatThread() {
       </div>
 
       {/* INPUT AREA */}
-      <div className="p-4 bg-slate-50 dark:bg-[#050505] border-t border-slate-200 dark:border-white/5 shrink-0">
+      <div className="p-4 bg-slate-50 dark:bg-[#050505] border-t border-slate-200 dark:border-white/5 shrink-0 relative">
         
+        {/* Mention Suggestions Popup */}
+        {showMentions && filteredParticipants.length > 0 && (
+          <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-[#151515] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden max-h-56 overflow-y-auto z-50">
+            <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#111]">
+              People in room
+            </div>
+            {filteredParticipants.map((p, idx) => (
+              <div
+                key={p.id}
+                onClick={() => insertMention(p)}
+                className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors ${
+                  idx === selectedMentionIndex 
+                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' 
+                    : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-800 dark:text-slate-200'
+                }`}
+              >
+                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-slate-200 dark:bg-white/10 flex items-center justify-center">
+                  {p.avatar ? (
+                    <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold text-slate-500">{(p.full_name || 'U')[0].toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-[13px] truncate">{p.full_name}</span>
+                    {p.is_verified_expert && <BadgeCheck className="w-3.5 h-3.5 text-primary-500 shrink-0" />}
+                    {p.organization_logo_url && (
+                      <img src={p.organization_logo_url} alt="" className="w-3.5 h-3.5 rounded-sm object-cover shrink-0" />
+                    )}
+                  </div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">@{p.display}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Selected Image Preview */}
         {selectedImage && (
           <div className="mb-3 relative inline-block">
@@ -336,54 +421,17 @@ export default function ChatThread() {
             <ImageIcon className="w-5 h-5" />
           </button>
           
-          <div className="flex-1 max-h-32 min-h-[44px]">
-              <MentionsInput
-                value={inputText}
-                onChange={(e, newValue) => {
-                  setInputText(newValue);
-                  handleInputChange(e as any);
-                }}
-                onKeyDown={(e: any) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder="Type a message..."
-                style={mentionsInputStyle}
-                className="w-full h-full text-slate-900 dark:text-white"
-                a11ySuggestionsListLabel={"Suggested mentions"} forceSuggestionsAboveCursor={true}
-              >
-                <Mention
-                  trigger="@"
-                  data={participants}
-                  displayTransform={(id, display) => `@${display}`}
-                  renderSuggestion={(suggestion: any) => (
-                    <div className="flex items-center gap-2.5 text-slate-900 dark:text-white py-1">
-                      <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-slate-200 dark:bg-white/10 flex items-center justify-center">
-                        {suggestion.avatar ? (
-                          <img src={suggestion.avatar as string} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
-                        ) : (
-                          <span className="text-xs font-bold text-slate-500">{(suggestion.full_name || 'U')[0].toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-[13px] truncate">{suggestion.full_name}</span>
-                          {suggestion.is_verified_expert && (
-                            <BadgeCheck className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                          )}
-                          {suggestion.organization_logo_url && (
-                            <img src={suggestion.organization_logo_url} alt="" className="w-3.5 h-3.5 rounded-sm object-cover shrink-0" />
-                          )}
-                        </div>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">@{suggestion.display}</span>
-                      </div>
-                    </div>
-                  )}
-                />
-              </MentionsInput>
-            </div>
+          <div className="flex-1 max-h-32 min-h-[44px] flex items-center">
+            <textarea
+              ref={inputRef}
+              value={inputText}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message or @mention..."
+              rows={1}
+              className="w-full bg-transparent border-0 outline-none resize-none text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 py-2 px-1 max-h-28 overflow-y-auto"
+            />
+          </div>
           
           <button 
             onClick={handleSend}
