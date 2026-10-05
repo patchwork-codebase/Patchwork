@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:math' as dart_math;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'toast_notification.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_markdown/flutter_markdown.dart';

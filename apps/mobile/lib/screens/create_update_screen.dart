@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1171,7 +1171,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(
-                                  LucideIcons.figma, 
+                                  Icons.brush, 
                                   size: 18, 
                                   color: _hasFigma 
                                       ? const Color(0xFFF24E1E) 

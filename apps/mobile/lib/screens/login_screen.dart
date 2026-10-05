@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
 import '../widgets/toast_notification.dart';
 import 'home_screen.dart';
@@ -387,7 +387,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(LucideIcons.chrome, size: 18, color: Color(0xFF4285F4)),
+                                  icon: const Icon(Icons.language, size: 18, color: Color(0xFF4285F4)),
                                   label: Text('Google', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -401,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(LucideIcons.linkedin, size: 18, color: Color(0xFF0A66C2)),
+                                  icon: const Icon(Icons.work, size: 18, color: Color(0xFF0A66C2)),
                                   label: Text('LinkedIn', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),

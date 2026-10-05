@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../theme.dart';
 import 'parallax_container.dart';
@@ -246,7 +246,7 @@ class BentoProfileHeader extends StatelessWidget {
                   _SocialButton(
                     onTap: () => onLaunchUrl(twitter, 'https://twitter.com/'),
                     color: const Color(0xFF1DA1F2).withOpacity(0.15),
-                    icon: LucideIcons.twitter,
+                    icon: Icons.alternate_email,
                     iconColor: const Color(0xFF1DA1F2),
                   ),
                 ],
@@ -255,7 +255,7 @@ class BentoProfileHeader extends StatelessWidget {
                   _SocialButton(
                     onTap: () => onLaunchUrl(github, ''),
                     color: Colors.white.withOpacity(0.1),
-                    icon: LucideIcons.github,
+                    icon: Icons.code,
                     iconColor: Colors.white,
                   ),
                 ],
@@ -264,7 +264,7 @@ class BentoProfileHeader extends StatelessWidget {
                   _SocialButton(
                     onTap: () => onLaunchUrl(linkedin, ''),
                     color: const Color(0xFF0077B5).withOpacity(0.15),
-                    icon: LucideIcons.linkedin,
+                    icon: Icons.work,
                     iconColor: const Color(0xFF0077B5),
                   ),
                 ],

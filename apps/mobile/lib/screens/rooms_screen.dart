@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
@@ -397,11 +397,11 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                         ),
                         child: Row(
                           children: [
-                            Icon(LucideIcons.figma, size: 14, color: context.themeColors.textSecondary),
+                            Icon(Icons.brush, size: 14, color: context.themeColors.textSecondary),
                             SizedBox(width: 12),
-                            Icon(LucideIcons.trello, size: 14, color: context.themeColors.textSecondary), // Notion substitute
+                            Icon(Icons.view_kanban, size: 14, color: context.themeColors.textSecondary), // Notion substitute
                             SizedBox(width: 12),
-                            Icon(LucideIcons.github, size: 14, color: context.themeColors.textSecondary),
+                            Icon(Icons.code, size: 14, color: context.themeColors.textSecondary),
                           ],
                         ),
                       ),

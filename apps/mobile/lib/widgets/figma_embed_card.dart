@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 
@@ -42,7 +42,7 @@ class FigmaEmbedCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                LucideIcons.figma,
+                Icons.brush,
                 color: Color(0xFFF24E1E),
                 size: 20,
               ),

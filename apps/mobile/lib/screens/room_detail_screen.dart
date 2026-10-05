@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
@@ -1119,7 +1119,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(LucideIcons.github, size: 16, color: Colors.purpleAccent),
+                                  const Icon(Icons.code, size: 16, color: Colors.purpleAccent),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
