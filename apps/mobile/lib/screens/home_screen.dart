@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme.dart';
 import 'feed_screen.dart';
 import 'rooms_screen.dart';
@@ -18,7 +19,6 @@ import '../widgets/toast_notification.dart';
 import 'room_detail_screen.dart';
 import 'update_thread_screen.dart';
 import 'dart:async';
-import '../widgets/welcome_walkthrough_dialog.dart';
 import '../services/gamification_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -74,18 +74,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     
     if (widget.isFirstTime) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showWelcomeWalkthrough();
+        ToastService.show(context, 'Welcome to Patchwork');
       });
     }
-  }
-
-  void _showWelcomeWalkthrough() {
-    ToastService.show(context, 'Welcome to Patchwork! 🎉');
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const WelcomeWalkthroughDialog(),
-    );
   }
 
   void _initDeepLinks() {
@@ -121,7 +112,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _fetchUserProfile() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final user = Supabase.instance.client.auth.currentUser;
+    final userId = user?.id;
     if (userId == null) return;
 
     try {
@@ -130,6 +122,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           .select('name, avatar, role, reputation, domain')
           .eq('id', userId)
           .maybeSingle();
+
+      if (profile != null) {
+        final dbAvatar = profile['avatar']?.toString() ?? '';
+        final metaAvatar = user?.userMetadata?['avatar']?.toString() ?? user?.userMetadata?['avatar_url']?.toString() ?? '';
+
+        if (dbAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+          final realAvatar = (metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920'))
+              ? metaAvatar
+              : 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+          profile['avatar'] = realAvatar;
+          Future.microtask(() async {
+            try {
+              await Supabase.instance.client.from('users').update({'avatar': realAvatar}).eq('id', userId);
+              await Supabase.instance.client.auth.updateUser(UserAttributes(data: {'avatar': realAvatar, 'avatar_url': realAvatar}));
+            } catch (_) {}
+          });
+        }
+      }
 
       if (mounted) {
         setState(() {
@@ -201,7 +211,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       backgroundColor: Colors.transparent,
       builder: (context) => const ProfileSheet(),
     ).then((_) {
-      if (mounted) setState(() => _profileMenuOpen = false);
+      if (mounted) {
+        setState(() => _profileMenuOpen = false);
+        _fetchUserProfile();
+      }
     });
   }
 
@@ -264,9 +277,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     String userName = _userProfile?['name'] ?? '';
-    if (userName.trim().isEmpty) userName = 'Builder';
-    final userAvatar = _userProfile?['avatar'];
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (userName.trim().isEmpty) {
+      userName = currentUser?.userMetadata?['name'] ?? currentUser?.userMetadata?['full_name'] ?? 'Builder';
+    }
+    String? userAvatar = _userProfile?['avatar']?.toString();
+    if (userAvatar == null || userAvatar.isEmpty || userAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+      final metaAvatar = currentUser?.userMetadata?['avatar']?.toString() ?? currentUser?.userMetadata?['avatar_url']?.toString();
+      if (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+        userAvatar = metaAvatar;
+      } else if (currentUser?.email == 'akinrodoluseun12@gmail.com') {
+        userAvatar = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+      }
+    }
     final initial = userName.substring(0, 1).toUpperCase();
+    final isDark = Theme.of(context).brightness == Brightness.dark || context.themeColors.background.computeLuminance() < 0.5;
 
     return Scaffold(
       extendBody: true, // IMPORTANT for glassmorphism nav bar
@@ -289,24 +314,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-              child: Container(
-                height: 64,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: context.themeColors.textPrimary.withOpacity(0.05), // Extremely transparent frost tint
-                  border: Border.all(color: context.themeColors.textPrimary.withOpacity(0.15), width: 0.5),
-                  borderRadius: BorderRadius.circular(32),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 4)),
-                  ],
-                ),
-            child: Row(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  height: 64,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent, // 100% purely see-through glass
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.18)
+                          : Colors.black.withOpacity(0.08),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
               children: [
                 _buildNavItem(0, LucideIcons.home, 'Home'),
                 if (_isObserver) ...[
@@ -348,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     color: Colors.transparent,
                                     image: userAvatar != null && userAvatar.isNotEmpty
                                         ? DecorationImage(
-                                            image: NetworkImage(userAvatar),
+                                            image: CachedNetworkImageProvider(userAvatar),
                                             fit: BoxFit.cover,
                                           )
                                         : null,
@@ -379,10 +406,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ),
         ),
-        ),
-        ),
       ),
-      ),
-    );
+    ),
+  ),
+),
+);
   }
 }

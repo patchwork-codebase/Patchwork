@@ -62,7 +62,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       text = 'Good';
       color = Colors.amber;
     } else {
-      text = 'Strong ✓';
+      text = 'Strong';
       color = Colors.green;
     }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
@@ -18,7 +19,7 @@ class UserAvatar extends StatelessWidget {
     Widget avatar = CircleAvatar(
       radius: radius,
       backgroundImage: imageUrl != null && imageUrl!.isNotEmpty
-          ? NetworkImage(imageUrl!)
+          ? CachedNetworkImageProvider(imageUrl!)
           : null,
       child: (imageUrl == null || imageUrl!.isEmpty)
           ? Icon(LucideIcons.user, size: radius)

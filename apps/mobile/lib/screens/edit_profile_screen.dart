@@ -1,20 +1,23 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
 import '../widgets/toast_notification.dart';
+import '../providers/auth_provider.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isUploadingImage = false;
@@ -26,6 +29,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   
   String _role = 'builder';
   String _domain = '';
+  
+  // PM Identity
+  String _specialisation = '';
+  String _seniority = '';
+  String _careerStatus = 'Currently working';
+  final _companyController = TextEditingController();
   
   final _websiteController = TextEditingController();
   final _twitterController = TextEditingController();
@@ -42,6 +51,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _avatarUrl;
   File? _selectedImage;
 
+  final List<String> _specialisationsList = [
+    '',
+    'Fintech Product Manager',
+    'AI Product Manager',
+    'SaaS Product Manager',
+    'Payments Product Manager',
+    'E-commerce Product Manager',
+    'Health Product Manager',
+    'Consumer Product Manager',
+    'B2B Product Manager',
+    'Growth Product Manager',
+    'Other',
+  ];
+
+  final List<String> _seniorityList = [
+    '',
+    'Associate Product Manager',
+    'Product Manager',
+    'Senior Product Manager',
+    'Lead Product Manager',
+    'Principal Product Manager',
+    'Senior Product Lead',
+    'Head of Product',
+    'Director of Product',
+    'VP Product',
+    'Chief Product Officer',
+    'Founder / Product Founder',
+  ];
+
+  final List<String> _careerStatusList = [
+    'Currently working',
+    'Seeking a new role',
+    'Open to opportunities',
+    'Building independently',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +99,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _usernameController.dispose();
     _cityController.dispose();
     _bioController.dispose();
+    _companyController.dispose();
     _websiteController.dispose();
     _twitterController.dispose();
     _githubController.dispose();
@@ -76,7 +122,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (mounted) {
         setState(() {
-          _nameController.text = response['name'] ?? '';
+          final rawName = response['name']?.toString().trim() ?? '';
+          final user = Supabase.instance.client.auth.currentUser;
+          final metaName = user?.userMetadata?['name']?.toString().trim() ??
+              user?.userMetadata?['full_name']?.toString().trim();
+          final emailPrefix = user?.email?.split('@')[0].trim();
+          _nameController.text = (rawName.isNotEmpty && rawName.toLowerCase() != 'unknown builder')
+              ? rawName
+              : ((metaName != null && metaName.isNotEmpty && metaName.toLowerCase() != 'unknown builder')
+                  ? metaName
+                  : ((emailPrefix != null && emailPrefix.isNotEmpty)
+                      ? (emailPrefix[0].toUpperCase() + emailPrefix.substring(1))
+                      : ''));
           _usernameController.text = response['username'] ?? (response['twitter'] ?? '');
           _cityController.text = response['city'] ?? '';
           _bioController.text = response['bio'] ?? '';
@@ -91,11 +148,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _emailNotifications = response['email_notifications_enabled'] ?? true;
           _inAppNotifications = response['in_app_notifications_enabled'] ?? true;
           
+          // PM Identity
+          _specialisation = response['specialisation'] ?? '';
+          _seniority = response['seniority'] ?? (response['pm_level'] ?? '');
+          _companyController.text = response['company_name'] ?? (response['organization_name'] ?? '');
+          _careerStatus = response['career_status'] ?? 'Currently working';
+
           _isVerifiedExpert = response['is_verified_expert'] ?? false;
           _expertAvailable = response['expert_available'] ?? true;
           _expertSlotsController.text = (response['expert_open_slots'] ?? 3).toString();
           _expertResponseController.text = (response['expert_avg_response_hours'] ?? 48).toString();
-          _avatarUrl = response['avatar'];
+          final rawAvatar = response['avatar']?.toString();
+          if (rawAvatar != null && rawAvatar.isNotEmpty && !rawAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+            _avatarUrl = rawAvatar;
+          } else {
+            final user = Supabase.instance.client.auth.currentUser;
+            final metaAvatar = user?.userMetadata?['avatar']?.toString() ?? user?.userMetadata?['avatar_url']?.toString();
+            if (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+              _avatarUrl = metaAvatar;
+            } else if (user?.email == 'akinrodoluseun12@gmail.com') {
+              _avatarUrl = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+            }
+          }
           _isLoading = false;
         });
       }
@@ -142,6 +216,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           .from('avatars')
           .getPublicUrl(filePath);
 
+      await CachedNetworkImage.evictFromCache(publicUrl);
+
       if (mounted) {
         setState(() {
           _avatarUrl = publicUrl;
@@ -178,6 +254,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'bio': _bioController.text.trim(),
         'role': _role,
         'domain': _domain,
+        'specialisation': _specialisation,
+        'seniority': _seniority,
+        'pm_level': _seniority,
+        'career_status': _careerStatus,
+        'company_name': _companyController.text.trim(),
+        'organization_name': _companyController.text.trim(),
         'website': _websiteController.text.trim(),
         'twitter': rawUsername.isNotEmpty ? '@$rawUsername' : _twitterController.text.trim(),
         'github_url': _githubController.text.trim(),
@@ -198,14 +280,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       await Supabase.instance.client.from('users').update(updateData).eq('id', userId);
 
-      // Also update the auth user metadata so the app picks up the new name instantly
+      // Also update the auth user metadata so the app picks up the new name and avatar instantly
       await Supabase.instance.client.auth.updateUser(
         UserAttributes(
-          data: {'name': name},
+          data: {
+            'name': name,
+            if (_avatarUrl != null) 'avatar': _avatarUrl,
+            if (_avatarUrl != null) 'avatar_url': _avatarUrl,
+          },
         ),
       );
+
+      // Invalidate cached user profile across the whole app
+      ref.invalidate(userProfileProvider);
       if (mounted) {
-        ToastService.show(context, 'Profile updated successfully! 🎉');
+        ToastService.show(context, 'Profile updated successfully');
         await Future.delayed(const Duration(milliseconds: 300));
         if (mounted) {
           Navigator.of(context).pop(true);
@@ -459,7 +548,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   image: _selectedImage != null
                                       ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
                                       : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                                          ? DecorationImage(image: NetworkImage(_avatarUrl!), fit: BoxFit.cover)
+                                          ? DecorationImage(image: CachedNetworkImageProvider(_avatarUrl!), fit: BoxFit.cover)
                                           : null,
                                 ),
                                 child: (_selectedImage == null && (_avatarUrl == null || _avatarUrl!.isEmpty))
@@ -507,6 +596,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     if (val != null) setState(() => _domain = val);
                   }),
                   
+                  const SizedBox(height: 8),
+                  Divider(color: context.themeColors.borderSubtle),
+                  const SizedBox(height: 24),
+
+                  Text('PRODUCT MANAGEMENT IDENTITY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+                  const SizedBox(height: 16),
+
+                  _buildDropdownField('Specialisation', _specialisation, _specialisationsList, (val) {
+                    if (val != null) setState(() => _specialisation = val);
+                  }),
+                  _buildDropdownField('Seniority', _seniority, _seniorityList, (val) {
+                    if (val != null) setState(() => _seniority = val);
+                  }),
+                  _buildDropdownField('Career Status', _careerStatus, _careerStatusList, (val) {
+                    if (val != null) setState(() => _careerStatus = val);
+                  }),
+                  _buildTextField('Company / Organization', _companyController, hintText: 'e.g. Stripe, Monzo'),
+
                   const SizedBox(height: 8),
                   Divider(color: context.themeColors.borderSubtle),
                   const SizedBox(height: 32),

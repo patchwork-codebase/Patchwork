@@ -281,11 +281,16 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.teal.withOpacity(0.3)),
                   ),
-                  child: const Center(
-                    child: Text(
-                      '🎉 You have reached the highest current milestone!',
-                      style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(LucideIcons.award, size: 14, color: Colors.tealAccent),
+                      SizedBox(width: 8),
+                      Text(
+                        'You have reached the highest current milestone!',
+                        style: TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ],
                   ),
                 ),
               ],

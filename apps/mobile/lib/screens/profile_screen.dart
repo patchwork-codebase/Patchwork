@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +7,7 @@ import '../theme.dart';
 import 'edit_profile_screen.dart';
 import '../widgets/feed_update_card.dart';
 import '../widgets/bento_profile_header.dart';
+import '../widgets/proof_of_work_ledger.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,7 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadData();
   }
 
@@ -63,12 +65,48 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     // Fallback if DB row doesn't exist yet or had error
     profile ??= {
       'id': user.id,
-      'name': user.userMetadata?['name'] ?? user.userMetadata?['full_name'] ?? 'Builder',
+      'name': user.userMetadata?['name'] ?? user.userMetadata?['full_name'] ?? (user.email?.split('@')[0] ?? 'Product Builder'),
       'avatar': user.userMetadata?['avatar'] ?? user.userMetadata?['avatar_url'],
       'username': user.userMetadata?['username'] ?? '',
       'bio': user.userMetadata?['bio'] ?? '',
       'created_at': user.createdAt,
     };
+
+    // Ensure valid name & auto-heal DB if name is missing or 'Unknown Builder'
+    final rawName = profile['name']?.toString().trim();
+    if (rawName == null || rawName.isEmpty || rawName.toLowerCase() == 'unknown builder') {
+      final metaName = user.userMetadata?['name']?.toString().trim() ??
+          user.userMetadata?['full_name']?.toString().trim();
+      final emailPrefix = user.email?.split('@')[0].trim();
+      final resolvedName = (metaName != null && metaName.isNotEmpty && metaName.toLowerCase() != 'unknown builder')
+          ? metaName
+          : (emailPrefix != null && emailPrefix.isNotEmpty
+              ? (emailPrefix[0].toUpperCase() + emailPrefix.substring(1))
+              : 'Product Builder');
+      profile['name'] = resolvedName;
+
+      Future.microtask(() async {
+        try {
+          await client.from('users').update({'name': resolvedName}).eq('id', user.id);
+        } catch (_) {}
+      });
+    }
+
+    // Ensure valid avatar & auto-heal DB if avatar has the bugged old cartoon
+    final rawAvatar = profile['avatar']?.toString();
+    if (rawAvatar != null && rawAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+      final metaAvatar = user.userMetadata?['avatar']?.toString() ?? user.userMetadata?['avatar_url']?.toString();
+      final healedAvatar = (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920'))
+          ? metaAvatar
+          : 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+      profile['avatar'] = healedAvatar;
+      Future.microtask(() async {
+        try {
+          await client.from('users').update({'avatar': healedAvatar}).eq('id', user.id);
+          await client.auth.updateUser(UserAttributes(data: {'avatar': healedAvatar, 'avatar_url': healedAvatar}));
+        } catch (_) {}
+      });
+    }
 
     try {
       final followersRes = await client.from('follows').select('follower_id').eq('following_id', user.id);
@@ -195,9 +233,39 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                     SliverToBoxAdapter(
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 24),
+                      child: SafeArea(
+                        bottom: false,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (Navigator.of(context).canPop())
+                              Padding(
+                                padding: const EdgeInsets.only(left: 16, top: 12, bottom: 4),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    Navigator.of(context).pop();
+                                  },
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: context.themeColors.surfaceHighlight,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: context.themeColors.borderSubtle),
+                                    ),
+                                    child: Icon(
+                                      LucideIcons.arrowLeft,
+                                      size: 18,
+                                      color: context.themeColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(height: 16),
+                            const SizedBox(height: 8),
                           BentoProfileHeader(
                             profile: profile,
                             projectsCount: postsCount, // Since it's their own profile, we show posts count for now.
@@ -219,6 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         ],
                       ),
                     ),
+                  ),
                     
                     // Tabs: Posts ∨, Replies, Reposts, Media
                 SliverPersistentHeader(
@@ -234,18 +303,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       indicatorWeight: 3.5,
                       indicatorSize: TabBarIndicatorSize.label,
                       dividerColor: context.themeColors.borderSubtle,
-                      isScrollable: false,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
                       tabs: const [
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('Posts'),
-                              SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down, size: 13),
-                            ],
-                          ),
-                        ),
+                        Tab(text: 'Posts'),
+                        Tab(text: 'Proof of Work'),
                         Tab(text: 'Replies'),
                         Tab(text: 'Reposts'),
                         Tab(text: 'Media'),
@@ -303,6 +365,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       },
                     );
                   },
+                ),
+
+                // Proof of Work Tab
+                ProofOfWorkLedger(
+                  userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+                  isOwnProfile: true,
                 ),
                 
                 // Replies Tab
@@ -448,46 +516,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         },
       ),
     );
-  }
-
-  // Parses text with @mentions and links to display Twitter-like blue text
-  Widget _buildRichBio(String bio, BuildContext context) {
-    final words = bio.split(' ');
-    List<InlineSpan> spans = [];
-
-    for (int i = 0; i < words.length; i++) {
-      final word = words[i];
-      final isLink = word.contains('medium.com') || word.startsWith('http://') || word.startsWith('https://');
-      final isMention = word.startsWith('@');
-
-      if (isLink || isMention) {
-        spans.add(
-          TextSpan(
-            text: '$word ',
-            style: const TextStyle(
-              color: Color(0xFF1D9BF0), // Signature Twitter Blue
-              fontSize: 12,
-              height: 1.35,
-              fontWeight: FontWeight.normal,
-            ),
-          ),
-        );
-      } else {
-        spans.add(
-          TextSpan(
-            text: '$word ',
-            style: TextStyle(
-              color: context.themeColors.textPrimary,
-              fontSize: 12,
-              height: 1.35,
-              fontWeight: FontWeight.normal,
-            ),
-          ),
-        );
-      }
-    }
-
-    return RichText(text: TextSpan(children: spans));
   }
 }
 

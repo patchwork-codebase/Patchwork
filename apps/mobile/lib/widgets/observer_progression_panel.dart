@@ -6,8 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
 
 const _builderTracks = [
-  {'value': 'product-manager', 'label': 'Product Manager', 'emoji': '\ud83d\udccb', 'desc': 'Define what gets built, align teams, and track milestones.'},
-  {'value': 'founder', 'label': 'Founder', 'emoji': '\ud83d\ude80', 'desc': 'Build the company, share traction, and scale operations.'},
+  {'value': 'product-manager', 'label': 'Product Manager', 'icon': LucideIcons.clipboardList, 'desc': 'Define what gets built, align teams, and track milestones.'},
+  {'value': 'founder', 'label': 'Founder', 'icon': LucideIcons.rocket, 'desc': 'Build the company, share traction, and scale operations.'},
 ];
 
 class ObserverProgressionPanel extends StatefulWidget {
@@ -270,7 +270,18 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
             Text(m['desc'] as String, style: TextStyle(fontSize: 9, color: context.themeColors.textTertiary)),
           ])),
           if (isDone)
-            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.green.withOpacity(0.3))), child: Text('\u2713 Done', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.green.shade600)))
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), 
+              decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.green.withOpacity(0.3))), 
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.check, size: 9, color: Colors.green),
+                  const SizedBox(width: 4),
+                  Text('Done', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.green.shade600)),
+                ],
+              ),
+            )
           else
             Icon(LucideIcons.lock, size: 11, color: context.themeColors.textTertiary),
         ]),
@@ -325,9 +336,12 @@ class _BuilderUpgradeSheetState extends State<_BuilderUpgradeSheet> {
         Text('Select your builder track to activate your Builder Dashboard.', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
         const SizedBox(height: 20),
         ..._builderTracks.map((track) {
-          final isSelected = _local == track['value'];
+          final trackValue = track['value'] as String;
+          final trackLabel = track['label'] as String;
+          final trackDesc = track['desc'] as String;
+          final isSelected = _local == trackValue;
           return GestureDetector(
-            onTap: () { setState(() => _local = track['value']!); widget.onTrackSelected(track['value']!); },
+            onTap: () { setState(() => _local = trackValue); widget.onTrackSelected(trackValue); },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(16),
@@ -338,12 +352,19 @@ class _BuilderUpgradeSheetState extends State<_BuilderUpgradeSheet> {
                 boxShadow: isSelected ? [BoxShadow(color: widget.primaryColor.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))] : null,
               ),
               child: Row(children: [
-                Text(track['emoji']!, style: const TextStyle(fontSize: 20)),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: (widget.primaryColor).withOpacity(isSelected ? 0.2 : 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(track['icon'] as IconData, size: 18, color: isSelected ? widget.primaryColor : context.themeColors.textSecondary),
+                ),
                 const SizedBox(width: 14),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(track['label']!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                  Text(trackLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                   const SizedBox(height: 3),
-                  Text(track['desc']!, style: TextStyle(fontSize: 9, color: context.themeColors.textSecondary)),
+                  Text(trackDesc, style: TextStyle(fontSize: 9, color: context.themeColors.textSecondary)),
                 ])),
                 if (isSelected) Icon(LucideIcons.checkCircle2, color: widget.primaryColor, size: 17),
               ]),

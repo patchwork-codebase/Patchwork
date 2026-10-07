@@ -24,6 +24,7 @@ import '../screens/create_update_screen.dart';
 import 'fullscreen_image_viewer.dart';
 import 'rich_link_preview_card.dart';
 import 'parallax_container.dart';
+import '../utils/user_identity_formatter.dart';
 
 class FeedUpdateCard extends StatefulWidget {
   final Map<String, dynamic> update;
@@ -326,7 +327,7 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                           if (mounted) {
                             Navigator.pop(sheetContext);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pitch submitted successfully! 🚀')),
+                              const SnackBar(content: Text('Pitch submitted successfully')),
                             );
                           }
                         } catch (e) {
@@ -642,17 +643,31 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
   }
 
   static Map<String, Map<String, dynamic>> updateTypeUI = {
-    'decision': {'label': 'Decision', 'color': AppTheme.primary400, 'bg': AppTheme.primary500, 'icon': '⚡'},
-    'scrap': {'label': 'Scrap', 'color': Colors.redAccent, 'bg': Colors.red, 'icon': '🗑'},
-    'pivot': {'label': 'Pivot', 'color': Colors.orangeAccent, 'bg': Colors.orange, 'icon': '🔄'},
-    'blocker': {'label': 'Blocker', 'color': Colors.redAccent, 'bg': Colors.red, 'icon': '🚧'},
-    'insight': {'label': 'Insight', 'color': Colors.amber, 'bg': Colors.amberAccent, 'icon': '💡'},
-    'open_question': {'label': 'Open question', 'color': Colors.lightBlue, 'bg': Colors.blue, 'icon': '❓'},
-    'shipped': {'label': 'Shipped', 'color': Colors.greenAccent, 'bg': Colors.green, 'icon': '🚀'},
-    'crossroad': {'label': 'Crossroad', 'color': AppTheme.primary400, 'bg': AppTheme.primary500, 'icon': '🔀'},
-    'spotlight': {'label': 'Observer Spotlight', 'color': Colors.purpleAccent, 'bg': Colors.purple, 'icon': '🌟'},
-    'rfb': {'label': 'Request For Builder', 'color': Colors.cyanAccent, 'bg': Colors.cyan, 'icon': '🎯'},
+    'decision': {'label': 'Decision', 'color': AppTheme.primary400, 'bg': AppTheme.primary500, 'icon': LucideIcons.gitCommit},
+    'scrap': {'label': 'Scrap', 'color': Colors.redAccent, 'bg': Colors.red, 'icon': LucideIcons.trash2},
+    'pivot': {'label': 'Pivot', 'color': Colors.orangeAccent, 'bg': Colors.orange, 'icon': LucideIcons.repeat},
+    'blocker': {'label': 'Blocker', 'color': Colors.redAccent, 'bg': Colors.red, 'icon': LucideIcons.alertTriangle},
+    'insight': {'label': 'Insight', 'color': Colors.amber, 'bg': Colors.amberAccent, 'icon': LucideIcons.lightbulb},
+    'open_question': {'label': 'Open question', 'color': Colors.lightBlue, 'bg': Colors.blue, 'icon': LucideIcons.helpCircle},
+    'shipped': {'label': 'Shipped', 'color': Colors.greenAccent, 'bg': Colors.green, 'icon': LucideIcons.send},
+    'crossroad': {'label': 'Crossroad', 'color': AppTheme.primary400, 'bg': AppTheme.primary500, 'icon': LucideIcons.gitFork},
+    'spotlight': {'label': 'Observer Spotlight', 'color': Colors.purpleAccent, 'bg': Colors.purple, 'icon': LucideIcons.sparkles},
+    'rfb': {'label': 'Request For Builder', 'color': Colors.cyanAccent, 'bg': Colors.cyan, 'icon': LucideIcons.target},
   };
+
+  IconData? _getStrategicReactionIcon(String key) {
+    if (key == 'sharp') return LucideIcons.target;
+    if (key == 'pushback') return LucideIcons.helpCircle;
+    if (key == 'tellmemore') return LucideIcons.lightbulb;
+    return null;
+  }
+
+  String _getStrategicReactionLabel(String key) {
+    if (key == 'sharp') return 'Sharp';
+    if (key == 'pushback') return 'Pushback';
+    if (key == 'tellmemore') return 'Tell me more';
+    return key;
+  }
 
   String _extractUrl(String text, String domain) {
     final RegExp urlRegExp = RegExp(r'(https?://(?:www\.)?' + RegExp.escape(domain) + r'[^\s]+)');
@@ -952,24 +967,63 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                           ],
                         ),
                         // Badges Row
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            if (typeUI != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: typeUI['color'].withOpacity(0.4)),
-                                  borderRadius: BorderRadius.circular(4),
-                                  color: typeUI['color'].withOpacity(0.05),
-                                ),
-                                child: Text(
-                                  typeUI['label'],
-                                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: typeUI['color']),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                            ],
+                        Builder(
+                          builder: (context) {
+                            final authorPmIdentity = UserIdentityFormatter.formatPmIdentity(
+                              specialisation: users['specialisation']?.toString(),
+                              seniority: users['seniority']?.toString() ?? users['pm_level']?.toString(),
+                              company: users['company_name']?.toString() ?? users['organization_name']?.toString(),
+                              role: users['role']?.toString(),
+                            );
+                            final showPmBadge = authorPmIdentity.isNotEmpty &&
+                                authorPmIdentity.toLowerCase() != 'builder' &&
+                                authorPmIdentity.toLowerCase() != 'observer';
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    if (showPmBadge) ...[
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                        decoration: BoxDecoration(
+                                          color: context.themeColors.primary500.withOpacity(0.08),
+                                          border: Border.all(color: context.themeColors.primary400.withOpacity(0.35)),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          authorPmIdentity,
+                                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.primary400),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                    ],
+                                    if (typeUI != null) ...[
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: typeUI['color'].withOpacity(0.4)),
+                                          borderRadius: BorderRadius.circular(4),
+                                          color: typeUI['color'].withOpacity(0.05),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (typeUI['icon'] is IconData) ...[
+                                              Icon(typeUI['icon'] as IconData, size: 8, color: typeUI['color']),
+                                              const SizedBox(width: 3),
+                                            ],
+                                            Text(
+                                              typeUI['label'],
+                                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: typeUI['color']),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                    ],
                             if (isLaunch) ...[
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -987,8 +1041,12 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                           ],
                         ),
                       ],
-                    ),
-                  ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
                   if (isAuthor)
                     InkWell(
                       onTap: _deleteUpdate,
@@ -1183,7 +1241,14 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                             child: Container(
                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                decoration: BoxDecoration(color: Colors.cyanAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.cyanAccent.withOpacity(0.3))),
-                               child: const Text('🎯 Build This', style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                               child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(LucideIcons.hammer, size: 11, color: Colors.cyanAccent),
+                                    SizedBox(width: 4),
+                                    Text('Build This', style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                                  ],
+                                ),
                             )
                           ),
                         ),
@@ -1247,13 +1312,33 @@ class _FeedUpdateCardState extends State<FeedUpdateCard> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(
-                                          entry.key == 'sharp' ? '🎯 Sharp' 
-                                            : entry.key == 'pushback' ? '🤔 Pushback' 
-                                            : entry.key == 'tellmemore' ? '💡 Tell me more' 
-                                            : entry.key, 
-                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)
-                                        ),
+                                        Builder(
+                                        builder: (context) {
+                                          final stratIcon = _getStrategicReactionIcon(entry.key);
+                                          final stratLabel = _getStrategicReactionLabel(entry.key);
+                                          return Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (stratIcon != null) ...[
+                                                Icon(
+                                                  stratIcon,
+                                                  size: 11,
+                                                  color: isSelected ? context.themeColors.primary500 : context.themeColors.textSecondary,
+                                                ),
+                                                const SizedBox(width: 4),
+                                              ],
+                                              Text(
+                                                stratLabel,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: isSelected ? context.themeColors.primary500 : context.themeColors.textSecondary,
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
                                         const SizedBox(width: 6),
                                         Text(
                                           '${entry.value}',

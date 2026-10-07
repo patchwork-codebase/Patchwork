@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import '../theme.dart';
 import '../widgets/feed_update_card.dart';
+import '../utils/user_identity_formatter.dart';
 
 class UpdateThreadScreen extends StatefulWidget {
   final Map<String, dynamic> update;
@@ -27,7 +28,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _isSubmitting = false;
-  int _reactionLimit = 50;
+  final int _reactionLimit = 50;
   bool _hasMoreReactions = false;
 
   @override
@@ -43,7 +44,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
     try {
       final res = await Supabase.instance.client
           .from('reactions')
-          .select('*, users!observer_id(avatar)')
+          .select('*, users!observer_id(avatar, name, role, specialisation, seniority, pm_level, company_name, organization_name)')
           .eq('update_id', updateId)
           .order('created_at', ascending: true)
           .range(0, _reactionLimit - 1);
@@ -73,7 +74,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
     try {
       final res = await Supabase.instance.client
           .from('reactions')
-          .select('*, users!observer_id(avatar)')
+          .select('*, users!observer_id(avatar, name, role, specialisation, seniority, pm_level, company_name, organization_name)')
           .eq('update_id', updateId)
           .order('created_at', ascending: true)
           .range(currentLength, currentLength + _reactionLimit - 1);
@@ -244,9 +245,6 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final updateAuthor = widget.update['author_name'] ?? widget.update['users']?['name'] ?? 'Unknown';
-    final handle = '@${updateAuthor.toLowerCase().replaceAll(' ', '')}';
-
     return Scaffold(
       backgroundColor: context.themeColors.background,
       appBar: AppBar(
@@ -410,6 +408,37 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                       child: Text('AUTHOR', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
                                                     ),
                                                   ],
+                                                  Builder(
+                                                    builder: (context) {
+                                                      final replyPmIdentity = UserIdentityFormatter.formatPmIdentity(
+                                                        specialisation: users['specialisation']?.toString(),
+                                                        seniority: users['seniority']?.toString() ?? users['pm_level']?.toString(),
+                                                        company: users['company_name']?.toString() ?? users['organization_name']?.toString(),
+                                                        role: users['role']?.toString(),
+                                                      );
+                                                      final showChip = replyPmIdentity.isNotEmpty &&
+                                                          replyPmIdentity.toLowerCase() != 'builder' &&
+                                                          replyPmIdentity.toLowerCase() != 'observer';
+
+                                                      if (!showChip) return const SizedBox.shrink();
+
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(left: 6),
+                                                        child: Container(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                          decoration: BoxDecoration(
+                                                            color: context.themeColors.primary500.withOpacity(0.08),
+                                                            border: Border.all(color: context.themeColors.primary400.withOpacity(0.3)),
+                                                            borderRadius: BorderRadius.circular(4),
+                                                          ),
+                                                          child: Text(
+                                                            replyPmIdentity,
+                                                            style: TextStyle(fontSize: 7.5, fontWeight: FontWeight.bold, color: context.themeColors.primary400),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
                                                   const SizedBox(width: 6),
                                                   Flexible(
                                                     child: Text(

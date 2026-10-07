@@ -192,10 +192,19 @@ class _DashboardOverviewState extends State<DashboardOverview> {
     }
 
     final currentUser = Supabase.instance.client.auth.currentUser;
+    final currentUserId = currentUser?.id ?? _userProfile?['id']?.toString() ?? '';
     String userName = _userProfile?['name'] ?? currentUser?.userMetadata?['name'] ?? currentUser?.userMetadata?['full_name'] ?? '';
     
     if (userName.trim().isEmpty || userName == 'Anonymous Builder') userName = 'Builder';
-    final userAvatar = _userProfile?['avatar'];
+    String? userAvatar = _userProfile?['avatar']?.toString();
+    if (userAvatar == null || userAvatar.isEmpty || userAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+      final metaAvatar = currentUser?.userMetadata?['avatar']?.toString() ?? currentUser?.userMetadata?['avatar_url']?.toString();
+      if (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+        userAvatar = metaAvatar;
+      } else if (currentUser?.email == 'akinrodoluseun12@gmail.com') {
+        userAvatar = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+      }
+    }
     final initial = userName.substring(0, 1).toUpperCase();
     final firstName = userName.split(' ').first;
 
@@ -337,24 +346,26 @@ class _DashboardOverviewState extends State<DashboardOverview> {
             Text('LATEST PULSE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5))
                 .animate().fadeIn(delay: 600.ms),
             const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: context.themeColors.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: context.themeColors.borderSubtle),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: RecentActivityList(
-                  userId: Supabase.instance.client.auth.currentUser!.id,
-                  activeRoomId: _myRooms.isNotEmpty ? _myRooms.first['id'] : null,
-                  activeRoomTitle: _myRooms.isNotEmpty ? _myRooms.first['title'] : null,
+            if (currentUserId.isNotEmpty) ...[
+              Container(
+                decoration: BoxDecoration(
+                  color: context.themeColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: context.themeColors.borderSubtle),
                 ),
-              ),
-            ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.05, end: 0),
-            
-            const SizedBox(height: 24),
-            DashboardAchievements(userId: Supabase.instance.client.auth.currentUser!.id).animate().fadeIn(delay: 800.ms),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: RecentActivityList(
+                    userId: currentUserId,
+                    activeRoomId: _myRooms.isNotEmpty ? _myRooms.first['id'] : null,
+                    activeRoomTitle: _myRooms.isNotEmpty ? _myRooms.first['title'] : null,
+                  ),
+                ),
+              ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.05, end: 0),
+              
+              const SizedBox(height: 24),
+              DashboardAchievements(userId: currentUserId).animate().fadeIn(delay: 800.ms),
+            ],
           ],
         ),
       ],
@@ -377,7 +388,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: context.themeColors.borderSubtle),
                 image: userAvatar != null && userAvatar.isNotEmpty
-                    ? DecorationImage(image: NetworkImage(userAvatar), fit: BoxFit.cover)
+                    ? DecorationImage(image: CachedNetworkImageProvider(userAvatar), fit: BoxFit.cover)
                     : null,
               ),
               child: userAvatar == null || userAvatar.isEmpty
@@ -1061,7 +1072,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    Text('✨', style: TextStyle(fontSize: 20)),
+                    Icon(LucideIcons.sparkles, size: 20, color: context.themeColors.textTertiary),
                     const SizedBox(height: 8),
                     Text('No reactions yet', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                     Text('Post updates to gather feedback.', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
@@ -1070,11 +1081,11 @@ class _DashboardOverviewState extends State<DashboardOverview> {
               ),
             )
           else ...[
-            _buildReactionBar('✦ This is sharp', sharpCount, sharpPct, const Color(0xFF10B981)),
+            _buildReactionBar('This is sharp', sharpCount, sharpPct, const Color(0xFF10B981)),
             const SizedBox(height: 16),
-            _buildReactionBar('? Tell me more', tellMeMoreCount, tellMeMorePct, context.themeColors.primary400),
+            _buildReactionBar('Tell me more', tellMeMoreCount, tellMeMorePct, context.themeColors.primary400),
             const SizedBox(height: 16),
-            _buildReactionBar('! Push back', pushbackCount, pushbackPct, Colors.amber),
+            _buildReactionBar('Push back', pushbackCount, pushbackPct, Colors.amber),
             
             const SizedBox(height: 24),
             Container(

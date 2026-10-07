@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme.dart';
 import 'public_profile_screen.dart';
@@ -128,6 +127,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         );
       }
+    } else if (type == 'simulation_endorsed') {
+      final updateId = metadata['update_id']?.toString();
+      if (updateId == null || updateId.isEmpty) return;
+      try {
+        final update = await Supabase.instance.client
+            .from('updates')
+            .select(
+                '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
+            .eq('id', updateId)
+            .maybeSingle();
+        if (update != null && mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => UpdateThreadScreen(update: update),
+            ),
+          );
+        }
+      } catch (_) {}
     }
   }
 
@@ -339,6 +356,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     actionText = 'mentioned you in';
                     contextText = metadata['room_title'] ?? 'a room';
                     previewText = metadata['message_preview'];
+                  } else if (type == 'simulation_endorsed') {
+                    notifIcon = LucideIcons.star;
+                    notifColor = Colors.amber;
+                    actionText = 'endorsed your strategic thinking on';
+                    contextText = metadata['simulation_title'] ?? 'a challenge';
+                    previewText = '+100 Rep awarded · Featured Strategic Thinking';
                   }
 
                   final bool isUpdate = type == 'update_posted';

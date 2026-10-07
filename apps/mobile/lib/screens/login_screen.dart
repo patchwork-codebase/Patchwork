@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../widgets/brand_icon.dart';
 import '../theme.dart';
 import '../widgets/toast_notification.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart'; // We will create this next
-import 'welcome_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -120,16 +120,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null) {
         // Fire off Resend verification email asynchronously
-        try {
-          final actualName = name.isEmpty ? 'Builder' : name;
-          Supabase.instance.client.functions.invoke('send-verification-email', body: {
-            'user_id': user.id,
-            'email': _emailController.text.trim(),
-            'name': actualName,
-          });
-        } catch (e) {
-          debugPrint('Error sending verification email: $e');
-        }
+        final actualName = name.isEmpty ? 'Builder' : name;
+        Future.microtask(() async {
+          try {
+            await Supabase.instance.client.functions.invoke('send-verification-email', body: {
+              'user_id': user.id,
+              'email': _emailController.text.trim(),
+              'name': actualName,
+            });
+          } catch (e) {
+            debugPrint('Non-critical: verification email error: $e');
+          }
+        });
       }
 
       if (mounted) {
@@ -190,9 +192,13 @@ class _LoginScreenState extends State<LoginScreen> {
               int level = index + 1;
               Color bgColor = AppTheme.slate200;
               if (strength >= level) {
-                if (strength <= 2) bgColor = Colors.red;
-                else if (strength <= 3) bgColor = Colors.amber;
-                else bgColor = Colors.green;
+                if (strength <= 2) {
+                  bgColor = Colors.red;
+                } else if (strength <= 3) {
+                  bgColor = Colors.amber;
+                } else {
+                  bgColor = Colors.green;
+                }
               }
               return Expanded(
                 child: Container(
@@ -413,7 +419,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(Icons.language, size: 15, color: Color(0xFF4285F4)),
+                                  icon: BrandIcon.google(size: 16),
                                   label: Text('Google', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -427,7 +433,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {},
-                                  icon: const Icon(Icons.work, size: 15, color: Color(0xFF0A66C2)),
+                                  icon: BrandIcon.linkedin(size: 16),
                                   label: Text('LinkedIn', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),

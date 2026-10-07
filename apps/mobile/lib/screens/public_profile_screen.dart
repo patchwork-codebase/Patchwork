@@ -3,14 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:ui';
 import '../theme.dart';
 import 'room_detail_screen.dart';
 import '../widgets/feed_update_card.dart';
-import '../widgets/aura_avatar.dart';
 import '../widgets/bento_profile_header.dart';
+import '../widgets/proof_of_work_ledger.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String userId;
@@ -21,20 +19,29 @@ class PublicProfileScreen extends StatefulWidget {
   State<PublicProfileScreen> createState() => _PublicProfileScreenState();
 }
 
-class _PublicProfileScreenState extends State<PublicProfileScreen> {
+class _PublicProfileScreenState extends State<PublicProfileScreen> with SingleTickerProviderStateMixin {
   late final Future<Map<String, dynamic>?> _profileFuture;
   late final Future<List<Map<String, dynamic>>> _roomsFuture;
+  late final Future<List<Map<String, dynamic>>> _postsFuture;
+  late TabController _tabController;
 
   bool _isFollowing = false;
-  bool _isFollowLoading = true;
   bool _isTogglingFollow = false;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _profileFuture = _fetchProfile();
     _roomsFuture = _fetchRooms();
+    _postsFuture = _fetchPosts();
     _checkFollowStatus();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<Map<String, dynamic>?> _fetchProfile() async {
@@ -61,6 +68,12 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     }
 
     if (profile != null) {
+      // Sanitize avatar if it contains stale cartoon image
+      final rawAvatar = profile['avatar']?.toString();
+      if (rawAvatar != null && rawAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+        profile['avatar'] = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+      }
+
       // Record a page view
       try {
         final currentUserId = client.auth.currentUser?.id;
@@ -102,10 +115,24 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         .order('created_at', ascending: false);
   }
 
+  Future<List<Map<String, dynamic>>> _fetchPosts() async {
+    try {
+      final response = await Supabase.instance.client
+          .from('updates')
+          .select(
+              '*, rooms(title, tags, update_count), users(name, username, twitter, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, username, twitter, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*))')
+          .eq('author_id', widget.userId)
+          .isFilter('parent_update_id', null)
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<void> _checkFollowStatus() async {
     final currentUserId = Supabase.instance.client.auth.currentUser?.id;
     if (currentUserId == null || currentUserId == widget.userId) {
-      if (mounted) setState(() => _isFollowLoading = false);
       return;
     }
     try {
@@ -118,12 +145,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       if (mounted) {
         setState(() {
           _isFollowing = res != null;
-          _isFollowLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isFollowLoading = false);
-    }
+    } catch (_) {}
   }
 
   Future<void> _toggleFollow() async {
@@ -173,227 +197,315 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    final isOwnProfile = currentUserId == widget.userId;
-
     return Scaffold(
       backgroundColor: context.themeColors.background,
-      body: Stack(
-        children: [
-          // Dynamic mesh gradient background
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    context.themeColors.primary500.withOpacity(0.15),
-                    Colors.purple.withOpacity(0.05),
-                    context.themeColors.background,
-                  ],
-                  radius: 1.5,
-                  center: Alignment.topLeft,
-                ),
-              ),
-            ),
-          ),
-          FutureBuilder<Map<String, dynamic>?>(
-            future: _profileFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                    child: CircularProgressIndicator(
-                        color: context.themeColors.primary500));
-              }
-              if (snapshot.hasError || snapshot.data == null) {
-                return const Center(
-                    child: Text('Failed to load profile.',
-                        style: TextStyle(color: Colors.redAccent)));
-              }
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(color: context.themeColors.primary500),
+            );
+          }
+          if (snapshot.hasError || snapshot.data == null) {
+            return const Center(
+              child: Text('Failed to load profile.', style: TextStyle(color: Colors.redAccent)),
+            );
+          }
 
-              final profile = snapshot.data!;
-              final followerCount = profile['followerCount'] ?? 0;
-              final isOwnProfile = widget.userId == Supabase.instance.client.auth.currentUser?.id;
+          final profile = snapshot.data!;
+          final followerCount = profile['followerCount'] ?? 0;
+          final isOwnProfile = widget.userId == Supabase.instance.client.auth.currentUser?.id;
 
-              return FutureBuilder<List<Map<String, dynamic>>>(
-                future: _roomsFuture,
-                builder: (context, roomsSnapshot) {
-                  final rooms = roomsSnapshot.data ?? [];
-                  final projectsCount = rooms.length;
+          return FutureBuilder<List<Map<String, dynamic>>>(
+            future: _roomsFuture,
+            builder: (context, roomsSnapshot) {
+              final rooms = roomsSnapshot.data ?? [];
+              final projectsCount = rooms.length;
 
-                  return CustomScrollView(slivers: [
+              return NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) {
+                  return [
                     SliverToBoxAdapter(
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 24),
-                          BentoProfileHeader(
-                            profile: profile,
-                            projectsCount: projectsCount,
-                            followerCount: followerCount,
-                            isOwnProfile: isOwnProfile,
-                            isFollowing: _isFollowing,
-                            isTogglingFollow: _isTogglingFollow,
-                            onToggleFollow: _toggleFollow,
-                            onLaunchUrl: _launchSocialUrl,
-                          ),
-                          const SizedBox(height: 24),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              children: [
+                      child: SafeArea(
+                        bottom: false,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (Navigator.of(context).canPop())
+                              Padding(
+                                padding: const EdgeInsets.only(left: 16, top: 12, bottom: 4),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    Navigator.of(context).pop();
+                                  },
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: context.themeColors.surfaceHighlight,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: context.themeColors.borderSubtle),
+                                    ),
+                                    child: Icon(
+                                      LucideIcons.arrowLeft,
+                                      size: 18,
+                                      color: context.themeColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(height: 16),
+                            const SizedBox(height: 8),
+                            BentoProfileHeader(
+                              profile: profile,
+                              projectsCount: projectsCount,
+                              followerCount: followerCount,
+                              isOwnProfile: isOwnProfile,
+                              isFollowing: _isFollowing,
+                              isTogglingFollow: _isTogglingFollow,
+                              onToggleFollow: _toggleFollow,
+                              onLaunchUrl: _launchSocialUrl,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _SliverAppBarDelegate(
+                        TabBar(
+                          controller: _tabController,
+                          labelColor: context.themeColors.textPrimary,
+                          unselectedLabelColor: context.themeColors.textTertiary,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                          indicatorColor: const Color(0xFF1D9BF0),
+                          indicatorWeight: 3.5,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          dividerColor: context.themeColors.borderSubtle,
+                          isScrollable: false,
+                          tabs: [
+                            const Tab(text: 'Proof of Work'),
+                            const Tab(text: 'Updates'),
+                            Tab(text: 'Rooms (${rooms.length})'),
+                          ],
+                        ),
+                        context.themeColors.background,
+                      ),
+                    ),
+                  ];
+                },
+                body: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // Tab 1: Living Proof of Work Ledger
+                    ProofOfWorkLedger(
+                      userId: widget.userId,
+                      isOwnProfile: isOwnProfile,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
 
-                            // ── Pinned Update ─────────────────────────────────────
-                            if (profile['pinned_update'] != null) ...[
-                              Align(
-                                alignment: Alignment.centerLeft,
+                    // Tab 2: Updates Tab
+                    FutureBuilder<List<Map<String, dynamic>>>(
+                      future: _postsFuture,
+                      builder: (context, postsSnapshot) {
+                        if (postsSnapshot.connectionState == ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(color: context.themeColors.primary500),
+                          );
+                        }
+                        final posts = postsSnapshot.data ?? [];
+                        final hasPinned = profile['pinned_update'] != null;
+
+                        if (posts.isEmpty && !hasPinned) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(LucideIcons.messageSquare, size: 36, color: context.themeColors.textTertiary),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No updates yet',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.themeColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Product milestones and logs from this builder will appear here.',
+                                  style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView(
+                          padding: EdgeInsets.zero,
+                          children: [
+                            if (hasPinned) ...[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                                 child: Row(
                                   children: [
-                                    Icon(LucideIcons.pin,
-                                        size: 13,
-                                        color: context.themeColors.primary500),
-                                    const SizedBox(width: 8),
-                                    Text('Pinned Milestone',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: context
-                                                .themeColors.textPrimary)),
+                                    Icon(LucideIcons.pin, size: 12, color: context.themeColors.primary500),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Pinned Milestone',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: context.themeColors.textPrimary,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              FeedUpdateCard(heroTagPrefix: "pubprof_", update: profile['pinned_update']),
-                              const SizedBox(height: 40),
+                              FeedUpdateCard(
+                                heroTagPrefix: "pubprof_pinned_",
+                                update: profile['pinned_update'],
+                              ),
+                              Divider(height: 1, color: context.themeColors.borderSubtle),
                             ],
+                            ...posts.map((post) {
+                              return FeedUpdateCard(
+                                heroTagPrefix: "pubprof_",
+                                update: post,
+                              );
+                            }),
+                            const SizedBox(height: 40),
+                          ],
+                        );
+                      },
+                    ),
 
-                            // ── Rooms Built List ──────────────────────────────────
-                            if (rooms.isNotEmpty) ...[
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text('Rooms Built',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        color:
-                                            context.themeColors.textPrimary)),
+                    // Tab 3: Rooms Tab
+                    if (rooms.isEmpty)
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(LucideIcons.layoutGrid, size: 36, color: context.themeColors.textTertiary),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No rooms yet',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: context.themeColors.textPrimary,
                               ),
-                              const SizedBox(height: 16),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: rooms.length,
-                                itemBuilder: (context, index) {
-                                  final room = rooms[index];
-                                  return GestureDetector(
-                                    onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) => RoomDetailScreen(
-                                                roomId: room['id'],
-                                                title: room['title'] ??
-                                                    'Untitled'))),
-                                    child: Container(
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: context
-                                            .themeColors.surfaceHighlight
-                                            .withOpacity(0.4),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: context
-                                                .themeColors.borderSubtle),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(room['title'] ?? 'Untitled',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13,
-                                                  color: context.themeColors
-                                                      .textPrimary)),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            room['description'] ??
-                                                'No description',
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                fontSize: 11,
-                                                color: context
-                                                    .themeColors.textSecondary,
-                                                height: 1.4),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                      .animate()
-                                      .fadeIn(
-                                          duration: 300.ms,
-                                          delay: (index * 50).ms)
-                                      .slideY(
-                                          begin: 0.1,
-                                          end: 0,
-                                          curve: Curves.easeOutQuad);
-                                },
-                              ),
-                            ], // closes if (rooms.isNotEmpty) ...[
-                          ], // closes Column children: [
-                        ), // closes Column(
-                      ), // closes Padding(
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Active project rooms will appear here.',
+                              style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
+                            ),
                           ],
                         ),
-                    ), // closes SliverToBoxAdapter(
-                  ]); // closes slivers: [ of CustomScrollView(
-                }, // closes roomsSnapshot builder:
-              ); // closes rooms FutureBuilder(
-            }, // closes profile builder:
-          ), // closes profile FutureBuilder(
-        ], // closes children: [ of Stack
-      ), // closes Stack
-    ); // closes Scaffold
-  }
-
-  Widget _buildStatItem(
-      IconData icon, String value, String label, Color iconColor) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 11, color: iconColor),
-            const SizedBox(width: 6),
-            Text(value,
-                style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    color: context.themeColors.textPrimary)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(label,
-            style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                color: context.themeColors.textTertiary)),
-      ],
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon, VoidCallback onTap, Color color) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: context.themeColors.borderSubtle),
-          color: context.themeColors.surfaceHighlight.withOpacity(0.5),
-        ),
-        child: Icon(icon, size: 13, color: color),
+                      )
+                    else
+                      ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: rooms.length,
+                        itemBuilder: (context, index) {
+                          final room = rooms[index];
+                          return GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RoomDetailScreen(
+                                  roomId: room['id'],
+                                  title: room['title'] ?? 'Untitled',
+                                ),
+                              ),
+                            ),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: context.themeColors.surfaceHighlight.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: context.themeColors.borderSubtle),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          room['title'] ?? 'Untitled',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13.5,
+                                            color: context.themeColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(LucideIcons.chevronRight, size: 14, color: context.themeColors.textTertiary),
+                                    ],
+                                  ),
+                                  if (room['description'] != null && room['description'].toString().isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      room['description'],
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: context.themeColors.textSecondary,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          )
+                              .animate()
+                              .fadeIn(duration: 300.ms, delay: (index * 40).ms)
+                              .slideY(begin: 0.08, end: 0, curve: Curves.easeOutQuad);
+                        },
+                      ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar, this.backgroundColor);
+
+  final TabBar _tabBar;
+  final Color backgroundColor;
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

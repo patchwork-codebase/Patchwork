@@ -30,6 +30,13 @@ export interface Database {
           updated_at: string
           organization_name: string | null
           organization_logo_url: string | null
+          specialisation: string | null
+          career_status: string | null
+          company_name: string | null
+          seniority: string | null
+          pm_level: string | null
+          simulation_onboarding_completed: boolean | null
+          simulation_tier: string | null
         }
         Insert: Partial<Database['public']['Tables']['profiles']['Row']>
         Update: Partial<Database['public']['Tables']['profiles']['Row']>
@@ -68,6 +75,8 @@ export interface Database {
           author_id: string
           content: string
           type: string | null
+          update_type: string | null
+          simulation_data: Json | null
           media_url: string | null
           code_snippet: string | null
           figma_url: string | null
@@ -77,6 +86,19 @@ export interface Database {
         }
         Insert: Partial<Database['public']['Tables']['updates']['Row']>
         Update: Partial<Database['public']['Tables']['updates']['Row']>
+      }
+      simulation_responses: {
+        Row: {
+          id: string
+          update_id: string
+          user_id: string
+          selected_option_id: string
+          rationale: string | null
+          is_featured: boolean
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['simulation_responses']['Row']>
+        Update: Partial<Database['public']['Tables']['simulation_responses']['Row']>
       }
       reactions: {
         Row: {

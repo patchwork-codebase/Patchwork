@@ -424,7 +424,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     HapticFeedback.lightImpact();
     await Future.delayed(const Duration(milliseconds: 1500));
     
-    String summary = '✨ AI Summary: ';
+    String summary = 'Summary: ';
     if (content.toLowerCase().contains('database') || content.toLowerCase().contains('api') || content.toLowerCase().contains('backend')) {
       summary += 'Backend architecture updates and data layer changes.';
     } else if (content.toLowerCase().contains('ui') || content.toLowerCase().contains('design') || content.toLowerCase().contains('color')) {
@@ -600,9 +600,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     }
     final isFollowing = _observedRoomIds.contains(roomId) || _followedRoomIds.contains(roomId);
     final reactionDefs = [
-      {'type': 'sharp', 'label': '\u2726 Sharp'},
-      {'type': 'pushback', 'label': '\u21a9 Push back'},
-      {'type': 'tellmemore', 'label': '? Tell me more'},
+      {'type': 'sharp', 'label': 'Sharp'},
+      {'type': 'pushback', 'label': 'Push back'},
+      {'type': 'tellmemore', 'label': 'Tell me more'},
     ];
     final reactionColors = {'sharp': context.themeColors.primary500, 'pushback': const Color(0xFFFF4D6D), 'tellmemore': Colors.blue.shade400};
 
@@ -1070,7 +1070,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   foregroundColor: isFollowed ? Colors.green.shade600 : Colors.white,
                   elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
-                child: Text(isFollowed ? 'Following \u2713' : '+ Follow room', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                child: Text(isFollowed ? 'Following' : '+ Follow room', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ),
           ]),
@@ -1089,7 +1089,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           _buildActivityRow('Reactions given', '${_observerStats?['totalReactions'] ?? 0}', context.themeColors.textPrimary, true),
           _buildActivityRow('Rooms followed', '${_observerStats?['roomsFollowed'] ?? 0}', context.themeColors.textPrimary, true),
           _buildActivityRow('Sharp critiques', '${_observerStats?['sharpInsights'] ?? 0}', context.themeColors.primary500, true),
-          _buildActivityRow('Domain reputation', '${widget.userProfile?['reputation'] ?? 0} \u2605', Colors.amber.shade600, false),
+          _buildActivityRow('Domain reputation', '${widget.userProfile?['reputation'] ?? 0} Rep', Colors.amber.shade600, false),
         ]),
       ),
     ]);
@@ -1147,7 +1147,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       RichText(text: TextSpan(children: [
                         TextSpan(text: '$greeting, ', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary)),
-                        TextSpan(text: '$firstName \ud83d\udc4b', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                        TextSpan(text: firstName, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
                       ])),
                       const SizedBox(height: 6),
                       Wrap(spacing: 8, runSpacing: 4, children: [
@@ -1209,7 +1209,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 20), children: [
                     _buildStatCard(label: 'Followed rooms', value: '${_observerStats?['roomsFollowed'] ?? 0}', icon: LucideIcons.eye, color: context.themeColors.primary500, bgColor: context.themeColors.primary500.withOpacity(0.1), delta: 'tracking progress'),
                     _buildStatCard(label: 'Reactions given', value: '${_observerStats?['totalReactions'] ?? 0}', icon: LucideIcons.messageSquare, color: Colors.amber, bgColor: Colors.amber.withOpacity(0.1), delta: 'insights shared'),
-                    _buildStatCard(label: 'Sharp critiques', value: '${_observerStats?['sharpInsights'] ?? 0}', icon: LucideIcons.flame, color: Colors.purple, bgColor: Colors.purple.withOpacity(0.1), delta: '\u26a1 high signal'),
+                    _buildStatCard(label: 'Sharp critiques', value: '${_observerStats?['sharpInsights'] ?? 0}', icon: LucideIcons.flame, color: Colors.purple, bgColor: Colors.purple.withOpacity(0.1), delta: 'High signal'),
                     _buildStatCard(label: 'Shipped products', value: '${_observerStats?['shippedProducts'] ?? 0}', icon: LucideIcons.checkCircle2, color: Colors.green, bgColor: Colors.green.withOpacity(0.1), delta: 'witnessed'),
                   ]),
                 ),
@@ -1305,7 +1305,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(color: context.themeColors.surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: context.themeColors.borderSubtle)),
                     child: Column(children: [
-                      const Text('\u2615', style: TextStyle(fontSize: 27)),
+                      Icon(LucideIcons.inbox, size: 28, color: context.themeColors.textTertiary),
                       const SizedBox(height: 12),
                       Text('No builds in your feed yet', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                       const SizedBox(height: 8),

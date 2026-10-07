@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import '../providers/theme_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/coming_soon_dialog.dart';
 
 class ProfileSheet extends ConsumerStatefulWidget {
@@ -34,18 +35,41 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
   void initState() {
     super.initState();
     final user = Supabase.instance.client.auth.currentUser;
-    if (user != null && user.userMetadata != null) {
-      if (user.userMetadata!['name'] != null) {
-        _userName = user.userMetadata!['name'];
-      } else if (user.userMetadata!['full_name'] != null) {
-        _userName = user.userMetadata!['full_name'];
+    final cachedProfile = ref.read(userProfileProvider).valueOrNull;
+
+    if (cachedProfile != null) {
+      if (cachedProfile['name'] != null && cachedProfile['name'].toString().trim().isNotEmpty) {
+        _userName = cachedProfile['name'];
       }
-      if (user.userMetadata!['avatar'] != null) {
-        _avatarUrl = user.userMetadata!['avatar'];
-      } else if (user.userMetadata!['avatar_url'] != null) {
-        _avatarUrl = user.userMetadata!['avatar_url'];
+      final cAvatar = cachedProfile['avatar']?.toString();
+      if (cAvatar != null && cAvatar.isNotEmpty && !cAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+        _avatarUrl = cAvatar;
       }
     }
+
+    if (user != null && user.userMetadata != null) {
+      if (_userName.isEmpty) {
+        if (user.userMetadata!['name'] != null) {
+          _userName = user.userMetadata!['name'];
+        } else if (user.userMetadata!['full_name'] != null) {
+          _userName = user.userMetadata!['full_name'];
+        }
+      }
+      if (_avatarUrl == null || _avatarUrl!.isEmpty) {
+        final metaAvatar = user.userMetadata!['avatar'] ?? user.userMetadata!['avatar_url'];
+        if (metaAvatar != null && !metaAvatar.toString().contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+          _avatarUrl = metaAvatar.toString();
+        }
+      }
+    }
+
+    // Default fallback if user has the known cartoon bug
+    if (_avatarUrl != null && _avatarUrl!.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+      _avatarUrl = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+    } else if (_avatarUrl == null && user?.email == 'akinrodoluseun12@gmail.com') {
+      _avatarUrl = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+    }
+
     if (_userName.isEmpty) {
       _userName = 'Builder';
     }
@@ -88,7 +112,24 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
             if (userResponse['name'] != null && userResponse['name'].toString().trim().isNotEmpty) {
               _userName = userResponse['name'];
             }
-            if (userResponse['avatar'] != null) _avatarUrl = userResponse['avatar'];
+            final rawAvatar = userResponse['avatar']?.toString();
+            if (rawAvatar != null && rawAvatar.isNotEmpty) {
+              if (rawAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+                // Buggy cartoon avatar detected. Heal to real photo immediately!
+                final healed = (_avatarUrl != null && !_avatarUrl!.contains('1791234378920'))
+                    ? _avatarUrl!
+                    : 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+                _avatarUrl = healed;
+                Supabase.instance.client.from('users').update({'avatar': healed}).eq('id', userId);
+                Supabase.instance.client.auth.updateUser(UserAttributes(data: {'avatar': healed, 'avatar_url': healed}));
+                ref.invalidate(userProfileProvider);
+              } else {
+                _avatarUrl = rawAvatar;
+              }
+            } else if (_avatarUrl != null && _avatarUrl!.isNotEmpty) {
+              Supabase.instance.client.from('users').update({'avatar': _avatarUrl}).eq('id', userId);
+              ref.invalidate(userProfileProvider);
+            }
             _role = role;
             _reputation = userResponse['reputation'] ?? 0;
           }
@@ -286,6 +327,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                     'View Profile', 
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ProfileScreen())).then((_) {
+                        ref.invalidate(userProfileProvider);
                         _fetchStats();
                       });
                     }
@@ -296,6 +338,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(builder: (context) => const EditProfileScreen())).then((shouldRefresh) {
                         if (shouldRefresh == true) {
+                          ref.invalidate(userProfileProvider);
                           _fetchStats();
                         }
                       });

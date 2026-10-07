@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'brand_icon.dart';
 import '../theme.dart';
+import '../utils/user_identity_formatter.dart';
 import 'parallax_container.dart';
 
 class BentoProfileHeader extends StatelessWidget {
@@ -31,11 +34,36 @@ class BentoProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = profile['name'] ?? 'Unknown Builder';
+    final rawName = profile['name']?.toString().trim();
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    final metaName = currentUser?.userMetadata?['name']?.toString().trim() ??
+        currentUser?.userMetadata?['full_name']?.toString().trim();
+    final username = profile['username']?.toString().trim();
+    final emailPrefix = currentUser?.email?.split('@')[0].trim();
+
+    String name = 'Product Builder';
+    if (rawName != null && rawName.isNotEmpty && rawName.toLowerCase() != 'unknown builder') {
+      name = rawName;
+    } else if (metaName != null && metaName.isNotEmpty && metaName.toLowerCase() != 'unknown builder') {
+      name = metaName;
+    } else if (username != null && username.isNotEmpty) {
+      name = username;
+    } else if (emailPrefix != null && emailPrefix.isNotEmpty) {
+      name = emailPrefix[0].toUpperCase() + emailPrefix.substring(1);
+    }
+
     final bio = profile['bio'] ?? 'Building better products that solve real problems.';
     final role = profile['role'] ?? 'Builder';
     final avatarUrl = profile['avatar']?.toString();
-    final initial = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
+    final initial = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'B';
+
+    final pmIdentity = UserIdentityFormatter.formatPmIdentity(
+      specialisation: profile['specialisation']?.toString(),
+      seniority: profile['seniority']?.toString() ?? profile['pm_level']?.toString(),
+      company: profile['company_name']?.toString() ?? profile['organization_name']?.toString(),
+      role: role,
+      includeCompany: true,
+    );
 
     final twitter = profile['twitter']?.toString();
     final github = profile['github_url']?.toString();
@@ -48,7 +76,7 @@ class BentoProfileHeader extends StatelessWidget {
         children: [
           // Top Row: Avatar/Bio + Stats
           SizedBox(
-            height: 200, // Increased from 180 to prevent bottom overflow
+            height: 215, // Adjusted to prevent overflow with PM identity badge
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -83,7 +111,7 @@ class BentoProfileHeader extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: context.themeColors.primary500.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 role,
@@ -96,7 +124,7 @@ class BentoProfileHeader extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Text(
                           name,
                           style: TextStyle(
@@ -108,6 +136,27 @@ class BentoProfileHeader extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (pmIdentity.isNotEmpty && pmIdentity.toLowerCase() != role.toLowerCase()) ...[
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Icon(LucideIcons.briefcase, size: 10, color: context.themeColors.primary400),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  pmIdentity,
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: context.themeColors.primary400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 6),
                         Expanded(
                           child: Text(
@@ -117,7 +166,7 @@ class BentoProfileHeader extends StatelessWidget {
                               color: context.themeColors.textSecondary,
                               height: 1.4,
                             ),
-                            maxLines: 3,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -245,36 +294,32 @@ class BentoProfileHeader extends StatelessWidget {
                   const SizedBox(width: 8),
                   _SocialButton(
                     onTap: () => onLaunchUrl(twitter, 'https://twitter.com/'),
-                    color: const Color(0xFF1DA1F2).withOpacity(0.15),
-                    icon: Icons.alternate_email,
-                    iconColor: const Color(0xFF1DA1F2),
+                    color: context.themeColors.surfaceHighlight.withOpacity(0.6),
+                    icon: BrandIcon.x(size: 15, color: Colors.white),
                   ),
                 ],
                 if (github != null && github.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   _SocialButton(
                     onTap: () => onLaunchUrl(github, ''),
-                    color: Colors.white.withOpacity(0.1),
-                    icon: Icons.code,
-                    iconColor: Colors.white,
+                    color: context.themeColors.surfaceHighlight.withOpacity(0.6),
+                    icon: BrandIcon.github(size: 16, color: Colors.white),
                   ),
                 ],
                 if (linkedin != null && linkedin.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   _SocialButton(
                     onTap: () => onLaunchUrl(linkedin, ''),
-                    color: const Color(0xFF0077B5).withOpacity(0.15),
-                    icon: Icons.work,
-                    iconColor: const Color(0xFF0077B5),
+                    color: const Color(0xFF0A66C2).withOpacity(0.15),
+                    icon: BrandIcon.linkedin(size: 15, color: const Color(0xFF0A66C2)),
                   ),
                 ],
                 if (website != null && website.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   _SocialButton(
                     onTap: () => onLaunchUrl(website, ''),
-                    color: context.themeColors.surfaceHighlight,
-                    icon: LucideIcons.globe,
-                    iconColor: context.themeColors.textPrimary,
+                    color: context.themeColors.surfaceHighlight.withOpacity(0.6),
+                    icon: BrandIcon.globe(size: 16, color: context.themeColors.textPrimary),
                   ),
                 ],
               ],
@@ -295,13 +340,20 @@ class _BentoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return ParallaxContainer(
       maxTilt: 0.08,
-      enableShadows: true,
+      enableShadows: false,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: context.themeColors.surface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: context.themeColors.borderSubtle, width: 1.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.themeColors.borderSubtle, width: 1.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: child,
       ),
@@ -320,15 +372,22 @@ class _BentoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ParallaxContainer(
       maxTilt: 0.12,
-      enableShadows: true,
+      enableShadows: false,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: context.themeColors.borderSubtle, width: 1.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Center(child: child),
         ),
@@ -339,33 +398,37 @@ class _BentoButton extends StatelessWidget {
 
 class _SocialButton extends StatelessWidget {
   final Color color;
-  final IconData icon;
-  final Color iconColor;
+  final Widget icon;
   final VoidCallback? onTap;
 
   const _SocialButton({
     required this.color,
     required this.icon,
-    required this.iconColor,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ParallaxContainer(
-      maxTilt: 0.12,
-      enableShadows: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 44, // Matched with row height 44
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
-          ),
-          child: Center(
-            child: Icon(icon, color: iconColor, size: 11), // Even smaller icon size
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: ParallaxContainer(
+        maxTilt: 0.12,
+        enableShadows: false,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(color: context.themeColors.borderSubtle, width: 1.0),
+            ),
+            alignment: Alignment.center,
+            child: Center(
+              child: icon,
+            ),
           ),
         ),
       ),
