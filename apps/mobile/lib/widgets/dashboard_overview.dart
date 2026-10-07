@@ -20,6 +20,7 @@ import 'dashboard_achievements.dart';
 import 'feed_update_card.dart';
 import 'skeleton_loaders.dart';
 import '../utils/page_routes.dart';
+import '../utils/user_identity_formatter.dart';
 
 class DashboardOverview extends ConsumerStatefulWidget {
   const DashboardOverview({super.key});
@@ -153,10 +154,19 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
     }
 
     final currentUser = Supabase.instance.client.auth.currentUser;
+    final currentUserId = currentUser?.id ?? _userProfile?['id']?.toString() ?? '';
     String userName = _userProfile?['name'] ?? currentUser?.userMetadata?['name'] ?? currentUser?.userMetadata?['full_name'] ?? '';
     
     if (userName.trim().isEmpty || userName == 'Anonymous Builder') userName = 'Builder';
-    final userAvatar = _userProfile?['avatar'];
+    String? userAvatar = _userProfile?['avatar']?.toString();
+    if (userAvatar == null || userAvatar.isEmpty || userAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+      final metaAvatar = currentUser?.userMetadata?['avatar']?.toString() ?? currentUser?.userMetadata?['avatar_url']?.toString();
+      if (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+        userAvatar = metaAvatar;
+      } else if (currentUser?.email == 'akinrodoluseun12@gmail.com') {
+        userAvatar = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
+      }
+    }
     final initial = userName.substring(0, 1).toUpperCase();
     final firstName = userName.split(' ').first;
 
@@ -186,54 +196,57 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
             _buildHeader(firstName, userAvatar, initial),
             const SizedBox(height: 24),
 
-            // 2. Pulse Card & Actions
-            _buildPulseCard().animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 64,
-                    child: _buildActionCard(
-                      title: "New Update",
-                      icon: LucideIcons.zap,
-                      color: context.themeColors.primary500,
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        Navigator.of(context).push(PremiumPageRoute(page: const CreateUpdateScreen())).then((_) => _fetchData());
-                      },
-                    ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 64,
-                    child: _buildActionCard(
-                      title: "New Room",
-                      icon: LucideIcons.box,
-                      color: context.themeColors.textPrimary,
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData());
-                      },
-                    ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
-                  ),
-                ),
-              ],
-            ).animate().fadeIn(duration: 400.ms),
-            const SizedBox(height: 32),
-
-            // 3. Needs Attention Triage
-            if (_triageUpdates.isNotEmpty) ...[
-              const SizedBox(height: 32),
-              _buildSectionHeader('NEEDS ATTENTION'),
+            if (_myRooms.isEmpty) ...[
+              // Focused First-Time Hero (Zero Information Overload)
+              _buildFirstTimeHero().animate().fadeIn(duration: 350.ms).slideY(begin: 0.05, end: 0),
+            ] else ...[
+              // 2. Pulse Card & Actions
+              _buildPulseCard().animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
               const SizedBox(height: 16),
-              _buildTriageInbox(),
-            ],
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 64,
+                      child: _buildActionCard(
+                        title: "New Update",
+                        icon: LucideIcons.zap,
+                        color: context.themeColors.primary500,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).push(PremiumPageRoute(page: const CreateUpdateScreen())).then((_) => _fetchData());
+                        },
+                      ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 64,
+                      child: _buildActionCard(
+                        title: "New Room",
+                        icon: LucideIcons.folderPlus,
+                        color: context.themeColors.textPrimary,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData());
+                        },
+                      ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn(duration: 400.ms),
+              const SizedBox(height: 32),
 
-            // 4. Active Workspaces
-            if (_myRooms.isNotEmpty) ...[
+              // 3. Needs Attention Triage
+              if (_triageUpdates.isNotEmpty) ...[
+                const SizedBox(height: 32),
+                _buildSectionHeader('NEEDS ATTENTION'),
+                const SizedBox(height: 16),
+                _buildTriageInbox(),
+              ],
+
+              // 4. Active Workspaces
               const SizedBox(height: 32),
               _buildSectionHeader('YOUR WORKSPACE'),
               const SizedBox(height: 4),
@@ -263,70 +276,70 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                     .animate(key: ValueKey(_activeWorkspaceId))
                     .fadeIn(duration: 400.ms)
                     .slideY(begin: 0.05, end: 0),
-            ] else ...[
+
+              // Workspace Insights Carousel
               const SizedBox(height: 32),
-              _buildEmptyState(),
-            ],
-            // Workspace Insights Carousel
-            const SizedBox(height: 32),
-            _buildSectionHeader('WORKSPACE INSIGHTS').animate().fadeIn(delay: 450.ms),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 420, // Fixed height for carousel items
-              child: PageView(
-                controller: _carouselController,
-                onPageChanged: (index) {
-                  setState(() => _currentCarouselIndex = index);
-                  HapticFeedback.selectionClick();
-                },
-                children: [
-                  _buildObserverReactionsCard().animate().fadeIn(delay: 500.ms).slideX(begin: 0.1, end: 0),
-                  _buildTopObserversCard().animate().fadeIn(delay: 600.ms).slideX(begin: 0.1, end: 0),
-                  _buildLinkedDocsCard().animate().fadeIn(delay: 700.ms).slideX(begin: 0.1, end: 0),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (index) {
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: _currentCarouselIndex == index ? 24 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _currentCarouselIndex == index ? context.themeColors.primary500 : context.themeColors.borderSubtle,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                );
-              }),
-            ),
-
-            const SizedBox(height: 32),
-
-            // 4. Activity Pulse
-            Text('LATEST PULSE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5))
-                .animate().fadeIn(delay: 600.ms),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: context.themeColors.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: context.themeColors.borderSubtle),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: RecentActivityList(
-                  userId: Supabase.instance.client.auth.currentUser!.id,
-                  activeRoomId: _myRooms.isNotEmpty ? _myRooms.first['id'] : null,
-                  activeRoomTitle: _myRooms.isNotEmpty ? _myRooms.first['title'] : null,
+              _buildSectionHeader('WORKSPACE INSIGHTS').animate().fadeIn(delay: 450.ms),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 420, // Fixed height for carousel items
+                child: PageView(
+                  controller: _carouselController,
+                  onPageChanged: (index) {
+                    setState(() => _currentCarouselIndex = index);
+                    HapticFeedback.selectionClick();
+                  },
+                  children: [
+                    _buildObserverReactionsCard().animate().fadeIn(delay: 500.ms).slideX(begin: 0.1, end: 0),
+                    _buildTopObserversCard().animate().fadeIn(delay: 600.ms).slideX(begin: 0.1, end: 0),
+                    _buildLinkedDocsCard().animate().fadeIn(delay: 700.ms).slideX(begin: 0.1, end: 0),
+                  ],
                 ),
               ),
-            ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.05, end: 0),
-            
-            const SizedBox(height: 24),
-            DashboardAchievements(userId: Supabase.instance.client.auth.currentUser!.id).animate().fadeIn(delay: 800.ms),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (index) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentCarouselIndex == index ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentCarouselIndex == index ? context.themeColors.primary500 : context.themeColors.borderSubtle,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 4. Activity Pulse
+              Text('LATEST PULSE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textSecondary, letterSpacing: 1.5))
+                  .animate().fadeIn(delay: 600.ms),
+              const SizedBox(height: 16),
+              if (currentUserId.isNotEmpty) ...[
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.themeColors.surface,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: context.themeColors.borderSubtle),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: RecentActivityList(
+                      userId: currentUserId,
+                      activeRoomId: _myRooms.isNotEmpty ? _myRooms.first['id'] : null,
+                      activeRoomTitle: _myRooms.isNotEmpty ? _myRooms.first['title'] : null,
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.05, end: 0),
+                
+                const SizedBox(height: 24),
+                DashboardAchievements(userId: currentUserId).animate().fadeIn(delay: 800.ms),
+              ],
+            ],
           ],
         ),
       ],
@@ -349,7 +362,7 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: context.themeColors.borderSubtle),
                 image: userAvatar != null && userAvatar.isNotEmpty
-                    ? DecorationImage(image: NetworkImage(userAvatar), fit: BoxFit.cover)
+                    ? DecorationImage(image: CachedNetworkImageProvider(userAvatar), fit: BoxFit.cover)
                     : null,
               ),
               child: userAvatar == null || userAvatar.isEmpty
@@ -1382,39 +1395,117 @@ class _DashboardOverviewState extends ConsumerState<DashboardOverview> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildFirstTimeHero() {
+    final spec = _userProfile?['specialisation']?.toString() ?? '';
+    final seniority = _userProfile?['seniority']?.toString() ?? '';
+    final roleSubtitle = UserIdentityFormatter.formatPmIdentity(
+      specialisation: spec,
+      seniority: seniority,
+    );
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: context.themeColors.surface,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: context.themeColors.borderSubtle),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(LucideIcons.layers, size: 40, color: context.themeColors.textTertiary),
-          const SizedBox(height: 16),
-          Text(
-            "Your workspace is empty",
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: context.themeColors.surfaceHighlight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: context.themeColors.borderSubtle),
+                ),
+                child: Icon(
+                  LucideIcons.folderPlus,
+                  size: 20,
+                  color: context.themeColors.textPrimary,
+                ),
+              ),
+              if (roleSubtitle.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: context.themeColors.surfaceHighlight,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: context.themeColors.borderSubtle),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: context.themeColors.primary500,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        roleSubtitle,
+                        style: TextStyle(
+                          color: context.themeColors.textSecondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 18),
           Text(
-            "Start building your first project room.",
-            style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
+            'Start your first project',
+            style: TextStyle(
+              color: context.themeColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 6),
+          Text(
+            'Set up a project room to log product decisions, track sprints, and share updates with observers.',
+            style: TextStyle(
+              color: context.themeColors.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).push(PremiumPageRoute(page: const CreateRoomScreen())).then((_) => _fetchData()),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.of(context)
+                  .push(PremiumPageRoute(page: const CreateRoomScreen()))
+                  .then((_) => _fetchData());
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: context.themeColors.primary500,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
-            child: const Text('Initialize Workspace', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(LucideIcons.plus, size: 16),
+                SizedBox(width: 6),
+                Text('Create Room', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              ],
+            ),
           ),
         ],
       ),

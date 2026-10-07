@@ -61,7 +61,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
     
     final response = await Supabase.instance.client
         .from('rooms')
-        .select('id, title, description, created_at, last_update_at, tags, update_count, room_observers(users(avatar, name))')
+        .select('id, title, description, created_at, last_update_at, tags, update_count, project_stage, room_observers(users(avatar, name))')
         .eq('builder_id', userId)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
@@ -73,7 +73,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
     
     final response = await Supabase.instance.client
         .from('room_observers')
-        .select('rooms(id, title, description, created_at, last_update_at, tags, update_count, room_observers(users(avatar, name)))')
+        .select('rooms(id, title, description, created_at, last_update_at, tags, update_count, project_stage, room_observers(users(avatar, name)))')
         .eq('observer_id', userId);
         
     final mapped = (response as List).map((row) {
@@ -287,6 +287,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
           final description = room['description'] ?? 'No description';
           final tags = List<String>.from(room['tags'] ?? []);
           final tag = tags.isNotEmpty ? tags.first : 'product';
+          final projectStage = room['project_stage'] as String? ?? 'Ideation';
 
           final createdAt = DateTime.tryParse(room['created_at'] ?? '') ?? DateTime.now();
           final lastUpdateAt = room['last_update_at'] != null 
@@ -333,6 +334,8 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                       _buildPill(tag.toUpperCase(), context.themeColors.primary500, context.themeColors.primary500.withOpacity(0.15)),
                       const SizedBox(width: 8),
                       _buildActivityPill(lastUpdateAt, createdAt),
+                      const SizedBox(width: 8),
+                      _buildStagePill(projectStage),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -441,6 +444,37 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
         border: Border.all(color: textColor.withOpacity(0.3)),
       ),
       child: Text(text, style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 0.5)),
+    );
+  }
+
+  Widget _buildStagePill(String stage) {
+    const stageData = {
+      'Ideation':    {'icon': LucideIcons.lightbulb,    'color': 0xFFF59E0B},
+      'Prototyping': {'icon': LucideIcons.hammer,       'color': 0xFF8B5CF6},
+      'Beta':        {'icon': LucideIcons.flaskConical, 'color': 0xFF3B82F6},
+      'Launched':    {'icon': LucideIcons.rocket,       'color': 0xFF10B981},
+    };
+    final entry = stageData[stage] ?? stageData['Ideation']!;
+    final color = Color(entry['color'] as int);
+    final icon = entry['icon'] as IconData;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 9, color: color),
+          const SizedBox(width: 4),
+          Text(
+            stage.toUpperCase(),
+            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 0.5),
+          ),
+        ],
+      ),
     );
   }
 

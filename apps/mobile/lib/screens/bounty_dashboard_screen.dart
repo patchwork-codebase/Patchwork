@@ -60,7 +60,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Match Accepted! Room created. 🚀')),
+          const SnackBar(content: Text('Match accepted. Room created.')),
         );
         final roomId = res['room_id'];
         _fetchApplications(); // Refresh list
@@ -190,7 +190,13 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                                       ],
                                     ],
                                   ),
-                                  Text('Reputation: ${builder['reputation'] ?? 0} ★', style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  Row(
+                                    children: [
+                                      const Icon(LucideIcons.star, size: 10, color: Colors.amber),
+                                      const SizedBox(width: 4),
+                                      Text('${builder['reputation'] ?? 0} Rep', style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -222,12 +228,17 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Container(
+                                Container(
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 width: double.infinity,
                                 decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                child: const Center(
-                                  child: Text('✅ Match Accepted', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(LucideIcons.checkCheck, size: 14, color: Colors.green),
+                                    SizedBox(width: 6),
+                                    Text('Match Accepted', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 10),

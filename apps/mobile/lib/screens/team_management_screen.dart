@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
+import '../utils/user_identity_formatter.dart';
 
 class TeamManagementScreen extends StatefulWidget {
   final String roomId;
@@ -15,6 +16,7 @@ class TeamManagementScreen extends StatefulWidget {
 
 class _TeamManagementScreenState extends State<TeamManagementScreen> {
   bool _isLoading = true;
+  bool _isPrivateRoom = false;
   List<Map<String, dynamic>> _members = [];
   List<Map<String, dynamic>> _invites = [];
   final _emailController = TextEditingController();
@@ -35,21 +37,33 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
   Future<void> _fetchTeamData() async {
     setState(() => _isLoading = true);
     try {
+      // Fetch room privacy status
+      final roomResponse = await Supabase.instance.client
+          .from('rooms')
+          .select('is_private')
+          .eq('id', widget.roomId)
+          .single();
+
       final membersResponse = await Supabase.instance.client
           .from('room_observers')
-          .select('role, users(id, name, email)')
+          .select('role, users(id, name, email, specialisation, seniority, pm_level, company_name, organization_name)')
           .eq('room_id', widget.roomId);
 
-      final invitesResponse = await Supabase.instance.client
-          .from('room_invitations')
-          .select('id, email, role, status')
-          .eq('room_id', widget.roomId)
-          .eq('status', 'pending');
+      List<Map<String, dynamic>> invites = [];
+      if (roomResponse['is_private'] == true) {
+        final invitesResponse = await Supabase.instance.client
+            .from('room_invitations')
+            .select('id, email, role, status')
+            .eq('room_id', widget.roomId)
+            .eq('status', 'pending');
+        invites = List<Map<String, dynamic>>.from(invitesResponse);
+      }
 
       if (mounted) {
         setState(() {
+          _isPrivateRoom = roomResponse['is_private'] == true;
           _members = List<Map<String, dynamic>>.from(membersResponse);
-          _invites = List<Map<String, dynamic>>.from(invitesResponse);
+          _invites = invites;
           _isLoading = false;
         });
       }
@@ -64,6 +78,15 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
   Future<void> _inviteUser() async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) return;
+
+    if (!_isPrivateRoom) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invitations are only available for private rooms. Toggle your room to private first.')),
+        );
+      }
+      return;
+    }
 
     try {
       await Supabase.instance.client.rpc('invite_user_to_room', params: {
@@ -114,12 +137,38 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Invite Member', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+                if (!_isPrivateRoom)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.info, color: Colors.orange, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Invitations are only for private rooms. Public rooms are open for anyone to observe.',
+                              style: TextStyle(color: Colors.orange.shade200, fontSize: 11, height: 1.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _emailController,
+                        enabled: _isPrivateRoom,
                         style: TextStyle(color: context.themeColors.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Email address',
@@ -159,9 +208,9 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _inviteUser,
+                    onPressed: _isPrivateRoom ? _inviteUser : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: context.themeColors.primary500,
+                      backgroundColor: _isPrivateRoom ? context.themeColors.primary500 : context.themeColors.primary500.withOpacity(0.3),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -199,7 +248,20 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                       child: Text(user['name']?.substring(0, 1).toUpperCase() ?? '?', style: const TextStyle(color: Colors.white)),
                     ),
                     title: Text(user['name'] ?? 'Unknown', style: TextStyle(color: context.themeColors.textPrimary)),
-                    subtitle: Text(user['email'] ?? '', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
+                    subtitle: Builder(
+                      builder: (context) {
+                        final pmIdentity = UserIdentityFormatter.formatPmIdentity(
+                          specialisation: user['specialisation']?.toString(),
+                          seniority: user['seniority']?.toString() ?? user['pm_level']?.toString(),
+                          company: user['company_name']?.toString() ?? user['organization_name']?.toString(),
+                          includeCompany: true,
+                        );
+                        final subtitleText = pmIdentity.isNotEmpty
+                            ? '$pmIdentity · ${user['email'] ?? ''}'
+                            : (user['email'] ?? '');
+                        return Text(subtitleText, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10));
+                      },
+                    ),
                     trailing: Text(member['role'].toString().toUpperCase(), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8, fontWeight: FontWeight.bold)),
                   );
                 }),

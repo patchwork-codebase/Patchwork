@@ -7,15 +7,16 @@ import '../theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/feed_update_card.dart';
+import '../widgets/feed_simulation_card.dart';
 import '../services/cache_service.dart';
 import '../widgets/empty_state.dart';
 import '../utils/page_routes.dart';
 import '../widgets/skeleton_loaders.dart';
 import 'create_update_screen.dart';
+import 'create_simulation_screen.dart';
 import 'notifications_screen.dart';
 import 'public_profile_screen.dart';
 import 'explore_screen.dart';
-import '../services/notification_service.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -33,7 +34,6 @@ class _FeedScreenState extends State<FeedScreen> {
   int _unreadNotifications = 0;
   
   List<Map<String, dynamic>> _suggestedBuilders = [];
-  bool _isLoadingBuilders = true;
   final Set<String> _followingBuilders = {};
   
   final int _pageSize = 20;
@@ -141,12 +141,9 @@ class _FeedScreenState extends State<FeedScreen> {
       if (mounted) {
         setState(() {
           _suggestedBuilders = List<Map<String, dynamic>>.from(response);
-          _isLoadingBuilders = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingBuilders = false);
-    }
+    } catch (_) {}
   }
 
   @override
@@ -164,8 +161,6 @@ class _FeedScreenState extends State<FeedScreen> {
     }
   }
 
-  SupabaseQueryBuilder get _updatesQuery => Supabase.instance.client.from('updates');
-
   PostgrestTransformBuilder<List<Map<String, dynamic>>> _buildBaseQuery() {
     // If we need to filter by a room tag or update_count, we MUST use an inner join.
     final needsInnerJoin = _activeDomainFilter != 'All' || _activeViewToggle == 'Launches';
@@ -180,7 +175,9 @@ class _FeedScreenState extends State<FeedScreen> {
       filterBuilder = filterBuilder.contains('rooms.tags', [_activeDomainFilter.toLowerCase()]);
     }
 
-    if (_activeViewToggle == 'Media') {
+    if (_activeViewToggle == 'Challenges') {
+      filterBuilder = filterBuilder.eq('update_type', 'simulation');
+    } else if (_activeViewToggle == 'Media') {
       filterBuilder = filterBuilder.not('media_url', 'is', null);
     } else if (_activeViewToggle == 'Launches') {
       filterBuilder = filterBuilder.eq('rooms.update_count', 1);
@@ -309,7 +306,6 @@ class _FeedScreenState extends State<FeedScreen> {
               CupertinoSliverRefreshControl(
                 onRefresh: _fetchInitialFeed,
                 builder: (context, refreshState, pulledExtent, refreshTriggerPullDistance, refreshIndicatorExtent) {
-                  const curve = Curves.easeOutCubic;
                   final percentage = (pulledExtent / refreshTriggerPullDistance).clamp(0.0, 1.0);
                   
                   return Center(
@@ -350,6 +346,46 @@ class _FeedScreenState extends State<FeedScreen> {
                   backgroundColor: context.themeColors.background.withOpacity(0.85),
                   elevation: 0,
                   actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PremiumPageRoute(page: const CreateSimulationScreen()),
+                          ).then((_) => _fetchInitialFeed());
+                        },
+                        child: Container(
+                          height: 38,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                context.themeColors.primary500.withOpacity(0.18),
+                                Colors.amber.withOpacity(0.12),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber.withOpacity(0.35)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(LucideIcons.zap, size: 14, color: Colors.amber),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Challenge',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.themeColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: GestureDetector(
@@ -404,17 +440,95 @@ class _FeedScreenState extends State<FeedScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildViewToggle('All', _activeViewToggle == 'All'),
-                          const SizedBox(width: 8),
-                          _buildViewToggle('Media', _activeViewToggle == 'Media'),
-                          const SizedBox(width: 8),
-                          _buildViewToggle('Launches', _activeViewToggle == 'Launches'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildViewToggle('All', _activeViewToggle == 'All'),
+                              const SizedBox(width: 8),
+                              _buildViewToggle('Challenges', _activeViewToggle == 'Challenges'),
+                              const SizedBox(width: 8),
+                              _buildViewToggle('Media', _activeViewToggle == 'Media'),
+                              const SizedBox(width: 8),
+                              _buildViewToggle('Launches', _activeViewToggle == 'Launches'),
+                            ],
+                          ),
+                        ),
+                        if (_activeViewToggle == 'Challenges') ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.amber.withOpacity(0.08),
+                                  context.themeColors.primary500.withOpacity(0.04),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.amber.withOpacity(0.25)),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(LucideIcons.zap, size: 16, color: Colors.amber),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Senior Dilemmas Arena',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: context.themeColors.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Test real-world trade-offs, earn +50 Rep per decision & build your PoW.',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          color: context.themeColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      PremiumPageRoute(page: const CreateSimulationScreen()),
+                                    ).then((_) => _fetchInitialFeed());
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.amber,
+                                    foregroundColor: Colors.black,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  child: const Text('+ Drop', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -512,6 +626,12 @@ class _FeedScreenState extends State<FeedScreen> {
                             }
                           }
                           final update = _updates[index];
+                          if (update['update_type'] == 'simulation' || update['simulation_data'] != null) {
+                            return FeedSimulationCard(
+                              update: update,
+                              onRefresh: _fetchInitialFeed,
+                            );
+                          }
                           return FeedUpdateCard(
                             update: update,
                             onRefresh: _fetchInitialFeed,

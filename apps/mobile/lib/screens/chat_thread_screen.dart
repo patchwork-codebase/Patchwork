@@ -369,8 +369,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
     final content = _mentionsKey.currentState?.controller?.markupText ?? _messageController.text.trim();
       final plainText = _mentionsKey.currentState?.controller?.text ?? _messageController.text.trim();
     if ((plainText.isEmpty && mediaUrl == null) || _isSending || _currentUserId == null) return;
-      final mentionRegex = RegExp(r'@\[.*?\]\((.*?)\)');
-      final mentionedUserIds = mentionRegex.allMatches(content).map((m) => m.group(1)!).toSet().toList();
+      final mentionRegex = RegExp(r'@\[.*?\]\(_{0,2}(.*?)_{0,2}\)');
+      final mentionedUserIds = mentionRegex.allMatches(content).map((m) => m.group(1)!.replaceAll('__', '')).where((id) => id.isNotEmpty).toSet().toList();
 
     HapticFeedback.lightImpact();
 
@@ -1167,7 +1167,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
   }
 
   Widget _buildMessageTextWithMentions(String content, bool isMe) {
-    final mentionPattern = RegExp(r'@\[([^\]]+)\]\(([^)]+)\)');
+    final mentionPattern = RegExp(r'@\[_*([^\]]+?)_*\]\(_*([^)]+?)_*\)');
     final matches = mentionPattern.allMatches(content);
 
     if (matches.isEmpty) {
@@ -1196,8 +1196,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
         ));
       }
 
-      final displayName = match.group(1) ?? 'user';
-      final userId = match.group(2) ?? '';
+      final displayName = (match.group(1) ?? 'user').replaceAll('__', '');
+      final userId = (match.group(2) ?? '').replaceAll('__', '');
 
       spans.add(
         TextSpan(
@@ -1314,7 +1314,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
             ),
             const SizedBox(height: 8),
             Text(
-              'Say hello to kick off the collaboration! 👋',
+              'Say hello to kick off the collaboration.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
@@ -1378,7 +1378,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
               const SizedBox(height: 10),
               _buildTipRow(LucideIcons.hand, 'Long-press any message to react, edit or delete'),
               const SizedBox(height: 6),
-              _buildTipRow(LucideIcons.paperclip, 'Tap the 📎 icon to send images and files'),
+              _buildTipRow(LucideIcons.paperclip, 'Tap the attachment icon to send images and files'),
               const SizedBox(height: 6),
               _buildTipRow(LucideIcons.checkCheck, 'Blue ticks mean your message has been read'),
             ],
@@ -1546,6 +1546,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                           Mention(
                             trigger: '@',
                             style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold),
+                            markupBuilder: (trigger, mention, id) => '@[$mention]($id)',
                             data: _roomParticipants,
                             suggestionBuilder: (data) {
                               final name = data['full_name']?.toString() ?? 'User';

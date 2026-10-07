@@ -10,10 +10,11 @@ import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../widgets/feed_update_card.dart';
 import 'create_update_screen.dart';
+import 'create_simulation_screen.dart';
 import 'edit_room_screen.dart';
 import 'team_management_screen.dart';
-import 'public_profile_screen.dart';
 import 'journey_timelapse_screen.dart';
+import '../widgets/toast_notification.dart';
 
 class RoomDetailScreen extends StatefulWidget {
   final String roomId;
@@ -32,25 +33,8 @@ class RoomDetailScreen extends StatefulWidget {
 class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerProviderStateMixin {
   late Future<Map<String, dynamic>> _roomDataFuture;
   bool _isObserving = false;
-  bool _isFollowing = false;
-  bool _isLoadingFollow = true;
   bool _isGeneratingAiNote = false;
   bool _isTogglingObserve = false;
-  
-  Map<String, dynamic>? _room;
-  List<Map<String, dynamic>> _updates = [];
-  List<Map<String, dynamic>> _decisions = [];
-  Map<String, dynamic> _analytics = {
-    'totalViews': 0,
-    'engagements': 0,
-    'observerGrowth': 0,
-  };
-  Map<String, dynamic> _indicators = {
-    'reposList': [],
-    'hasLinear': false,
-    'hasNotion': false,
-    'hasFigma': false,
-  };
 
   Future<void> _generateReleaseNote(BuildContext context) async {
     setState(() => _isGeneratingAiNote = true);
@@ -342,6 +326,222 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     });
   }
 
+  Widget _buildTypeChip(String label, String value, String selected, ValueChanged<String> onSelect, {IconData? icon}) {
+    final isSelected = value == selected;
+    return GestureDetector(
+      onTap: () => onSelect(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? context.themeColors.primary500 : context.themeColors.surfaceHighlight,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? context.themeColors.primary500 : context.themeColors.borderSubtle,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 12, color: isSelected ? Colors.white : context.themeColors.textSecondary),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? Colors.white : context.themeColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showLogDecisionSheet(BuildContext context) async {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final linkController = TextEditingController();
+    String selectedType = 'decision';
+    bool isSaving = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                left: 20,
+                right: 20,
+                top: 16,
+              ),
+              decoration: BoxDecoration(
+                color: context.themeColors.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border.all(color: context.themeColors.borderSubtle),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: context.themeColors.borderSubtle,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: context.themeColors.primary500.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(LucideIcons.gitCommit, size: 18, color: context.themeColors.primary500),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Log Room Decision',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: context.themeColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.x, size: 18),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'STATUS / OUTCOME',
+                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary),
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildTypeChip('Decision', 'decision', selectedType, (val) => setSheetState(() => selectedType = val), icon: LucideIcons.gitCommit),
+                          const SizedBox(width: 8),
+                          _buildTypeChip('Shipped', 'shipped', selectedType, (val) => setSheetState(() => selectedType = val), icon: LucideIcons.send),
+                          const SizedBox(width: 8),
+                          _buildTypeChip('Blocker', 'blocker', selectedType, (val) => setSheetState(() => selectedType = val), icon: LucideIcons.alertTriangle),
+                          const SizedBox(width: 8),
+                          _buildTypeChip('Scrapped', 'scrapped', selectedType, (val) => setSheetState(() => selectedType = val), icon: LucideIcons.trash2),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: titleController,
+                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                      decoration: InputDecoration(
+                        labelText: 'Decision Title',
+                        hintText: 'e.g. Choose Postgres RLS over custom auth gateway',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: descriptionController,
+                      maxLines: 3,
+                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 12),
+                      decoration: InputDecoration(
+                        labelText: 'Rationale & Trade-Offs (Optional)',
+                        hintText: 'Why was this chosen? What alternatives were rejected?',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: linkController,
+                      style: TextStyle(color: context.themeColors.textPrimary, fontSize: 12),
+                      decoration: InputDecoration(
+                        labelText: 'External Link / PR (Optional)',
+                        hintText: 'https://github.com/... or Notion link',
+                        prefixIcon: const Icon(LucideIcons.link, size: 16),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : () async {
+                          final title = titleController.text.trim();
+                          if (title.isEmpty) {
+                            ToastService.show(context, 'Please enter a decision title', isError: true);
+                            return;
+                          }
+                          final userId = Supabase.instance.client.auth.currentUser?.id;
+                          if (userId == null) return;
+
+                          setSheetState(() => isSaving = true);
+                          try {
+                            await Supabase.instance.client.from('room_decisions').insert({
+                              'room_id': widget.roomId,
+                              'builder_id': userId,
+                              'type': selectedType,
+                              'title': title,
+                              'description': descriptionController.text.trim(),
+                              'external_link': linkController.text.trim().isNotEmpty ? linkController.text.trim() : null,
+                            });
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                            }
+                            if (mounted) {
+                              _refresh();
+                              ToastService.show(context, 'Decision logged (+25 Rep)');
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setSheetState(() => isSaving = false);
+                              ToastService.show(context, 'Failed to log decision: $e', isError: true);
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.themeColors.primary500,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: isSaving
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Text('Save Decision', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -394,6 +594,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     final builder = room['users'] as Map<String, dynamic>?;
     final isPrivate = room['is_private'] == true;
     final primaryLink = room['primary_link'] as String?;
+    final projectStage = room['project_stage'] as String? ?? 'Ideation';
     
     // Derived values
     final builderName = builder?['name'] ?? room['builder_name'] ?? 'Builder';
@@ -582,6 +783,8 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            _buildStageBadge(projectStage),
                           ],
                         ),
                         const SizedBox(width: 12),
@@ -808,16 +1011,146 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                   ,
                   decisions.isEmpty 
                     ? Center(
-                        child: Text(
-                          'No decisions logged yet.',
-                          style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(LucideIcons.gitCommit, size: 36, color: context.themeColors.textTertiary),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No decisions logged yet.',
+                                style: TextStyle(color: context.themeColors.textTertiary, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Track technical & product choices with full context.',
+                                style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
+                              ),
+                              if (isOwner) ...[
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () => _showLogDecisionSheet(context),
+                                      icon: const Icon(LucideIcons.plus, size: 14),
+                                      label: const Text('Log Decision'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: context.themeColors.primary500,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => CreateSimulationScreen(
+                                              preselectedRoomId: widget.roomId,
+                                              preselectedRoomTitle: widget.title,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(LucideIcons.zap, size: 14, color: Colors.amber),
+                                      label: const Text('Post Challenge', style: TextStyle(color: Colors.amber)),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: Colors.amber.withOpacity(0.4)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 200),
-                        itemCount: decisions.length,
+                        itemCount: decisions.length + 1,
                         itemBuilder: (context, index) {
-                          final decision = decisions[index];
+                          if (index == 0) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: context.themeColors.surfaceHighlight.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: context.themeColors.borderSubtle),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Room Decision Ledger',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: context.themeColors.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${decisions.length} strategic decisions documented.',
+                                          style: TextStyle(
+                                            fontSize: 10.5,
+                                            color: context.themeColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isOwner) ...[
+                                    ElevatedButton.icon(
+                                      onPressed: () => _showLogDecisionSheet(context),
+                                      icon: const Icon(LucideIcons.plus, size: 12),
+                                      label: const Text('Log Decision', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: context.themeColors.primary500,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => CreateSimulationScreen(
+                                              preselectedRoomId: widget.roomId,
+                                              preselectedRoomTitle: widget.title,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(LucideIcons.zap, size: 12, color: Colors.amber),
+                                      label: const Text('Challenge', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.amber)),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: Colors.amber.withOpacity(0.35)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          }
+
+                          final decision = decisions[index - 1];
                           final status = decision['status'] ?? 'logged';
                           final isShipped = status == 'shipped';
                           return Container(
@@ -874,9 +1207,53 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
                                   ),
                                 ],
                                 const SizedBox(height: 12),
-                                Text(
-                                  timeago.format(DateTime.parse(decision['created_at'])),
-                                  style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.bold),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      timeago.format(DateTime.parse(decision['created_at'])),
+                                      style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.bold),
+                                    ),
+                                    if (isOwner)
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => CreateSimulationScreen(
+                                                preselectedRoomId: widget.roomId,
+                                                preselectedRoomTitle: widget.title,
+                                                initialTitle: decision['title']?.toString() ?? '',
+                                                initialPrompt: decision['description']?.toString() ?? '',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.amber.withOpacity(0.35)),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(LucideIcons.zap, size: 11, color: Colors.amber),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'Challenge',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.amber,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -1316,6 +1693,42 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> with SingleTickerPr
     );
   }
   
+  Widget _buildStageBadge(String stage) {
+    const stageData = {
+      'Ideation':    {'icon': LucideIcons.lightbulb,    'color': 0xFFF59E0B},
+      'Prototyping': {'icon': LucideIcons.hammer,       'color': 0xFF8B5CF6},
+      'Beta':        {'icon': LucideIcons.flaskConical, 'color': 0xFF3B82F6},
+      'Launched':    {'icon': LucideIcons.rocket,       'color': 0xFF10B981},
+    };
+    final entry = stageData[stage] ?? stageData['Ideation']!;
+    final color = Color(entry['color'] as int);
+    final icon = entry['icon'] as IconData;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 9, color: color),
+          const SizedBox(width: 4),
+          Text(
+            stage.toUpperCase(),
+            style: TextStyle(
+              color: color,
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionButton({required IconData icon, required VoidCallback onTap, Color? color}) {
     return GestureDetector(
       onTap: onTap,

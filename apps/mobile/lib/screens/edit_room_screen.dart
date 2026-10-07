@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
 
 class EditRoomScreen extends StatefulWidget {
@@ -19,6 +20,14 @@ class _EditRoomScreenState extends State<EditRoomScreen> {
   late TextEditingController _descController;
   late TextEditingController _primaryLinkController;
   late bool _isPrivate;
+  late String _selectedStage;
+
+  static const _stages = [
+    {'value': 'Ideation',    'label': 'Ideation',    'icon': LucideIcons.lightbulb,    'color': 0xFFF59E0B},
+    {'value': 'Prototyping', 'label': 'Prototyping', 'icon': LucideIcons.hammer,       'color': 0xFF8B5CF6},
+    {'value': 'Beta',        'label': 'Beta',        'icon': LucideIcons.flaskConical, 'color': 0xFF3B82F6},
+    {'value': 'Launched',    'label': 'Launched',    'icon': LucideIcons.rocket,       'color': 0xFF10B981},
+  ];
 
   @override
   void initState() {
@@ -27,6 +36,7 @@ class _EditRoomScreenState extends State<EditRoomScreen> {
     _descController = TextEditingController(text: widget.initialRoomData['description'] ?? '');
     _primaryLinkController = TextEditingController(text: widget.initialRoomData['primary_link'] ?? '');
     _isPrivate = widget.initialRoomData['is_private'] == true;
+    _selectedStage = widget.initialRoomData['project_stage'] ?? 'Ideation';
   }
 
   @override
@@ -48,6 +58,7 @@ class _EditRoomScreenState extends State<EditRoomScreen> {
         'description': _descController.text.trim(),
         'primary_link': _primaryLinkController.text.trim(),
         'is_private': _isPrivate,
+        'project_stage': _selectedStage,
       }).eq('id', widget.initialRoomData['id']);
 
       if (mounted) {
@@ -136,7 +147,52 @@ class _EditRoomScreenState extends State<EditRoomScreen> {
               ),
               const SizedBox(height: 24),
 
-              SwitchListTile(
+              // Project Stage
+              Text('Project Stage', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _stages.map((stage) {
+                    final isSelected = _selectedStage == stage['value'];
+                    final stageColor = Color(stage['color'] as int);
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedStage = stage['value'] as String),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: isSelected ? stageColor.withOpacity(0.12) : context.themeColors.borderSubtle.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? stageColor.withOpacity(0.5) : context.themeColors.borderSubtle,
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(stage['icon'] as IconData, size: 12, color: isSelected ? stageColor : context.themeColors.textSecondary),
+                            const SizedBox(width: 6),
+                            Text(
+                              stage['label'] as String,
+                              style: TextStyle(
+                                color: isSelected ? stageColor : context.themeColors.textSecondary,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+                            SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text('Private Room', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                 subtitle: Text('Only you and invited members can view this room.', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),

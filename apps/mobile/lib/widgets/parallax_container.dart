@@ -70,11 +70,12 @@ class _ParallaxContainerState extends State<ParallaxContainer> {
       transformAlignment: Alignment.center,
       decoration: widget.enableShadows
           ? BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  offset: Offset(_yaw * -100, _pitch * -100 + 10),
-                  blurRadius: 30,
+                  color: Colors.black.withOpacity(0.04),
+                  offset: Offset(_yaw * -20, _pitch * -20 + 4),
+                  blurRadius: 12,
                   spreadRadius: 0,
                 ),
               ],

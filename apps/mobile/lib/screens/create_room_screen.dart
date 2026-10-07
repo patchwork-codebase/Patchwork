@@ -17,10 +17,18 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   final _coverImageController = TextEditingController();
   bool _isPrivate = false;
   final List<String> _selectedTags = [];
+  String _selectedStage = 'Ideation';
   bool _isLoading = false;
 
   final List<String> _availableTags = [
     'product', 'engineering', 'design', 'research', 'marketing', 'dev'
+  ];
+
+  static const _stages = [
+    {'value': 'Ideation',    'label': 'Ideation',    'icon': LucideIcons.lightbulb,    'color': 0xFFF59E0B},
+    {'value': 'Prototyping', 'label': 'Prototyping', 'icon': LucideIcons.hammer,       'color': 0xFF8B5CF6},
+    {'value': 'Beta',        'label': 'Beta',        'icon': LucideIcons.flaskConical, 'color': 0xFF3B82F6},
+    {'value': 'Launched',    'label': 'Launched',    'icon': LucideIcons.rocket,       'color': 0xFF10B981},
   ];
 
   Future<void> _submitRoom() async {
@@ -62,8 +70,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         'title': title,
         'description': _descriptionController.text.trim(),
         'tags': _selectedTags.isEmpty ? ['product'] : _selectedTags,
+        'project_stage': _selectedStage,
         'primary_link': primaryLink.isNotEmpty ? primaryLink : null,
-        'cover_image_url': coverImageUrl.isNotEmpty ? coverImageUrl : null,
+        'cover_image': coverImageUrl.isNotEmpty ? coverImageUrl : null,
         'is_private': _isPrivate,
       });
 
@@ -216,6 +225,56 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   ),
                 );
               }).toList(),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Project Stage Selector
+            Text('PROJECT STAGE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _stages.map((stage) {
+                  final isSelected = _selectedStage == stage['value'];
+                  final stageColor = Color(stage['color'] as int);
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedStage = stage['value'] as String),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(right: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? stageColor.withOpacity(0.15) : Colors.white.withOpacity(0.02),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected ? stageColor.withOpacity(0.6) : Colors.white.withOpacity(0.08),
+                          width: isSelected ? 1.5 : 1.0,
+                        ),
+                        boxShadow: isSelected
+                            ? [BoxShadow(color: stageColor.withOpacity(0.25), blurRadius: 8, spreadRadius: 1)]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(stage['icon'] as IconData, size: 12, color: isSelected ? stageColor : context.themeColors.textSecondary),
+                          const SizedBox(width: 6),
+                          Text(
+                            (stage['label'] as String).toUpperCase(),
+                            style: TextStyle(
+                              color: isSelected ? stageColor : context.themeColors.textSecondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 9,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
 
             const SizedBox(height: 32),

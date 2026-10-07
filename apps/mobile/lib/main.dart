@@ -124,7 +124,22 @@ class _InitialAuthCheckState extends State<InitialAuthCheck> {
 
   Future<void> _checkAuth() async {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final session = Supabase.instance.client.auth.currentSession;
+      var session = Supabase.instance.client.auth.currentSession;
+      
+      // If session exists but is expired, attempt a refresh
+      if (session != null && session.isExpired) {
+        try {
+          final res = await Supabase.instance.client.auth.refreshSession();
+          session = res.session;
+        } catch (_) {
+          // Refresh token expired or revoked - clear invalid credentials
+          session = null;
+          try {
+            await Supabase.instance.client.auth.signOut();
+          } catch (_) {}
+        }
+      }
+
       if (session == null) {
         final prefs = await SharedPreferences.getInstance();
         final hasSeenWelcome = prefs.getBool('has_seen_welcome') ?? false;
@@ -164,10 +179,13 @@ class _InitialAuthCheckState extends State<InitialAuthCheck> {
             }
           }
         } catch (e) {
-          // Fallback to home if error
+          // If query failed due to invalid JWT / 401, sign out and route to login
+          try {
+            await Supabase.instance.client.auth.signOut();
+          } catch (_) {}
           if (mounted) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
             );
           }
         }
