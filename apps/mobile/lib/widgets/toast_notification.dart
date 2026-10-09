@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'dart:ui';
 import '../theme.dart';
+import '../utils/error_formatter.dart';
 
 class ToastService {
   static void show(
@@ -10,6 +11,7 @@ class ToastService {
     String message, 
     {bool isError = false, IconData? icon}
   ) {
+    final displayMessage = isError ? ErrorFormatter.format(message) : message;
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
     
@@ -47,7 +49,7 @@ class ToastService {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        message,
+                        displayMessage,
                         style: TextStyle(
                           color: context.themeColors.textPrimary,
                           fontWeight: FontWeight.w500,

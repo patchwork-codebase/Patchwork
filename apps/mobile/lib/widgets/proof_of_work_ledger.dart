@@ -540,7 +540,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
               const SizedBox(height: 4),
               Text(
                 'Dynamic index computed from real trade-offs and peer validations.',
-                style: TextStyle(fontSize: 10.5, color: context.themeColors.textTertiary),
+                style: TextStyle(fontSize: 11.5, color: context.themeColors.textTertiary),
               ),
               const SizedBox(height: 16),
 
@@ -572,12 +572,12 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                       children: [
                         Text(
                           '${axis.label}: ',
-                          style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary),
+                          style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
                         ),
                         Text(
                           '${axis.value.round()}',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             color: context.themeColors.primary400,
                           ),
@@ -694,7 +694,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 9.5,
+                fontSize: 11.5,
                 fontWeight: FontWeight.w600,
                 color: context.themeColors.textSecondary,
               ),
@@ -723,7 +723,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 10.5,
+            fontSize: 11.5,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             color: isSelected ? Colors.white : context.themeColors.textSecondary,
           ),
@@ -775,7 +775,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                 child: Text(
                   roleTag.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 9,
+                    fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.4,
                     color: context.themeColors.primary500,
@@ -798,7 +798,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                       SizedBox(width: 3),
                       Text(
                         'FEATURED STRATEGIC THINKING',
-                        style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w900, color: Colors.amber),
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: Colors.amber),
                       ),
                     ],
                   ),
@@ -806,7 +806,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
               else
                 Text(
                   timeago.format(createdAt, locale: 'en_short'),
-                  style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
+                  style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
                 ),
             ],
           ),
@@ -822,7 +822,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
           const SizedBox(height: 2),
           Text(
             'Challenge by $authorName',
-            style: TextStyle(fontSize: 10.5, color: context.themeColors.textSecondary),
+            style: TextStyle(fontSize: 11.5, color: context.themeColors.textSecondary),
           ),
           const SizedBox(height: 12),
 
@@ -846,7 +846,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                       Text(
                         'Chosen Path:',
                         style: TextStyle(
-                          fontSize: 9.5,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.bold,
                           color: context.themeColors.textTertiary,
                         ),
@@ -887,7 +887,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                       child: Text(
                         stakeholder['persona'] ?? 'Stakeholder Pushback',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: context.themeColors.primary400,
                         ),
@@ -915,7 +915,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
             Text(
               'Strategic Defense / Rationale:',
               style: TextStyle(
-                fontSize: 9.5,
+                fontSize: 11.5,
                 fontWeight: FontWeight.bold,
                 color: context.themeColors.textTertiary,
               ),
@@ -953,7 +953,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                       Text(
                         '+100 Rep Endorsement',
                         style: TextStyle(
-                          fontSize: 9,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: Colors.amber,
                         ),
@@ -964,7 +964,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
               else
                 Text(
                   timeago.format(createdAt, locale: 'en_short'),
-                  style: TextStyle(fontSize: 10.5, color: context.themeColors.textTertiary),
+                  style: TextStyle(fontSize: 11.5, color: context.themeColors.textTertiary),
                 ),
               TextButton(
                 onPressed: () {
@@ -1059,7 +1059,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                     Text(
                       type,
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: FontWeight.w800,
                         color: typeColor,
                       ),
@@ -1070,7 +1070,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
               const Spacer(),
               Text(
                 timeago.format(createdAt, locale: 'en_short'),
-                style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
+                style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
               ),
             ],
           ),
@@ -1086,7 +1086,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
           const SizedBox(height: 2),
           Text(
             'Room: $roomTitle',
-            style: TextStyle(fontSize: 10.5, color: context.themeColors.textSecondary),
+            style: TextStyle(fontSize: 11.5, color: context.themeColors.textSecondary),
           ),
           if (desc.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -1148,7 +1148,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
                     Text(
                       'VERIFIED CREDENTIAL',
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: FontWeight.w800,
                         color: accentColor,
                       ),
@@ -1159,7 +1159,7 @@ class _ProofOfWorkLedgerState extends State<ProofOfWorkLedger> {
               const Spacer(),
               Text(
                 timeago.format(issuedAt, locale: 'en_short'),
-                style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
+                style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
               ),
             ],
           ),

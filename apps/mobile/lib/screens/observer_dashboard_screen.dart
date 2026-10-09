@@ -7,12 +7,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import '../widgets/observer_progression_panel.dart';
-import '../widgets/skeleton_loaders.dart';
+import '../widgets/toast_notification.dart';
 import 'explore_screen.dart';
 import 'room_detail_screen.dart';
 import 'create_update_screen.dart';
 import 'bounty_dashboard_screen.dart';
 import 'notifications_screen.dart';
+import '../utils/uuid_helper.dart';
 
 class ObserverDashboardScreen extends StatefulWidget {
   final Map<String, dynamic>? userProfile;
@@ -253,9 +254,21 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     try {
       // We assume they repost to their own profile, but observers might not have a room.
       // For MVP, just track it optimistically or insert into updates as a repost.
+      final userProfile = await Supabase.instance.client
+          .from('users')
+          .select('name')
+          .eq('id', userId)
+          .maybeSingle();
+      final authorName = userProfile?['name'] ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['name'] ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] ??
+          'Observer';
+
       await Supabase.instance.client.from('updates').insert({
+        'id': generateUuid(),
         'content': '',
         'author_id': userId,
+        'author_name': authorName,
         'room_id': _observedRoomIds.isNotEmpty ? _observedRoomIds.first : null, // Fallback
         'repost_id': updateId,
         'is_repost_only': true,
@@ -403,9 +416,19 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     HapticFeedback.lightImpact();
     setState(() => _followedRoomIds.add(roomId));
     try {
-      await Supabase.instance.client.from('room_observers').upsert({'room_id': roomId, 'observer_id': userId});
+      try {
+        await Supabase.instance.client.from('room_observers').insert({'room_id': roomId, 'observer_id': userId});
+      } on PostgrestException catch (e) {
+        // 23505 = already following; treat as success.
+        if (e.code != '23505') rethrow;
+      }
       _fetchWatchingNow(); _fetchStats();
-    } catch (e) { setState(() => _followedRoomIds.remove(roomId)); }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _followedRoomIds.remove(roomId));
+        ToastService.show(context, 'Failed to follow room: $e', isError: true);
+      }
+    }
   }
 
   Future<void> _unfollowRoom(String roomId) async {
@@ -477,7 +500,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('OBSERVER PASS', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 8)),
+                    Text('OBSERVER PASS', style: TextStyle(color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 11)),
                     const Icon(LucideIcons.checkCircle, color: Colors.white, size: 17),
                   ],
                 ),
@@ -498,7 +521,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('$rep REP', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
-                    Text('Next: $nextLevelRep', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10)),
+                    Text('Next: $nextLevelRep', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
                   ],
                 ),
               ],
@@ -518,9 +541,9 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
         const Spacer(),
         Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color, height: 1.0)),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+        Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
         const SizedBox(height: 4),
-        Text(delta, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color)),
+        Text(delta, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
       ]),
     );
   }
@@ -539,7 +562,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           border: Border.all(color: isActive ? context.themeColors.primary500 : context.themeColors.borderSubtle),
           boxShadow: isActive ? [BoxShadow(color: context.themeColors.primary500.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 2))] : null,
         ),
-        child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isActive ? Colors.white : context.themeColors.textSecondary)),
+        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isActive ? Colors.white : context.themeColors.textSecondary)),
       ),
     );
   }
@@ -548,7 +571,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
       child: Row(children: [
-        Text(label.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+        Text(label.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
         const SizedBox(width: 12),
         Expanded(child: Divider(color: context.themeColors.borderSubtle, height: 1)),
       ]),
@@ -566,7 +589,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           Icon(icon, size: 15, color: color),
           if (count.isNotEmpty) ...[
             const SizedBox(width: 4),
-            Text(count, style: TextStyle(fontSize: 10, color: color, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+            Text(count, style: TextStyle(fontSize: 11, color: color, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
           ],
         ],
       ),
@@ -630,13 +653,13 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(authorName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textPrimary)),
-            Text('in $roomTitle', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
-            if (createdAt != null) Text(timeago.format(createdAt), style: TextStyle(fontSize: 9, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
+            Text('in $roomTitle', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
+            if (createdAt != null) Text(timeago.format(createdAt), style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
           ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: tagBg, borderRadius: BorderRadius.circular(20), border: Border.all(color: tagColor.withOpacity(0.3))),
-              child: Text(tag, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: tagColor)),
+              child: Text(tag, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: tagColor)),
             ),
           ]),
           
@@ -654,7 +677,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 children: [
                   const Icon(LucideIcons.lightbulb, size: 11, color: Colors.amber),
                   const SizedBox(width: 6),
-                  const Text("Builder requested feedback", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber)),
+                  const Text("Builder requested feedback", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.amber)),
                 ],
               ),
             ),
@@ -690,7 +713,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                 const SizedBox(width: 6),
                 Text(
                   _loadingSummaries.contains(updateId) ? 'Summarizing...' : 'TL;DR Summary', 
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber)
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.amber)
                 ),
               ],
             ),
@@ -726,7 +749,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('${insight['observer_name']} said:', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                                Text('${insight['observer_name']} said:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                                 const SizedBox(height: 2),
                                 Text(insight['text'], style: TextStyle(fontSize: 11, color: context.themeColors.textPrimary)),
                               ],
@@ -892,7 +915,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                           roomTitle,
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
@@ -954,16 +977,40 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _buildSectionLabel('Trending Now'),
       _isWatchingLoading
-          ? const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8), child: LinearProgressIndicator())
-          : SizedBox(
-              height: 220,
+          ? const Center(child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(),
+            ))
+          : _watchingNow.isEmpty
+              ? Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: context.themeColors.surfaceHighlight.withOpacity(0.5),
+                    border: Border.all(color: context.themeColors.borderSubtle),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.compass, size: 20, color: context.themeColors.primary500),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'No followed rooms yet. Follow rooms from the suggestions below or Explore to track them here.',
+                          style: TextStyle(fontSize: 12, color: context.themeColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : SizedBox(
+                  height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _watchingNow.length < 3 ? 3 : _watchingNow.length,
+                itemCount: _watchingNow.length,
                 itemBuilder: (context, i) {
-                  final isDummy = i >= _watchingNow.length;
-                  final room = isDummy ? {'title': 'Trending Startup ${i+1}', 'id': null, 'update_count': i * 4 + 2} : _watchingNow[i];
+                  final room = _watchingNow[i];
                   final title = room['title']?.toString() ?? 'Room';
                   
                   final status = room['status']?.toString() ?? 'active';
@@ -985,12 +1032,10 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                       } else {
                         isIdle = true;
                       }
-                    } else if (!isDummy) {
-                        isIdle = true;
+                    } else {
+                      isIdle = true;
                     }
                   }
-
-                  if (isDummy) isLive = true; // For dummy data
                   
                   return GestureDetector(
                     onTap: () { if (room['id'] != null) Navigator.push(context, MaterialPageRoute(builder: (_) => RoomDetailScreen(roomId: room['id'].toString(), title: title))); },
@@ -1025,7 +1070,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
 
                                 Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
                                 const SizedBox(height: 4),
-                                Text('${room['update_count'] ?? (i * 4 + 2)} updates', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
+                                Text('${room['update_count'] ?? 0} updates', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                               ],
                             ),
                           ),
@@ -1055,11 +1100,11 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6), padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(color: context.themeColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: context.themeColors.borderSubtle)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tag.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: Colors.amber.shade600)),
+            Text(tag.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: Colors.amber.shade600)),
             const SizedBox(height: 4),
             Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
             const SizedBox(height: 4),
-            Text('$updateCount updates \u00b7 $observerCount observers', style: TextStyle(fontSize: 9, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
+            Text('$updateCount updates \u00b7 $observerCount observers', style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: context.themeColors.textTertiary)),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -1286,7 +1331,7 @@ class _ObserverDashboardScreenState extends State<ObserverDashboardScreen> {
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Container(width: 7, height: 7, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)).animate(onPlay: (c) => c.repeat(reverse: true)).fade(begin: 0.3, end: 1.0),
                       const SizedBox(width: 8),
-                      Text('${_observerStats?['roomsFollowed'] ?? 0} rooms followed', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
+                      Text('${_observerStats?['roomsFollowed'] ?? 0} rooms followed', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary)),
                     ]),
                   ),
                 ),
@@ -1370,7 +1415,7 @@ class _Badge extends StatelessWidget {
       decoration: BoxDecoration(color: color.withOpacity(0.1), border: Border.all(color: color.withOpacity(0.2)), borderRadius: BorderRadius.circular(12)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         if (icon != null) ...[Icon(icon, size: 8, color: color), const SizedBox(width: 4)],
-        Text(text, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: color)),
+        Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: color)),
       ]),
     );
   }

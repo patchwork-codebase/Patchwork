@@ -48,24 +48,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> with SingleTi
     final client = Supabase.instance.client;
     Map<String, dynamic>? profile;
 
-    // 1. Try fetching with pinned_update join
     try {
       profile = await client
           .from('users')
-          .select(
-              '*, pinned_update:updates!pinned_update_id(*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url), original_update:repost_id(*, users(name, avatar, is_verified_expert, organization_logo_url)), polls(*, poll_options(*)))')
+          .select('*')
           .eq('id', widget.userId)
           .maybeSingle();
-    } catch (_) {
-      // 2. Fallback to clean select without pinned_update join in case of schema/foreign key issues
-      try {
-        profile = await client
-            .from('users')
-            .select('*')
-            .eq('id', widget.userId)
-            .maybeSingle();
-      } catch (_) {}
-    }
+    } catch (_) {}
 
     if (profile != null) {
       // Sanitize avatar if it contains stale cartoon image

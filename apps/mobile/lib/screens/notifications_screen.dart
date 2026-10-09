@@ -415,7 +415,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               : null,
                                         ),
                                         child: (actor['avatar'] == null || actor['avatar'].toString().isEmpty)
-                                            ? Center(child: Text(actorName.substring(0, 1).toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold)))
+                                            ? Center(child: Text(actorName.substring(0, 1).toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)))
                                             : null,
                                       ),
                                     ),

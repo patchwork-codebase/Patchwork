@@ -10,8 +10,8 @@ interface SEOProps {
 export function SEO({
   title = "Patchwork - Build in public. For real.",
   description = "Where builders share the messy truth. Not the polished launch. The decisions. The pivots. The things you thought would work and didn't.",
-  image = "https://patchwork-app.com/og-image.jpg",
-  url = "https://patchwork-app.com"
+  image = "https://www.joinpatchwork.xyz/og-image.jpg",
+  url = "https://www.joinpatchwork.xyz"
 }: SEOProps) {
   return (
     <Helmet>

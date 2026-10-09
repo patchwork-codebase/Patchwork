@@ -137,7 +137,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                                 children: [
                                   Text(
                                     'CURRENT LEVEL', 
-                                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.primary400, letterSpacing: 1.5)
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.primary400, letterSpacing: 1.5)
                                   ),
                                   const SizedBox(width: 4),
                                   Icon(LucideIcons.sparkles, size: 10, color: Colors.amber),
@@ -184,7 +184,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                   children: [
                     Icon(LucideIcons.trendingUp, size: 11, color: context.themeColors.textTertiary),
                     const SizedBox(width: 6),
-                    Text('NEXT MILESTONE', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
+                    Text('NEXT MILESTONE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -226,7 +226,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                                     const SizedBox(height: 2),
                                     Text(
                                       nextLevel['description'] ?? 'Earn more XP to unlock', 
-                                      style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary),
+                                      style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -237,7 +237,7 @@ class _DashboardAchievementsState extends State<DashboardAchievements> {
                                 text: TextSpan(
                                   children: [
                                     TextSpan(text: '$_currentReputation', style: TextStyle(fontWeight: FontWeight.w900, color: context.themeColors.textPrimary, fontSize: 11)),
-                                    TextSpan(text: ' / ${nextLevel['points_required']} XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 10)),
+                                    TextSpan(text: ' / ${nextLevel['points_required']} XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 11)),
                                   ],
                                 ),
                               ),

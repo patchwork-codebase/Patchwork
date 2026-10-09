@@ -6,6 +6,7 @@ import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:video_compress/video_compress.dart';
 import 'dart:typed_data';
 import 'dart:math';
 import '../theme.dart';
@@ -42,7 +43,10 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
   
   final List<PlatformFile> _selectedMediaList = [];
   final List<Uint8List> _mediaBytesList = [];
+  final List<Uint8List> _previewBytesList = [];
   bool _isUploadingMedia = false;
+  double _uploadProgress = 0.0;
+  String _uploadStatus = '';
 
   // Poll state
   bool _hasPoll = false;
@@ -68,6 +72,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
     'open_question': {'label': 'Question', 'icon': LucideIcons.helpCircle, 'color': Colors.lightBlue},
     'spotlight': {'label': 'Spotlight (Observer)', 'icon': LucideIcons.star, 'color': Colors.purpleAccent},
     'rfb': {'label': 'Request for Builder', 'icon': LucideIcons.target, 'color': Colors.cyanAccent},
+    'challenge': {'label': 'Daily Challenge', 'icon': LucideIcons.code, 'color': Colors.orangeAccent},
   };
 
   @override
@@ -141,9 +146,29 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
       final filesToAdd = result.files.take(remainingSlots).toList();
       for (final file in filesToAdd) {
         if (file.bytes != null) {
+          final fileExt = (file.extension ?? file.name.split('.').last).toLowerCase();
+          final isVideo = fileExt == 'mp4' || fileExt == 'mov';
+          
+          Uint8List displayBytes = file.bytes!;
+          if (isVideo && file.path != null) {
+            try {
+              final thumbBytes = await VideoCompress.getByteThumbnail(
+                file.path!,
+                quality: 50,
+                position: -1,
+              );
+              if (thumbBytes != null) {
+                displayBytes = thumbBytes;
+              }
+            } catch (e) {
+              debugPrint('Thumbnail generation failed: $e');
+            }
+          }
+
           setState(() {
             _selectedMediaList.add(file);
             _mediaBytesList.add(file.bytes!);
+            _previewBytesList.add(displayBytes);
           });
         }
       }
@@ -248,7 +273,29 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
             } catch (e) {
               debugPrint('Image compression failed, using original bytes: $e');
             }
+          } else if ((fileExt == 'mp4' || fileExt == 'mov') && file.path != null) {
+            if (mounted) setState(() { _uploadStatus = 'Compressing video...'; _uploadProgress = 0.0; });
+            final subscription = VideoCompress.compressProgress$.subscribe((progress) {
+              if (mounted) setState(() => _uploadProgress = progress / 100);
+            });
+            try {
+              final MediaInfo? mediaInfo = await VideoCompress.compressVideo(
+                file.path!,
+                quality: VideoQuality.MediumQuality,
+                deleteOrigin: false,
+                includeAudio: true,
+              );
+              if (mediaInfo != null && mediaInfo.file != null) {
+                bytes = await mediaInfo.file!.readAsBytes();
+              }
+            } catch (e) {
+              debugPrint('Video compression failed: $e');
+            } finally {
+              subscription.unsubscribe();
+            }
           }
+          
+          if (mounted) setState(() { _uploadStatus = 'Uploading...'; _uploadProgress = 0.0; });
           
           final fileName = '${DateTime.now().millisecondsSinceEpoch}_${idx}_$userId.$fileExt';
           final filePath = 'updates/$fileName';
@@ -315,16 +362,17 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
           'update_id': updateId,
           'question': question,
           'expires_at': pollExpiresAt,
-        }).select('id').single();
+        }).select('id').maybeSingle();
 
-        final pollId = pollRes['id'];
+        final pollId = pollRes?['id'];
+        if (pollId != null) {
+          final optionsToInsert = validOptions.map((opt) => {
+            'poll_id': pollId,
+            'option_text': opt,
+          }).toList();
 
-        final optionsToInsert = validOptions.map((opt) => {
-          'poll_id': pollId,
-          'option_text': opt,
-        }).toList();
-
-        await Supabase.instance.client.from('poll_options').insert(optionsToInsert);
+          await Supabase.instance.client.from('poll_options').insert(optionsToInsert);
+        }
       }
 
       // Extract mentioned user IDs from markupText: @[display_name](id)
@@ -464,7 +512,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
               children: [
                 // Room Selector (Hidden for pure observers or if preselected)
                 if (rooms.isNotEmpty && widget.preselectedRoomId == null) ...[
-                  Text('ROOM', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text('ROOM', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                   const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -497,7 +545,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 if (rooms.isNotEmpty && widget.preselectedRoomId == null) const SizedBox(height: 32),
                 
                 // Update Type Selector
-                Text('TYPE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                Text('TYPE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -513,7 +561,19 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                       final isSelected = _selectedUpdateType == type;
                       
                       return GestureDetector(
-                        onTap: () => setState(() => _selectedUpdateType = type),
+                        onTap: () {
+                          setState(() {
+                            _selectedUpdateType = type;
+                            if (type == 'challenge') {
+                               final controller = _mentionsKey.currentState?.controller;
+                               if (controller != null && controller.text.trim().isEmpty) {
+                                  controller.text = '🎯 **Challenge Goal**:\n\n'
+                                      '📋 **Requirements**:\n- \n- \n\n'
+                                      '💡 **Resources / Hints**:\n';
+                               }
+                            }
+                          });
+                        },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           margin: const EdgeInsets.only(right: 12),
@@ -547,7 +607,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 
                 // Quoted Update Preview (if any)
                 if (widget.quotedUpdateId != null && widget.quotedUpdateContent != null) ...[
-                  Text('QUOTED UPDATE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text('QUOTED UPDATE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
@@ -584,7 +644,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                 ],
 
                 // Content Input
-                Text('YOUR THOUGHTS (MARKDOWN SUPPORTED)', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                Text('YOUR THOUGHTS (MARKDOWN SUPPORTED)', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
@@ -717,7 +777,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(data['full_name'], style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
-                                        Text('@${data['display']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
+                                        Text('@${data['display']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
                                       ],
                                     )
                                   ],
@@ -758,7 +818,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           const SizedBox(height: 12),
                           Text('Attach images (up to 4)', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text('JPG, PNG up to 5MB each', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
+                          Text('JPG, PNG up to 5MB each', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11)),
                         ],
                       ),
                     ),
@@ -774,7 +834,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                             'ATTACHMENTS (${_selectedMediaList.length}/4)',
                             style: TextStyle(
                               color: context.themeColors.textSecondary,
-                              fontSize: 10,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.2,
                             ),
@@ -787,7 +847,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                 style: TextStyle(
                                   color: context.themeColors.primary500,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 10,
+                                  fontSize: 11,
                                 ),
                               ),
                             ),
@@ -822,7 +882,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                       const SizedBox(height: 6),
                                       Text(
                                         'Add',
-                                        style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold),
+                                        style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -830,18 +890,29 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               );
                             }
 
-                            final bytes = _mediaBytesList[index];
+                            final bytes = _previewBytesList[index];
                                   final fileName = _selectedMediaList[index].name.toLowerCase();
                                   final isVideo = fileName.endsWith('.mp4') || fileName.endsWith('.mov');
                                   final isDoc = fileName.endsWith('.pdf') || fileName.endsWith('.doc') || fileName.endsWith('.docx') || fileName.endsWith('.txt');
                                   
                                   Widget mediaPreview;
-                                  if (isVideo) {
-                                    mediaPreview = Center(child: Icon(LucideIcons.video, size: 40, color: context.themeColors.textSecondary));
-                                  } else if (isDoc) {
+                                  if (isDoc) {
                                     mediaPreview = Center(child: Icon(LucideIcons.fileText, size: 40, color: context.themeColors.textSecondary));
                                   } else {
-                                    mediaPreview = Image.memory(bytes, fit: BoxFit.cover);
+                                    mediaPreview = Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        Image.memory(bytes, fit: BoxFit.cover),
+                                        if (isVideo)
+                                          Center(
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                              child: const Icon(LucideIcons.play, color: Colors.white, size: 20),
+                                            ),
+                                          ),
+                                      ],
+                                    );
                                   }
 
                                   return Stack(
@@ -868,7 +939,24 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Center(
-                                      child: CircularProgressIndicator(color: context.themeColors.primary500, strokeWidth: 2.5),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            value: _uploadProgress > 0 ? _uploadProgress : null,
+                                            color: context.themeColors.primary500,
+                                            strokeWidth: 2.5,
+                                          ),
+                                          if (_uploadStatus.isNotEmpty) ...[
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              _uploadStatus,
+                                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 Positioned(
@@ -880,6 +968,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                         setState(() {
                                           _selectedMediaList.removeAt(index);
                                           _mediaBytesList.removeAt(index);
+                                          _previewBytesList.removeAt(index);
                                         });
                                       }
                                     },
@@ -955,7 +1044,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                     'Ask observers to vote on decisions',
                                     style: TextStyle(
                                       color: context.themeColors.textTertiary,
-                                      fontSize: 9,
+                                      fontSize: 11,
                                     ),
                                   ),
                                 ],
@@ -982,7 +1071,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           'POLL QUESTION',
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),
@@ -1014,7 +1103,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           'OPTIONS (2–4)',
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),
@@ -1097,7 +1186,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                     style: TextStyle(
                                       color: context.themeColors.primary500,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 10,
+                                      fontSize: 11,
                                     ),
                                   ),
                                 ],
@@ -1115,7 +1204,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               'Poll Duration',
                               style: TextStyle(
                                 color: context.themeColors.textSecondary,
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1123,7 +1212,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                               value: _pollDurationDays,
                               dropdownColor: context.themeColors.surface,
                               underline: const SizedBox.shrink(),
-                              style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 10),
+                              style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 11),
                               items: const [
                                 DropdownMenuItem(value: 1, child: Text('1 Day')),
                                 DropdownMenuItem(value: 3, child: Text('3 Days')),
@@ -1194,7 +1283,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                                     'Link your design file',
                                     style: TextStyle(
                                       color: context.themeColors.textTertiary,
-                                      fontSize: 9,
+                                      fontSize: 11,
                                     ),
                                   ),
                                 ],
@@ -1218,7 +1307,7 @@ class _CreateUpdateScreenState extends State<CreateUpdateScreen> {
                           'FIGMA URL',
                           style: TextStyle(
                             color: context.themeColors.textSecondary,
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
                           ),

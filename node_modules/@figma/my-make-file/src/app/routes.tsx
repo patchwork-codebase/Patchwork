@@ -40,24 +40,47 @@ const RouteErrorBoundary = () => {
     sessionStorage.removeItem("chunk-reload-count");
   } catch (e) {}
 
+  const isNotFound = error?.status === 404 || 
+                     error?.statusText === "Not Found" || 
+                     error?.data?.includes?.("No route matches") ||
+                     error?.message?.includes?.("No route matches");
+
+  const title = isNotFound ? "Page Not Found" : "Something went wrong";
+  const description = isNotFound
+    ? "The page or profile you are looking for doesn't exist, or has been moved."
+    : (error?.message && !error.message.includes("Postgrest")
+        ? error.message
+        : "We encountered an unexpected issue while trying to load this screen.");
+
   return (
     <div className="min-h-screen bg-[#0E0C15] flex items-center justify-center p-4">
       <div className="bg-[#1C1A24] border border-white/[0.08] rounded-2xl p-8 max-w-md w-full text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <h1 className="text-2xl font-bold text-white mb-3">Something went wrong</h1>
-        <p className="text-slate-400 text-[15px] mb-8 leading-relaxed break-words whitespace-pre-wrap">
-          {error?.message || (typeof error === 'string' ? error : error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : null) || "We encountered an unexpected error while trying to load this screen."}
+        <h1 className="text-2xl font-bold text-white mb-3">{title}</h1>
+        <p className="text-slate-400 text-[15px] mb-8 leading-relaxed break-words">
+          {description}
         </p>
-        <button
-          onClick={() => {
-            try {
-              sessionStorage.removeItem("chunk-reload-count");
-            } catch (e) {}
-            window.location.reload();
-          }}
-          className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.98]"
-        >
-          Reload Page
-        </button>
+        <div className="flex flex-col gap-3">
+          {isNotFound ? (
+            <a
+              href="/"
+              className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.98]"
+            >
+              Go to Home
+            </a>
+          ) : (
+            <button
+              onClick={() => {
+                try {
+                  sessionStorage.removeItem("chunk-reload-count");
+                } catch (e) {}
+                window.location.reload();
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold py-3.5 px-6 rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.98]"
+            >
+              Reload Page
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -80,6 +103,28 @@ export const router = createBrowserRouter([
       },
       {
         path: "/u/:username",
+        lazy: () => import("./components/portfolio/BuilderPortfolioView").then(m => ({ Component: m.BuilderPortfolioView })),
+      },
+      {
+        path: "/u/:username/pow",
+        lazy: () => import("./components/portfolio/BuilderPortfolioView").then(m => ({ Component: m.BuilderPortfolioView })),
+      },
+      // Handle-style URLs (/@username, /@username/pow). React Router does not support
+      // partial dynamic segments ("/@:username"), so match the whole segment and require "@".
+      {
+        path: "/:username",
+        loader: ({ params }) => {
+          if (!params.username?.startsWith("@")) throw new Response("Not Found", { status: 404 });
+          return null;
+        },
+        lazy: () => import("./components/portfolio/BuilderPortfolioView").then(m => ({ Component: m.BuilderPortfolioView })),
+      },
+      {
+        path: "/:username/pow",
+        loader: ({ params }) => {
+          if (!params.username?.startsWith("@")) throw new Response("Not Found", { status: 404 });
+          return null;
+        },
         lazy: () => import("./components/portfolio/BuilderPortfolioView").then(m => ({ Component: m.BuilderPortfolioView })),
       },
       {

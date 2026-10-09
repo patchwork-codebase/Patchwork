@@ -34,6 +34,20 @@ class BrandIcon {
 </svg>
 ''';
 
+  // Official Figma Mark
+  static const String _figmaSvg = '''
+<svg viewBox="0 0 24 24" width="24" height="24">
+  <path fill="currentColor" d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5zm7-3.5h3.5a3.5 3.5 0 1 1 0 7H12V2zm-7 10.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5zm7 0a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0zm-7 7A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 0 1-7 0z"/>
+</svg>
+''';
+
+  // Official Notion 'N' Mark
+  static const String _notionSvg = '''
+<svg viewBox="0 0 24 24" width="24" height="24">
+  <path fill="currentColor" d="M4.459 4.208c.746.606 1.026.56 2.428.466l11.246-.84c1.167-.093 1.354.373.98 1.12l-2.614 4.013v10.362c0 .933-.56 1.493-1.68 1.586l-10.873.747c-.84.093-1.307-.28-1.307-.933V6.262c0-.933.467-1.493 1.82-2.054zm1.96 2.52v12.23l9.055-.653V6.075l-9.055.653zm1.68 1.773l1.867-.14 3.454 5.974V7.94l1.68-.093v7.373l-1.96.14-3.454-5.973v5.88l-1.587.093V8.5z"/>
+</svg>
+''';
+
   // Official Full-Color Google "G"
   static const String _googleSvg = '''
 <svg viewBox="0 0 24 24" width="24" height="24">
@@ -47,6 +61,24 @@ class BrandIcon {
   static Widget x({double size = 16, Color color = Colors.white}) {
     return SvgPicture.string(
       _xSvg,
+      width: size,
+      height: size,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+    );
+  }
+
+  static Widget figma({double size = 16, Color color = Colors.white}) {
+    return SvgPicture.string(
+      _figmaSvg,
+      width: size,
+      height: size,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+    );
+  }
+
+  static Widget notion({double size = 16, Color color = Colors.white}) {
+    return SvgPicture.string(
+      _notionSvg,
       width: size,
       height: size,
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),

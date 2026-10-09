@@ -87,13 +87,14 @@ class BuilderCardDialog extends StatefulWidget {
 class _BuilderCardDialogState extends State<BuilderCardDialog> {
   final GlobalKey _cardKey = GlobalKey();
   bool _isExporting = false;
+  bool _isLandscapeRatio = false;
 
   String get _usernameSlug {
     final cleaned = widget.name.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase();
     return cleaned.isNotEmpty ? cleaned : 'builder';
   }
 
-  String get _publicPowUrl => 'https://patchwork.app/@$_usernameSlug/pow';
+  String get _publicPowUrl => 'https://www.joinpatchwork.xyz/@$_usernameSlug/pow';
 
   Future<void> _shareImage() async {
     if (_isExporting) return;
@@ -123,14 +124,14 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
           XFile.fromData(
             pngBytes,
             mimeType: 'image/png',
-            name: 'patchwork_builder_card_$_usernameSlug.png',
+            name: 'patchwork_certificate_${_isLandscapeRatio ? "landscape" : "portrait"}_$_usernameSlug.png',
           ),
         ],
         text: shareText,
       );
 
       if (mounted) {
-        ToastService.show(context, 'Builder Card exported successfully');
+        ToastService.show(context, 'Certificate exported successfully');
       }
     } catch (e) {
       if (mounted) {
@@ -153,15 +154,97 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: _isLandscapeRatio ? 12 : 20,
+        vertical: 20,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top Close row
+            // Top Controls row: Ratio switcher & Close
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Ratio Toggle Pill
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          if (_isLandscapeRatio) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _isLandscapeRatio = false);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: !_isLandscapeRatio ? Colors.white : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                LucideIcons.smartphone,
+                                size: 12,
+                                color: !_isLandscapeRatio ? const Color(0xFF0F172A) : Colors.white60,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Portrait',
+                                style: TextStyle(
+                                  color: !_isLandscapeRatio ? const Color(0xFF0F172A) : Colors.white60,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          if (!_isLandscapeRatio) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _isLandscapeRatio = true);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _isLandscapeRatio ? Colors.white : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                LucideIcons.monitor,
+                                size: 12,
+                                color: _isLandscapeRatio ? const Color(0xFF0F172A) : Colors.white60,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Diploma 16:9',
+                                style: TextStyle(
+                                  color: _isLandscapeRatio ? const Color(0xFF0F172A) : Colors.white60,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(LucideIcons.x, color: Colors.white70, size: 22),
@@ -170,135 +253,152 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
 
-            // ── The Capturable Card ─────────────────────────────────────────
+            // ── The Capturable Physical Archival Diploma ────────────────────
             RepaintBoundary(
               key: _cardKey,
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF07090E), Color(0xFF0F1420), Color(0xFF090D16)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFF1E293B), width: 1.5),
+                  color: const Color(0xFFFBF9F5), // Archival ivory parchment paper
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFD6D3D1), width: 1.5), // Outer blind deboss border
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.08),
-                      blurRadius: 30,
-                      spreadRadius: 2,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.6),
-                      blurRadius: 20,
+                      color: Colors.black.withOpacity(0.35),
+                      blurRadius: 28,
                       offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(22),
+                child: Container(
+                  margin: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE7E5E4), width: 0.8), // Inner hairline frame
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Header: Patchwork ID & Status Pulse
+                      // Institutional Top Header
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
                               Container(
-                                width: 28,
-                                height: 28,
+                                width: 22,
+                                height: 22,
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF10B981), Color(0xFF065F46)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFF292524), width: 1.2),
                                 ),
                                 child: const Center(
-                                  child: Icon(LucideIcons.zap, color: Colors.white, size: 16),
+                                  child: Text(
+                                    'P',
+                                    style: TextStyle(
+                                      color: Color(0xFF1C1917),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      fontFamily: 'serif',
+                                    ),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 7),
                               const Text(
-                                'PATCHWORK',
+                                'PATCHWORK PROTOCOL',
                                 style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.5,
+                                  color: Color(0xFF292524),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.6,
                                 ),
                               ),
                             ],
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  widget.mode == BuilderCardMode.battle ? 'BATTLE DEPLOYED' : 'VERIFIED PROOF',
-                                  style: const TextStyle(
-                                    color: Color(0xFF10B981),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            'FOLIO № PW-${widget.reputationPoints.toString().padLeft(4, '0')}',
+                            style: const TextStyle(
+                              color: Color(0xFF78716C),
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.8,
                             ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
 
-                      // User Identity Block
+                      // Classical Diploma Title
+                      const Text(
+                        'CERTIFICATE OF PROOF OF WORK',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF1C1917),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'serif',
+                          letterSpacing: 1.8,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        width: 48,
+                        height: 1,
+                        color: const Color(0xFF78716C),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'IN RECOGNITION OF VERIFIED PRODUCT EXECUTION & PEER CONSENSUS',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF78716C),
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.4,
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Recipient Section (Honoree)
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircleAvatar(
-                            radius: 26,
-                            backgroundColor: const Color(0xFF1E293B),
-                            backgroundImage: widget.avatar != null && widget.avatar!.isNotEmpty
-                                ? CachedNetworkImageProvider(widget.avatar!)
-                                : null,
-                            child: widget.avatar == null || widget.avatar!.isEmpty
-                                ? Text(
-                                    widget.name.isNotEmpty ? widget.name[0].toUpperCase() : 'B',
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
+                          if (widget.avatar != null && widget.avatar!.isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFFD6D3D1), width: 1.2),
+                              ),
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: const Color(0xFFE7E5E4),
+                                backgroundImage: CachedNetworkImageProvider(widget.avatar!),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                          ],
+                          Flexible(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
                                   widget.name,
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.2,
+                                    color: Color(0xFF1C1917),
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'serif',
+                                    letterSpacing: 0.2,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -308,10 +408,12 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
                                   widget.organization.isNotEmpty
                                       ? '${widget.seniority} · ${widget.organization}'
                                       : widget.seniority,
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF57534E),
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -319,65 +421,48 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
                               ],
                             ),
                           ),
-                          // Rep Pill
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B).withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.4)),
-                            ),
-                            child: Column(
-                              children: [
-                                const Text(
-                                  'REP',
-                                  style: TextStyle(
-                                    color: Color(0xFFF59E0B),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.6,
-                                  ),
-                                ),
-                                Text(
-                                  '${widget.reputationPoints}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
 
-                      const SizedBox(height: 18),
-                      const Divider(color: Color(0xFF1E293B), height: 1),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
-                      // Card Content Based on Mode
+                      // Content Based on Mode
                       if (widget.mode == BuilderCardMode.global)
                         _buildGlobalContent()
                       else
                         _buildBattleContent(),
 
-                      const SizedBox(height: 20),
-                      const Divider(color: Color(0xFF1E293B), height: 1),
                       const SizedBox(height: 14),
 
-                      // Footer URL strip
+                      // Diploma Attestation & Seal Footer
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Row(
+                          // Left: Registrar & Consensus Signature
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(LucideIcons.globe, color: Color(0xFF64748B), size: 12),
-                              const SizedBox(width: 5),
+                              const Row(
+                                children: [
+                                  Icon(LucideIcons.checkCheck, color: Color(0xFF059669), size: 12),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'ATTESTED VIA CONSENSUS',
+                                    style: TextStyle(
+                                      color: Color(0xFF44403C),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
                               Text(
-                                'patchwork.app/@$_usernameSlug/pow',
+                                'joinpatchwork.xyz/@$_usernameSlug/pow',
                                 style: const TextStyle(
-                                  color: Color(0xFF64748B),
+                                  color: Color(0xFF78716C),
                                   fontSize: 11,
                                   fontFamily: 'monospace',
                                   fontWeight: FontWeight.w600,
@@ -385,13 +470,44 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
                               ),
                             ],
                           ),
-                          const Text(
-                            'LIVING PROOF OF WORK',
-                            style: TextStyle(
-                              color: Color(0xFF475569),
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.0,
+
+                          // Right: Classical Circular Embossed Seal
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F4),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFD6D3D1), width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.award, color: Color(0xFF1C1917), size: 13),
+                                const SizedBox(width: 5),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'VERIFIED',
+                                      style: TextStyle(
+                                        color: Color(0xFF1C1917),
+                                        fontSize: 7.5,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    Text(
+                                      'REP: ${widget.reputationPoints}',
+                                      style: const TextStyle(
+                                        color: Color(0xFF57534E),
+                                        fontSize: 11,
+                                        fontFamily: 'monospace',
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -428,11 +544,11 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                         : const Icon(LucideIcons.share2, size: 16, color: Colors.white),
                     label: Text(
-                      _isExporting ? 'Generating...' : 'Export Builder Card ↗',
+                      _isExporting ? 'Generating...' : 'Export Certificate ↗',
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: const Color(0xFF0F172A), // Premium dark executive button
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -455,60 +571,110 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
       'Risk Mit.': 90,
     };
 
+    final entries = metrics.entries.toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        // Transcript Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(LucideIcons.radar, color: Color(0xFF10B981), size: 14),
-            SizedBox(width: 6),
-            Text(
-              'STRATEGIC CAPABILITY PROFILE',
+            const Text(
+              'ASSESSED COMPETENCY TRANSCRIPT',
               style: TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 10.5,
+                color: Color(0xFF78716C),
+                fontSize: 11.5,
                 fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
+                letterSpacing: 1.0,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE7E5E4),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: const Text(
+                'PEER EVALUATED',
+                style: TextStyle(
+                  color: Color(0xFF44403C),
+                  fontSize: 7.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        // Capability Matrix Bars
-        ...metrics.entries.map((entry) {
-          final double val = (entry.value / 100).clamp(0.0, 1.0);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      entry.key,
-                      style: const TextStyle(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.w600),
+        const SizedBox(height: 8),
+
+        // Clean 2-column tabular diploma transcript
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final colWidth = (constraints.maxWidth - 8) / 2;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: entries.map((entry) {
+                final double val = (entry.value / 100).clamp(0.0, 1.0);
+                return SizedBox(
+                  width: colWidth,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFE7E5E4)),
                     ),
-                    Text(
-                      '${entry.value}%',
-                      style: const TextStyle(color: Color(0xFF10B981), fontSize: 11.5, fontWeight: FontWeight.w800),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                entry.key,
+                                style: const TextStyle(
+                                  color: Color(0xFF292524),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              '${entry.value}%',
+                              style: const TextStyle(
+                                color: Color(0xFF1C1917),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        // Understated ink gauge on paper
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: val,
+                            minHeight: 2.5,
+                            backgroundColor: const Color(0xFFF5F5F4),
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF292524)),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: LinearProgressIndicator(
-                    value: val,
-                    minHeight: 5,
-                    backgroundColor: const Color(0xFF1E293B),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                   ),
-                ),
-              ],
-            ),
-          );
-        }),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ],
     );
   }
@@ -519,63 +685,61 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
       children: [
         if (widget.challengeTitle != null) ...[
           Container(
-            padding: const EdgeInsets.all(10),
+            width: double.infinity,
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF1E293B)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFFE7E5E4)),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(LucideIcons.swords, color: Color(0xFFF59E0B), size: 14),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.challengeTitle!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                const Text(
+                  'EXAMINED SCENARIO',
+                  style: TextStyle(
+                    color: Color(0xFF78716C),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
                   ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  widget.challengeTitle!,
+                  style: const TextStyle(
+                    color: Color(0xFF1C1917),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
 
-        // Chosen Move
+        // Executed Move
         if (widget.chosenOptionTitle != null) ...[
-          const Text(
-            'EXECUTED MOVE',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 9.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 4),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+              color: const Color(0xFFF5F5F4),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFFD6D3D1)),
             ),
             child: Row(
               children: [
-                const Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 14),
-                const SizedBox(width: 8),
+                const Icon(LucideIcons.check, color: Color(0xFF059669), size: 13),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     widget.chosenOptionTitle!,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1C1917),
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -586,37 +750,31 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
 
         // Confrontation & Defense
         if (widget.stakeholderPersona != null) ...[
-          Row(
-            children: [
-              const Icon(LucideIcons.shieldAlert, color: Color(0xFFF43F5E), size: 13),
-              const SizedBox(width: 6),
-              Text(
-                'CONFRONTED: ${widget.stakeholderPersona!.toUpperCase()}',
-                style: const TextStyle(
-                  color: Color(0xFFF43F5E),
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.6,
-                ),
-              ),
-            ],
+          Text(
+            'OPPOSING STAKEHOLDER: ${widget.stakeholderPersona!.toUpperCase()}',
+            style: const TextStyle(
+              color: Color(0xFF78716C),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
         ],
 
         if (widget.defenseRationale != null && widget.defenseRationale!.isNotEmpty) ...[
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E293B).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF334155)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFFE7E5E4)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,18 +782,18 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
                 const Text(
                   'DEFENSE RATIONALE',
                   style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 8.5,
+                    color: Color(0xFF78716C),
+                    fontSize: 7.5,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   '"${widget.defenseRationale!}"',
                   style: const TextStyle(
-                    color: Color(0xFFE2E8F0),
-                    fontSize: 11,
+                    color: Color(0xFF292524),
+                    fontSize: 11.5,
                     fontStyle: FontStyle.italic,
                     height: 1.35,
                   ),
@@ -646,25 +804,25 @@ class _BuilderCardDialogState extends State<BuilderCardDialog> {
         ],
 
         if (widget.isEndorsed) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
+              color: const Color(0xFFF5F5F4),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFFD6D3D1)),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 13),
-                SizedBox(width: 6),
+                Icon(LucideIcons.award, color: Color(0xFFB45309), size: 12),
+                SizedBox(width: 5),
                 Text(
-                  'SENIOR CREATOR ENDORSED',
+                  'PEER ACCREDITATION ENDORSED',
                   style: TextStyle(
-                    color: Color(0xFFF59E0B),
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF92400E),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
                   ),
                 ),

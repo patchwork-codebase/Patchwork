@@ -5,6 +5,8 @@ import '../theme.dart';
 import '../screens/welcome_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import '../screens/profile_screen.dart';
+import '../screens/achievements_screen.dart';
+import '../screens/discovery_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -178,7 +180,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
             const SizedBox(height: 8),
             Text(value, style: TextStyle(color: context.themeColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+            Text(label, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
           ],
         ),
       ),
@@ -193,7 +195,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 12, bottom: 8),
-            child: Text(title, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.5)),
+            child: Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.5)),
           ),
           Container(
             decoration: const BoxDecoration(
@@ -228,10 +230,10 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              Icon(icon, size: 13, color: context.themeColors.textSecondary),
+              Icon(icon, size: 13, color: color ?? context.themeColors.textSecondary),
               const SizedBox(width: 16),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary))),
-              if (trailing != null) trailing else Icon(LucideIcons.chevronRight, size: 13, color: context.themeColors.textTertiary),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color ?? context.themeColors.textPrimary))),
+              if (trailing != null) trailing else Icon(LucideIcons.chevronRight, size: 13, color: color ?? context.themeColors.textTertiary),
             ],
           ),
         ),
@@ -311,7 +313,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                             else
                               Text(displayName, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: context.themeColors.textPrimary)),
                             const SizedBox(height: 4),
-                            Text(email, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.w500)),
+                            Text(email, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w500)),
                           ],
                         ),
                       ),
@@ -366,8 +368,20 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                       ),
                     ),
                   ),
-                  _buildSheetItem(LucideIcons.award, 'Achievements'),
+                  _buildSheetItem(LucideIcons.award, 'Achievements', onTap: () {
+                    final userId = Supabase.instance.client.auth.currentUser?.id;
+                    if (userId != null) {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => AchievementsScreen(userId: userId)));
+                    }
+                  }),
                 ]),
+                
+                if (_role == 'observer')
+                  _buildSheetSection('UPGRADE', [
+                    _buildSheetItem(LucideIcons.zap, 'Become a Builder', color: context.themeColors.primary500, onTap: () {
+                      showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Become a Builder'));
+                    }),
+                  ]),
                 
                 _buildSheetSection('PRODUCT OPS', [
                   _buildSheetItem(LucideIcons.map, 'Roadmap View', onTap: () {
@@ -380,7 +394,7 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
 
                 _buildSheetSection('EXPLORE', [
                   _buildSheetItem(LucideIcons.lightbulb, 'Discovery Mode', onTap: () {
-                    showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Discovery Mode'));
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const DiscoveryScreen()));
                   }),
                   _buildSheetItem(LucideIcons.badge, 'Expert Directory', onTap: () {
                     showDialog(context: context, builder: (_) => const ComingSoonDialog(featureName: 'Expert Directory'));
@@ -396,9 +410,9 @@ class _ProfileSheetState extends ConsumerState<ProfileSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.w600)),
-                    Text('-', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.w600)),
-                    Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.w600)),
+                    Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text('-', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
                   ],
                 ),
                 const SizedBox(height: 16),

@@ -140,7 +140,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title Input
-            Text('ROOM TITLE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('ROOM TITLE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -163,7 +163,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Description Input
-            Text('DESCRIPTION', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('DESCRIPTION', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -187,7 +187,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Tags Selector
-            Text('TAGS', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('TAGS', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -218,7 +218,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                       style: TextStyle(
                         color: isSelected ? context.themeColors.primary500 : context.themeColors.textSecondary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 10,
+                        fontSize: 11,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -230,7 +230,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Project Stage Selector
-            Text('PROJECT STAGE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('PROJECT STAGE', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -265,7 +265,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                             style: TextStyle(
                               color: isSelected ? stageColor : context.themeColors.textSecondary,
                               fontWeight: FontWeight.bold,
-                              fontSize: 9,
+                              fontSize: 11,
                               letterSpacing: 0.6,
                             ),
                           ),
@@ -280,7 +280,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Primary Link Input
-            Text('PRIMARY LINK', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('PRIMARY LINK', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -303,7 +303,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             const SizedBox(height: 32),
 
             // Cover Image URL Input
-            Text('COVER IMAGE URL', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            Text('COVER IMAGE URL', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
@@ -344,7 +344,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Private Room', style: TextStyle(color: context.themeColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
-                          Text('Only you and invited members can view', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
+                          Text('Only you and invited members can view', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11)),
                         ],
                       ),
                     ],

@@ -118,6 +118,7 @@ class _FeedScreenState extends State<FeedScreen> {
           .eq('follower_id', userId);
       if (mounted) {
         setState(() {
+          _followingBuilders.clear();
           for (final row in res) {
             _followingBuilders.add(row['following_id']);
           }
@@ -129,18 +130,26 @@ class _FeedScreenState extends State<FeedScreen> {
   Future<void> _fetchSuggestedBuilders() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     try {
-      var query = Supabase.instance.client
-          .from('users')
-          .select('id, name, avatar, is_verified_expert, bio');
-          
-      if (userId != null) {
-        query = query.neq('id', userId);
-      }
+      if (userId == null) return;
       
-      final response = await query.limit(5);
+      // Ensure following list is loaded so we can filter correctly
+      if (_followingBuilders.isEmpty) {
+        await _fetchFollowing();
+      }
+
+      final response = await Supabase.instance.client
+          .from('users')
+          .select('id, name, avatar, is_verified_expert, bio')
+          .neq('id', userId)
+          .limit(30); // Fetch more so we have a good pool to filter from
+          
       if (mounted) {
         setState(() {
-          _suggestedBuilders = List<Map<String, dynamic>>.from(response);
+          final allUsers = List<Map<String, dynamic>>.from(response);
+          // Filter out people we already follow
+          final notFollowed = allUsers.where((u) => !_followingBuilders.contains(u['id'])).toList();
+          notFollowed.shuffle();
+          _suggestedBuilders = notFollowed.take(5).toList();
         });
       }
     } catch (_) {}
@@ -176,11 +185,14 @@ class _FeedScreenState extends State<FeedScreen> {
     }
 
     if (_activeViewToggle == 'Challenges') {
-      filterBuilder = filterBuilder.eq('update_type', 'simulation');
-    } else if (_activeViewToggle == 'Media') {
-      filterBuilder = filterBuilder.not('media_url', 'is', null);
-    } else if (_activeViewToggle == 'Launches') {
-      filterBuilder = filterBuilder.eq('rooms.update_count', 1);
+      filterBuilder = filterBuilder.eq('update_type', 'challenge');
+    } else {
+      filterBuilder = filterBuilder.neq('update_type', 'challenge');
+      if (_activeViewToggle == 'Media') {
+        filterBuilder = filterBuilder.not('media_url', 'is', null);
+      } else if (_activeViewToggle == 'Launches') {
+        filterBuilder = filterBuilder.eq('rooms.update_count', 1);
+      }
     }
 
     return filterBuilder.order('created_at', ascending: false);
@@ -498,7 +510,7 @@ class _FeedScreenState extends State<FeedScreen> {
                                       Text(
                                         'Test real-world trade-offs, earn +50 Rep per decision & build your PoW.',
                                         style: TextStyle(
-                                          fontSize: 10.5,
+                                          fontSize: 11.5,
                                           color: context.themeColors.textSecondary,
                                         ),
                                       ),
@@ -782,7 +794,7 @@ class _FeedScreenState extends State<FeedScreen> {
         child: Text(
           label.toUpperCase(),
           style: TextStyle(
-            fontSize: 9,
+            fontSize: 11,
             fontWeight: FontWeight.bold,
             color: isActive ? context.themeColors.surface : context.themeColors.textSecondary,
             letterSpacing: 1.0,
@@ -898,7 +910,7 @@ class _FeedScreenState extends State<FeedScreen> {
                             const SizedBox(height: 4),
                             Text(
                               builder['bio'] != null && builder['bio'].toString().isNotEmpty ? builder['bio'].toString() : 'Builder on Patchwork',
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
@@ -961,7 +973,7 @@ class _FeedScreenState extends State<FeedScreen> {
                                   minimumSize: const Size(0, 32),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
-                                child: Text(_followingBuilders.contains(builder['id']) ? 'Following' : 'Follow', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                child: Text(_followingBuilders.contains(builder['id']) ? 'Following' : 'Follow', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               ),
                             ),
                           ],

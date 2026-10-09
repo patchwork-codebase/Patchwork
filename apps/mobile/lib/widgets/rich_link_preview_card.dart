@@ -58,7 +58,7 @@ class RichLinkPreviewCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     url,
-                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10),
+                    style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -135,7 +135,7 @@ class RichLinkPreviewCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               _getDomain(url),
-                              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white70),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -159,7 +159,7 @@ class RichLinkPreviewCard extends StatelessWidget {
                         Text(
                           metadata.desc!,
                           style: const TextStyle(
-                            fontSize: 10,
+                            fontSize: 11,
                             color: Colors.white70,
                             height: 1.3,
                           ),

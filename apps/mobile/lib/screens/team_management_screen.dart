@@ -42,7 +42,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
           .from('rooms')
           .select('is_private')
           .eq('id', widget.roomId)
-          .single();
+          .maybeSingle();
 
       final membersResponse = await Supabase.instance.client
           .from('room_observers')
@@ -50,7 +50,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
           .eq('room_id', widget.roomId);
 
       List<Map<String, dynamic>> invites = [];
-      if (roomResponse['is_private'] == true) {
+      if (roomResponse?['is_private'] == true) {
         final invitesResponse = await Supabase.instance.client
             .from('room_invitations')
             .select('id, email, role, status')
@@ -61,7 +61,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
 
       if (mounted) {
         setState(() {
-          _isPrivateRoom = roomResponse['is_private'] == true;
+          _isPrivateRoom = roomResponse?['is_private'] == true;
           _members = List<Map<String, dynamic>>.from(membersResponse);
           _invites = invites;
           _isLoading = false;
@@ -227,7 +227,7 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(backgroundColor: context.themeColors.surfaceHighlight, child: Icon(LucideIcons.mail, color: context.themeColors.textSecondary, size: 13)),
                   title: Text(invite['email'], style: TextStyle(color: context.themeColors.textPrimary)),
-                  subtitle: Text('Role: ${invite['role']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10)),
+                  subtitle: Text('Role: ${invite['role']}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11)),
                   trailing: IconButton(
                     icon: const Icon(LucideIcons.x, color: Colors.redAccent),
                     onPressed: () => _revokeInvite(invite['id']),
@@ -259,10 +259,10 @@ class _TeamManagementScreenState extends State<TeamManagementScreen> {
                         final subtitleText = pmIdentity.isNotEmpty
                             ? '$pmIdentity · ${user['email'] ?? ''}'
                             : (user['email'] ?? '');
-                        return Text(subtitleText, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10));
+                        return Text(subtitleText, style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11));
                       },
                     ),
-                    trailing: Text(member['role'].toString().toUpperCase(), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 8, fontWeight: FontWeight.bold)),
+                    trailing: Text(member['role'].toString().toUpperCase(), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold)),
                   );
                 }),
               ],

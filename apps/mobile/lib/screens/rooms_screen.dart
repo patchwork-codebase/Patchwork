@@ -7,6 +7,10 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../theme.dart';
 import 'room_detail_screen.dart';
 import 'create_room_screen.dart';
+import '../widgets/brand_icon.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../widgets/toast_notification.dart';
+import '../services/cache_service.dart';
 
 class RoomsScreen extends StatefulWidget {
   const RoomsScreen({super.key});
@@ -14,11 +18,12 @@ class RoomsScreen extends StatefulWidget {
   @override
   State<RoomsScreen> createState() => _RoomsScreenState();
 }
-
 class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStateMixin {
-  late Future<List<Map<String, dynamic>>> _myRoomsFuture;
-  late Future<List<Map<String, dynamic>>> _observedRoomsFuture;
   late TabController _tabController;
+  List<Map<String, dynamic>> _myRooms = [];
+  List<Map<String, dynamic>> _observedRooms = [];
+  bool _isLoadingMyRooms = true;
+  bool _isLoadingObservedRooms = true;
   Map<String, dynamic>? _currentUserProfile;
   String _selectedActivityFilter = 'ALL';
 
@@ -33,9 +38,30 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _myRoomsFuture = _fetchMyRooms();
-    _observedRoomsFuture = _fetchObservedRooms();
+    _loadFromCache();
+    _fetchMyRooms();
+    _fetchObservedRooms();
     _fetchCurrentUserProfile();
+  }
+
+  Future<void> _loadFromCache() async {
+    try {
+      final cachedMyRooms = await CacheService().getJson('${CacheService.keyRooms}_my');
+      if (cachedMyRooms != null && cachedMyRooms is List && _myRooms.isEmpty) {
+        if (mounted) setState(() {
+          _myRooms = List<Map<String, dynamic>>.from(cachedMyRooms);
+          _isLoadingMyRooms = false;
+        });
+      }
+
+      final cachedObserved = await CacheService().getJson('${CacheService.keyRooms}_observed');
+      if (cachedObserved != null && cachedObserved is List && _observedRooms.isEmpty) {
+        if (mounted) setState(() {
+          _observedRooms = List<Map<String, dynamic>>.from(cachedObserved);
+          _isLoadingObservedRooms = false;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchCurrentUserProfile() async {
@@ -55,35 +81,97 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
     } catch (_) {}
   }
 
-  Future<List<Map<String, dynamic>>> _fetchMyRooms() async {
+  Future<void> _fetchMyRooms() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return [];
+    if (userId == null) {
+      if (mounted) setState(() => _isLoadingMyRooms = false);
+      return;
+    }
     
-    final response = await Supabase.instance.client
-        .from('rooms')
-        .select('id, title, description, created_at, last_update_at, tags, update_count, project_stage, room_observers(users(avatar, name))')
-        .eq('builder_id', userId)
-        .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(response);
+    try {
+      final response = await Supabase.instance.client
+          .from('rooms')
+          .select('id, title, description, created_at, last_update_at, tags, update_count, project_stage, primary_link, room_observers(users(avatar, name))')
+          .eq('builder_id', userId)
+          .order('created_at', ascending: false);
+          
+      if (mounted) {
+        setState(() {
+          _myRooms = List<Map<String, dynamic>>.from(response);
+          _isLoadingMyRooms = false;
+        });
+        CacheService().saveJson('${CacheService.keyRooms}_my', _myRooms);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingMyRooms = false);
+    }
   }
 
-  Future<List<Map<String, dynamic>>> _fetchObservedRooms() async {
+  Future<void> _fetchObservedRooms() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return [];
+    if (userId == null) {
+      if (mounted) setState(() => _isLoadingObservedRooms = false);
+      return;
+    }
     
-    final response = await Supabase.instance.client
-        .from('room_observers')
-        .select('rooms(id, title, description, created_at, last_update_at, tags, update_count, project_stage, room_observers(users(avatar, name)))')
-        .eq('observer_id', userId);
-        
-    final mapped = (response as List).map((row) {
-      final room = row['rooms'];
-      // Handle array or object just in case
-      if (room is List) return room.isNotEmpty ? room.first as Map<String, dynamic> : null;
-      return room as Map<String, dynamic>?;
-    }).where((r) => r != null).cast<Map<String, dynamic>>().toList();
-    
-    return mapped;
+    try {
+      final response = await Supabase.instance.client
+          .from('room_observers')
+          .select('rooms(id, title, description, created_at, last_update_at, tags, update_count, project_stage, primary_link, room_observers(users(avatar, name)))')
+          .eq('observer_id', userId);
+          
+      final mapped = (response as List).map((row) {
+        final room = row['rooms'];
+        if (room is List) return room.isNotEmpty ? room.first as Map<String, dynamic> : null;
+        return room as Map<String, dynamic>?;
+      }).where((r) => r != null).cast<Map<String, dynamic>>().toList();
+      
+      if (mounted) {
+        setState(() {
+          _observedRooms = mapped;
+          _isLoadingObservedRooms = false;
+        });
+        CacheService().saveJson('${CacheService.keyRooms}_observed', _observedRooms);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingObservedRooms = false);
+    }
+  }
+
+  void _openFigma(BuildContext context, Map<String, dynamic> room) {
+    final primary = room['primary_link']?.toString() ?? '';
+    final roomTitle = room['title'] ?? 'this room';
+    if (primary.contains('figma.com')) {
+      HapticFeedback.lightImpact();
+      launchUrl(Uri.parse(primary), mode: LaunchMode.externalApplication);
+    } else {
+      HapticFeedback.selectionClick();
+      ToastService.show(context, 'No Figma link configured for "$roomTitle"');
+    }
+  }
+
+  void _openNotion(BuildContext context, Map<String, dynamic> room) {
+    final primary = room['primary_link']?.toString() ?? '';
+    final roomTitle = room['title'] ?? 'this room';
+    if (primary.contains('notion.site') || primary.contains('notion.so')) {
+      HapticFeedback.lightImpact();
+      launchUrl(Uri.parse(primary), mode: LaunchMode.externalApplication);
+    } else {
+      HapticFeedback.selectionClick();
+      ToastService.show(context, 'No Notion docs configured for "$roomTitle"');
+    }
+  }
+
+  void _openGithub(BuildContext context, Map<String, dynamic> room) {
+    final primary = room['primary_link']?.toString() ?? '';
+    final roomTitle = room['title'] ?? 'this room';
+    if (primary.contains('github.com')) {
+      HapticFeedback.lightImpact();
+      launchUrl(Uri.parse(primary), mode: LaunchMode.externalApplication);
+    } else {
+      HapticFeedback.selectionClick();
+      ToastService.show(context, 'No GitHub repo configured for "$roomTitle"');
+    }
   }
 
   Map<String, dynamic> _getTagStyle(String tag) {
@@ -156,14 +244,8 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
           TabBarView(
             controller: _tabController,
             children: [
-              _buildFutureTab(_myRoomsFuture, () async {
-                setState(() => _myRoomsFuture = _fetchMyRooms());
-                await _myRoomsFuture;
-              }),
-              _buildFutureTab(_observedRoomsFuture, () async {
-                setState(() => _observedRoomsFuture = _fetchObservedRooms());
-                await _observedRoomsFuture;
-              }),
+              _buildRoomsTab(_myRooms, _isLoadingMyRooms, _fetchMyRooms),
+              _buildRoomsTab(_observedRooms, _isLoadingObservedRooms, _fetchObservedRooms),
             ],
           ),
         ],
@@ -171,25 +253,16 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildFutureTab(Future<List<Map<String, dynamic>>> future, Future<void> Function() onRefresh) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: context.themeColors.primary500));
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.redAccent)));
-        }
+  Widget _buildRoomsTab(List<Map<String, dynamic>> rooms, bool isLoading, Future<void> Function() onRefresh) {
+    if (isLoading && rooms.isEmpty) {
+      return Center(child: CircularProgressIndicator(color: context.themeColors.primary500));
+    }
 
-        final rooms = snapshot.data ?? [];
-        return RefreshIndicator(
-          onRefresh: onRefresh,
-          color: context.themeColors.primary500,
-          backgroundColor: context.themeColors.surfaceHighlight,
-          child: _buildRoomList(rooms),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      color: context.themeColors.primary500,
+      backgroundColor: context.themeColors.surfaceHighlight,
+      child: _buildRoomList(rooms),
     );
   }
 
@@ -231,10 +304,8 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const CreateRoomScreen()),
               ).then((_) {
-                setState(() {
-                  _myRoomsFuture = _fetchMyRooms();
-                  _observedRoomsFuture = _fetchObservedRooms();
-                });
+                _fetchMyRooms();
+                _fetchObservedRooms();
               });
             },
             icon: const Icon(LucideIcons.plus, size: 13),
@@ -352,9 +423,9 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                   // Meta Info
                   Row(
                     children: [
-                      Text('Day $daysActive', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.bold)),
+                      Text('Day $daysActive', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                       Text(' • ', style: TextStyle(color: context.themeColors.textTertiary)),
-                      Text('$updateCount updates', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 9, fontWeight: FontWeight.bold)),
+                      Text('$updateCount updates', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                       Text(' • ', style: TextStyle(color: context.themeColors.textTertiary)),
                       // Avatar pile
                       if (displayObservers.isNotEmpty)
@@ -378,11 +449,11 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                           ),
                         ),
                       if (totalObservers > displayObservers.length) ...[
-                        Text(' +${totalObservers - displayObservers.length}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text(' +${totalObservers - displayObservers.length}', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                       ],
                       if (totalObservers > 0)
                         Text(' • ', style: TextStyle(color: context.themeColors.textTertiary)),
-                      Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -391,22 +462,70 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.02),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withOpacity(0.05)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.brush, size: 11, color: context.themeColors.textSecondary),
-                            SizedBox(width: 12),
-                            Icon(Icons.view_kanban, size: 11, color: context.themeColors.textSecondary), // Notion substitute
-                            SizedBox(width: 12),
-                            Icon(Icons.code, size: 11, color: context.themeColors.textSecondary),
-                          ],
-                        ),
+                      Builder(
+                        builder: (ctx) {
+                          final primaryLink = room['primary_link']?.toString() ?? '';
+                          final hasFigma = primaryLink.contains('figma.com');
+                          final hasNotion = primaryLink.contains('notion.');
+                          final hasGithub = primaryLink.contains('github.com');
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withOpacity(0.07)),
+                            ),
+                            child: Row(
+                              children: [
+                                Tooltip(
+                                  message: hasFigma ? 'Open Figma Design' : 'No Figma linked',
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _openFigma(context, room),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                      child: BrandIcon.figma(
+                                        size: 11.5,
+                                        color: hasFigma ? const Color(0xFFF24E1E) : context.themeColors.textSecondary.withOpacity(0.6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Tooltip(
+                                  message: hasNotion ? 'Open Notion Docs' : 'No Notion linked',
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _openNotion(context, room),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                      child: BrandIcon.notion(
+                                        size: 11.5,
+                                        color: hasNotion ? Colors.white : context.themeColors.textSecondary.withOpacity(0.6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Tooltip(
+                                  message: hasGithub ? 'Open GitHub Repo' : 'No GitHub linked',
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _openGithub(context, room),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                      child: BrandIcon.github(
+                                        size: 11.5,
+                                        color: hasGithub ? const Color(0xFF10B981) : context.themeColors.textSecondary.withOpacity(0.6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       
                       Container(
@@ -443,7 +562,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: textColor.withOpacity(0.3)),
       ),
-      child: Text(text, style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 0.5)),
+      child: Text(text, style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
     );
   }
 
@@ -471,7 +590,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
           const SizedBox(width: 4),
           Text(
             stage.toUpperCase(),
-            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 0.5),
+            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5),
           ),
         ],
       ),
@@ -535,7 +654,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.w900,
-              fontSize: 8,
+              fontSize: 11,
               letterSpacing: 0.6,
             ),
           ),
@@ -591,7 +710,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
                     ? (context.themeColors.textPrimary) 
                     : context.themeColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                fontSize: 10,
+                fontSize: 11,
               ),
             ),
           ],
@@ -615,7 +734,7 @@ class _RoomsScreenState extends State<RoomsScreen> with SingleTickerProviderStat
             : null,
       ),
       child: avatarUrl == null || avatarUrl.isEmpty
-          ? Center(child: Text(label, style: TextStyle(color: fallbackColor, fontSize: 8, fontWeight: FontWeight.bold)))
+          ? Center(child: Text(label, style: TextStyle(color: fallbackColor, fontSize: 11, fontWeight: FontWeight.bold)))
           : null,
     );
   }

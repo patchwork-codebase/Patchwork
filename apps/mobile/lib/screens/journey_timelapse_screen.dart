@@ -171,7 +171,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                     ),
                                     Text(
                                       'Build Journey',
-                                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10),
+                                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
                                     ),
                                   ],
                                 ),
@@ -338,7 +338,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                 children: [
                                   Icon(LucideIcons.flag, size: 11, color: Colors.black),
                                   SizedBox(width: 8),
-                                  Text('MILESTONE REACHED', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1.5)),
+                                  Text('MILESTONE REACHED', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5)),
                                 ],
                               ),
                             ),
@@ -356,7 +356,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                 children: [
                                   Icon(LucideIcons.gitCommit, size: 11, color: Colors.white),
                                   SizedBox(width: 8),
-                                  Text('DECISION LOGGED', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1.5)),
+                                  Text('DECISION LOGGED', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5)),
                                 ],
                               ),
                             ),
@@ -384,7 +384,7 @@ class _JourneyTimelapseScreenState extends State<JourneyTimelapseScreen> with Si
                                 timeString.toUpperCase(),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.6),
-                                  fontSize: 10,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 2.0,
                                 ),

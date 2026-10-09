@@ -16,21 +16,16 @@ final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
         .from('users')
         .select()
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
     
-    // Auto-heal buggy old cartoon avatar and sync metadata
-    if (data['avatar'] != null && data['avatar'].toString().contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
+    if (data == null) return null;
+
+    final dbAvatar = data['avatar']?.toString() ?? '';
+    if (dbAvatar.isEmpty) {
       final metaAvatar = user.userMetadata?['avatar']?.toString() ?? user.userMetadata?['avatar_url']?.toString();
-      final healed = (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920'))
-          ? metaAvatar
-          : 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
-      data['avatar'] = healed;
-      Future.microtask(() async {
-        try {
-          await Supabase.instance.client.from('users').update({'avatar': healed}).eq('id', user.id);
-          await Supabase.instance.client.auth.updateUser(UserAttributes(data: {'avatar': healed, 'avatar_url': healed}));
-        } catch (_) {}
-      });
+      if (metaAvatar != null && metaAvatar.isNotEmpty) {
+        data['avatar'] = metaAvatar;
+      }
     }
     return data;
   } catch (e) {

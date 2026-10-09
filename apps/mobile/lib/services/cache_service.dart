@@ -41,4 +41,7 @@ class CacheService {
   static const String keyFeedUpdates = 'cache_feed_updates';
   static const String keyUserNotifications = 'cache_user_notifications';
   static const String keyChatInbox = 'cache_chat_inbox';
+  static const String keyRooms = 'cache_rooms';
+  static const String keyDiscoveryTrending = 'cache_discovery_trending';
+  static const String keyDiscoveryBuilders = 'cache_discovery_builders';
 }

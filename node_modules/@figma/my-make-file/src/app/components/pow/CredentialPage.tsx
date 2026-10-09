@@ -436,7 +436,7 @@ export default function CredentialPage() {
                 <input 
                   type="text" 
                   readOnly 
-                  value={`https://patchwork.app/credentials/${certId}`}
+                  value={`https://joinpatchwork.xyz/credentials/${certId}`}
                   className="w-full bg-white border border-slate-100 rounded-xl py-3 pl-4 pr-12 text-xs text-slate-600 shadow-sm focus:outline-none focus:border-teal-500 transition"
                 />
                 <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-slate-50 rounded-lg transition group">

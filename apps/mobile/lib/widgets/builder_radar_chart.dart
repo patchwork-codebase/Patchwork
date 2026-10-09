@@ -226,7 +226,7 @@ class _RadarChartPainter extends CustomPainter {
           TextSpan(
             text: '${axis.label}\n',
             style: TextStyle(
-              fontSize: 9.5,
+              fontSize: 11.5,
               fontWeight: FontWeight.bold,
               color: labelColor,
               height: 1.1,
@@ -235,7 +235,7 @@ class _RadarChartPainter extends CustomPainter {
           TextSpan(
             text: '$valInt',
             style: TextStyle(
-              fontSize: 9.0,
+              fontSize: 11.0,
               fontWeight: FontWeight.w900,
               color: accentColor,
             ),

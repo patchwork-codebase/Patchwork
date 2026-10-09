@@ -248,7 +248,7 @@ class _BuilderWelcomeExperienceScreenState extends State<BuilderWelcomeExperienc
                   'CASE BRIEFING · ${_scenario['tierLabel']}'.toUpperCase(),
                   style: TextStyle(
                     color: context.themeColors.textSecondary,
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
                   ),
@@ -312,7 +312,7 @@ class _BuilderWelcomeExperienceScreenState extends State<BuilderWelcomeExperienc
                         'ACTIVE SPRINT',
                         style: TextStyle(
                           color: context.themeColors.primary400,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
                         ),
@@ -420,7 +420,7 @@ class _BuilderWelcomeExperienceScreenState extends State<BuilderWelcomeExperienc
               'DECISION POINT',
               style: TextStyle(
                 color: context.themeColors.textSecondary,
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.6,
               ),
@@ -482,7 +482,7 @@ class _BuilderWelcomeExperienceScreenState extends State<BuilderWelcomeExperienc
                       'PROJECTED IMPACT METRICS',
                       style: TextStyle(
                         color: context.themeColors.textTertiary,
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                       ),
@@ -492,7 +492,7 @@ class _BuilderWelcomeExperienceScreenState extends State<BuilderWelcomeExperienc
                         'ESTIMATED DELTA',
                         style: TextStyle(
                           color: context.themeColors.primary400,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -775,7 +775,7 @@ class _BuilderWelcomeExperienceScreenState extends State<BuilderWelcomeExperienc
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
+        Text(title, style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
         const SizedBox(height: 4),
         Row(
           mainAxisSize: MainAxisSize.min,

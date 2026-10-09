@@ -118,11 +118,11 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                     children: [
                       Text(
                         _formatDuration(_position),
-                        style: TextStyle(fontSize: 8, color: textColor.withOpacity(0.8)),
+                        style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8)),
                       ),
                       Text(
                         _formatDuration(_duration),
-                        style: TextStyle(fontSize: 8, color: textColor.withOpacity(0.8)),
+                        style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.8)),
                       ),
                     ],
                   ),

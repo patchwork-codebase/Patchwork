@@ -213,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
             }),
           ),
           const SizedBox(height: 6),
-          Text(text, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
+          Text(text, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -408,7 +408,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(child: Divider(color: context.themeColors.borderSubtle)),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text('OR CONTINUE WITH', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.2)),
+                                child: Text('OR CONTINUE WITH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, letterSpacing: 1.2)),
                               ),
                               Expanded(child: Divider(color: context.themeColors.borderSubtle)),
                             ],
@@ -488,12 +488,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w500)),
+                        Text('Privacy Policy', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text('·', style: TextStyle(color: context.themeColors.textTertiary)),
                         ),
-                        Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w500)),
+                        Text('Terms of Service', style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ],

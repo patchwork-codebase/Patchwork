@@ -361,7 +361,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                               : Center(
                                                   child: Text(
                                                     reply['observer_name'].toString().substring(0, 1).toUpperCase(),
-                                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: context.themeColors.textPrimary),
+                                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.textPrimary),
                                                   ),
                                                 ),
                                         ),
@@ -405,7 +405,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                         color: context.themeColors.primary500.withOpacity(0.15),
                                                         borderRadius: BorderRadius.circular(4),
                                                       ),
-                                                      child: Text('AUTHOR', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
+                                                      child: Text('AUTHOR', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: context.themeColors.primary500)),
                                                     ),
                                                   ],
                                                   Builder(
@@ -443,7 +443,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                   Flexible(
                                                     child: Text(
                                                       '@${reply['observer_name'].toString().toLowerCase().replaceAll(' ', '')}',
-                                                      style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
+                                                      style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
                                                   ),
@@ -451,7 +451,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                               ),
                                             ),
                                             const SizedBox(width: 8),
-                                            Text(timeago.format(createdAt, locale: 'en_short'), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10)),
+                                            Text(timeago.format(createdAt, locale: 'en_short'), style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11)),
                                           ],
                                         ),
                                         const SizedBox(height: 4),
@@ -491,7 +491,7 @@ class _UpdateThreadScreenState extends State<UpdateThreadScreen> {
                                                     Text(
                                                       '${_commentLikes.where((l) => l['parent_id'] == reply['id']).length}',
                                                       style: TextStyle(
-                                                        fontSize: 10,
+                                                        fontSize: 11,
                                                         color: _commentLikes.any((l) => l['parent_id'] == reply['id'] && l['observer_id'] == Supabase.instance.client.auth.currentUser?.id)
                                                           ? Colors.redAccent
                                                           : context.themeColors.textTertiary,

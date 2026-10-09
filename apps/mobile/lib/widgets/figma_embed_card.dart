@@ -64,7 +64,7 @@ class FigmaEmbedCard extends StatelessWidget {
                     'Tap to view in Figma',
                     style: TextStyle(
                       color: context.themeColors.textTertiary,
-                      fontSize: 10,
+                      fontSize: 11,
                     ),
                   ),
                 ],

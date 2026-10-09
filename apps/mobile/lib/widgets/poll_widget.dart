@@ -177,7 +177,7 @@ class _PollWidgetState extends State<PollWidget> {
           Text(
             '$_totalVotes votes',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: context.themeColors.textTertiary,
             ),
           ),

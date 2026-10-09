@@ -520,7 +520,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               'Simulation Track',
                               style: TextStyle(
                                 color: context.themeColors.textTertiary,
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -624,7 +624,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               'Discovery Track',
                               style: TextStyle(
                                 color: context.themeColors.textTertiary,
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -927,7 +927,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             group['badge'] as String,
                             style: TextStyle(
                               color: context.themeColors.textSecondary,
-                              fontSize: 10,
+                              fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1025,7 +1025,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Where are you building?',
+          'Complete your profile',
           style: TextStyle(
             color: context.themeColors.textPrimary,
             fontSize: 22,
@@ -1035,7 +1035,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Set up your professional context and public builder profile.',
+          'Add your name and photo to stand out.',
           style: TextStyle(
             color: context.themeColors.textSecondary,
             fontSize: 13,
@@ -1104,7 +1104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               'FULL NAME',
                               style: TextStyle(
                                 color: context.themeColors.textTertiary,
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.8,
                               ),
@@ -1132,194 +1132,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
-
-                // Current Status Block
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 8),
-                  child: Text(
-                    'CURRENT STATUS',
-                    style: TextStyle(
-                      color: context.themeColors.textTertiary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ),
-                ..._careerStatusConfigs.map((status) {
-                  final isSelected = _careerStatus == status['title'];
-
-                  return GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _careerStatus = status['title'] as String);
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? context.themeColors.surfaceHighlight.withOpacity(0.7)
-                            : context.themeColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected ? context.themeColors.primary500 : context.themeColors.borderSubtle,
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? context.themeColors.primary500.withOpacity(0.15)
-                                  : context.themeColors.surfaceHighlight,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              status['icon'] as IconData,
-                              size: 16,
-                              color: isSelected ? context.themeColors.primary400 : context.themeColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  status['title'] as String,
-                                  style: TextStyle(
-                                    color: context.themeColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  status['desc'] as String,
-                                  style: TextStyle(
-                                    color: context.themeColors.textSecondary,
-                                    fontSize: 12,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isSelected ? context.themeColors.primary500 : Colors.transparent,
-                              border: Border.all(
-                                color: isSelected ? context.themeColors.primary500 : context.themeColors.border,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: isSelected
-                                ? const Icon(LucideIcons.check, size: 12, color: Colors.white)
-                                : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-
-                if (_careerStatus == 'Currently working') ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: context.themeColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: context.themeColors.borderSubtle),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'COMPANY OR ORGANIZATION',
-                          style: TextStyle(
-                            color: context.themeColors.textTertiary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _companyController,
-                          style: TextStyle(color: context.themeColors.textPrimary, fontSize: 14),
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(LucideIcons.building, size: 16, color: context.themeColors.textSecondary),
-                            suffixIcon: _companyController.text.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(LucideIcons.x, size: 14),
-                                    onPressed: () => _companyController.clear(),
-                                  )
-                                : null,
-                            hintText: 'e.g. Stripe, Linear, Figma',
-                            hintStyle: TextStyle(color: context.themeColors.textTertiary, fontSize: 13),
-                            filled: true,
-                            fillColor: context.themeColors.background,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.themeColors.borderSubtle)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.themeColors.borderSubtle)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.themeColors.primary500)),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'Quick select:',
-                          style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: _popularCompanies.map((c) {
-                            final isChosen = _companyController.text.trim().toLowerCase() == c.toLowerCase();
-                            return GestureDetector(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() => _companyController.text = c);
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: isChosen
-                                      ? context.themeColors.primary500.withOpacity(0.15)
-                                      : context.themeColors.surfaceHighlight,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isChosen ? context.themeColors.primary500 : context.themeColors.borderSubtle,
-                                  ),
-                                ),
-                                child: Text(
-                                  c,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: isChosen ? FontWeight.w700 : FontWeight.w500,
-                                    color: isChosen ? context.themeColors.primary400 : context.themeColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
                 const SizedBox(height: 16),
               ],
             ),

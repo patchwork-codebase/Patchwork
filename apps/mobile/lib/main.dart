@@ -45,7 +45,7 @@ void main() async {
               padding: const EdgeInsets.all(16),
               child: Text(
                 'CRASH LOG:\n$e\n\n$stack',
-                style: const TextStyle(color: Colors.red, fontSize: 10),
+                style: const TextStyle(color: Colors.red, fontSize: 11),
               ),
             ),
           ),

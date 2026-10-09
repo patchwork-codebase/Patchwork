@@ -140,7 +140,7 @@ class _RecentActivityListState extends State<RecentActivityList> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('RECENT ACTIVITY', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary, letterSpacing: 1.5)),
+              Text('RECENT ACTIVITY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary, letterSpacing: 1.5)),
               const SizedBox(height: 16),
               if (_recentEvents.isEmpty)
                 Center(
@@ -152,7 +152,7 @@ class _RecentActivityListState extends State<RecentActivityList> {
                         const SizedBox(height: 8),
                         Text('All quiet for now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.textSecondary)),
                         const SizedBox(height: 4),
-                        Text('Activity from observers will stream in here.', textAlign: TextAlign.center, style: TextStyle(fontSize: 9, color: context.themeColors.textTertiary)),
+                        Text('Activity from observers will stream in here.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
                       ],
                     ),
                   ),
@@ -202,7 +202,7 @@ class _RecentActivityListState extends State<RecentActivityList> {
                               children: [
                                 RichText(
                                   text: TextSpan(
-                                    style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary, height: 1.4),
+                                    style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, height: 1.4),
                                     children: [
                                       TextSpan(text: event['name'], style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                                       TextSpan(text: ' ${event['text']}'),
@@ -210,7 +210,7 @@ class _RecentActivityListState extends State<RecentActivityList> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(timeago.format(event['time'] as DateTime), style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary, fontFamily: 'monospace')),
+                                Text(timeago.format(event['time'] as DateTime), style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary, fontFamily: 'monospace')),
                               ],
                             ),
                           ),
@@ -238,7 +238,7 @@ class _RecentActivityListState extends State<RecentActivityList> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('OBSERVERS ON ${(widget.activeRoomTitle!).toUpperCase()}', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary, letterSpacing: 1.5)),
+                Text('OBSERVERS ON ${(widget.activeRoomTitle!).toUpperCase()}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary, letterSpacing: 1.5)),
                 const SizedBox(height: 16),
                 if (_roomObservers.isEmpty)
                   Center(
@@ -250,7 +250,7 @@ class _RecentActivityListState extends State<RecentActivityList> {
                           const SizedBox(height: 8),
                           Text('No Observers Yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.textSecondary)),
                           const SizedBox(height: 4),
-                          Text('When observers follow this room, they appear here.', textAlign: TextAlign.center, style: TextStyle(fontSize: 9, color: context.themeColors.textTertiary)),
+                          Text('When observers follow this room, they appear here.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
                         ],
                       ),
                     ),
@@ -274,14 +274,14 @@ class _RecentActivityListState extends State<RecentActivityList> {
                               border: Border.all(color: context.themeColors.primary500.withOpacity(0.2)),
                             ),
                             child: Center(
-                              child: Text(initial, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.primary400)),
+                              child: Text(initial, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.primary400)),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(userName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: context.themeColors.textPrimary)),
                           ),
-                          Text('Active', style: TextStyle(fontSize: 9, color: context.themeColors.textSecondary)),
+                          Text('Active', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                         ],
                       ),
                     );

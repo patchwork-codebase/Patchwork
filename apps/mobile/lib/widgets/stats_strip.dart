@@ -141,7 +141,7 @@ class _StatsStripState extends State<StatsStrip> {
                     Text(
                       (s['label'] as String).toUpperCase(),
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         color: context.themeColors.textSecondary,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
@@ -187,7 +187,7 @@ class _StatsStripState extends State<StatsStrip> {
                   child: Text(
                     (s['delta'] as String).toUpperCase(),
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                       color: s['deltaColor'] as Color,
                       letterSpacing: 0.5,

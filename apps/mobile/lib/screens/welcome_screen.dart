@@ -258,14 +258,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('STUDIO UPDATE', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                              Text('STUDIO UPDATE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF10B981).withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: const Text('LIVE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
+                                child: const Text('LIVE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF10B981))),
                               ),
                             ],
                           ),
@@ -316,7 +316,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('BUILD LOG', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                          Text('BUILD LOG', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                           const SizedBox(height: 4),
                           Text('Day 14', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                         ],
@@ -349,11 +349,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('24 new\nviews', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, height: 1.1)),
+                              Text('24 new\nviews', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary, height: 1.1)),
                             ],
                           ),
                           const SizedBox(width: 12),
-                          Text('People are\nfollowing along', style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary)),
+                          Text('People are\nfollowing along', style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
                         ],
                       ),
                     ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -375,7 +375,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFFFF7A4D),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ).animate().fade(delay: 300.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
@@ -474,7 +474,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   ],
                                 ),
                                 const Spacer(),
-                                Text('Case study - Draft', style: TextStyle(fontSize: 8, color: context.themeColors.textSecondary)),
+                                Text('Case study - Draft', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                               ],
                             ),
                           ),
@@ -575,7 +575,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text('Synced with Figma', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary)),
+                          Text('Synced with Figma', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.themeColors.textPrimary)),
                         ],
                       ),
                     ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -601,14 +601,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             width: 24, height: 24,
                             decoration: const BoxDecoration(color: Color(0xFFC1D4FF), shape: BoxShape.circle),
                             alignment: Alignment.center,
-                            child: const Text('MJ', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF5A79FF))),
+                            child: const Text('MJ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF5A79FF))),
                           ),
                           const SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Love this direction', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-                              Text('Just now', style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary)),
+                              Text('Love this direction', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
+                              Text('Just now', style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
                             ],
                           )
                         ],
@@ -632,7 +632,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFF5A79FF),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ).animate().fade(delay: 300.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
@@ -727,7 +727,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         const SizedBox(height: 12),
                         Text('You', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                         const SizedBox(height: 4),
-                        Text('Building in public', style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary)),
+                        Text('Building in public', style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
                       ],
                     ),
                   ).animate().fade(delay: 200.ms).scale(duration: 500.ms, curve: Curves.easeOutBack),
@@ -769,10 +769,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
-                            child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                            child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                           const SizedBox(width: 8),
-                          const Text('new connections', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w600)),
+                          const Text('new connections', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -794,7 +794,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFF10B981),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ).animate().fade(delay: 300.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
@@ -880,7 +880,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     color: const Color(0xFFFF7A4D),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ).animate().fade(delay: 300.ms).slideY(begin: 0.2),
                 const SizedBox(height: 16),
@@ -925,7 +925,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           border: Border.all(color: Colors.white, width: 1.5),
         ),
         alignment: Alignment.center,
-        child: Text(text, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.7))),
+        child: Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.7))),
       ),
     );
   }

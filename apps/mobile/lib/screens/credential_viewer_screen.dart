@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
+import 'dart:ui' as ui;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -53,14 +57,37 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
     }
   }
 
-  void _shareCredential() {
+  Future<void> _shareOrDownloadCredential({bool downloadOnly = false}) async {
     if (_credentialData == null) return;
-    final badge = _credentialData!['badges'] as Map<String, dynamic>?;
-    final title = badge?['title'] ?? widget.title;
-    final text = 'I just earned the "$title" milestone on Patchwork! Check out my builder profile and journey.';
     
-    // In a real app, you might generate an image of the widget and share that, or a link.
-    Share.share(text);
+    try {
+      final boundary = _certificateKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preparing certificate...'), duration: Duration(seconds: 1))
+      );
+      
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/patchwork_credential_${widget.credentialId}.png');
+      await file.writeAsBytes(pngBytes);
+
+      final badge = _credentialData!['badges'] as Map<String, dynamic>?;
+      final title = badge?['title'] ?? widget.title;
+      final text = 'I just earned the "$title" milestone on Patchwork! Check out my builder profile and journey.';
+
+      final xfile = XFile(file.path);
+      await Share.shareXFiles([xfile], text: downloadOnly ? null : text);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating certificate: $e')));
+      }
+    }
   }
 
   @override
@@ -74,8 +101,14 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
         iconTheme: IconThemeData(color: context.themeColors.textPrimary),
         actions: [
           IconButton(
+            icon: const Icon(LucideIcons.download),
+            tooltip: 'Download',
+            onPressed: () => _shareOrDownloadCredential(downloadOnly: true),
+          ),
+          IconButton(
             icon: const Icon(LucideIcons.share2),
-            onPressed: _shareCredential,
+            tooltip: 'Share',
+            onPressed: () => _shareOrDownloadCredential(downloadOnly: false),
           ),
         ],
       ),
@@ -174,7 +207,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                       ),
                       child: Text(
                         'MILESTONE $badgeType',
-                        style: const TextStyle(color: Color(0xFF5A5EEA), fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 2.0),
+                        style: const TextStyle(color: Color(0xFF5A5EEA), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 2.0),
                       ),
                     ),
                     
@@ -221,7 +254,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('AWARDED ON', style: const TextStyle(color: Colors.black45, fontSize: 8, fontWeight: FontWeight.bold)),
+                            Text('AWARDED ON', style: const TextStyle(color: Colors.black45, fontSize: 11, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
                             Text(dateStr, style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold)),
                           ],
@@ -232,7 +265,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('POINTS VALUE', style: const TextStyle(color: Colors.black45, fontSize: 8, fontWeight: FontWeight.bold)),
+                              Text('POINTS VALUE', style: const TextStyle(color: Colors.black45, fontSize: 11, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
                               Text('$points XP', style: const TextStyle(color: Color(0xFF4F46E5), fontSize: 13, fontWeight: FontWeight.w900)),
                             ],
@@ -281,7 +314,7 @@ class _CredentialViewerScreenState extends State<CredentialViewerScreen> {
           const SizedBox(height: 24),
           const Divider(height: 1),
           const SizedBox(height: 16),
-          Text('Credential ID', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10, fontWeight: FontWeight.bold)),
+          Text('Credential ID', style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
             widget.credentialId,

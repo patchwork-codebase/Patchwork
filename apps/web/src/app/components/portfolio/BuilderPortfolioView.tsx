@@ -12,6 +12,7 @@ import { CodeDiffViewer } from "../pow/CodeDiffViewer";
 import { supabase } from "../auth/AuthContext";
 import type { Profile, Room } from "../../types";
 import { PublicRoadmap } from "../roadmap/PublicRoadmap";
+import { SEO } from "../seo/SEO";
 
 export function BuilderPortfolioView() {
   const { username } = useParams<{ username: string }>();
@@ -29,10 +30,11 @@ export function BuilderPortfolioView() {
       try {
         let userMatch = null;
         if (username) {
+          const cleanUsername = username.replace(/^@/, "").trim();
           const { data: byUsername } = await supabase
             .from("users")
             .select("*")
-            .ilike("username", username)
+            .ilike("username", cleanUsername)
             .limit(1);
 
           if (byUsername && byUsername.length > 0) {
@@ -41,7 +43,7 @@ export function BuilderPortfolioView() {
             const { data: byName } = await supabase
               .from("users")
               .select("*")
-              .ilike("full_name", `%${username}%`)
+              .ilike("name", `%${cleanUsername}%`)
               .limit(1);
 
             if (byName && byName.length > 0) {
@@ -117,6 +119,12 @@ export function BuilderPortfolioView() {
 
   return (
     <div className="min-h-screen bg-[#0b0f17] text-slate-100 font-sans antialiased selection:bg-primary-500/30 selection:text-white">
+      <SEO
+        title={`${profile.name || 'Builder'} (@${profile.username || username}) · Verified Proof of Work`}
+        description={profile.bio || `${profile.name}'s verified product decisions, build rooms, and living proof-of-work ledger on Patchwork.`}
+        image={profile.avatar || "https://www.joinpatchwork.xyz/og-image.jpg"}
+        url={`https://www.joinpatchwork.xyz/@${profile.username || username}/pow`}
+      />
       {/* Top Navbar Header */}
       <header className="sticky top-0 z-50 border-b border-slate-100 dark:border-slate-800/80 bg-[#0b0f17]/90 backdrop-blur-md px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">

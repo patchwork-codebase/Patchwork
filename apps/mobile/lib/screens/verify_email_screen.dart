@@ -196,7 +196,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       Text(
                         'Didn\'t receive it? Check your spam folder.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 10, color: context.themeColors.textTertiary),
+                        style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
                       ),
                       const SizedBox(height: 32),
 

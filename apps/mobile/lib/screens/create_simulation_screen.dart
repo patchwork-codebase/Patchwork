@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
 import '../widgets/toast_notification.dart';
+import '../utils/uuid_helper.dart';
 
 class CreateSimulationScreen extends StatefulWidget {
   final String? preselectedRoomId;
@@ -329,23 +330,26 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
         'senior_tip': _seniorTipController.text.trim(),
       };
 
+      final userProfile = await Supabase.instance.client
+          .from('users')
+          .select('name')
+          .eq('id', userId)
+          .maybeSingle();
+      final authorName = userProfile?['name'] ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['name'] ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] ??
+          'Builder';
+      final updateId = generateUuid();
+
       await Supabase.instance.client.from('updates').insert({
+        'id': updateId,
         'room_id': roomId,
         'author_id': userId,
+        'author_name': authorName,
         'content': 'Senior PM Dilemma: $title',
         'update_type': 'simulation',
         'simulation_data': simulationData,
       });
-
-      // Award +100 reputation for creating a community challenge
-      try {
-        await Supabase.instance.client.from('reputation_events').insert({
-          'user_id': userId,
-          'action_type': 'created_simulation_challenge',
-          'points': 100,
-          'metadata': {'title': title},
-        });
-      } catch (_) {}
 
       if (mounted) {
         ToastService.show(context, 'Challenge published to Feed (+100 Rep)');
@@ -423,7 +427,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
             // Quick Template Starters
             Text(
               'QUICK TEMPLATES (1-TAP AUTOFILL)',
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.0),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.0),
             ),
             const SizedBox(height: 8),
             SingleChildScrollView(
@@ -452,7 +456,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('DOMAIN / CATEGORY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                      Text('DOMAIN / CATEGORY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
                         value: _category,
@@ -470,7 +474,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('TARGET SENIORITY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                      Text('TARGET SENIORITY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
                         value: _seniorityTarget,
@@ -489,7 +493,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
             const SizedBox(height: 16),
 
             // Title
-            Text('CHALLENGE TITLE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+            Text('CHALLENGE TITLE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
             const SizedBox(height: 6),
             TextField(
               controller: _titleController,
@@ -500,7 +504,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
             const SizedBox(height: 16),
 
             // Scenario Prompt
-            Text('THE SITUATION & TENSION (CONTEXT)', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+            Text('THE SITUATION & TENSION (CONTEXT)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
             const SizedBox(height: 6),
             TextField(
               controller: _promptController,
@@ -515,7 +519,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('STRATEGIC PATHS (TRADE-OFFS)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
+                Text('STRATEGIC PATHS (TRADE-OFFS)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.themeColors.textTertiary, letterSpacing: 1.0)),
                 if (_options.length < 4)
                   TextButton.icon(
                     onPressed: _addOption,
@@ -557,7 +561,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text('STAKEHOLDER CONFRONTATION (OPTIONAL)',
-                        style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
                     const SizedBox(height: 4),
                     TextField(
                       controller: opt['stakeholder_persona'] as TextEditingController?,
@@ -579,7 +583,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
             const SizedBox(height: 16),
 
             // Senior Creator Takeaway
-            Text('YOUR STRATEGIC RECOMMENDATION (REVEALED AFTER VOTE)', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+            Text('YOUR STRATEGIC RECOMMENDATION (REVEALED AFTER VOTE)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
             const SizedBox(height: 6),
             TextField(
               controller: _creatorRationaleController,
@@ -591,7 +595,7 @@ class _CreateSimulationScreenState extends State<CreateSimulationScreen> {
             const SizedBox(height: 12),
 
             // Pro Tip
-            Text('PRO TIP / HEURISTIC (OPTIONAL)', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
+            Text('PRO TIP / HEURISTIC (OPTIONAL)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary)),
             const SizedBox(height: 6),
             TextField(
               controller: _seniorTipController,

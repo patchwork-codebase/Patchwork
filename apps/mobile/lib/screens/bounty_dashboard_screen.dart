@@ -161,7 +161,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                                 update['content'] ?? 'Request For Builder',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: context.themeColors.textSecondary, fontSize: 10, fontStyle: FontStyle.italic),
+                                style: TextStyle(color: context.themeColors.textSecondary, fontSize: 11, fontStyle: FontStyle.italic),
                               ),
                             ),
                           ],
@@ -194,7 +194,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                                     children: [
                                       const Icon(LucideIcons.star, size: 10, color: Colors.amber),
                                       const SizedBox(width: 4),
-                                      Text('${builder['reputation'] ?? 0} Rep', style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      Text('${builder['reputation'] ?? 0} Rep', style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ],
@@ -202,7 +202,7 @@ class _BountyDashboardScreenState extends State<BountyDashboardScreen> {
                             ),
                             Text(
                               timeago.format(DateTime.parse(app['created_at'])),
-                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 10),
+                              style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11),
                             ),
                           ],
                         ),

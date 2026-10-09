@@ -148,8 +148,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
           .from('users')
           .select('name, avatar')
           .eq('id', _currentUserId!)
-          .single();
-      if (mounted) setState(() => _currentUserProfile = Map<String, dynamic>.from(res));
+          .maybeSingle();
+      if (mounted && res != null) setState(() => _currentUserProfile = Map<String, dynamic>.from(res));
     } catch (_) {}
   }
 
@@ -184,7 +184,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
           .from('rooms')
           .select('builder_id')
           .eq('id', widget.roomId)
-          .single();
+          .maybeSingle();
       
       final obsResponse = await Supabase.instance.client
           .from('room_observers')
@@ -192,7 +192,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
           .eq('room_id', widget.roomId);
 
       Set<String> userIds = {};
-      if (roomResponse['builder_id'] != null) {
+      if (roomResponse != null && roomResponse['builder_id'] != null) {
         userIds.add(roomResponse['builder_id']);
       }
       for (var obs in (obsResponse as List)) {
@@ -289,7 +289,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                       .from('users')
                       .select('id, name, avatar')
                       .eq('id', senderId)
-                      .single();
+                      .maybeSingle();
                   newMsg['users'] = userRes;
                 } catch (_) {}
               }
@@ -808,7 +808,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                   Text(
                     'Private Room',
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 11,
                       color: context.themeColors.textTertiary,
                     ),
                   ),
@@ -903,7 +903,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                     backgroundImage: senderAvatar != null ? NetworkImage(senderAvatar) : null,
                     child: senderAvatar == null
                         ? Text(senderName[0].toUpperCase(),
-                            style: TextStyle(color: context.themeColors.primary500, fontSize: 10, fontWeight: FontWeight.bold))
+                            style: TextStyle(color: context.themeColors.primary500, fontSize: 11, fontWeight: FontWeight.bold))
                         : null,
                   )
                 : const SizedBox(width: 32),
@@ -920,7 +920,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                     padding: const EdgeInsets.only(bottom: 4, left: 2),
                     child: Text(
                       senderName,
-                      style: TextStyle(fontSize: 9, color: context.themeColors.textTertiary, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary, fontWeight: FontWeight.w600),
                     ),
                   ),
                 if (isMentioned && !isMe)
@@ -941,7 +941,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                           Text(
                             'Mentioned you',
                             style: TextStyle(
-                              fontSize: 9,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                               color: context.themeColors.primary500,
                             ),
@@ -1009,12 +1009,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                         if (msg['is_edited'] == true) ...[
                           Text(
                             'Edited · ',
-                            style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary, fontStyle: FontStyle.italic),
+                            style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary, fontStyle: FontStyle.italic),
                           ),
                         ],
                         Text(
                           timeago.format(DateTime.parse(createdAt)),
-                          style: TextStyle(fontSize: 8, color: context.themeColors.textTertiary),
+                          style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary),
                         ),
                         if (isMe) ...[
                           const SizedBox(width: 4),
@@ -1069,7 +1069,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                     Text(
                       e.value.toString(),
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         color: context.themeColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1398,7 +1398,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: context.themeColors.textSecondary,
               height: 1.4,
             ),
@@ -1429,7 +1429,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                     child: Text(
                       'Editing message',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: context.themeColors.primary500,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1504,7 +1504,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                           ),
                           const SizedBox(width: 8),
                           Text('< Slide to cancel', 
-                            style: TextStyle(color: context.themeColors.textTertiary, fontSize: 9, fontWeight: FontWeight.bold))
+                            style: TextStyle(color: context.themeColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold))
                               .animate(onPlay: (controller) => controller.repeat())
                               .shimmer(duration: 2.seconds, color: Colors.white38),
                         ],
@@ -1574,7 +1574,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                                               style: TextStyle(
                                                 color: context.themeColors.primary500,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 10,
+                                                fontSize: 11,
                                               ),
                                             )
                                           : null,
@@ -1622,7 +1622,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> with WidgetsBinding
                                             '@${data['display']}',
                                             style: TextStyle(
                                               color: context.themeColors.textTertiary,
-                                              fontSize: 9,
+                                              fontSize: 11,
                                             ),
                                           ),
                                         ],

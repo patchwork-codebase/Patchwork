@@ -116,7 +116,7 @@ class BentoProfileHeader extends StatelessWidget {
                               child: Text(
                                 role,
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: context.themeColors.primary500,
                                 ),
@@ -146,7 +146,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 child: Text(
                                   pmIdentity,
                                   style: TextStyle(
-                                    fontSize: 10.5,
+                                    fontSize: 11.5,
                                     fontWeight: FontWeight.w700,
                                     color: context.themeColors.primary400,
                                   ),
@@ -199,7 +199,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 Text(
                                   'Projects',
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: context.themeColors.textTertiary,
                                   ),
@@ -229,7 +229,7 @@ class BentoProfileHeader extends StatelessWidget {
                                 Text(
                                   'Followers',
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: context.themeColors.textTertiary,
                                   ),
@@ -295,7 +295,7 @@ class BentoProfileHeader extends StatelessWidget {
                   _SocialButton(
                     onTap: () => onLaunchUrl(twitter, 'https://twitter.com/'),
                     color: context.themeColors.surfaceHighlight.withOpacity(0.6),
-                    icon: BrandIcon.x(size: 15, color: Colors.white),
+                    icon: BrandIcon.x(size: 15, color: context.themeColors.textPrimary),
                   ),
                 ],
                 if (github != null && github.isNotEmpty) ...[
@@ -303,7 +303,7 @@ class BentoProfileHeader extends StatelessWidget {
                   _SocialButton(
                     onTap: () => onLaunchUrl(github, ''),
                     color: context.themeColors.surfaceHighlight.withOpacity(0.6),
-                    icon: BrandIcon.github(size: 16, color: Colors.white),
+                    icon: BrandIcon.github(size: 16, color: context.themeColors.textPrimary),
                   ),
                 ],
                 if (linkedin != null && linkedin.isNotEmpty) ...[

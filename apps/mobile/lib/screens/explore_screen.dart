@@ -7,6 +7,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
 import 'room_detail_screen.dart';
+import 'leaderboard_screen.dart';
 import '../utils/page_routes.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -296,7 +297,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                 style: TextStyle(
                                                     color: isSelected ? Colors.white : context.themeColors.primary500,
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 10)),
+                                                    fontSize: 11)),
                                           ],
                                         ),
                                       ),
@@ -339,7 +340,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                           const SizedBox(height: 8),
                                           Text(
                                             builder['name']?.toString() ?? 'Builder',
-                                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 9, fontWeight: FontWeight.bold),
+                                            style: TextStyle(color: context.themeColors.textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             textAlign: TextAlign.center,
@@ -356,15 +357,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           const SizedBox(height: 32),
                           
                           // Leaderboard
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              children: [
-                                Text('Leaderboard', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12)),
-                                const SizedBox(width: 8),
-                                Icon(LucideIcons.flame, color: Colors.orange, size: 13),
-                              ],
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Text('Leaderboard', style: TextStyle(color: context.themeColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 12)),
+                                  const SizedBox(width: 8),
+                                  const Icon(LucideIcons.flame, color: Colors.orange, size: 13),
+                                ],
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, PremiumPageRoute(page: const LeaderboardScreen()));
+                                },
+                                child: Text('View All', style: TextStyle(color: context.themeColors.primary500, fontWeight: FontWeight.bold, fontSize: 12)),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 12),
                           FutureBuilder<List<Map<String, dynamic>>>(
@@ -595,7 +604,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                         margin: const EdgeInsets.only(right: 8),
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                                        child: Text(tag.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.black87, letterSpacing: 1.0)),
+                                        child: Text(tag.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black87, letterSpacing: 1.0)),
                                       )).toList(),
                                     ),
                                   ),
@@ -610,7 +619,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                           children: [
                                             Text(room['title'] ?? 'Untitled', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: context.themeColors.textPrimary)),
                                             const SizedBox(height: 4),
-                                            Text('by ${room['builder_name'] ?? 'Unknown'}', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
+                                            Text('by ${room['builder_name'] ?? 'Unknown'}', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
                                             const SizedBox(height: 16),
                                             Text(
                                               room['description'] ?? 'No description',
@@ -628,7 +637,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                   children: [
                                                     Icon(LucideIcons.clock, size: 11, color: context.themeColors.textTertiary),
                                                     const SizedBox(width: 4),
-                                                    Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
+                                                    Text(timeago.format(createdAt, locale: 'en_short') + ' ago', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                                                   ],
                                                 ),
                                                 Container(
@@ -639,7 +648,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                   ),
                                                   child: Text(
                                                     '$updateCount UPDATES',
-                                                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: context.themeColors.primary500, letterSpacing: 0.5),
+                                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: context.themeColors.primary500, letterSpacing: 0.5),
                                                   ),
                                                 ),
                                               ],
@@ -741,7 +750,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     border: Border.all(color: context.themeColors.primary500.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text('Expert', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: context.themeColors.primary400)),
+                  child: Text('Expert', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.primary400)),
                 )
               ]
             ],
@@ -749,7 +758,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
         Text(
           points,
-          style: TextStyle(color: context.themeColors.primary400, fontWeight: FontWeight.bold, fontSize: 10),
+          style: TextStyle(color: context.themeColors.primary400, fontWeight: FontWeight.bold, fontSize: 11),
         ),
       ],
     );

@@ -95,7 +95,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
           const SizedBox(height: 6),
           Text(text,
-              style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
+              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -118,7 +118,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           Text(
             matches ? 'Passwords match' : 'Passwords do not match',
             style: TextStyle(
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: FontWeight.bold,
               color: matches ? Colors.green : Colors.red,
             ),

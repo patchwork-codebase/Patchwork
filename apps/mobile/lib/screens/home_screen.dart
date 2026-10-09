@@ -97,14 +97,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 .from('updates')
                 .select('*, rooms(title, tags), users(name, avatar, is_verified_expert, organization_name, organization_logo_url)')
                 .eq('id', updateId)
-                .single();
-             if (mounted) {
+                .maybeSingle();
+             if (mounted && update != null) {
                Navigator.of(context).push(MaterialPageRoute(
                  builder: (context) => UpdateThreadScreen(update: update),
                ));
+             } else if (mounted) {
+               ToastService.show(context, 'Update not found or no longer available.', isError: true);
              }
            } catch (e) {
-             if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load update from link.')));
+             if (mounted) ToastService.show(context, 'Failed to load update: $e', isError: true);
            }
         }
       }
@@ -127,17 +129,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         final dbAvatar = profile['avatar']?.toString() ?? '';
         final metaAvatar = user?.userMetadata?['avatar']?.toString() ?? user?.userMetadata?['avatar_url']?.toString() ?? '';
 
-        if (dbAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
-          final realAvatar = (metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920'))
-              ? metaAvatar
-              : 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
-          profile['avatar'] = realAvatar;
-          Future.microtask(() async {
-            try {
-              await Supabase.instance.client.from('users').update({'avatar': realAvatar}).eq('id', userId);
-              await Supabase.instance.client.auth.updateUser(UserAttributes(data: {'avatar': realAvatar, 'avatar_url': realAvatar}));
-            } catch (_) {}
-          });
+        if (dbAvatar.isEmpty && metaAvatar.isNotEmpty) {
+          profile['avatar'] = metaAvatar;
         }
       }
 
@@ -282,13 +275,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       userName = currentUser?.userMetadata?['name'] ?? currentUser?.userMetadata?['full_name'] ?? 'Builder';
     }
     String? userAvatar = _userProfile?['avatar']?.toString();
-    if (userAvatar == null || userAvatar.isEmpty || userAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
-      final metaAvatar = currentUser?.userMetadata?['avatar']?.toString() ?? currentUser?.userMetadata?['avatar_url']?.toString();
-      if (metaAvatar != null && metaAvatar.isNotEmpty && !metaAvatar.contains('1791234378920_867a1eff-b70e-4a93-9ed6-aa3cb2bbd2eb.jpg')) {
-        userAvatar = metaAvatar;
-      } else if (currentUser?.email == 'akinrodoluseun12@gmail.com') {
-        userAvatar = 'https://res.cloudinary.com/dfqvoc8dz/image/upload/v1784553143/ofzqfwogokbkxfggyxm1.jpg';
-      }
+    if (userAvatar == null || userAvatar.isEmpty) {
+      userAvatar = currentUser?.userMetadata?['avatar']?.toString() ?? currentUser?.userMetadata?['avatar_url']?.toString();
     }
     final initial = userName.substring(0, 1).toUpperCase();
     final isDark = Theme.of(context).brightness == Brightness.dark || context.themeColors.background.computeLuminance() < 0.5;
@@ -324,7 +312,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   height: 64,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: Colors.transparent, // 100% purely see-through glass
+                    color: isDark 
+                        ? context.themeColors.surface.withOpacity(0.85) 
+                        : Colors.white.withOpacity(0.85),
                     borderRadius: BorderRadius.circular(32),
                     border: Border.all(
                       color: isDark

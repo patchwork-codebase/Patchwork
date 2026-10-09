@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
 import '../screens/achievements_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:confetti/confetti.dart';
 
 class GamificationModals {
   static void showAchievementUnlockedModal(BuildContext context, Map<String, dynamic> badgeData) {
@@ -13,97 +14,11 @@ class GamificationModals {
     showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(20),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [context.themeColors.surface, const Color(0xFF1A1A1A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: context.themeColors.primary500.withOpacity(0.3), width: 2),
-              boxShadow: [
-                BoxShadow(color: context.themeColors.primary500.withOpacity(0.2), blurRadius: 40, spreadRadius: 10),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Confetti/Stars visual
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
-                    const SizedBox(width: 8),
-                    Text('NEW ACHIEVEMENT', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.amber, fontSize: 10, letterSpacing: 2.0)),
-                    const SizedBox(width: 8),
-                    Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Badge Icon
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.purpleAccent.shade100, context.themeColors.primary500],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(color: context.themeColors.primary500.withOpacity(0.5), blurRadius: 20, spreadRadius: 2),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(LucideIcons.award, size: 40, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary), textAlign: TextAlign.center),
-                const SizedBox(height: 8),
-                Text(description, style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary), textAlign: TextAlign.center),
-                
-                const SizedBox(height: 32),
-                
-                // Buttons
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      final userId = Supabase.instance.client.auth.currentUser?.id;
-                      if (userId != null) {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => AchievementsScreen(userId: userId),
-                        ));
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.themeColors.primary500,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
-                    child: const Text('View in Gallery', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Continue Building', style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
+        return _ConfettiDialog(
+          badgeData: badgeData,
+          title: title,
+          description: description,
+          points: points,
         );
       }
     );
@@ -158,8 +73,8 @@ class GamificationModals {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$currentReputation XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.primary400, fontSize: 10)),
-                        Text('$pointsRequired XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 10)),
+                        Text('$currentReputation XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.primary400, fontSize: 11)),
+                        Text('$pointsRequired XP', style: TextStyle(fontWeight: FontWeight.bold, color: context.themeColors.textTertiary, fontSize: 11)),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -216,6 +131,146 @@ class GamificationModals {
           ),
         );
       }
+    );
+  }
+}
+
+class _ConfettiDialog extends StatefulWidget {
+  final Map<String, dynamic> badgeData;
+  final String title;
+  final String description;
+  final int points;
+
+  const _ConfettiDialog({
+    required this.badgeData,
+    required this.title,
+    required this.description,
+    required this.points,
+  });
+
+  @override
+  State<_ConfettiDialog> createState() => _ConfettiDialogState();
+}
+
+class _ConfettiDialogState extends State<_ConfettiDialog> {
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController.play();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [context.themeColors.surface, const Color(0xFF1A1A1A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: context.themeColors.primary500.withOpacity(0.3), width: 2),
+              boxShadow: [
+                BoxShadow(color: context.themeColors.primary500.withOpacity(0.2), blurRadius: 40, spreadRadius: 10),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('NEW ACHIEVEMENT', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.amber, fontSize: 11, letterSpacing: 2.0)),
+                    const SizedBox(width: 8),
+                    const Icon(LucideIcons.sparkles, color: Colors.amber, size: 20),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.purpleAccent.shade100, context.themeColors.primary500],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: context.themeColors.primary500.withOpacity(0.5), blurRadius: 20, spreadRadius: 2),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(LucideIcons.award, size: 40, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(widget.title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary), textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Text(widget.description, style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary), textAlign: TextAlign.center),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      final userId = Supabase.instance.client.auth.currentUser?.id;
+                      if (userId != null) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => AchievementsScreen(userId: userId),
+                        ));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.themeColors.primary500,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    child: const Text('View in Gallery', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Continue Building', style: TextStyle(color: context.themeColors.textSecondary, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          top: 0,
+          child: ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            colors: const [Colors.amber, Colors.blue, Colors.pink, Colors.purple, Colors.green],
+            emissionFrequency: 0.05,
+            numberOfParticles: 50,
+            gravity: 0.2,
+          ),
+        ),
+      ],
     );
   }
 }

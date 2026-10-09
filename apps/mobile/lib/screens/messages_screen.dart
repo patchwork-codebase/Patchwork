@@ -203,11 +203,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final lastTime = lastMessage?['created_at'] as String?;
     final currentUserId = Supabase.instance.client.auth.currentUser?.id;
     final isMyMessage = lastMessage?['sender_id']?.toString() == currentUserId;
+    
+    final isUnread = lastMessage != null && !isMyMessage && lastMessage['read_at'] == null;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         HapticFeedback.selectionClick();
-        Navigator.of(context).push(
+        await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ChatThreadScreen(
               roomId: roomId,
@@ -215,6 +217,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
           ),
         );
+        _fetchConversations();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
@@ -252,9 +255,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         child: Text(
                           roomTitle,
                           style: TextStyle(
-                            fontWeight: FontWeight.w700,
+                            fontWeight: isUnread ? FontWeight.w900 : FontWeight.w700,
                             fontSize: 12,
-                            color: context.themeColors.textPrimary,
+                            color: isUnread ? context.themeColors.textPrimary : context.themeColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -264,8 +267,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         Text(
                           timeago.format(DateTime.parse(lastTime)),
                           style: TextStyle(
-                            fontSize: 9,
-                            color: context.themeColors.textTertiary,
+                            fontSize: 11,
+                            color: isUnread ? context.themeColors.primary500 : context.themeColors.textTertiary,
+                            fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
                           ),
                         ),
                     ],
@@ -277,10 +281,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         : 'Tap to start chatting',
                     style: TextStyle(
                       fontSize: 11,
-                      color: lastContent != null
-                          ? context.themeColors.textSecondary
-                          : context.themeColors.textTertiary,
+                      color: isUnread 
+                          ? context.themeColors.textPrimary 
+                          : (lastContent != null ? context.themeColors.textSecondary : context.themeColors.textTertiary),
                       fontStyle: lastContent == null ? FontStyle.italic : FontStyle.normal,
+                      fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -290,6 +295,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
 
             const SizedBox(width: 8),
+            if (isUnread)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: context.themeColors.primary500,
+                  shape: BoxShape.circle,
+                ),
+              ),
             Icon(LucideIcons.chevronRight, size: 13, color: context.themeColors.textTertiary),
           ],
         ),

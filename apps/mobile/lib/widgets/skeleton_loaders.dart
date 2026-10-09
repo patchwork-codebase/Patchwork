@@ -30,7 +30,7 @@ class SkeletonBox extends StatelessWidget {
     .animate(onPlay: (controller) => controller.repeat())
     .shimmer(
       duration: 1500.ms,
-      color: Colors.white.withOpacity(0.1),
+      color: context.themeColors.textPrimary.withOpacity(0.05),
       angle: 1.0,
     );
   }
@@ -60,7 +60,7 @@ class SkeletonCircle extends StatelessWidget {
     .animate(onPlay: (controller) => controller.repeat())
     .shimmer(
       duration: 1500.ms,
-      color: Colors.white.withOpacity(0.1),
+      color: context.themeColors.textPrimary.withOpacity(0.05),
       angle: 1.0,
     );
   }

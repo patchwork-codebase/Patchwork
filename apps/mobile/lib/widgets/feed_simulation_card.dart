@@ -119,6 +119,17 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
   }
 
   @override
+  void didUpdateWidget(FeedSimulationCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.update['id'] != widget.update['id']) {
+      _responsesChannel?.unsubscribe();
+      _checkExistingResponse();
+      _fetchResponses();
+      _setupRealtime();
+    }
+  }
+
+  @override
   void dispose() {
     _responsesChannel?.unsubscribe();
     _rationaleController.dispose();
@@ -237,18 +248,6 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
         'rationale': finalRationale,
       });
 
-      try {
-        await Supabase.instance.client.from('reputation_events').insert({
-          'user_id': userId,
-          'action_type': actionType,
-          'points': points,
-          'metadata': {
-            'update_id': updateId,
-            'defense_provided': hasDefense,
-          },
-        });
-      } catch (_) {}
-
       if (mounted) {
         ToastService.show(context, 'Decision locked (+${points} Rep)');
         setState(() {
@@ -258,7 +257,12 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
           _showCreatorTake = true;
           _currentStep = 3;
           _isSubmitting = false;
+          if (_selectedOptionId != null) {
+            _optionCounts[_selectedOptionId!] = (_optionCounts[_selectedOptionId!] ?? 0) + 1;
+            _totalResponses += 1;
+          }
         });
+        widget.onRefresh?.call();
         _fetchResponses();
       }
     } catch (e) {
@@ -465,7 +469,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                                             Text(
                                                               'ENDORSED',
                                                               style: TextStyle(
-                                                                fontSize: 8.5,
+                                                                fontSize: 11.5,
                                                                 fontWeight: FontWeight.w900,
                                                                 color: Colors.amber,
                                                               ),
@@ -479,7 +483,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                                 Text(
                                                   specialisation.isNotEmpty ? '$seniority · $specialisation' : seniority,
                                                   style: TextStyle(
-                                                    fontSize: 10.5,
+                                                    fontSize: 11.5,
                                                     color: context.themeColors.textTertiary,
                                                   ),
                                                   maxLines: 1,
@@ -535,7 +539,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                             child: Text(
                                               'Move: $optTitle',
                                               style: TextStyle(
-                                                fontSize: 10.5,
+                                                fontSize: 11.5,
                                                 fontWeight: FontWeight.w600,
                                                 color: context.themeColors.textSecondary,
                                               ),
@@ -646,20 +650,10 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
     if (responseId == null || respondentUserId == null) return;
     HapticFeedback.heavyImpact();
     try {
-      await Supabase.instance.client
-          .from('simulation_responses')
-          .update({'is_featured': true})
-          .eq('id', responseId.toString());
-
-      await Supabase.instance.client.from('reputation_events').insert({
-        'user_id': respondentUserId.toString(),
-        'action_type': 'featured_simulation_rationale',
-        'points': 100,
-        'metadata': {
-          'update_id': widget.update['id'],
-          'endorsed_by': Supabase.instance.client.auth.currentUser?.id,
-        },
-      });
+      await Supabase.instance.client.rpc(
+        'endorse_simulation_response',
+        params: {'p_response_id': responseId.toString()},
+      );
 
       try {
         final currentAuthor = Supabase.instance.client.auth.currentUser;
@@ -808,7 +802,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                           Text(
                                             'Chose: ${opt['title'] ?? optId}',
                                             style: TextStyle(
-                                              fontSize: 10,
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w600,
                                               color: context.themeColors.primary500,
                                             ),
@@ -833,7 +827,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                             SizedBox(width: 3),
                                             Text(
                                               'FEATURED',
-                                              style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w900, color: Colors.amber),
+                                              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: Colors.amber),
                                             ),
                                           ],
                                         ),
@@ -860,7 +854,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                       icon: const Icon(LucideIcons.award, size: 12, color: Colors.amber),
                                       label: const Text(
                                         'Endorse Answer (+100 Rep)',
-                                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.amber),
+                                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.amber),
                                       ),
                                       style: TextButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -946,19 +940,13 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(LucideIcons.sparkles, size: 14, color: Colors.amber),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Talent Pipeline (${_responses.length} Candidates)',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'Talent Pipeline (${_responses.length} Candidates)',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                        ),
                       ),
                       TextButton(
                         onPressed: _showTalentPipelineSheet,
@@ -1059,21 +1047,14 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: context.themeColors.primary500.withOpacity(0.25), width: 1),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.zap, size: 12, color: context.themeColors.primary500),
-                        const SizedBox(width: 4),
-                        Text(
-                          'CHALLENGE',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
-                            color: context.themeColors.primary500,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'CHALLENGE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                        color: context.themeColors.primary500,
+                      ),
                     ),
                   ),
                 ],
@@ -1092,7 +1073,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                     ),
                     child: Text(
                       category,
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textSecondary),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -1104,7 +1085,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                     ),
                     child: Text(
                       seniority,
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textTertiary),
                     ),
                   ),
                 ],
@@ -1420,7 +1401,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                     const Text(
                                       'EXECUTIVE PUSHBACK',
                                       style: TextStyle(
-                                        fontSize: 9,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w900,
                                         letterSpacing: 0.6,
                                         color: Color(0xFFF43F5E),
@@ -1464,7 +1445,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                           // 1-Tap Defense Tactics
                           const Text(
                             '1-Tap Tactical Defense Tags (Optional):',
-                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF94A3B8)),
+                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF94A3B8)),
                           ),
                           const SizedBox(height: 6),
                           Wrap(
@@ -1476,7 +1457,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                                 label: Text(
                                   tag,
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                     color: isSelected ? Colors.white : context.themeColors.textSecondary,
                                   ),
@@ -1648,7 +1629,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                           Text(
                             'Pro Tip: $seniorTip',
                             style: TextStyle(
-                              fontSize: 10.5,
+                              fontSize: 11.5,
                               fontStyle: FontStyle.italic,
                               color: context.themeColors.textTertiary,
                             ),
@@ -1712,7 +1693,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                           label: const Text(
                             'Share Battle Card ↗',
                             style: TextStyle(
-                              fontSize: 10.5,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF10B981),
                             ),
@@ -1731,7 +1712,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
                             label: Text(
                               'Pipeline (${_responses.length})',
                               style: const TextStyle(
-                                fontSize: 10.5,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.amber,
                               ),
@@ -1776,7 +1757,7 @@ class _FeedSimulationCardState extends State<FeedSimulationCard> {
       child: Text(
         '$label $sign$value%',
         style: TextStyle(
-          fontSize: 9.5,
+          fontSize: 11.5,
           fontWeight: FontWeight.bold,
           color: color,
         ),

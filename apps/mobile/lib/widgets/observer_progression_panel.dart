@@ -142,7 +142,7 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
       Padding(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
         child: Row(children: [
-          Text('PROGRESSION', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
+          Text('PROGRESSION', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: context.themeColors.textTertiary)),
           const SizedBox(width: 12),
           Expanded(child: Divider(color: context.themeColors.borderSubtle, height: 1)),
         ]),
@@ -166,12 +166,12 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(levelLabel, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: context.themeColors.textPrimary)),
-              Text('Observer \u00b7 $_reputation REP', style: TextStyle(fontSize: 10, fontFamily: 'monospace', color: levelColor, fontWeight: FontWeight.bold)),
+              Text('Observer \u00b7 $_reputation REP', style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: levelColor, fontWeight: FontWeight.bold)),
             ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(color: levelColor.withOpacity(0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: levelColor.withOpacity(0.3))),
-              child: Text('LVL $level', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: levelColor)),
+              child: Text('LVL $level', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: levelColor)),
             ),
           ]),
           const SizedBox(height: 16),
@@ -181,8 +181,8 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
           ).animate().scaleX(begin: 0, end: 1, alignment: Alignment.centerLeft, duration: 800.ms, curve: Curves.easeOut),
           const SizedBox(height: 6),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('$xpIn / $xpFor XP', style: TextStyle(fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: levelColor)),
-            if (level < 5) Text('${xpFor - xpIn} XP to ${_nextLevelLabel(level)}', style: TextStyle(fontSize: 9, color: context.themeColors.textTertiary)),
+            Text('$xpIn / $xpFor XP', style: TextStyle(fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: levelColor)),
+            if (level < 5) Text('${xpFor - xpIn} XP to ${_nextLevelLabel(level)}', style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
           ]),
         ]),
       ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
@@ -198,7 +198,7 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
           Row(children: [
             Icon(LucideIcons.sparkles, size: 13, color: context.themeColors.primary500),
             const SizedBox(width: 8),
-            Text('PROGRESSION PATHWAYS', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontFamily: 'monospace', color: context.themeColors.textSecondary)),
+            Text('PROGRESSION PATHWAYS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontFamily: 'monospace', color: context.themeColors.textSecondary)),
           ]),
           const SizedBox(height: 16),
           if (!_isBuilder) ...[
@@ -215,7 +215,7 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
               Icon(LucideIcons.checkCircle2, color: Colors.green.shade600, size: 27),
               const SizedBox(height: 8),
               Text('All pathways complete!', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-              Text('You are a verified expert builder.', style: TextStyle(fontSize: 10, color: context.themeColors.textSecondary)),
+              Text('You are a verified expert builder.', style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
             ])),
           ],
         ]),
@@ -232,7 +232,7 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
           Row(children: [
             Icon(LucideIcons.trophy, size: 13, color: Colors.amber.shade600),
             const SizedBox(width: 8),
-            Text('MILESTONES', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontFamily: 'monospace', color: context.themeColors.textSecondary)),
+            Text('MILESTONES', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontFamily: 'monospace', color: context.themeColors.textSecondary)),
           ]),
           const SizedBox(height: 16),
           ..._buildMilestones(context),
@@ -267,7 +267,7 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(m['label'] as String, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDone ? context.themeColors.textPrimary : context.themeColors.textSecondary)),
-            Text(m['desc'] as String, style: TextStyle(fontSize: 9, color: context.themeColors.textTertiary)),
+            Text(m['desc'] as String, style: TextStyle(fontSize: 11, color: context.themeColors.textTertiary)),
           ])),
           if (isDone)
             Container(
@@ -278,7 +278,7 @@ class _ObserverProgressionPanelState extends State<ObserverProgressionPanel> {
                 children: [
                   const Icon(LucideIcons.check, size: 9, color: Colors.green),
                   const SizedBox(width: 4),
-                  Text('Done', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.green.shade600)),
+                  Text('Done', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green.shade600)),
                 ],
               ),
             )
@@ -302,12 +302,12 @@ class _PathwayRow extends StatelessWidget {
       const SizedBox(width: 12),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
-        Text(subtitle, style: TextStyle(fontSize: 9, color: context.themeColors.textSecondary)),
+        Text(subtitle, style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
       ])),
       const SizedBox(width: 8),
       GestureDetector(
         onTap: onTap,
-        child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: buttonColor, borderRadius: BorderRadius.circular(8)), child: Text(buttonLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white))),
+        child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: buttonColor, borderRadius: BorderRadius.circular(8)), child: Text(buttonLabel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white))),
       ),
     ]);
   }
@@ -364,7 +364,7 @@ class _BuilderUpgradeSheetState extends State<_BuilderUpgradeSheet> {
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(trackLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.themeColors.textPrimary)),
                   const SizedBox(height: 3),
-                  Text(trackDesc, style: TextStyle(fontSize: 9, color: context.themeColors.textSecondary)),
+                  Text(trackDesc, style: TextStyle(fontSize: 11, color: context.themeColors.textSecondary)),
                 ])),
                 if (isSelected) Icon(LucideIcons.checkCircle2, color: widget.primaryColor, size: 17),
               ]),
@@ -436,8 +436,8 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [
-      Text(text.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: context.themeColors.textSecondary)),
-      if (required) const Text(' *', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+      Text(text.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: context.themeColors.textSecondary)),
+      if (required) const Text(' *', style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
     ]));
   }
 }
